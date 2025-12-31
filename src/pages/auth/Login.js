@@ -133,14 +133,14 @@ const Login = () => {
                   color: '#333'
                 }}
               >
-                Employee ID
+                Regestration Number
               </Typography>
               <TextField
                 fullWidth
                 type="text"
-                placeholder="Enter Employee Id"
+                placeholder="Enter Regestration Number"
                 {...register('employeeId', {
-                  required: 'Employee ID is required'
+                  required: 'Regestration Number is required'
                 })}
                 error={!!errors.employeeId}
                 helperText={errors.employeeId?.message}
