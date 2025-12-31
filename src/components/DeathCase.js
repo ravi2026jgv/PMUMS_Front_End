@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
@@ -10,10 +10,40 @@ import {
   TableCell,
   TableContainer,
   TableRow,
-  Button
+  Button,
+  Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import ReceiptUpload from './ReceiptUpload';
 
 const DeathCase = () => {
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const [receiptUploadOpen, setReceiptUploadOpen] = useState(false);
+  const [loginAlertOpen, setLoginAlertOpen] = useState(false);
+
+  const donationInfo = {
+    beneficiaryName: 'देवेंद्र कुमार अहिरवार'
+  };
+
+  const handleUploadClick = () => {
+    if (!isAuthenticated) {
+      setLoginAlertOpen(true);
+      return;
+    }
+    setReceiptUploadOpen(true);
+  };
+
+  const handleLoginRedirect = () => {
+    setLoginAlertOpen(false);
+    navigate('/login');
+  };
+
   return (
     <Container maxWidth="xl" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <Box
@@ -579,10 +609,10 @@ f
                   <Box sx={{ fontSize: '1.2rem' }}>📋</Box>
                 </Box>
                 <Typography sx={{ mb: 1, fontSize: '0.9rem', fontFamily: 'Poppins' }}>SBI Bank</Typography>
-                <Typography sx={{ mb: 1, fontSize: '0.9rem', fontFamily: 'Poppins' }}>XXXX-XXXX-XXXX-123</Typography>
-                <Typography sx={{ mb: 1, fontSize: '0.9rem', fontFamily: 'Poppins' }}>IFSC: SBIN0001234</Typography>
+                <Typography sx={{ mb: 1, fontSize: '0.9rem', fontFamily: 'Poppins' }}>44472186841</Typography>
+                <Typography sx={{ mb: 1, fontSize: '0.9rem', fontFamily: 'Poppins' }}>IFSC: SBIN0062229</Typography>
                 <Typography sx={{ fontWeight: 'bold', color: '#1E3A8A', fontSize: '0.9rem', fontFamily: 'Poppins' }}>
-                  Acc holder name
+                  Sapna Ahirwar
                 </Typography>
                 <Typography sx={{ position: 'absolute', top: 8, right: 8, fontSize: '1.2rem', fontWeight: 'bold' }}>1</Typography>
               </Paper>
@@ -606,10 +636,10 @@ f
                   <Box sx={{ fontSize: '1.2rem' }}>📋</Box>
                 </Box>
                 <Typography sx={{ mb: 1, fontSize: '0.9rem', fontFamily: 'Poppins' }}>SBI Bank</Typography>
-                <Typography sx={{ mb: 1, fontSize: '0.9rem', fontFamily: 'Poppins' }}>XXXX-XXXX-XXXX-123</Typography>
-                <Typography sx={{ mb: 1, fontSize: '0.9rem', fontFamily: 'Poppins' }}>IFSC: SBIN0001234</Typography>
+                <Typography sx={{ mb: 1, fontSize: '0.9rem', fontFamily: 'Poppins' }}>44547141657</Typography>
+                <Typography sx={{ mb: 1, fontSize: '0.9rem', fontFamily: 'Poppins' }}>IFSC: SBIN0062229</Typography>
                 <Typography sx={{ fontWeight: 'bold', color: '#1E3A8A', fontSize: '0.9rem', fontFamily: 'Poppins' }}>
-                  Acc holder name
+                  Boby Ahirwar
                 </Typography>
                 <Typography sx={{ position: 'absolute', top: 8, right: 8, fontSize: '1.2rem', fontWeight: 'bold' }}>2</Typography>
               </Paper>
@@ -633,10 +663,10 @@ f
                   <Box sx={{ fontSize: '1.2rem' }}>📋</Box>
                 </Box>
                 <Typography sx={{ mb: 1, fontSize: '0.9rem', fontFamily: 'Poppins' }}>SBI Bank</Typography>
-                <Typography sx={{ mb: 1, fontSize: '0.9rem', fontFamily: 'Poppins' }}>XXXX-XXXX-XXXX-123</Typography>
-                <Typography sx={{ mb: 1, fontSize: '0.9rem', fontFamily: 'Poppins' }}>IFSC: SBIN0001234</Typography>
+                <Typography sx={{ mb: 1, fontSize: '0.9rem', fontFamily: 'Poppins' }}>40670606893</Typography>
+                <Typography sx={{ mb: 1, fontSize: '0.9rem', fontFamily: 'Poppins' }}>IFSC: SBIN0062229</Typography>
                 <Typography sx={{ fontWeight: 'bold', color: '#1E3A8A', fontSize: '0.9rem', fontFamily: 'Poppins' }}>
-                  Acc holder name
+                  Rashmi Ahirwar
                 </Typography>
                 <Typography sx={{ position: 'absolute', top: 8, right: 8, fontSize: '1.2rem', fontWeight: 'bold' }}>3</Typography>
               </Paper>
@@ -647,6 +677,7 @@ f
           <Box sx={{ textAlign: 'center' }}>
             <Button
               variant="outlined"
+              onClick={handleUploadClick}
               sx={{
                 borderColor: '#1E3A8A',
                 color: '#1E3A8A',
@@ -668,6 +699,59 @@ f
           </Box>
         </Box>
       </Box>
+
+      {/* Receipt Upload Dialog */}
+      <ReceiptUpload
+        open={receiptUploadOpen}
+        onClose={() => setReceiptUploadOpen(false)}
+        donationInfo={donationInfo}
+      />
+
+      {/* Login Required Dialog */}
+      <Dialog
+        open={loginAlertOpen}
+        onClose={() => setLoginAlertOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle
+          sx={{
+            textAlign: 'center',
+            color: '#1E3A8A',
+            fontWeight: 'bold',
+            fontFamily: 'Poppins'
+          }}
+        >
+          लॉगिन आवश्यक (Login Required)
+        </DialogTitle>
+        <DialogContent>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            रसीद अपलोड करने के लिए कृपया पहले लॉगिन करें।
+            <br />
+            Please login first to upload receipt.
+          </Alert>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
+          <Button
+            onClick={() => setLoginAlertOpen(false)}
+            sx={{ mr: 2, color: '#666' }}
+          >
+            रद्द करें (Cancel)
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleLoginRedirect}
+            sx={{
+              backgroundColor: '#1E3A8A',
+              '&:hover': {
+                backgroundColor: '#1E3A8A'
+              }
+            }}
+          >
+            लॉगिन करें (Login)
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
