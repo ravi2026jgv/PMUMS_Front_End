@@ -254,13 +254,13 @@ const Register = () => {
             sx={{ 
               p: { xs: 2, md: 4 },
               borderRadius: 3,
-              background: 'white',
+              background: '#FFFFFF',
             }}
           >
             <Box sx={{ textAlign: 'center', mb: 4 }}>
               <Typography variant="h4" sx={{ 
                 fontWeight: 'bold', 
-                color: '#1a237e',
+                color: '#1E3A8A',
                 mb: 1,
                 fontFamily: 'Poppins'
               }}>
@@ -537,16 +537,16 @@ const Register = () => {
                             onClick={sendEmailOtp}
                             disabled={sendingOtp || !watch('email') || !/^\S+@\S+$/i.test(watch('email') || '')}
                             sx={{
-                              borderColor: '#1a237e',
-                              color: '#1a237e',
+                              borderColor: '#1E3A8A',
+                              color: '#1E3A8A',
                               '&:hover': {
-                                borderColor: '#1a237e',
+                                borderColor: '#1E3A8A',
                                 bgcolor: '#f5f5f5'
                               }
                             }}
                           >
                             {sendingOtp ? (
-                              <CircularProgress size={20} sx={{ color: '#1a237e' }} />
+                              <CircularProgress size={20} sx={{ color: '#1E3A8A' }} />
                             ) : (
                               emailOtpSent ? 'OTP पुनः भेजें' : 'OTP भेजें'
                             )}

@@ -4,7 +4,7 @@ import { createTheme } from '@mui/material/styles';
 export const theme = createTheme({
   palette: {
     primary: {
-      main: '#1a237e', // Royal Dark Blue
+      main: '#1E3A8A', // Royal Dark Blue
       light: '#534bae', // Medium Royal Blue
       dark: '#000051', // Deep Navy Royal Blue
       contrastText: '#ffffff',
@@ -13,32 +13,32 @@ export const theme = createTheme({
       main: '#ffffff', // Pure White
       light: '#f8f9ff', // Very light blue-white
       dark: '#e8eaf6', // Light Royal Blue tint
-      contrastText: '#1a237e',
+      contrastText: '#1E3A8A',
     },
     success: {
       main: '#283593', // Royal Blue success
       light: '#5f5fc4',
-      dark: '#1a237e',
+      dark: '#1E3A8A',
       contrastText: '#ffffff',
     },
     warning: {
       main: '#303f9f', // Royal Blue warning
       light: '#666ad1',
-      dark: '#1a237e',
+      dark: '#1E3A8A',
       contrastText: '#ffffff',
     },
     error: {
       main: '#3949ab', // Royal Blue error (softer)
       light: '#6f74dd',
-      dark: '#1a237e',
+      dark: '#1E3A8A',
       contrastText: '#ffffff',
     },
     background: {
-      default: '#ffffff', // Pure white background
-      paper: '#ffffff', // Pure white paper
+      default: '#FFF8F0', // Cream background
+      paper: '#FFF8F0', // Cream paper
     },
     text: {
-      primary: '#1a237e', // Royal Dark Blue text
+      primary: '#1E3A8A', // Royal Dark Blue text
       secondary: '#283593', // Medium Royal Blue for secondary text
     },
     divider: '#e8eaf6', // Light royal blue divider
@@ -118,14 +118,14 @@ export const theme = createTheme({
         outlinedPrimary: {
           borderColor: '#1565c0',
           color: '#1565c0',
-          backgroundColor: '#ffffff',
+          backgroundColor: '#FFFFFF',
           '&:hover': {
             backgroundColor: '#e3f2fd',
             borderColor: '#1976d2',
           },
         },
         containedSecondary: {
-          backgroundColor: '#ffffff',
+          backgroundColor: '#FFFFFF',
           color: '#1565c0',
           border: '2px solid #1565c0',
           '&:hover': {
@@ -139,7 +139,7 @@ export const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 12,
-          backgroundColor: '#ffffff',
+          backgroundColor: '#FFFFFF',
           border: '1px solid #e3f2fd',
           boxShadow: '0 2px 8px rgba(21, 101, 192, 0.08)',
           '&:hover': {
@@ -176,7 +176,7 @@ export const theme = createTheme({
     MuiAppBar: {
       styleOverrides: {
         root: {
-          backgroundColor: '#ffffff',
+          backgroundColor: '#FFFFFF',
           color: '#1565c0',
           borderBottom: '2px solid #1565c0',
           boxShadow: '0 2px 8px rgba(21, 101, 192, 0.1)',
@@ -186,7 +186,7 @@ export const theme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          backgroundColor: '#ffffff',
+          backgroundColor: '#FFFFFF',
           border: '1px solid #e3f2fd',
         },
       },
@@ -199,7 +199,7 @@ export const theme = createTheme({
             color: '#ffffff',
           },
           '&.MuiChip-colorSecondary': {
-            backgroundColor: '#ffffff',
+            backgroundColor: '#FFFFFF',
             color: '#1565c0',
             border: '1px solid #1565c0',
           },

@@ -173,7 +173,7 @@ const Profile = () => {
   if (loading && !profileData) {
     return (
       <Layout>
-        <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Container maxWidth="lg" sx={{ py: 1 }}>
           <Box display="flex" justifyContent="center" alignItems="center" minHeight="50vh">
             <CircularProgress />
           </Box>
@@ -186,8 +186,8 @@ const Profile = () => {
     <Layout>
       <Box sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-        py: 4
+        background: 'linear-gradient(135deg, #FFF8F0 0%, #F5EFE7 100%)',
+        py: 1
       }}>
         <Container maxWidth="lg">
           {/* Profile Header Card */}
@@ -197,7 +197,7 @@ const Profile = () => {
               mb: 4,
               p: 4,
               borderRadius: 3,
-              background: 'white',
+              background: '#FFFFFF',
               textAlign: 'center'
             }}
           >
@@ -206,7 +206,7 @@ const Profile = () => {
               height: 100,
               margin: '0 auto',
               mb: 2,
-              background: 'linear-gradient(135deg, #1a237e 0%, #5c6bc0 100%)',
+              background: 'linear-gradient(135deg, #1E3A8A 0%, #5c6bc0 100%)',
               fontSize: '2.5rem',
               fontWeight: 'bold',
               boxShadow: '0 8px 20px rgba(26, 35, 126, 0.3)'
@@ -215,7 +215,7 @@ const Profile = () => {
             </Avatar>
             <Typography variant="h4" sx={{ 
               fontWeight: 'bold',
-              color: '#1a237e',
+              color: '#1E3A8A',
               mb: 1
             }}>
               {(profileData?.name && profileData?.surname) 
@@ -229,13 +229,13 @@ const Profile = () => {
               <Chip 
                 icon={<Email />} 
                 label={profileData?.email || 'ईमेल अनुपलब्ध'} 
-                sx={{ bgcolor: '#e3f2fd', color: '#1a237e' }}
+                sx={{ bgcolor: '#e3f2fd', color: '#1E3A8A' }}
               />
               {profileData?.mobileNumber && (
                 <Chip 
                   icon={<Phone />} 
                   label={profileData.mobileNumber} 
-                  sx={{ bgcolor: '#e3f2fd', color: '#1a237e' }}
+                  sx={{ bgcolor: '#e3f2fd', color: '#1E3A8A' }}
                 />
               )}
             </Box>
@@ -244,9 +244,9 @@ const Profile = () => {
               onClick={handleEditToggle}
               startIcon={isEditing ? <Cancel /> : <Edit />}
               sx={{
-                background: isEditing ? 'transparent' : 'linear-gradient(135deg, #1a237e 0%, #5c6bc0 100%)',
-                color: isEditing ? '#1a237e' : 'white',
-                borderColor: isEditing ? '#1a237e' : 'transparent',
+                background: isEditing ? 'transparent' : 'linear-gradient(135deg, #1E3A8A 0%, #5c6bc0 100%)',
+                color: isEditing ? '#1E3A8A' : 'white',
+                borderColor: isEditing ? '#1E3A8A' : 'transparent',
                 '&:hover': {
                   background: isEditing ? 'rgba(26, 35, 126, 0.05)' : 'linear-gradient(135deg, #000051 0%, #3949ab 100%)',
                 },

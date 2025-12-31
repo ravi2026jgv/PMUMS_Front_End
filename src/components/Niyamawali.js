@@ -8,10 +8,10 @@ import {
 
 const Niyamawali = () => {
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Container maxWidth="md" sx={{ py: 1 }}>
       <Paper elevation={3} sx={{ overflow: 'hidden', bgcolor: '#f8f9fa' }}>
         {/* Header */}
-        <Box sx={{ textAlign: 'center', py: 3, bgcolor: 'white' }}>
+        <Box sx={{ textAlign: 'center', py: 1, bgcolor: '#FFFFFF' }}>
           <Typography variant="h4" sx={{ 
             fontWeight: 'bold',
             color: '#1a237e',
@@ -56,7 +56,7 @@ const Niyamawali = () => {
         </Box> */}
 
         {/* Content Section */}
-        <Box sx={{ p: 4, bgcolor: 'white' }}>
+        <Box sx={{ p: 2, bgcolor: '#FFFFFF' }}>
           {/* Main Title */}
           <Typography variant="h6" sx={{ 
             fontWeight: 'bold',

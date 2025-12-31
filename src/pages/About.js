@@ -56,15 +56,15 @@ const About = () => {
 
   return (
     <Layout>
-      <Box sx={{ py: 6, minHeight: '100vh', background: '#f8f9fa' }}>
+      <Box sx={{ py: 1, minHeight: '100vh', background: '#FFF8F0' }}>
         <Container maxWidth="lg">
           {/* Header Section */}
           <Paper 
             elevation={3} 
             sx={{ 
-              p: 5, 
+              p: 1, 
               mb: 6, 
-              background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)',
+              background: 'linear-gradient(135deg, #1E3A8A 0%, #3949ab 100%)',
               color: 'white',
               borderRadius: 4,
               textAlign: 'center'
@@ -115,7 +115,7 @@ const About = () => {
                 sx={{
                   fontWeight: 'bold',
                   mb: 4,
-                  color: '#1a237e',
+                  color: '#1E3A8A',
                   textAlign: 'center',
                   fontFamily: 'Poppins'
                 }}
@@ -156,7 +156,7 @@ const About = () => {
                 sx={{
                   fontWeight: 'bold',
                   mb: 4,
-                  color: '#1a237e',
+                  color: '#1E3A8A',
                   textAlign: 'center',
                   fontFamily: 'Poppins'
                 }}
@@ -233,7 +233,7 @@ const About = () => {
                 sx={{
                   fontWeight: 'bold',
                   mb: 4,
-                  color: '#1a237e',
+                  color: '#1E3A8A',
                   textAlign: 'center',
                   fontFamily: 'Poppins'
                 }}
@@ -342,7 +342,7 @@ const About = () => {
                 sx={{
                   fontWeight: 'bold',
                   mb: 4,
-                  color: '#1a237e',
+                  color: '#1E3A8A',
                   textAlign: 'center',
                   fontFamily: 'Poppins'
                 }}
@@ -380,7 +380,7 @@ const About = () => {
 
           {/* Our Belief */}
           <Paper sx={{ mb: 6, borderRadius: 4, boxShadow: '0 10px 30px rgba(0,0,0,0.1)', bgcolor: '#e8f5e8' }}>
-            <Box sx={{ p: 5, textAlign: 'center' }}>
+            <Box sx={{ p: 2, textAlign: 'center' }}>
               <Typography
                 variant="h4"
                 sx={{
@@ -397,7 +397,7 @@ const About = () => {
                 sx={{
                   fontWeight: 600,
                   mb: 3,
-                  color: '#1a237e',
+                  color: '#1E3A8A',
                   fontFamily: 'Poppins'
                 }}
               >

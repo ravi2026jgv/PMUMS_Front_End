@@ -15,13 +15,13 @@ import {
 
 const Donation = () => {
   return (
-    <Container maxWidth="lg" sx={{ py: 6, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <Container maxWidth="lg" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <Box
         sx={{
           border: '2px solid #1E3A8A',
           borderRadius: 3,
-          p: 4,
-          backgroundColor: 'white',
+          p: 1,
+          backgroundColor: '#FFFFFF',
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
           width: '100%',
           maxWidth: '1000px'
@@ -242,8 +242,8 @@ const Donation = () => {
         sx={{
           border: '2px solid #1E3A8A',
           borderRadius: 3,
-          p: 4,
-          backgroundColor: 'white',
+          p: 1,
+          backgroundColor: '#FFFFFF',
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
           width: '100%',
           maxWidth: '1000px',
@@ -329,7 +329,7 @@ const Donation = () => {
               <Button
                 variant="contained"
                 sx={{
-                  backgroundColor: '#ff8c00',
+                  backgroundColor: '#FF9933',
                   color: 'white',
                   fontWeight: 'bold',
                   px: 4,
@@ -339,7 +339,7 @@ const Donation = () => {
                   fontSize: '1.1rem',
                   fontFamily: 'Poppins',
                   '&:hover': {
-                    backgroundColor: '#e67e00'
+                    backgroundColor: '#e6851f'
                   }
                 }}
               >
@@ -396,7 +396,7 @@ const Donation = () => {
               <Button
                 variant="contained"
                 sx={{
-                  backgroundColor: '#ff8c00',
+                  backgroundColor: '#FF9933',
                   color: 'white',
                   fontWeight: 'bold',
                   px: 4,
@@ -406,7 +406,7 @@ const Donation = () => {
                   fontSize: '1.1rem',
                   fontFamily: 'Poppins',
                   '&:hover': {
-                    backgroundColor: '#e67e00'
+                    backgroundColor: '#e6851f'
                   }
                 }}
               >
@@ -423,7 +423,7 @@ const Donation = () => {
           border: '2px solid #1E3A8A',
           borderRadius: 3,
           p: 0,
-          backgroundColor: 'white',
+          backgroundColor: '#FFFFFF',
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
           width: '100%',
           maxWidth: '1000px',
@@ -453,7 +453,7 @@ const Donation = () => {
         </Box>
 
         {/* Content */}
-        <Box sx={{ p: 4 }}>
+        <Box sx={{ p: 1 }}>
           {/* Account Cards */}
           <Grid container spacing={3} justifyContent="space-evenly" sx={{ mb: 4 }}>
             {/* Account 1 */}

@@ -15,16 +15,16 @@ import {
 
 const DeathCase = () => {
   return (
-    <Container maxWidth="lg" sx={{ py: 6, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <Container maxWidth="xl" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <Box
         sx={{
           border: '2px solid #1E3A8A',
           borderRadius: 3,
-          p: 4,
-          backgroundColor: 'white',
+          p: 1,
+          backgroundColor: '#FFFFFF',
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
           width: '100%',
-          maxWidth: '1000px'
+          maxWidth: '1200px'
         }}
       >
         {/* Main Title */}
@@ -46,7 +46,7 @@ const DeathCase = () => {
         {/* Main Content */}
         <Grid container spacing={2} sx={{ flexWrap: { xs: 'wrap', md: 'nowrap' } }}>
         {/* Left Side - Photo and Details */}
-        <Grid item xs={12} md={4}  lg={3}>
+        <Grid item xs={12} md={5} lg={5}>
           {/* Photo */}
           <Box
             component="img"
@@ -54,8 +54,8 @@ const DeathCase = () => {
             alt="Ashok Kumar"
             sx={{
               width: '100%',
-              maxWidth: '200px',
-              height: 160,
+              maxWidth: '250px',
+              height: 250,
               objectFit: 'cover',
               border: '2px solid #ddd',
               borderRadius: 1,
@@ -75,20 +75,20 @@ const DeathCase = () => {
             <Typography sx={{ 
               mb: 0.5, 
               fontFamily: 'Poppins',
-              fontSize: { xs: '0.9rem', md: '1rem' }
+              fontSize: '13.6px'
             }}>
               <strong>Name :</strong> श्री राकेश कुमार अहिरवार
             </Typography>
             <Typography sx={{ 
               mb: 0.5, 
               fontFamily: 'Poppins',
-              fontSize: { xs: '0.9rem', md: '1rem' }
+              fontSize: '13.6px'
             }}>
               <strong>Registration Number :</strong> PMUMS20246261
             </Typography>
             <Typography sx={{ 
               fontFamily: 'Poppins',
-              fontSize: { xs: '0.9rem', md: '1rem' }
+              fontSize: '13.6px'
             }}>
               <strong>Registration Date :</strong> 31/08/2025 (10:40 AM)
             </Typography>
@@ -96,9 +96,61 @@ const DeathCase = () => {
         </Grid>
 
         {/* Right Side - Description and Table */}
-        <Grid item xs={12} md={8} lg={9}>
+        <Grid item xs={12} md={7} lg={7}>
           {/* Description Text */}
           <Box>
+            <Typography
+              sx={{
+                fontSize: '13.6px',
+                lineHeight: 1.4,
+                color: '#333',
+                textAlign: 'justify',
+                fontFamily: 'Poppins',
+                mb: 1.2
+              }}
+            >
+              PMUMS मध्यप्रदेश के पंजीकृत शिक्षक श्री राकेश कुमार अहिरवार का दिनांक 05/12/2025 को स्वास्थ्य कारणों से आकस्मिक देहावसान हो गया।
+            </Typography>
+            
+            <Typography
+              sx={{
+                fontSize: '13.6px',
+                lineHeight: 1.4,
+                color: '#333',
+                textAlign: 'justify',
+                fontFamily: 'Poppins',
+                mb: 1.2
+              }}
+            >
+              यह घटना PMUMS परिवार के लिए अत्यंत दुःखद एवं अपूरणीय क्षति है। दिवंगत साथी एक सरल, कर्मठ एवं सेवाभावी शिक्षक थे।
+            </Typography>
+            
+            <Typography
+              sx={{
+                fontSize: '13.6px',
+                lineHeight: 1.4,
+                color: '#333',
+                textAlign: 'justify',
+                fontFamily: 'Poppins',
+                mb: 1.2
+              }}
+            >
+              उनके नॉमिनी – पत्नी श्रीमती सपना अहिरवार, पुत्र बॉबी अहिरवार एवं पुत्री रश्मि अहिरवार के प्रति PMUMS परिवार अपनी गहरी संवेदना व्यक्त करता है।
+            </Typography>
+            
+            <Typography
+              sx={{
+                fontSize: '13.6px',
+                lineHeight: 1.4,
+                color: '#333',
+                textAlign: 'justify',
+                fontFamily: 'Poppins',
+                mb: 1.2
+              }}
+            >
+              PMUMS मध्यप्रदेश परिवार की ओर से दिवंगत आत्मा को विनम्र श्रद्धांजलि अर्पित की जाती है।
+            </Typography>
+            
             <Typography
               sx={{
                 fontSize: '13.6px',
@@ -109,7 +161,7 @@ const DeathCase = () => {
                 mb: 2
               }}
             >
-              PMUMS मध्यप्रदेश के पंजीकृत शिक्षक श्री राकेश कुमार अहिरवार का दिनांक 05/12/2025 को स्वास्थ्य कारणों से आकस्मिक देहावसान हो गया। यह घटना PMUMS परिवार के लिए अत्यंत दुःखद एवं अपूरणीय क्षति है। दिवंगत साथी एक सरल, कर्मठ एवं सेवाभावी शिक्षक थे। उनके नॉमिनी – पत्नी श्रीमती सपना अहिरवार, पुत्र बॉबी अहिरवार एवं पुत्री रश्मि अहिरवार के प्रति PMUMS परिवार अपनी गहरी संवेदना व्यक्त करता है। PMUMS मध्यप्रदेश परिवार की ओर से दिवंगत आत्मा को विनम्र श्रद्धांजलि अर्पित की जाती है एवं ईश्वर से प्रार्थना है कि शोकाकुल परिवार को यह दुःख सहन करने की शक्ति प्रदान करें।
+              ईश्वर से प्रार्थना है कि शोकाकुल परिवार को यह दुःख सहन करने की शक्ति प्रदान करें।
             </Typography>
           </Box>
 
@@ -285,11 +337,11 @@ const DeathCase = () => {
         sx={{
           border: '2px solid #1E3A8A',
           borderRadius: 3,
-          p: 4,
-          backgroundColor: 'white',
+          p: 1,
+          backgroundColor: '#FFFFFF',
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
           width: '100%',
-          maxWidth: '1000px',
+          maxWidth: '1200px',
           mt: 4
         }}
       >
@@ -377,7 +429,7 @@ f
                   document.body.removeChild(link);
                 }}
                 sx={{
-                  backgroundColor: '#ff8c00',
+                  backgroundColor: '#FF9933',
                   color: 'white',
                   fontWeight: 'bold',
                   px: 4,
@@ -387,7 +439,7 @@ f
                   fontSize: '1.1rem',
                   fontFamily: 'Poppins',
                   '&:hover': {
-                    backgroundColor: '#e67e00'
+                    backgroundColor: '#e6851f'
                   }
                 }}
               >
@@ -449,7 +501,7 @@ f
                   document.body.removeChild(link);
                 }}
                 sx={{
-                  backgroundColor: '#ff8c00',
+                  backgroundColor: '#FF9933',
                   color: 'white',
                   fontWeight: 'bold',
                   px: 4,
@@ -459,7 +511,7 @@ f
                   fontSize: '1.1rem',
                   fontFamily: 'Poppins',
                   '&:hover': {
-                    backgroundColor: '#e67e00'
+                    backgroundColor: '#e6851f'
                   }
                 }}
               >
@@ -476,10 +528,10 @@ f
           border: '2px solid #1E3A8A',
           borderRadius: 3,
           p: 0,
-          backgroundColor: 'white',
+          backgroundColor: '#FFFFFF',
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
           width: '100%',
-          maxWidth: '1000px',
+          maxWidth: '1200px',
           mt: 4,
           overflow: 'hidden'
         }}
@@ -506,7 +558,7 @@ f
         </Box>
 
         {/* Content */}
-        <Box sx={{ p: 4 }}>
+        <Box sx={{ p: 2 }}>
           {/* Account Cards */}
           <Grid container spacing={3} justifyContent="space-evenly" sx={{ mb: 4 }}>
             {/* Account 1 */}

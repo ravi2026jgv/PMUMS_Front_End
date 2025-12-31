@@ -90,7 +90,7 @@ const Login = () => {
             sx={{
               p: 4,
               borderRadius: 4,
-              background: 'white',
+              background: '#FFFFFF',
               boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
               border: '3px solid #ff9800'
             }}

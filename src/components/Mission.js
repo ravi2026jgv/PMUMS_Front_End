@@ -200,7 +200,7 @@ const Mission = () => {
       <Card
         sx={{
           borderRadius: 4,
-          background: 'linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 100%)',
+          background: 'linear-gradient(135deg, #FFF8F0 0%, #F5EFE7 100%)',
           border: '2px solid #e3f2fd'
         }}
       >

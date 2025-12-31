@@ -10,61 +10,73 @@ import {
 
 const SelfDonation = () => {
   return (
-    <Container maxWidth="md" sx={{ py: 6 }}>
+    <Container maxWidth="lg" sx={{ py: 6, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <Box
         sx={{
-          backgroundColor: '#fff',
+          border: '2px solid #1E3A8A',
           borderRadius: 3,
           p: 4,
-          boxShadow: '0 6px 20px rgba(0,0,0,0.08)'
+          backgroundColor: '#FFFFFF',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+          width: '100%',
+          maxWidth: '1200px'
         }}
       >
         {/* Title */}
         <Typography
-          variant="h4"
-          align="center"
+          variant="h3"
+          component="h2"
           sx={{
-            fontWeight: 600,
+            textAlign: 'center',
             mb: 4,
+            fontWeight: 'bold',
             color: '#1E3A8A',
+            fontSize: { xs: '2.5rem', md: '3rem' },
             fontFamily: 'Poppins'
           }}
         >
           सहयोग
         </Typography>
 
-        <Grid container spacing={4} alignItems="flex-start">
+        <Grid container spacing={2} sx={{ flexWrap: 'nowrap' }}>
           {/* Left Image Section */}
-          <Grid item xs={12} md={4} textAlign="center">
-            <Avatar
-              src="/profile.jpg"   // replace with real image path
+          <Grid item xs={4} md={3}>
+            <Box
+              component="img"
+              src="/profile.jpg"
+              alt="Ashok Kumar"
               sx={{
-                width: 150,
-                height: 150,
-                mx: 'auto',
-                mb: 2,
-                borderRadius: 2
+                width: '100%',
+                height: 160,
+                objectFit: 'cover',
+                border: '2px solid #ddd',
+                borderRadius: 1,
+                mb: 1
               }}
             />
-            <Typography sx={{ fontWeight: 600 }}>
-              Name : Ashok Kumar
-            </Typography>
-            <Typography sx={{ fontSize: 14, color: '#555' }}>
-              Registration Number : PMUMS20245896
-            </Typography>
-            <Typography sx={{ fontSize: 14, color: '#555' }}>
-              Registration Date : 02/05/2024
-            </Typography>
+            <Box sx={{ fontSize: '1rem', color: '#333' }}>
+              <Typography sx={{ mb: 0.5, fontFamily: 'Poppins' }}>
+                <strong>Name :</strong> Ashok Kumar
+              </Typography>
+              <Typography sx={{ mb: 0.5, fontFamily: 'Poppins' }}>
+                <strong>Registration Number :</strong> PMUMS20245896
+              </Typography>
+              <Typography sx={{ fontFamily: 'Poppins' }}>
+                <strong>Registration Date :</strong> 02/05/2024
+              </Typography>
+            </Box>
           </Grid>
 
           {/* Right Content */}
-          <Grid item xs={12} md={8}>
+          <Grid item xs={8} md={9}>
             <Typography
               sx={{
-                mb: 3,
-                lineHeight: 1.8,
+                fontSize: '1.1rem',
+                lineHeight: 1.4,
+                color: '#333',
+                textAlign: 'justify',
                 fontFamily: 'Poppins',
-                color: '#444'
+                mb: 2
               }}
             >
               PMUMS के सुचारू संचालन के लिए आपका सहयोग महत्वपूर्ण है।
@@ -86,14 +98,14 @@ const SelfDonation = () => {
                     backgroundColor: '#1E3A8A',
                     borderRadius: 2,
                     textTransform: 'none',
+                    fontSize: '1rem',
+                    fontFamily: 'Poppins',
                     '&:hover': {
                       backgroundColor: '#152b6b'
                     }
                   }}
                 >
-                  <Typography sx={{ fontFamily: 'Poppins', fontWeight: 600, color: 'white' }}>
-                    श्रीमती सपना अहिरवार (Wife)
-                  </Typography>
+                  श्रीमती सपना अहिरवार (Wife)
                 </Button>
                 
                 <Button
@@ -104,14 +116,14 @@ const SelfDonation = () => {
                     backgroundColor: '#1E3A8A',
                     borderRadius: 2,
                     textTransform: 'none',
+                    fontSize: '1rem',
+                    fontFamily: 'Poppins',
                     '&:hover': {
                       backgroundColor: '#152b6b'
                     }
                   }}
                 >
-                  <Typography sx={{ fontFamily: 'Poppins', fontWeight: 600, color: 'white' }}>
-                    बॉबी अहिरवार (Son)
-                  </Typography>
+                  बॉबी अहिरवार (Son)
                 </Button>
               </Box>
 
@@ -126,15 +138,15 @@ const SelfDonation = () => {
                     color: '#1E3A8A',
                     borderRadius: 2,
                     textTransform: 'none',
+                    fontSize: '1rem',
+                    fontFamily: 'Poppins',
                     '&:hover': {
                       borderColor: '#152b6b',
-                      backgroundColor: '#f0f4ff'
+                      backgroundColor: 'rgba(30, 58, 138, 0.04)'
                     }
                   }}
                 >
-                  <Typography sx={{ fontFamily: 'Poppins', fontWeight: 600 }}>
-                    Nominee 3
-                  </Typography>
+                  Nominee 3
                 </Button>
                 
                 <Button
@@ -146,15 +158,15 @@ const SelfDonation = () => {
                     color: '#1E3A8A',
                     borderRadius: 2,
                     textTransform: 'none',
+                    fontSize: '1rem',
+                    fontFamily: 'Poppins',
                     '&:hover': {
                       borderColor: '#152b6b',
-                      backgroundColor: '#f0f4ff'
+                      backgroundColor: 'rgba(30, 58, 138, 0.04)'
                     }
                   }}
                 >
-                  <Typography sx={{ fontFamily: 'Poppins', fontWeight: 600 }}>
-                    Nominee 4
-                  </Typography>
+                  Nominee 4
                 </Button>
               </Box>
             </Box>

@@ -36,17 +36,17 @@ const Home = () => {
       <Statistics />
 
      {/* Founders Section */}
-      <Box sx={{ py: 8, background: '#f8f9fa' }}>
+      <Box sx={{ py: 2, background: '#f8f9fa' }}>
         <Founders />
       </Box>
       
       {/* Death Case Section */}
-      <Box sx={{ py: 8, background: '#f8f9fa' }}>
+      <Box sx={{ py: 8, background: '#FFF8F0' }}>
         <DeathCase />
       </Box>
 
       {/* Self Donation Section */}
-      <Box sx={{ py: 8, background: '#ffffff' }}>
+      <Box sx={{ py: 8, background: '#FFF8F0' }}>
         <SelfDonation />
       </Box>
     </Layout>

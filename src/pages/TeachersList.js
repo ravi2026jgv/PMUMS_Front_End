@@ -155,7 +155,7 @@ const TeachersList = () => {
 
   return (
     <Layout>
-      <Box sx={{ py: 4, minHeight: '100vh', background: '#f8f9fa' }}>
+      <Box sx={{ py: 4, minHeight: '100vh', background: '#FFF8F0' }}>
         <Container maxWidth="xl">
           {/* Header */}
           <Card sx={{ mb: 4, borderRadius: 3, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
@@ -334,7 +334,7 @@ const TeachersList = () => {
                         key={teacher.id}
                         sx={{
                           '&:nth-of-type(odd)': {
-                            backgroundColor: '#f8f9fa',
+                            backgroundColor: '#FFFFFF',
                           },
                           '&:hover': {
                             backgroundColor: '#e3f2fd',
@@ -407,7 +407,7 @@ const TeachersList = () => {
                 textAlign: 'center', 
                 p: 2, 
                 borderTop: '1px solid #e0e0e0',
-                background: '#f8f9fa'
+                background: '#FFFFFF'
               }}>
                 <Typography variant="body2" sx={{ color: '#666' }}>
                   कुल {filteredTeachers.length} में से {startIndex + 1}-{Math.min(endIndex, filteredTeachers.length)} परिणाम

@@ -55,7 +55,7 @@ const FounderCard = ({ founder }) => (
           width: '100%',
           height: 280,
           objectFit: 'cover',
-          backgroundColor: '#f8f9fa'
+          backgroundColor: '#FFFFFF'
         }}
       />
       <CardContent sx={{ p: 4 }}>

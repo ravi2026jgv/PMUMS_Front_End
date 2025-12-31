@@ -68,7 +68,7 @@ const Header = () => {
       <Box
         sx={{
           background: '#ffffff',
-          borderBottom: '2px solid #1976d2',
+          borderBottom: '2px solid #1E3A8A',
           py: 1
         }}
       >
@@ -77,7 +77,7 @@ const Header = () => {
             variant="body1"
             sx={{
               textAlign: 'center',
-              color: '#1976d2',
+              color: '#1E3A8A',
               fontWeight: 600,
               fontSize: { xs: '0.8rem', sm: '0.9rem', md: '1rem' },
               lineHeight: 1.2
@@ -93,7 +93,7 @@ const Header = () => {
         position="static" 
         elevation={0} 
         sx={{ 
-          background: 'linear-gradient(135deg, #1565c0 0%, #1976d2 100%)',
+          background: 'linear-gradient(135deg, #1E3A8A 0%, #1E3A8A 100%)',
           boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
         }}
       >
@@ -121,7 +121,7 @@ const Header = () => {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                bgcolor: 'white',
+                bgcolor: '#FFFFFF',
                 borderRadius: '50%',
                 p: 1,
                 boxShadow: '0 2px 8px rgba(0,0,0,0.2)'

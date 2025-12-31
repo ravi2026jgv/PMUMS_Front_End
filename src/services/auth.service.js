@@ -93,13 +93,13 @@ export const authService = {
 
   // Send email OTP for verification (public endpoint)
   sendEmailOtp: async (email) => {
-    const response = await publicApi.post('/auth/email-otp/send', { email });
+    const response = await publicApi.post('/auth/otp/send', { email });
     return response.data;
   },
 
   // Verify email OTP (public endpoint)
   verifyEmailOtp: async (email, otp) => {
-    const response = await publicApi.post('/auth/email-otp/verify', { email, otp });
+    const response = await publicApi.post('/auth/otp/verify', { email, otp });
     return response.data;
   },
 };
