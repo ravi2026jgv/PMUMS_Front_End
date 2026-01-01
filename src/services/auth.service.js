@@ -1,4 +1,5 @@
 import api, { publicApi } from './api';
+import axios from 'axios';
 
 export const authService = {
   // Login user (public endpoint)
@@ -93,7 +94,7 @@ export const authService = {
 
   // Send email OTP for verification (public endpoint)
   sendEmailOtp: async (email) => {
-    const response = await publicApi.post('/auth/email-otp/send', { email });
+    const response = await axios.post('https://backend.pmums.com/api/auth/email-otp/send', { email });
     return response.data;
   },
 

@@ -25,7 +25,7 @@ import Layout from '../../components/Layout/Layout';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://backend.pmums.com/api';
 
 const Register = () => {
   const { register: registerUser, loading } = useAuth();

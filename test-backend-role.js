@@ -5,7 +5,7 @@
 
 // Test Login API and check role field
 async function testLoginAPI() {
-  const apiUrl = 'http://localhost:8080/api/auth/login'; // Update with your backend URL
+  const apiUrl = 'https://backend.pmums.com/api/auth/login'; // Update with your backend URL
   
   const testCredentials = {
     username: 'admin', // Change to your test username
