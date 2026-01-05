@@ -39,9 +39,9 @@ const Login = () => {
       console.log('Login attempt with data:', data);
       console.log('Redirect destination:', from);
       
-      // Map employeeId to username for backend compatibility
+      // Map employeeId to userId for backend compatibility
       const credentials = {
-        username: data.employeeId,
+        userId: data.employeeId,
         password: data.password
       };
       
@@ -133,14 +133,14 @@ const Login = () => {
                   color: '#333'
                 }}
               >
-                Regestration Number
+                Registration Number
               </Typography>
               <TextField
                 fullWidth
                 type="text"
-                placeholder="Enter Regestration Number"
+                placeholder="Enter Registration Number"
                 {...register('employeeId', {
-                  required: 'Regestration Number is required'
+                  required: 'Registration Number is required'
                 })}
                 error={!!errors.employeeId}
                 helperText={errors.employeeId?.message}

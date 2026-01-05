@@ -37,9 +37,9 @@ export const authService = {
       surname: userData.surname || '',
       fatherName: userData.fatherName || '', // Added father name field
       countryCode: userData.countryCode || '+91',
-      phoneNumber: userData.phoneNumber || '',
       mobileNumber: userData.mobileNumber || '',
       email: userData.email,
+      pincode: userData.pincode ? parseInt(userData.pincode, 10) : null,
       gender: userData.gender || '',
       maritalStatus: userData.maritalStatus || '',
       password: userData.password,
@@ -72,6 +72,7 @@ export const authService = {
       email: userData.email,
       password: userData.password,
       mobileNumber: userData.mobileNumber || '',
+      pincode: userData.pincode ? parseInt(userData.pincode, 10) : null,
       countryCode: userData.countryCode || '+91',
       acceptedTerms: true
     };
@@ -79,7 +80,7 @@ export const authService = {
     console.log('Trying registration with full payload:', fullPayload);
     
     try {
-      const response = await publicApi.post('/auth/register', fullPayload);
+      const response = await publicApi.post('/users/register', fullPayload);
       console.log('Registration successful with full payload:', response.data);
       return response.data;
     } catch (error) {
@@ -87,7 +88,7 @@ export const authService = {
       console.log('Trying registration with basic payload:', basicPayload);
       
       try {
-        const response = await publicApi.post('/auth/register', basicPayload);
+        const response = await publicApi.post('/users/register', basicPayload);
         console.log('Registration successful with basic payload:', response.data);
         return response.data;
       } catch (basicError) {

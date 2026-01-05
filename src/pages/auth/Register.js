@@ -253,9 +253,9 @@ const Register = () => {
         surname: formData.surname,
         fatherName: formData.fatherName,
         countryCode: '+91', // Fixed country code
-        phoneNumber: formData.mobileNumber, // Use mobile as phone
         mobileNumber: formData.mobileNumber,
         email: formData.email,
+        pincode: formData.pinCode ? parseInt(formData.pinCode, 10) : null, // Convert to Integer for backend
         gender: genderMap[formData.gender] || 'OTHER', // Convert to enum
         maritalStatus: maritalStatusMap[formData.maritalStatus] || 'UNMARRIED', // Convert to enum
         password: formData.password,

@@ -2,7 +2,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 
 // API base URL - direct connection to backend
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://13.204.36.38:8080/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://backend.pmums.com/api';
 // Create axios instance for authenticated requests
 const api = axios.create({
   baseURL: API_BASE_URL,
