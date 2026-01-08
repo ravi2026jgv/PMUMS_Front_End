@@ -55,7 +55,7 @@ const Header = () => {
   const navigationItems = [
     { label: 'HOME', path: '/' },
     { label: 'ABOUT', path: '/about' },
-    { label: "TEACHER'S LIST", path: '/teachers-list' },
+    { label: 'OUR MEMBERS', path: '/teachers-list' },
     { label: 'SAHYOG LIST', path: '/sahyog-list' },
     { label: 'ASAHYOG LIST', path: '/asahyog-list' },
     { label: 'NIYAMAWALI', path: '/niyamawali' },

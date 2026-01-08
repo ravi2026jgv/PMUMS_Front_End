@@ -952,12 +952,6 @@ const Register = () => {
                           </MenuItem>
                         )}
                       </Select>
-                      {/* Debug info */}
-                      {process.env.NODE_ENV === 'development' && (
-                        <small style={{color: '#666', fontSize: '0.75rem', marginTop: '4px'}}>
-                          Debug: Sambhag={selectedSambhag}, Districts={availableDistricts?.length || 0}
-                        </small>
-                      )}
                     </FormControl>
                   </Grid>
                   <Grid item xs={12} md={4}>
