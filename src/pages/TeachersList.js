@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Container,
@@ -20,21 +20,29 @@ import {
   CardContent,
   InputAdornment,
   CircularProgress,
-  Alert
+  Alert,
+  Chip
 } from '@mui/material';
 import {
   Search,
-  FilterList
+  FilterList,
+  Info
 } from '@mui/icons-material';
 import Layout from '../components/Layout/Layout';
 import { publicApi } from '../services/api';
 
 const TeachersList = () => {
+  // Server-side pagination state
   const [teachers, setTeachers] = useState([]);
   const [filteredTeachers, setFilteredTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0); // 0-indexed for API
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [pageSize] = useState(20); // Users per page
+  
+  // Filter state
   const [filters, setFilters] = useState({
     state: '',
     sambhag: '',
@@ -43,17 +51,16 @@ const TeachersList = () => {
     searchName: ''
   });
   
-  const itemsPerPage = 10;
+  // Track if filters are active
+  const [filtersActive, setFiltersActive] = useState(false);
 
   // Process teacher data using actual database relationships
   const processTeacherData = (teacher) => {
     try {
-      // Safely check if database relationships exist
       const hasDbRelations = teacher.departmentState && teacher.departmentSambhag && 
                             teacher.departmentDistrict && teacher.departmentBlock;
       
       if (hasDbRelations) {
-        // Use actual database relationships (they are strings now)
         return {
           ...teacher,
           state: teacher.departmentState,
@@ -62,8 +69,6 @@ const TeachersList = () => {
           block: teacher.departmentBlock
         };
       } else {
-        // Safe fallback for missing data
-        // Use English fallback to match database format
         return {
           ...teacher,
           state: teacher.departmentState || 'Madhya Pradesh',
@@ -73,7 +78,6 @@ const TeachersList = () => {
         };
       }
     } catch (error) {
-      // Emergency fallback
       return {
         ...teacher,
         state: 'Madhya Pradesh',
@@ -84,40 +88,28 @@ const TeachersList = () => {
     }
   };
 
-  // Get unique values for filter dropdowns
+  // Get unique values for filter dropdowns (from current page data)
   const getUniqueValues = (key) => {
     const values = teachers.map(teacher => teacher[key]).filter(Boolean);
     return [...new Set(values)];
   };
 
-  // Define applyFilters before useEffect
-  const applyFilters = () => {
+  // Apply filters on current page data (client-side filtering)
+  const applyFilters = useCallback(() => {
     let filtered = teachers;
 
     if (filters.state) {
-      filtered = filtered.filter(teacher => 
-        teacher.state === filters.state
-      );
+      filtered = filtered.filter(teacher => teacher.state === filters.state);
     }
-
     if (filters.sambhag) {
-      filtered = filtered.filter(teacher => 
-        teacher.sambhag === filters.sambhag
-      );
+      filtered = filtered.filter(teacher => teacher.sambhag === filters.sambhag);
     }
-
     if (filters.district) {
-      filtered = filtered.filter(teacher => 
-        teacher.district === filters.district
-      );
+      filtered = filtered.filter(teacher => teacher.district === filters.district);
     }
-
     if (filters.block) {
-      filtered = filtered.filter(teacher => 
-        teacher.block === filters.block
-      );
+      filtered = filtered.filter(teacher => teacher.block === filters.block);
     }
-
     if (filters.searchName) {
       filtered = filtered.filter(teacher => 
         `${teacher.name} ${teacher.surname}`.toLowerCase()
@@ -126,54 +118,54 @@ const TeachersList = () => {
     }
 
     setFilteredTeachers(filtered);
-    setCurrentPage(1);
-  };
-
-  useEffect(() => {
-    fetchTeachers();
-  }, []);
-
-  useEffect(() => {
-    applyFilters();
+    
+    // Check if any filter is active
+    const hasActiveFilters = filters.state || filters.sambhag || filters.district || 
+                            filters.block || filters.searchName;
+    setFiltersActive(hasActiveFilters);
   }, [teachers, filters]);
 
-  const fetchTeachers = async () => {
+  // Fetch paginated teachers from API
+  const fetchTeachers = async (page = 0) => {
     try {
       setLoading(true);
-      console.log('Fetching teachers from:', '/users');
-      const response = await publicApi.get('/users');
-      console.log('Teachers response:', response.data);
+      setError('');
       
-
-
-      // Process teachers using actual database data
-      const processedTeachers = response.data.map(teacher => {
-        return processTeacherData(teacher);
-      });
+      console.log('Fetching paginated teachers:', { page, pageSize });
+      const response = await publicApi.get(`/users/paginated?page=${page}&size=${pageSize}`);
+      console.log('Paginated response:', response.data);
       
-      // Debug: Show actual vs processed data
-      console.log('=== PROCESSED DATABASE RELATIONSHIPS ===');
-      processedTeachers.slice(0, 3).forEach((teacher, index) => {
-        console.log(`Teacher ${index + 1}: ${teacher.name}`);
-        console.log(`  State: ${teacher.state}`);
-        console.log(`  Sambhag: ${teacher.sambhag}`);
-        console.log(`  District: ${teacher.district}`);
-        console.log(`  Block: ${teacher.block}`);
-        console.log('---');
-      });
-      console.log('========================================');
+      // Process the paginated response
+      const { content, pageNumber, totalPages: pages, totalElements: total } = response.data;
+      
+      // Process teachers data
+      const processedTeachers = content.map(teacher => processTeacherData(teacher));
       
       setTeachers(processedTeachers);
-      setError('');
+      setCurrentPage(pageNumber);
+      setTotalPages(pages);
+      setTotalElements(total);
+      
+      console.log('Pagination info:', { pageNumber, pages, total });
     } catch (err) {
       console.error('Error fetching teachers:', err);
-      console.error('Error response:', err.response);
-      setError('शिक्षकों की सूची लोड करने में त्रुटि');
+      setError('शिक्षकों की सूची लोड करने में त्रुटि। कृपया पुनः प्रयास करें।');
     } finally {
       setLoading(false);
     }
   };
 
+  // Initial fetch
+  useEffect(() => {
+    fetchTeachers(0);
+  }, []);
+
+  // Apply filters when teachers or filters change
+  useEffect(() => {
+    applyFilters();
+  }, [applyFilters]);
+
+  // Handle filter changes
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({
       ...prev,
@@ -181,6 +173,7 @@ const TeachersList = () => {
     }));
   };
 
+  // Clear all filters
   const clearFilters = () => {
     setFilters({
       state: '',
@@ -189,6 +182,14 @@ const TeachersList = () => {
       block: '',
       searchName: ''
     });
+  };
+
+  // Handle page change
+  const handlePageChange = (event, page) => {
+    // MUI Pagination is 1-indexed, API is 0-indexed
+    fetchTeachers(page - 1);
+    // Scroll to top of table
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const formatDate = (dateString) => {
@@ -206,11 +207,9 @@ const TeachersList = () => {
     }
   };
 
-  // Pagination calculations
-  const totalPages = Math.ceil(filteredTeachers.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentTeachers = filteredTeachers.slice(startIndex, endIndex);
+  // Calculate display range for current page
+  const startRecord = currentPage * pageSize + 1;
+  const endRecord = Math.min((currentPage + 1) * pageSize, totalElements);
 
   return (
     <Layout>
@@ -343,9 +342,31 @@ const TeachersList = () => {
                 </Button>
               </Box>
 
-              <Typography variant="body2" sx={{ color: '#666' }}>
-                कुल {filteredTeachers.length} शिक्षक मिले {teachers.length > 0 && `(${teachers.length} में से)`}
-              </Typography>
+              {/* Filter info note */}
+              {filtersActive && (
+                <Alert 
+                  severity="info" 
+                  icon={<Info />}
+                  sx={{ mt: 2, backgroundColor: '#e3f2fd' }}
+                >
+                  फ़िल्टर केवल वर्तमान पृष्ठ ({pageSize} रिकॉर्ड) पर लागू होता है। 
+                  पूर्ण खोज के लिए जल्द ही सर्वर-साइड फ़िल्टर उपलब्ध होगा।
+                </Alert>
+              )}
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
+                <Typography variant="body2" sx={{ color: '#666' }}>
+                  कुल <strong>{totalElements.toLocaleString('hi-IN')}</strong> शिक्षक पंजीकृत
+                </Typography>
+                {filtersActive && (
+                  <Chip 
+                    label={`इस पृष्ठ पर ${filteredTeachers.length} मिले`}
+                    color="primary"
+                    size="small"
+                    variant="outlined"
+                  />
+                )}
+              </Box>
             </CardContent>
           </Card>
 
@@ -388,7 +409,7 @@ const TeachersList = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {currentTeachers.map((teacher, index) => (
+                    {(filtersActive ? filteredTeachers : teachers).map((teacher, index) => (
                       <TableRow
                         key={teacher.id}
                         sx={{
@@ -444,20 +465,27 @@ const TeachersList = () => {
               {totalPages > 1 && (
                 <Box sx={{ 
                   display: 'flex', 
+                  flexDirection: 'column',
                   justifyContent: 'center', 
                   alignItems: 'center',
+                  gap: 2,
                   p: 3,
                   borderTop: '1px solid #e0e0e0'
                 }}>
                   <Pagination
                     count={totalPages}
-                    page={currentPage}
-                    onChange={(event, page) => setCurrentPage(page)}
+                    page={currentPage + 1} // MUI is 1-indexed, our state is 0-indexed
+                    onChange={handlePageChange}
                     color="primary"
                     size="large"
                     showFirstButton
                     showLastButton
+                    siblingCount={1}
+                    boundaryCount={1}
                   />
+                  <Typography variant="body2" sx={{ color: '#666' }}>
+                    पृष्ठ {(currentPage + 1).toLocaleString('hi-IN')} / {totalPages.toLocaleString('hi-IN')}
+                  </Typography>
                 </Box>
               )}
 
@@ -466,10 +494,13 @@ const TeachersList = () => {
                 textAlign: 'center', 
                 p: 2, 
                 borderTop: '1px solid #e0e0e0',
-                background: '#FFFFFF'
+                background: '#f5f5f5'
               }}>
                 <Typography variant="body2" sx={{ color: '#666' }}>
-                  कुल {filteredTeachers.length} में से {startIndex + 1}-{Math.min(endIndex, filteredTeachers.length)} परिणाम
+                  {filtersActive 
+                    ? `इस पृष्ठ पर ${filteredTeachers.length} परिणाम दिखाए जा रहे हैं (कुल ${totalElements.toLocaleString('hi-IN')} में से)`
+                    : `${startRecord.toLocaleString('hi-IN')} - ${endRecord.toLocaleString('hi-IN')} परिणाम (कुल ${totalElements.toLocaleString('hi-IN')} में से)`
+                  }
                 </Typography>
               </Box>
             </Card>
