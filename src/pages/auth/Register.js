@@ -402,16 +402,16 @@ const Register = () => {
               <Box sx={{ mb: 4, p: { xs: 2, md: 3 }, border: '1px solid #e0e0e0', borderRadius: 2 }}>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={4}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नाम</Typography>
                     <TextField
                       fullWidth
-                      label="नाम"
                       placeholder="Name"
                       {...register('name', { required: 'Name is required' })}
                       error={!!errors.name}
                       helperText={errors.name?.message}
                       sx={{ 
                         fontFamily: 'Poppins',
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
                           borderRadius: '8px'
                         }
@@ -419,15 +419,15 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={4}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>उपनाम</Typography>
                     <TextField
                       fullWidth
-                      label="उपनाम"
                       placeholder="Surname"
                       {...register('surname', { required: 'Surname is required' })}
                       error={!!errors.surname}
                       helperText={errors.surname?.message}
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
                           borderRadius: '8px'
                         }
@@ -435,13 +435,13 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={4}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पिता का नाम (वैकल्पिक)</Typography>
                     <TextField
                       fullWidth
-                      label="पिता का नाम (वैकल्पिक)"
                       placeholder="Father Name (Optional)"
                       {...register('fatherName')}
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
                           borderRadius: '8px'
                         }
@@ -449,30 +449,19 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={4}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>लिंग</Typography>
                     <FormControl 
                       fullWidth 
                       error={!!errors.gender}
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-notchedOutline': {
                           border: '1px solid #ccc',
                           borderRadius: '8px'
-                        },
-                        '& .MuiSelect-select': {
-                          padding: '16px 80px',
-                          minHeight: '20px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          textAlign: 'left',
-                          justifyContent: 'flex-start'
-                        },
-                        '& .MuiInputLabel-root': {
-                          fontSize: '1rem'
                         }
                       }}>
-                      <InputLabel>लिंग</InputLabel>
                       <Select
                         {...register('gender', { required: 'Gender is required' })}
-                        label="लिंग"
+                        displayEmpty
                         defaultValue=""
                         MenuProps={{
                           PaperProps: {
@@ -501,31 +490,19 @@ const Register = () => {
                     </FormControl>
                   </Grid>
                   <Grid item xs={12} md={4}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>वैवाहिक स्थिति</Typography>
                     <FormControl 
                       fullWidth 
                       error={!!errors.maritalStatus}
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-notchedOutline': {
                           border: '1px solid #ccc',
-
                           borderRadius: '8px'
-                        },
-                        '& .MuiSelect-select': {
-                          padding: '16px 100px',
-                          minHeight: '20px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          textAlign: 'left',
-                          justifyContent: 'flex-start'
-                        },
-                        '& .MuiInputLabel-root': {
-                          fontSize: '1rem'
                         }
                       }}>
-                      <InputLabel>वैवाहिक स्थिति</InputLabel>
                       <Select
                         {...register('maritalStatus', { required: 'Marital status is required' })}
-                        label="वैवाहिक स्थिति"
+                        displayEmpty
                         defaultValue=""
                         MenuProps={{
                           PaperProps: {
@@ -555,17 +532,16 @@ const Register = () => {
                     </FormControl>
                   </Grid>
                   <Grid item xs={12} md={4}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>जन्मतिथि</Typography>
                     <TextField
                       fullWidth
-                      label="जन्मतिथि"
                       placeholder="yyyy-mm-dd"
                       type="date"
                       {...register('dateOfBirth', { required: 'Date of birth is required' })}
                       error={!!errors.dateOfBirth}
                       helperText={errors.dateOfBirth?.message}
-                      InputLabelProps={{ shrink: true }}
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
                           borderRadius: '8px'
                         }
@@ -573,13 +549,13 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={1}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>Country Code</Typography>
                     <TextField
                       fullWidth
-                      label="Country Code"
                       value="+91"
                       disabled
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
                           borderRadius: '8px',
                           bgcolor: '#f5f5f5'
@@ -588,9 +564,9 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={5}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>मोबाइल नंबर</Typography>
                     <TextField
                       fullWidth
-                      label="मोबाइल नंबर"
                       placeholder="10 अंकों का नंबर"
                       {...register('mobileNumber', { 
                         required: 'Mobile number is required',
@@ -609,7 +585,7 @@ const Register = () => {
                         e.target.value = e.target.value.replace(/[^0-9]/g, '');
                       }}
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
                           borderRadius: '8px'
                         }
@@ -617,9 +593,9 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={5}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>मोबाइल नंबर की पुष्टि</Typography>
                     <TextField
                       fullWidth
-                      label="मोबाइल नंबर की पुष्टि"
                       placeholder="10 अंकों का नंबर"
                       {...register('confirmMobileNumber', { 
                         required: 'Please confirm mobile number',
@@ -642,7 +618,7 @@ const Register = () => {
                         e.target.value = e.target.value.replace(/[^0-9]/g, '');
                       }}
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
                           borderRadius: '8px'
                         }
@@ -651,9 +627,9 @@ const Register = () => {
                   </Grid>
                   <Grid item xs={12} md={8}>
                     <Box>
+                      <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>ईमेल आईडी</Typography>
                       <TextField
                         fullWidth
-                        label="ईमेल आईडी"
                         type="email"
                         placeholder="example@email.com"
                         {...register('email', { 
@@ -665,7 +641,7 @@ const Register = () => {
                         disabled={emailVerified}
                         sx={{
                           mb: 2,
-                          '& .MuiOutlinedInput-root': {
+                          '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                             border: '1px solid #ccc',
                             borderRadius: '8px',
                             bgcolor: emailVerified ? '#f0f9ff' : 'white'
@@ -698,21 +674,23 @@ const Register = () => {
                       )}
                       
                       {emailOtpSent && !emailVerified && (
-                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
-                          <TextField
-                            label="ईमेल OTP"
-                            placeholder="6 अंकों का OTP"
-                            value={emailOtp}
-                            onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                            inputProps={{ maxLength: 6 }}
-                            sx={{
-                              flexGrow: 1,
-                              '& .MuiOutlinedInput-root': {
-                                border: '1px solid #ccc',
-                                borderRadius: '8px'
-                              }
-                            }}
-                          />
+                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-end' }}>
+                          <Box sx={{ flexGrow: 1 }}>
+                            <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>ईमेल OTP</Typography>
+                            <TextField
+                              fullWidth
+                              placeholder="6 अंकों का OTP"
+                              value={emailOtp}
+                              onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                              inputProps={{ maxLength: 6 }}
+                              sx={{
+                                '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                                  border: '1px solid #ccc',
+                                  borderRadius: '8px'
+                                }
+                              }}
+                            />
+                          </Box>
                           <Button
                             variant="contained"
                             onClick={verifyEmailOtp}
@@ -778,29 +756,20 @@ const Register = () => {
               <Box sx={{ mb: 4, p: { xs: 2, md: 3 }, border: '1px solid #e0e0e0', borderRadius: 2 }}>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={4}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>राज्य</Typography>
                     <FormControl 
                       fullWidth
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-notchedOutline': {
                           border: '1px solid #ccc',
                           borderRadius: '8px'
-                        },
-                        '& .MuiSelect-select': {
-                          padding: '16px 14px',
-                          minHeight: '20px',
-                          overflow: 'visible',
-                          textOverflow: 'clip'
-                        },
-                        '& .MuiInputLabel-root': {
-                          fontSize: '1rem'
                         }
                       }}>
-                      <InputLabel>राज्य</InputLabel>
-                      <Select 
-                        label="राज्य" 
+                      <Select
                         value={selectedState}
                         onChange={handleStateChange}
                         disabled={loadingLocations}
+                        displayEmpty
                         MenuProps={{
                           PaperProps: {
                             sx: {
@@ -833,29 +802,20 @@ const Register = () => {
                     </FormControl>
                   </Grid>
                   <Grid item xs={12} md={4}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>संभाग</Typography>
                     <FormControl 
                       fullWidth
                       disabled={!selectedState || loadingLocations}
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-notchedOutline': {
                           border: '1px solid #ccc',
                           borderRadius: '8px'
-                        },
-                        '& .MuiSelect-select': {
-                          padding: '16px 50px',
-                          minHeight: '20px',
-                          overflow: 'visible',
-                          textOverflow: 'clip'
-                        },
-                        '& .MuiInputLabel-root': {
-                          fontSize: '1rem'
                         }
                       }}>
-                      <InputLabel>संभाग</InputLabel>
-                      <Select 
-                        label="संभाग"
+                      <Select
                         value={selectedSambhag}
                         onChange={handleSambhagChange}
+                        displayEmpty
                         MenuProps={{
                           PaperProps: {
                             sx: {
@@ -888,38 +848,23 @@ const Register = () => {
                           </MenuItem>
                         )}
                       </Select>
-                      {/* Debug info */}
-                      {process.env.NODE_ENV === 'development' && (
-                        <small style={{color: '#666', fontSize: '0.75rem', marginTop: '4px'}}>
-                          Debug: State={selectedState}, Sambhags={availableSambhags?.length || 0}
-                        </small>
-                      )}
                     </FormControl>
                   </Grid>
                   <Grid item xs={12} md={4}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>जिला</Typography>
                     <FormControl 
                       fullWidth
                       disabled={!selectedSambhag || loadingLocations}
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-notchedOutline': {
                           border: '1px solid #ccc',
                           borderRadius: '8px'
-                        },
-                        '& .MuiSelect-select': {
-                          padding: '16px 50px',
-                          minHeight: '20px',
-                          overflow: 'visible',
-                          textOverflow: 'clip'
-                        },
-                        '& .MuiInputLabel-root': {
-                          fontSize: '1rem'
                         }
                       }}>
-                      <InputLabel>जिला</InputLabel>
-                      <Select 
-                        label="जिला"
+                      <Select
                         value={selectedDistrict}
                         onChange={handleDistrictChange}
+                        displayEmpty
                         MenuProps={{
                           PaperProps: {
                             sx: {
@@ -955,29 +900,20 @@ const Register = () => {
                     </FormControl>
                   </Grid>
                   <Grid item xs={12} md={4}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>ब्लॉक</Typography>
                     <FormControl 
                       fullWidth
                       disabled={!selectedDistrict || loadingLocations}
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-notchedOutline': {
                           border: '1px solid #ccc',
                           borderRadius: '8px'
-                        },
-                        '& .MuiSelect-select': {
-                          padding: '16px 50px',
-                          minHeight: '20px',
-                          overflow: 'visible',
-                          textOverflow: 'clip'
-                        },
-                        '& .MuiInputLabel-root': {
-                          fontSize: '1rem'
                         }
                       }}>
-                      <InputLabel>ब्लॉक</InputLabel>
-                      <Select 
-                        label="ब्लॉक"
+                      <Select
                         value={selectedBlock}
                         onChange={handleBlockChange}
+                        displayEmpty
                         MenuProps={{
                           PaperProps: {
                             sx: {
@@ -1010,22 +946,16 @@ const Register = () => {
                           </MenuItem>
                         )}
                       </Select>
-                      {/* Debug info */}
-                      {process.env.NODE_ENV === 'development' && (
-                        <small style={{color: '#666', fontSize: '0.75rem', marginTop: '4px'}}>
-                          Debug: District={selectedDistrict}, Blocks={availableBlocks?.length || 0}
-                        </small>
-                      )}
                     </FormControl>
                   </Grid>
                   <Grid item xs={12} md={8}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पूरा पता</Typography>
                     <TextField
                       fullWidth
-                      label="पूरा पता"
                       placeholder="House No, Street, Landmark..."
                       {...register('homeAddress')}
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
                           borderRadius: '8px'
                         }
@@ -1033,9 +963,9 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={4}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पिन कोड</Typography>
                     <TextField
                       fullWidth
-                      label="पिन कोड"
                       placeholder="6 अंकों का कोड"
                       {...register('pinCode', {
                         pattern: { value: /^[0-9]{6}$/, message: 'Invalid PIN code' }
@@ -1043,7 +973,7 @@ const Register = () => {
                       error={!!errors.pinCode}
                       helperText={errors.pinCode?.message}
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
                           borderRadius: '8px'
                         }
@@ -1063,27 +993,18 @@ const Register = () => {
               <Box sx={{ mb: 4, p: { xs: 2, md: 3 }, border: '1px solid #e0e0e0', borderRadius: 2 }}>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={4}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>विभाग का नाम</Typography>
                     <FormControl 
                       fullWidth
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-notchedOutline': {
                           border: '1px solid #ccc',
                           borderRadius: '8px'
-                        },
-                        '& .MuiSelect-select': {
-                          padding: '16px 90px',
-                          minHeight: '20px',
-                          overflow: 'visible',
-                          textOverflow: 'clip'
-                        },
-                        '& .MuiInputLabel-root': {
-                          fontSize: '1rem'
                         }
                       }}>
-                      <InputLabel>विभाग का नाम</InputLabel>
-                      <Select 
-                        label="विभाग का नाम" 
+                      <Select
                         {...register('department')}
+                        displayEmpty
                         defaultValue=""
                         MenuProps={{
                           PaperProps: {
@@ -1110,13 +1031,13 @@ const Register = () => {
                     </FormControl>
                   </Grid>
                   <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पदस्थ स्कूल/कार्यालय का नाम</Typography>
                     <TextField
                       fullWidth
-                      label="पदस्थ स्कूल/कार्यालय का नाम"
                       placeholder="Posted School/Office Name"
                       {...register('schoolOfficeName')}
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
                           borderRadius: '8px'
                         }
@@ -1124,13 +1045,13 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>विभाग आईडी (Department Unique ID)</Typography>
                     <TextField
                       fullWidth
-                      label="विभाग आईडी (Department Unique ID)"
                       placeholder="Unique ID"
                       {...register('departmentUniqueId')}
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
                           borderRadius: '8px'
                         }
@@ -1138,13 +1059,13 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>संकुल का नाम (वैकल्पिक)</Typography>
                     <TextField
                       fullWidth
-                      label="संकुल का नाम (वैकल्पिक)"
                       placeholder="Sankul Name (Optional)"
                       {...register('sankulName')}
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
                           borderRadius: '8px'
                         }
@@ -1152,15 +1073,14 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नियुक्ति वर्ष (वैकल्पिक)</Typography>
                     <TextField
                       fullWidth
-                      label="नियुक्ति वर्ष (वैकल्पिक)"
                       type="date"
                       placeholder="Joining Date (Optional)"
                       {...register('joiningDate')}
-                      InputLabelProps={{ shrink: true }}
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
                           borderRadius: '8px'
                         }
@@ -1168,15 +1088,14 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>सेवानिवृत्ति की तिथि (वैकल्पिक)</Typography>
                     <TextField
                       fullWidth
-                      label="सेवानिवृत्ति की तिथि (वैकल्पिक)"
                       type="date"
                       placeholder="Retirement Date (Optional)"
                       {...register('retirementDate')}
-                      InputLabelProps={{ shrink: true }}
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
                           borderRadius: '8px'
                         }
@@ -1199,13 +1118,13 @@ const Register = () => {
                 </Typography>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नामांकित का नाम</Typography>
                     <TextField
                       fullWidth
-                      label="नामांकित का नाम"
                       placeholder="Nominee Name"
                       {...register('nominee1Name')}
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
                           borderRadius: '8px'
                         }
@@ -1213,53 +1132,21 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नामांकित का संबंध</Typography>
                     <FormControl 
                       fullWidth
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-notchedOutline': {
                           border: '1px solid #ccc',
-                          borderRadius: '8px',
-                          minHeight: '30px'
-                        },
-                        '& .MuiSelect-select': {
-                          padding: '16px 150px',
-                          fontSize: '1.1rem',
-                          minHeight: '25px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          textAlign: 'left',
-                          justifyContent: 'flex-start'
-                        },
-                        '& .MuiInputLabel-root': {
-                          fontSize: '1.1rem',
-                          fontWeight: 500
+                          borderRadius: '8px'
                         }
                       }}>
-                      <InputLabel>नामांकित का संबंध</InputLabel>
                       <Select
                         {...register('nominee1Relation')}
-                        label="नामांकित का संबंध"
+                        displayEmpty
                         defaultValue=""
-                        MenuProps={{
-                          PaperProps: {
-                            sx: {
-                              maxHeight: 300,
-                              minWidth: '10px',
-                              width: 'auto',
-                              '& .MuiMenuItem-root': {
-                                padding: '12px 16px',
-                                fontSize: '1rem',
-                                whiteSpace: 'nowrap',
-                                minHeight: '48px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                width: '100%'
-                              }
-                            }
-                          }
-                        }}
                       >
-                        <MenuItem value="" disabled>संबंध चुनें... (Select Relation)</MenuItem>
+                        <MenuItem value="">संबंध चुनें</MenuItem>
                         <MenuItem value="पिता">पिता (Father)</MenuItem>
                         <MenuItem value="माता">माता (Mother)</MenuItem>
                         <MenuItem value="भाई">भाई (Brother)</MenuItem>
@@ -1281,13 +1168,13 @@ const Register = () => {
                 </Typography>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नामांकित का नाम</Typography>
                     <TextField
                       fullWidth
-                      label="नामांकित का नाम"
                       placeholder="Nominee Name"
                       {...register('nominee2Name')}
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
                           borderRadius: '8px'
                         }
@@ -1295,53 +1182,21 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नामांकित का संबंध</Typography>
                     <FormControl 
                       fullWidth
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-notchedOutline': {
                           border: '1px solid #ccc',
-                          borderRadius: '8px',
-                          minHeight: '56px'
-                        },
-                        '& .MuiSelect-select': {
-                          padding: '16px 150px',
-                          fontSize: '1.1rem',
-                          minHeight: '25px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          textAlign: 'left',
-                          justifyContent: 'flex-start'
-                        },
-                        '& .MuiInputLabel-root': {
-                          fontSize: '1.1rem',
-                          fontWeight: 500
+                          borderRadius: '8px'
                         }
                       }}>
-                      <InputLabel>नामांकित का संबंध</InputLabel>
                       <Select
                         {...register('nominee2Relation')}
-                        label="नामांकित का संबंध"
+                        displayEmpty
                         defaultValue=""
-                        MenuProps={{
-                          PaperProps: {
-                            sx: {
-                              maxHeight: 300,
-                              minWidth: '500px',
-                              width: 'auto',
-                              '& .MuiMenuItem-root': {
-                                padding: '12px 16px',
-                                fontSize: '1rem',
-                                whiteSpace: 'nowrap',
-                                minHeight: '48px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                width: '100%'
-                              }
-                            }
-                          }
-                        }}
                       >
-                        <MenuItem value="" disabled>संबंध चुनें... (Select Relation)</MenuItem>
+                        <MenuItem value="">संबंध चुनें</MenuItem>
                         <MenuItem value="पिता">पिता (Father)</MenuItem>
                         <MenuItem value="माता">माता (Mother)</MenuItem>
                         <MenuItem value="भाई">भाई (Brother)</MenuItem>
@@ -1369,9 +1224,9 @@ const Register = () => {
               <Box sx={{ mb: 4, p: { xs: 2, md: 3 }, border: '1px solid #e0e0e0', borderRadius: 2 }}>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पासवर्ड बनाएं</Typography>
                     <TextField
                       fullWidth
-                      label="पासवर्ड बनाएं"
                       type="password"
                       {...register('password', { 
                         required: 'Password is required',
@@ -1380,7 +1235,7 @@ const Register = () => {
                       error={!!errors.password}
                       helperText={errors.password?.message}
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
                           borderRadius: '8px'
                         }
@@ -1388,9 +1243,9 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पासवर्ड की पुष्टि करें</Typography>
                     <TextField
                       fullWidth
-                      label="पासवर्ड की पुष्टि करें"
                       type="password"
                       {...register('confirmPassword', { 
                         required: 'Confirm password is required',
@@ -1399,7 +1254,7 @@ const Register = () => {
                       error={!!errors.confirmPassword}
                       helperText={errors.confirmPassword?.message}
                       sx={{
-                        '& .MuiOutlinedInput-root': {
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
                           borderRadius: '8px'
                         }

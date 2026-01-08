@@ -168,6 +168,7 @@ const Header = () => {
               {/* Auth Buttons */}
               {isAuthenticated && (
                 <>
+                  {/* Dashboard hidden for now
                   <Button
                     component={Link}
                     to="/dashboard"
@@ -185,6 +186,7 @@ const Header = () => {
                   >
                     DASHBOARD
                   </Button>
+                  */}
                   
                   {/* User Menu */}
                   <div>
@@ -279,9 +281,11 @@ const Header = () => {
                 ))}
                 {isAuthenticated && (
                   <>
+                    {/* Dashboard hidden for now
                     <MenuItem component={Link} to="/dashboard" onClick={handleMobileMenuClose}>
                       DASHBOARD
                     </MenuItem>
+                    */}
                     <MenuItem component={Link} to="/profile" onClick={handleMobileMenuClose}>
                       PROFILE
                     </MenuItem>

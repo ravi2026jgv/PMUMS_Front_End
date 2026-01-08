@@ -50,7 +50,15 @@ const ChangePasswordDialog = ({ open, onClose, onSuccess }) => {
       setLoading(true);
       setError('');
       
-      await api.post('/auth/change-password', {
+      // Get user ID from localStorage
+      const userId = JSON.parse(localStorage.getItem('user') || '{}')?.id;
+      
+      if (!userId) {
+        setError('उपयोगकर्ता आईडी नहीं मिली। कृपया पुनः लॉगिन करें।');
+        return;
+      }
+      
+      await api.put(`/users/${userId}/password`, {
         currentPassword: data.currentPassword,
         newPassword: data.newPassword,
       });
