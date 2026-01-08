@@ -227,7 +227,7 @@ const TeachersList = () => {
                   fontSize: { xs: '2rem', md: '2.5rem' }
                 }}
               >
-                Teacher's List (शिक्षकों की सूची)
+                Our Members (शिक्षकों की सूची)
               </Typography>
               <Typography
                 variant="h6"
