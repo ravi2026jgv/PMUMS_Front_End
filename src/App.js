@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import theme from './theme/theme';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import AnnouncementPopup from './components/AnnouncementPopup';
 
 // Pages
 import Home from './pages/Home';
@@ -18,6 +19,8 @@ import Dashboard from './pages/Dashboard';
 import About from './pages/About';
 import TeachersList from './pages/TeachersList';
 import NiyamawaliPage from './pages/Niyamawali';
+import SahyogList from './pages/SahyogList';
+import AsahyogList from './pages/AsahyogList';
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -43,6 +46,8 @@ function App() {
               <Route path="/register" element={<Register />} />
               <Route path="/about" element={<About />} />
               <Route path="/teachers-list" element={<TeachersList />} />
+              <Route path="/sahyog-list" element={<SahyogList />} />
+              <Route path="/asahyog-list" element={<AsahyogList />} />
               <Route path="/niyamawali" element={<NiyamawaliPage />} />
                 
                 {/* Protected Routes */}
@@ -78,6 +83,9 @@ function App() {
                   },
                 }}
               />
+              
+              {/* Announcement Popup */}
+              <AnnouncementPopup />
             </Router>
           </AuthProvider>
       </ThemeProvider>

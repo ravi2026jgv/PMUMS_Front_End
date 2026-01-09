@@ -489,6 +489,21 @@ const Profile = () => {
                   />
                 </Grid>
                 <Grid item xs={12} md={4}>
+                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पिता/पति का नाम (Father/Husband Name) <span style={{ color: '#999', fontWeight: 400 }}>(वैकल्पिक)</span></Typography>
+                  <TextField
+                    fullWidth
+                    defaultValue={profileData?.fatherName || ''}
+                    {...register('fatherName')}
+                    disabled={!isEditing}
+                    sx={{
+                      '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                        border: '1px solid #ccc',
+                        borderRadius: '8px'
+                      }
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} md={4}>
                   <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>लिंग</Typography>
                   <Controller
                     name="gender"
@@ -841,6 +856,53 @@ const Profile = () => {
                     </Select>
                   </FormControl>
                   <input type="hidden" {...register('departmentBlock')} />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>संकुल का नाम (Sankul Name) <span style={{ color: '#999', fontWeight: 400 }}>(वैकल्पिक)</span></Typography>
+                  <TextField
+                    fullWidth
+                    defaultValue={profileData?.sankulName || ''}
+                    {...register('sankulName')}
+                    disabled={!isEditing}
+                    sx={{
+                      '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                        border: '1px solid #ccc',
+                        borderRadius: '8px'
+                      }
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नियुक्ति तिथि (Joining Date) <span style={{ color: '#999', fontWeight: 400 }}>(वैकल्पिक)</span></Typography>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    defaultValue={profileData?.joiningDate || ''}
+                    {...register('joiningDate')}
+                    disabled={!isEditing}
+                    sx={{
+                      '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                        border: '1px solid #ccc',
+                        borderRadius: '8px'
+                      }
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>सेवानिवृत्ति तिथि (Retirement Date) <span style={{ color: '#999', fontWeight: 400 }}>(वैकल्पिक)</span></Typography>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    defaultValue={profileData?.retirementDate || ''}
+                    {...register('retirementDate')}
+                    disabled={!isEditing}
+                    sx={{
+                      '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                        border: '1px solid #ccc',
+                        borderRadius: '8px'
+                      }
+                    }}
+                  />
                 </Grid>
               </Grid>
             </Paper>

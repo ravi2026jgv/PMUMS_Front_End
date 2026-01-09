@@ -34,7 +34,6 @@ import { publicApi } from '../services/api';
 const TeachersList = () => {
   // Server-side pagination state
   const [teachers, setTeachers] = useState([]);
-  const [filteredTeachers, setFilteredTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(0); // 0-indexed for API
@@ -42,13 +41,22 @@ const TeachersList = () => {
   const [totalElements, setTotalElements] = useState(0);
   const [pageSize] = useState(20); // Users per page
   
-  // Filter state
+  // Location data for cascading dropdowns
+  const [locationHierarchy, setLocationHierarchy] = useState(null);
+  const [sambhagOptions, setSambhagOptions] = useState([]);
+  const [districtOptions, setDistrictOptions] = useState([]);
+  const [blockOptions, setBlockOptions] = useState([]);
+  
+  // Filter state - store both ID and name for display
   const [filters, setFilters] = useState({
-    state: '',
-    sambhag: '',
-    district: '',
-    block: '',
-    searchName: ''
+    sambhagId: '',
+    sambhagName: '',
+    districtId: '',
+    districtName: '',
+    blockId: '',
+    blockName: '',
+    searchName: '',
+    mobileNumber: ''
   });
   
   // Track if filters are active
@@ -88,52 +96,93 @@ const TeachersList = () => {
     }
   };
 
-  // Get unique values for filter dropdowns (from current page data)
-  const getUniqueValues = (key) => {
-    const values = teachers.map(teacher => teacher[key]).filter(Boolean);
-    return [...new Set(values)];
+  // Fetch location hierarchy data
+  const fetchLocationData = async () => {
+    try {
+      const response = await publicApi.get('/locations/hierarchy');
+      const data = response.data;
+      setLocationHierarchy(data);
+      
+      // Extract sambhags from the first state (MP)
+      if (data?.states?.[0]?.sambhags) {
+        const sambhags = data.states[0].sambhags.map(s => ({
+          id: s.id,
+          name: s.name,
+          districts: s.districts
+        }));
+        setSambhagOptions(sambhags);
+      }
+    } catch (err) {
+      console.error('Error fetching locations:', err);
+    }
   };
 
-  // Apply filters on current page data (client-side filtering)
-  const applyFilters = useCallback(() => {
-    let filtered = teachers;
+  // Handle sambhag change
+  const handleSambhagChange = (sambhagId) => {
+    const sambhag = sambhagOptions.find(s => s.id === sambhagId);
+    setFilters(prev => ({
+      ...prev,
+      sambhagId: sambhagId,
+      sambhagName: sambhag?.name || '',
+      districtId: '',
+      districtName: '',
+      blockId: '',
+      blockName: ''
+    }));
+    setDistrictOptions(sambhag?.districts || []);
+    setBlockOptions([]);
+  };
 
-    if (filters.state) {
-      filtered = filtered.filter(teacher => teacher.state === filters.state);
-    }
-    if (filters.sambhag) {
-      filtered = filtered.filter(teacher => teacher.sambhag === filters.sambhag);
-    }
-    if (filters.district) {
-      filtered = filtered.filter(teacher => teacher.district === filters.district);
-    }
-    if (filters.block) {
-      filtered = filtered.filter(teacher => teacher.block === filters.block);
-    }
-    if (filters.searchName) {
-      filtered = filtered.filter(teacher => 
-        `${teacher.name} ${teacher.surname}`.toLowerCase()
-          .includes(filters.searchName.toLowerCase())
-      );
-    }
+  // Handle district change
+  const handleDistrictChange = (districtId) => {
+    const district = districtOptions.find(d => d.id === districtId);
+    setFilters(prev => ({
+      ...prev,
+      districtId: districtId,
+      districtName: district?.name || '',
+      blockId: '',
+      blockName: ''
+    }));
+    setBlockOptions(district?.blocks || []);
+  };
 
-    setFilteredTeachers(filtered);
-    
-    // Check if any filter is active
-    const hasActiveFilters = filters.state || filters.sambhag || filters.district || 
-                            filters.block || filters.searchName;
+  // Handle block change
+  const handleBlockChange = (blockId) => {
+    const block = blockOptions.find(b => b.id === blockId);
+    setFilters(prev => ({
+      ...prev,
+      blockId: blockId,
+      blockName: block?.name || ''
+    }));
+  };
+
+  // Check if any filter is active
+  const checkFiltersActive = useCallback(() => {
+    const hasActiveFilters = filters.sambhagId || filters.districtId || 
+                            filters.blockId || filters.searchName || filters.mobileNumber;
     setFiltersActive(hasActiveFilters);
-  }, [teachers, filters]);
+  }, [filters]);
 
-  // Fetch paginated teachers from API
-  const fetchTeachers = async (page = 0) => {
+  // Fetch paginated teachers from API with filters
+  const fetchTeachers = useCallback(async (page = 0) => {
     try {
       setLoading(true);
       setError('');
       
-      console.log('Fetching paginated teachers:', { page, pageSize });
-      const response = await publicApi.get(`/users/paginated?page=${page}&size=${pageSize}`);
-      console.log('Paginated response:', response.data);
+      // Build query params for server-side filtering
+      const params = new URLSearchParams();
+      params.append('page', page);
+      params.append('size', pageSize);
+      
+      if (filters.sambhagId) params.append('sambhagId', filters.sambhagId);
+      if (filters.districtId) params.append('districtId', filters.districtId);
+      if (filters.blockId) params.append('blockId', filters.blockId);
+      if (filters.searchName) params.append('name', filters.searchName);
+      if (filters.mobileNumber) params.append('mobile', filters.mobileNumber);
+      
+      console.log('Fetching filtered teachers:', { page, pageSize, filters });
+      const response = await publicApi.get(`/users/filter?${params.toString()}`);
+      console.log('Filter response:', response.data);
       
       // Process the paginated response
       const { content, pageNumber, totalPages: pages, totalElements: total } = response.data;
@@ -153,41 +202,51 @@ const TeachersList = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters.sambhagId, filters.districtId, filters.blockId, filters.searchName, filters.mobileNumber, pageSize]);
 
-  // Initial fetch
+  // Initial fetch of location data
   useEffect(() => {
-    fetchTeachers(0);
+    fetchLocationData();
   }, []);
 
-  // Apply filters when teachers or filters change
+  // Fetch teachers when filters change (with debounce for text inputs)
   useEffect(() => {
-    applyFilters();
-  }, [applyFilters]);
+    const debounceTimer = setTimeout(() => {
+      fetchTeachers(0);
+      setCurrentPage(0);
+    }, 300); // 300ms debounce for text inputs
+    
+    return () => clearTimeout(debounceTimer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.sambhagId, filters.districtId, filters.blockId, filters.searchName, filters.mobileNumber]);
 
-  // Handle filter changes
-  const handleFilterChange = (key, value) => {
-    setFilters(prev => ({
-      ...prev,
-      [key]: value
-    }));
-  };
+  // Check filters active state
+  useEffect(() => {
+    checkFiltersActive();
+  }, [checkFiltersActive]);
 
   // Clear all filters
   const clearFilters = () => {
     setFilters({
-      state: '',
-      sambhag: '',
-      district: '',
-      block: '',
-      searchName: ''
+      sambhagId: '',
+      sambhagName: '',
+      districtId: '',
+      districtName: '',
+      blockId: '',
+      blockName: '',
+      searchName: '',
+      mobileNumber: ''
     });
+    setDistrictOptions([]);
+    setBlockOptions([]);
   };
 
   // Handle page change
   const handlePageChange = (event, page) => {
     // MUI Pagination is 1-indexed, API is 0-indexed
-    fetchTeachers(page - 1);
+    const newPage = page - 1;
+    setCurrentPage(newPage);
+    fetchTeachers(newPage);
     // Scroll to top of table
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -252,64 +311,48 @@ const TeachersList = () => {
                 mb: 2
               }}>
                 <FormControl sx={{ minWidth: 200 }}>
-                  <InputLabel>राज्य चुनें</InputLabel>
-                  <Select
-                    value={filters.state}
-                    label="राज्य चुनें"
-                    onChange={(e) => handleFilterChange('state', e.target.value)}
-                  >
-                    <MenuItem value="">सभी राज्य</MenuItem>
-                    {getUniqueValues('departmentState').map((state) => (
-                      <MenuItem key={state} value={state}>
-                        {state}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-
-                <FormControl sx={{ minWidth: 200 }}>
                   <InputLabel>संभाग चुनें</InputLabel>
                   <Select
-                    value={filters.sambhag}
+                    value={filters.sambhagId}
                     label="संभाग चुनें"
-                    onChange={(e) => handleFilterChange('sambhag', e.target.value)}
+                    onChange={(e) => handleSambhagChange(e.target.value)}
                   >
                     <MenuItem value="">सभी संभाग</MenuItem>
-                    {getUniqueValues('departmentSambhag').map((sambhag) => (
-                      <MenuItem key={sambhag} value={sambhag}>
-                        {sambhag}
+                    {sambhagOptions.map((sambhag) => (
+                      <MenuItem key={sambhag.id} value={sambhag.id}>
+                        {sambhag.name}
                       </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
 
-                <FormControl sx={{ minWidth: 200 }}>
+                <FormControl sx={{ minWidth: 200 }} disabled={!filters.sambhagId}>
                   <InputLabel>जिला चुनें</InputLabel>
                   <Select
-                    value={filters.district}
+                    value={filters.districtId}
                     label="जिला चुनें"
-                    onChange={(e) => handleFilterChange('district', e.target.value)}
+                    onChange={(e) => handleDistrictChange(e.target.value)}
                   >
                     <MenuItem value="">सभी जिले</MenuItem>
-                    {getUniqueValues('departmentDistrict').map((district) => (
-                      <MenuItem key={district} value={district}>
-                        {district}
+                    {districtOptions.map((district) => (
+                      <MenuItem key={district.id} value={district.id}>
+                        {district.name}
                       </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
 
-                <FormControl sx={{ minWidth: 200 }}>
+                <FormControl sx={{ minWidth: 200 }} disabled={!filters.districtId}>
                   <InputLabel>ब्लॉक चुनें</InputLabel>
                   <Select
-                    value={filters.block}
+                    value={filters.blockId}
                     label="ब्लॉक चुनें"
-                    onChange={(e) => handleFilterChange('block', e.target.value)}
+                    onChange={(e) => handleBlockChange(e.target.value)}
                   >
                     <MenuItem value="">सभी ब्लॉक</MenuItem>
-                    {getUniqueValues('departmentBlock').map((block) => (
-                      <MenuItem key={block} value={block}>
-                        {block}
+                    {blockOptions.map((block) => (
+                      <MenuItem key={block.id} value={block.id}>
+                        {block.name}
                       </MenuItem>
                     ))}
                   </Select>
@@ -318,8 +361,22 @@ const TeachersList = () => {
                 <TextField
                   placeholder="नाम से खोजें"
                   value={filters.searchName}
-                  onChange={(e) => handleFilterChange('searchName', e.target.value)}
-                  sx={{ minWidth: 250 }}
+                  onChange={(e) => setFilters(prev => ({ ...prev, searchName: e.target.value }))}
+                  sx={{ minWidth: 200 }}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Search />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+
+                <TextField
+                  placeholder="मोबाइल नंबर से खोजें"
+                  value={filters.mobileNumber}
+                  onChange={(e) => setFilters(prev => ({ ...prev, mobileNumber: e.target.value }))}
+                  sx={{ minWidth: 200 }}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -342,26 +399,25 @@ const TeachersList = () => {
                 </Button>
               </Box>
 
-              {/* Filter info note */}
+              {/* Filter info */}
               {filtersActive && (
                 <Alert 
-                  severity="info" 
+                  severity="success" 
                   icon={<Info />}
-                  sx={{ mt: 2, backgroundColor: '#e3f2fd' }}
+                  sx={{ mt: 2, backgroundColor: '#e8f5e9' }}
                 >
-                  फ़िल्टर केवल वर्तमान पृष्ठ ({pageSize} रिकॉर्ड) पर लागू होता है। 
-                  पूर्ण खोज के लिए जल्द ही सर्वर-साइड फ़िल्टर उपलब्ध होगा।
+                  सर्वर-साइड फ़िल्टर सक्रिय है। कुल {totalElements.toLocaleString('hi-IN')} परिणाम मिले।
                 </Alert>
               )}
 
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mt: 2 }}>
                 <Typography variant="body2" sx={{ color: '#666' }}>
-                  कुल <strong>{totalElements.toLocaleString('hi-IN')}</strong> शिक्षक पंजीकृत
+                  कुल <strong>{totalElements.toLocaleString('hi-IN')}</strong> {filtersActive ? 'परिणाम' : 'शिक्षक पंजीकृत'}
                 </Typography>
                 {filtersActive && (
                   <Chip 
-                    label={`इस पृष्ठ पर ${filteredTeachers.length} मिले`}
-                    color="primary"
+                    label={`फ़िल्टर सक्रिय`}
+                    color="success"
                     size="small"
                     variant="outlined"
                   />
@@ -409,7 +465,7 @@ const TeachersList = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {(filtersActive ? filteredTeachers : teachers).map((teacher, index) => (
+                    {teachers.map((teacher, index) => (
                       <TableRow
                         key={teacher.id}
                         sx={{
@@ -497,10 +553,7 @@ const TeachersList = () => {
                 background: '#f5f5f5'
               }}>
                 <Typography variant="body2" sx={{ color: '#666' }}>
-                  {filtersActive 
-                    ? `इस पृष्ठ पर ${filteredTeachers.length} परिणाम दिखाए जा रहे हैं (कुल ${totalElements.toLocaleString('hi-IN')} में से)`
-                    : `${startRecord.toLocaleString('hi-IN')} - ${endRecord.toLocaleString('hi-IN')} परिणाम (कुल ${totalElements.toLocaleString('hi-IN')} में से)`
-                  }
+                  {`${startRecord.toLocaleString('hi-IN')} - ${endRecord.toLocaleString('hi-IN')} परिणाम (कुल ${totalElements.toLocaleString('hi-IN')} में से)`}
                 </Typography>
               </Box>
             </Card>
