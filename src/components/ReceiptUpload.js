@@ -108,9 +108,9 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
       console.log('Request data:', requestData);
       console.log('Request headers:', headers);
       console.log('FormData contents:', Array.from(uploadData.entries()));
-      console.log('Full URL:', `${API_BASE_URL}/api/receipts`);
+      console.log('Full URL:', `${API_BASE_URL}/receipts`);
       
-      const response = await axios.post(`${API_BASE_URL}/api/receipts`, uploadData, {
+      const response = await axios.post(`${API_BASE_URL}/receipts`, uploadData, {
         headers: headers,
       });
 

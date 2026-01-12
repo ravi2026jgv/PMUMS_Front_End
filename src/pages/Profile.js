@@ -296,15 +296,19 @@ const Profile = () => {
         const updatePayload = {
           name: data.name,
           surname: data.surname,
+          fatherName: data.fatherName,
           email: data.email,
-          phoneNumber: data.phoneNumber,
           countryCode: data.countryCode,
           mobileNumber: data.mobileNumber,
           gender: data.gender,
           maritalStatus: data.maritalStatus,
-          dateOfBirth: data.dateOfBirth,
           homeAddress: data.homeAddress,
+          pincode: data.pincode ? parseInt(data.pincode) : null,
+          dateOfBirth: data.dateOfBirth,
+          joiningDate: data.joiningDate,
+          retirementDate: data.retirementDate,
           schoolOfficeName: data.schoolOfficeName,
+          sankulName: data.sankulName,
           department: data.department,
           departmentUniqueId: data.departmentUniqueId,
           departmentState: data.departmentState,
@@ -489,7 +493,7 @@ const Profile = () => {
                   />
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पिता/पति का नाम (Father/Husband Name) <span style={{ color: '#999', fontWeight: 400 }}>(वैकल्पिक)</span></Typography>
+                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पिता/पति का नाम (Father/Husband Name)</Typography>
                   <TextField
                     fullWidth
                     defaultValue={profileData?.fatherName || ''}
@@ -677,7 +681,7 @@ const Profile = () => {
             
             <Paper sx={{ mb: 4, p: 3, borderRadius: 2, border: '1px solid #e0e0e0' }}>
               <Grid container spacing={3}>
-                <Grid item xs={12}>
+                <Grid item xs={12} md={9}>
                   <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पूरा पता</Typography>
                   <TextField
                     fullWidth
@@ -688,6 +692,23 @@ const Profile = () => {
                     disabled={!isEditing}
                     sx={{
                       '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                        border: '1px solid #ccc',
+                        borderRadius: '8px'
+                      }
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} md={3}>
+                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पिन कोड</Typography>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    defaultValue={profileData?.pincode || ''}
+                    {...register('pincode')}
+                    disabled={!isEditing}
+                    placeholder="जैसे: 462001"
+                    sx={{
+                      '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 },
                         border: '1px solid #ccc',
                         borderRadius: '8px'
                       }
@@ -708,17 +729,47 @@ const Profile = () => {
               <Grid container spacing={3}>
                 <Grid item xs={12} md={4}>
                   <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>विभाग का नाम</Typography>
-                  <TextField
-                    fullWidth
+                  <Controller
+                    name="department"
+                    control={control}
                     defaultValue={profileData?.department || ''}
-                    {...register('department')}
-                    disabled={!isEditing}
-                    sx={{
-                      '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                        border: '1px solid #ccc',
-                        borderRadius: '8px'
-                      }
-                    }}
+                    render={({ field }) => (
+                      <FormControl 
+                        fullWidth
+                        disabled={!isEditing}
+                        sx={{
+                          '& .MuiOutlinedInput-notchedOutline': {
+                            border: '1px solid #ccc',
+                            borderRadius: '8px'
+                          }
+                        }}>
+                        <Select
+                          {...field}
+                          displayEmpty
+                          MenuProps={{
+                            PaperProps: {
+                              sx: {
+                                maxHeight: 300,
+                                minWidth: '400px',
+                                width: 'auto',
+                                '& .MuiMenuItem-root': {
+                                  padding: '12px 16px',
+                                  fontSize: '1rem',
+                                  whiteSpace: 'nowrap',
+                                  minHeight: '48px',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  width: '100%'
+                                }
+                              }
+                            }
+                          }}
+                        >
+                          <MenuItem value="शिक्षा विभाग">शिक्षा विभाग</MenuItem>
+                          <MenuItem value="आदिम जाति कल्याण विभाग">आदिम जाति कल्याण विभाग</MenuItem>
+                        </Select>
+                      </FormControl>
+                    )}
                   />
                 </Grid>
                 <Grid item xs={12} md={4}>
@@ -858,7 +909,7 @@ const Profile = () => {
                   <input type="hidden" {...register('departmentBlock')} />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>संकुल का नाम (Sankul Name) <span style={{ color: '#999', fontWeight: 400 }}>(वैकल्पिक)</span></Typography>
+                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>संकुल का नाम (Sankul Name)</Typography>
                   <TextField
                     fullWidth
                     defaultValue={profileData?.sankulName || ''}
@@ -873,7 +924,7 @@ const Profile = () => {
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नियुक्ति तिथि (Joining Date) <span style={{ color: '#999', fontWeight: 400 }}>(वैकल्पिक)</span></Typography>
+                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नियुक्ति तिथि (Joining Date)</Typography>
                   <TextField
                     fullWidth
                     type="date"
@@ -889,7 +940,7 @@ const Profile = () => {
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>सेवानिवृत्ति तिथि (Retirement Date) <span style={{ color: '#999', fontWeight: 400 }}>(वैकल्पिक)</span></Typography>
+                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>सेवानिवृत्ति तिथि (Retirement Date)</Typography>
                   <TextField
                     fullWidth
                     type="date"

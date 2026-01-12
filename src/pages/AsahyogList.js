@@ -19,12 +19,8 @@ import {
   MenuItem,
   Pagination,
 } from '@mui/material';
-import {
-  Warning,
-  Cancel,
-} from '@mui/icons-material';
 import Layout from '../components/Layout/Layout';
-import api from '../services/api';
+import { publicApi } from '../services/api';
 
 const AsahyogList = () => {
   const [nonDonors, setNonDonors] = useState([]);
@@ -36,9 +32,11 @@ const AsahyogList = () => {
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   
-  // Pagination
-  const [page, setPage] = useState(1);
-  const [rowsPerPage] = useState(20);
+  // Server-side Pagination
+  const [page, setPage] = useState(0); // 0-indexed for API
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [pageSize] = useState(20);
 
   const months = [
     { value: 1, label: 'जनवरी (January)' },
@@ -58,24 +56,26 @@ const AsahyogList = () => {
   // Generate years (last 5 years)
   const years = Array.from({ length: 5 }, (_, i) => currentDate.getFullYear() - i);
 
-  const fetchNonDonors = useCallback(async () => {
+  const fetchNonDonors = useCallback(async (pageNum = 0) => {
     try {
       setLoading(true);
       setError('');
       
-      const response = await api.get('/admin/monthly-sahyog/non-donors', {
+      const response = await publicApi.get('/admin/non-donors/paginated', {
         params: {
           month: selectedMonth,
-          year: selectedYear
+          year: selectedYear,
+          page: pageNum,
+          size: pageSize
         }
       });
       
-      // Filter only UNPAID and PARTIAL status (Asahyog = Non-contributors)
-      const filteredData = (response.data || []).filter(
-        donor => donor.status === 'UNPAID' || donor.status === 'PARTIAL'
-      );
+      const { content, pageNumber, totalPages: pages, totalElements: total } = response.data;
       
-      setNonDonors(filteredData);
+      setNonDonors(content || []);
+      setPage(pageNumber);
+      setTotalPages(pages);
+      setTotalElements(total);
     } catch (err) {
       console.error('Error fetching non-donors:', err);
       setError('असहयोग सूची लोड करने में त्रुटि हुई। कृपया पुनः प्रयास करें।');
@@ -83,59 +83,46 @@ const AsahyogList = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedMonth, selectedYear]);
+  }, [selectedMonth, selectedYear, pageSize]);
 
   useEffect(() => {
-    fetchNonDonors();
+    fetchNonDonors(0);
   }, [fetchNonDonors]);
 
   const handleMonthChange = (event) => {
     setSelectedMonth(event.target.value);
-    setPage(1);
+    setPage(0);
   };
 
   const handleYearChange = (event) => {
     setSelectedYear(event.target.value);
-    setPage(1);
+    setPage(0);
   };
 
   const handlePageChange = (event, newPage) => {
-    setPage(newPage);
+    // MUI Pagination is 1-indexed, API is 0-indexed
+    fetchNonDonors(newPage - 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const getStatusChip = (status) => {
-    switch (status) {
-      case 'PARTIAL':
-        return (
-          <Chip
-            icon={<Warning />}
-            label="आंशिक भुगतान (Partial)"
-            color="warning"
-            size="small"
-            sx={{ fontWeight: 600 }}
-          />
-        );
-      case 'UNPAID':
-      default:
-        return (
-          <Chip
-            icon={<Cancel />}
-            label="अभुगतान (Unpaid)"
-            color="error"
-            size="small"
-            sx={{ fontWeight: 600 }}
-          />
-        );
+  // Calculate display range for current page
+  const startRecord = page * pageSize + 1;
+  const endRecord = Math.min((page + 1) * pageSize, totalElements);
+
+  // Format date helper
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } catch (error) {
+      return 'N/A';
     }
   };
-
-  // Paginate data
-  const paginatedData = nonDonors.slice((page - 1) * rowsPerPage, page * rowsPerPage);
-  const totalPages = Math.ceil(nonDonors.length / rowsPerPage);
-
-  // Count statistics
-  const partialCount = nonDonors.filter(d => d.status === 'PARTIAL').length;
-  const unpaidCount = nonDonors.filter(d => d.status === 'UNPAID').length;
 
   return (
     <Layout>
@@ -218,21 +205,8 @@ const AsahyogList = () => {
               <Grid item xs={12} md={4}>
                 <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
                   <Chip 
-                    label={`कुल असहयोगी: ${nonDonors.length}`} 
+                    label={`कुल असहयोगी: ${totalElements}`} 
                     color="error" 
-                    sx={{ fontWeight: 600 }} 
-                  />
-                  <Chip 
-                    icon={<Warning />} 
-                    label={`आंशिक: ${partialCount}`} 
-                    color="warning" 
-                    sx={{ fontWeight: 600 }} 
-                  />
-                  <Chip 
-                    icon={<Cancel />} 
-                    label={`अभुगतान: ${unpaidCount}`} 
-                    color="error" 
-                    variant="outlined"
                     sx={{ fontWeight: 600 }} 
                   />
                 </Box>
@@ -275,17 +249,23 @@ const AsahyogList = () => {
                           नाम (Name)
                         </TableCell>
                         <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
-                          भुगतान राशि (Paid Amount)
+                          मोबाइल नंबर
                         </TableCell>
                         <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
-                          स्थिति (Status)
+                          संभाग
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
+                          जिला
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
+                          ब्लॉक
                         </TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {paginatedData.map((donor, index) => (
+                      {nonDonors.map((user, index) => (
                         <TableRow
-                          key={donor.userId}
+                          key={user.id}
                           sx={{
                             '&:hover': { backgroundColor: '#ffebee' },
                             transition: 'background-color 0.2s',
@@ -293,26 +273,25 @@ const AsahyogList = () => {
                           }}
                         >
                           <TableCell sx={{ fontWeight: 500 }}>
-                            {(page - 1) * rowsPerPage + index + 1}
+                            {page * pageSize + index + 1}
                           </TableCell>
                           <TableCell sx={{ color: '#d32f2f', fontWeight: 500 }}>
-                            {donor.userId}
+                            {user.id}
                           </TableCell>
                           <TableCell sx={{ fontWeight: 600 }}>
-                            {donor.username}
+                            {`${user.name || ''} ${user.surname || ''}`.trim() || 'N/A'}
                           </TableCell>
                           <TableCell>
-                            <Typography
-                              sx={{
-                                fontWeight: 600,
-                                color: donor.paidAmount > 0 ? '#f57c00' : '#d32f2f'
-                              }}
-                            >
-                              ₹{donor.paidAmount.toLocaleString('en-IN')}
-                            </Typography>
+                            {user.mobileNumber || 'N/A'}
                           </TableCell>
                           <TableCell>
-                            {getStatusChip(donor.status)}
+                            {user.departmentSambhag || 'N/A'}
+                          </TableCell>
+                          <TableCell>
+                            {user.departmentDistrict || 'N/A'}
+                          </TableCell>
+                          <TableCell>
+                            {user.departmentBlock || 'N/A'}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -322,16 +301,26 @@ const AsahyogList = () => {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    justifyContent: 'center', 
+                    alignItems: 'center',
+                    gap: 2,
+                    py: 3 
+                  }}>
                     <Pagination
                       count={totalPages}
-                      page={page}
+                      page={page + 1}
                       onChange={handlePageChange}
                       color="error"
                       size="large"
                       showFirstButton
                       showLastButton
                     />
+                    <Typography variant="body2" sx={{ color: '#666' }}>
+                      {`${startRecord.toLocaleString('hi-IN')} - ${endRecord.toLocaleString('hi-IN')} परिणाम (कुल ${totalElements.toLocaleString('hi-IN')} में से)`}
+                    </Typography>
                   </Box>
                 )}
               </>
