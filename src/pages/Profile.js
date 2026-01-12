@@ -155,6 +155,8 @@ const Profile = () => {
           setAvailableSambhags(mpState.sambhags || []);
           // Set state name in form
           setValue('departmentState', mpState.name);
+        } else {
+          console.error('No states found in location data:', locationData);
         }
       } catch (err) {
         console.error('Error setting up location hierarchy:', err);
@@ -202,7 +204,8 @@ const Profile = () => {
     setAvailableBlocks([]);
     
     // Set form value with name
-    setValue('departmentSambhag', sambhag?.name || '');
+    const sambhagName = sambhag?.name || '';
+    setValue('departmentSambhag', sambhagName);
     setValue('departmentDistrict', '');
     setValue('departmentBlock', '');
   };
@@ -241,8 +244,39 @@ const Profile = () => {
   useEffect(() => {
     if (profileData) {
       reset(profileData);
+      // Ensure state value is set after reset
+      if (locationHierarchy?.states?.[0]) {
+        setValue('departmentState', locationHierarchy.states[0].name);
+      }
+      // Ensure sambhag value is set after reset
+      if (profileData.departmentSambhag) {
+        setValue('departmentSambhag', profileData.departmentSambhag);
+      } else {
+        // Force set from the district info if available
+        if (profileData.departmentDistrict && locationHierarchy) {
+          // Find sambhag from district
+          const mpState = locationHierarchy.states?.[0];
+          if (mpState) {
+            for (const sambhag of mpState.sambhags || []) {
+              const foundDistrict = sambhag.districts?.find(d => d.name === profileData.departmentDistrict);
+              if (foundDistrict) {
+                setValue('departmentSambhag', sambhag.name);
+                break;
+              }
+            }
+          }
+        }
+      }
+      // Ensure district value is set after reset
+      if (profileData.departmentDistrict) {
+        setValue('departmentDistrict', profileData.departmentDistrict);
+      }
+      // Ensure block value is set after reset
+      if (profileData.departmentBlock) {
+        setValue('departmentBlock', profileData.departmentBlock);
+      }
     }
-  }, [profileData, reset]);
+  }, [profileData, reset, locationHierarchy, setValue]);
 
   const loadProfileData = async () => {
     try {
@@ -279,6 +313,15 @@ const Profile = () => {
       // If cancelling edit, reset form to original data
       reset(profileData);
       setEmailChanged(false);
+    } else {
+      // When starting to edit, ensure state value is set
+      if (locationHierarchy?.states?.[0]) {
+        setValue('departmentState', locationHierarchy.states[0].name);
+      }
+      // Also set sambhag if it exists in profile data
+      if (profileData?.departmentSambhag) {
+        setValue('departmentSambhag', profileData.departmentSambhag);
+      }
     }
     setIsEditing(!isEditing);
     setError('');
@@ -294,6 +337,27 @@ const Profile = () => {
       const userId = user?.id || JSON.parse(localStorage.getItem('user') || '{}')?.id;
       
       if (userId) {
+        // Ensure state value is set if missing
+        if (!data.departmentState && locationHierarchy?.states?.[0]) {
+          data.departmentState = locationHierarchy.states[0].name;
+          setValue('departmentState', locationHierarchy.states[0].name);
+        }
+        
+        // Ensure sambhag value is set if missing but district exists
+        if (!data.departmentSambhag && data.departmentDistrict && locationHierarchy) {
+          const mpState = locationHierarchy.states?.[0];
+          if (mpState) {
+            for (const sambhag of mpState.sambhags || []) {
+              const foundDistrict = sambhag.districts?.find(d => d.name === data.departmentDistrict);
+              if (foundDistrict) {
+                data.departmentSambhag = sambhag.name;
+                setValue('departmentSambhag', sambhag.name);
+                break;
+              }
+            }
+          }
+        }
+        
         // Filter data to match UpdateUserRequest fields only
         const updatePayload = {
           name: data.name,
@@ -323,7 +387,6 @@ const Profile = () => {
           nominee2Relation: data.nominee2Relation,
         };
 
-        console.log('Sending update payload:', updatePayload);
         const response = await api.put(`/users/${userId}`, updatePayload);
         setProfileData(response.data);
         // Update localStorage with new user data
@@ -818,6 +881,7 @@ const Profile = () => {
                       }
                     }}
                   />
+                  <input type="hidden" {...register('departmentState')} />
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>संभाग</Typography>
