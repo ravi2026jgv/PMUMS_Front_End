@@ -153,6 +153,8 @@ const Profile = () => {
           const mpState = locationData.states[0];
           setSelectedState(mpState.id);
           setAvailableSambhags(mpState.sambhags || []);
+          // Set state name in form
+          setValue('departmentState', mpState.name);
         }
       } catch (err) {
         console.error('Error setting up location hierarchy:', err);
@@ -816,7 +818,6 @@ const Profile = () => {
                       }
                     }}
                   />
-                  <input type="hidden" {...register('departmentState')} value="मध्य प्रदेश" />
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>संभाग</Typography>
