@@ -19,8 +19,13 @@ import {
   FormHelperText,
   Checkbox,
   FormControlLabel,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
 } from '@mui/material';
-import { PersonAdd, CloudUpload } from '@mui/icons-material';
+import { PersonAdd, CloudUpload, Close } from '@mui/icons-material';
 import Layout from '../../components/Layout/Layout';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
@@ -31,12 +36,8 @@ const Register = () => {
   const { register: registerUser, loading } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState('');
-  const [emailVerified, setEmailVerified] = useState(false);
-  const [emailOtpSent, setEmailOtpSent] = useState(false);
-  const [emailOtp, setEmailOtp] = useState('');
-  const [sendingOtp, setSendingOtp] = useState(false);
-  const [verifyingOtp, setVerifyingOtp] = useState(false);
-  const [otp, setOtp] = useState(['', '', '', '']);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [registrationData, setRegistrationData] = useState(null);
 
   // Location hierarchy state
   const [locationHierarchy, setLocationHierarchy] = useState(null);
@@ -210,11 +211,6 @@ const Register = () => {
   };
 
   const onSubmit = async (data) => {
-    if (!emailVerified) {
-      setError('कृपया पहले अपना ईमेल सत्यापित करें');
-      return;
-    }
-
     // Validate location selection
     if (!selectedState || !selectedSambhag || !selectedDistrict) {
       setError('कृपया सभी स्थान विवरण भरें (राज्य, संभाग, जिला)');
@@ -224,8 +220,8 @@ const Register = () => {
     try {
       setError('');
       
-      // Remove confirmPassword, agreeTerms, and confirmMobileNumber, prepare data according to backend RegisterRequest DTO
-      const { confirmPassword, agreeTerms, confirmMobileNumber, ...formData } = data;
+      // Remove confirmPassword, confirmEmail, confirmMobileNumber, and agreeTerms, prepare data according to backend RegisterRequest DTO
+      const { confirmPassword, confirmEmail, confirmMobileNumber, agreeTerms, ...formData } = data;
       
       // Get location names for department fields
       const state = locationHierarchy?.states?.find(s => s.id === selectedState);
@@ -279,8 +275,17 @@ const Register = () => {
       };
 
 
-      await registerUser(registrationData);
-      navigate('/dashboard');
+      const response = await registerUser(registrationData);
+      
+      // Store registration data for popup
+      setRegistrationData({
+        name: formData.name,
+        registrationNumber: response.data?.registrationNumber || response.registrationNumber || 'PMUMS' + Date.now(),
+        ...registrationData
+      });
+      
+      // Show success popup
+      setShowSuccessPopup(true);
     } catch (err) {
       console.error('Registration error:', err);
       console.error('Error response:', err.response);
@@ -297,61 +302,6 @@ const Register = () => {
       }
       
       setError(errorMessage);
-    }
-  };
-
-  const handleOtpChange = (index, value) => {
-    if (value.length <= 1) {
-      const newOtp = [...otp];
-      newOtp[index] = value;
-      setOtp(newOtp);
-      
-      // Auto focus next input
-      if (value && index < 3) {
-        const nextInput = document.getElementById(`otp-${index + 1}`);
-        if (nextInput) nextInput.focus();
-      }
-    }
-  };
-
-  const sendEmailOtp = async () => {
-    const email = watch('email');
-    if (!email || !/^\S+@\S+$/i.test(email)) {
-      setError('कृपया वैध ईमेल पता दर्ज करें');
-      return;
-    }
-
-    try {
-      setSendingOtp(true);
-      setError('');
-      const { authService } = await import('../../services/auth.service');
-      await authService.sendEmailOtp(email);
-      setEmailOtpSent(true);
-    } catch (err) {
-      setError(err.response?.data?.message || 'ईमेल OTP भेजने में त्रुटि हुई');
-    } finally {
-      setSendingOtp(false);
-    }
-  };
-
-  const verifyEmailOtp = async () => {
-    const email = watch('email');
-    if (!emailOtp || emailOtp.length !== 6) {
-      setError('कृपया 6 अंकों का OTP दर्ज करें');
-      return;
-    }
-
-    try {
-      setVerifyingOtp(true);
-      setError('');
-      const { authService } = await import('../../services/auth.service');
-      await authService.verifyEmailOtp(email, emailOtp);
-      setEmailVerified(true);
-      setError('');
-    } catch (err) {
-      setError(err.response?.data?.message || 'ईमेल सत्यापन में त्रुटि हुई');
-    } finally {
-      setVerifyingOtp(false);
     }
   };
 
@@ -625,123 +575,49 @@ const Register = () => {
                       }}
                     />
                   </Grid>
-                  <Grid item xs={12} md={8}>
-                    <Box>
-                      <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>ईमेल आईडी</Typography>
-                      <TextField
-                        fullWidth
-                        type="email"
-                        placeholder="example@email.com"
-                        {...register('email', { 
-                          required: 'Email is required',
-                          pattern: { value: /^\S+@\S+$/i, message: 'Invalid email' }
-                        })}
-                        error={!!errors.email}
-                        helperText={errors.email?.message}
-                        disabled={emailVerified}
-                        sx={{
-                          mb: 2,
-                          '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                            border: '1px solid #ccc',
-                            borderRadius: '8px',
-                            bgcolor: emailVerified ? '#f0f9ff' : 'white'
-                          }
-                        }}
-                      />
-                      
-                      {!emailVerified && (
-                        <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-                          <Button
-                            variant="outlined"
-                            onClick={sendEmailOtp}
-                            disabled={sendingOtp || !watch('email') || !/^\S+@\S+$/i.test(watch('email') || '')}
-                            sx={{
-                              borderColor: '#1E3A8A',
-                              color: '#1E3A8A',
-                              '&:hover': {
-                                borderColor: '#1E3A8A',
-                                bgcolor: '#f5f5f5'
-                              }
-                            }}
-                          >
-                            {sendingOtp ? (
-                              <CircularProgress size={20} sx={{ color: '#1E3A8A' }} />
-                            ) : (
-                              emailOtpSent ? 'OTP पुनः भेजें' : 'OTP भेजें'
-                            )}
-                          </Button>
-                        </Box>
-                      )}
-                      
-                      {emailOtpSent && !emailVerified && (
-                        <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-end' }}>
-                          <Box sx={{ flexGrow: 1 }}>
-                            <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>ईमेल OTP</Typography>
-                            <TextField
-                              fullWidth
-                              placeholder="6 अंकों का OTP"
-                              value={emailOtp}
-                              onChange={(e) => setEmailOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                              inputProps={{ maxLength: 6 }}
-                              sx={{
-                                '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                                  border: '1px solid #ccc',
-                                  borderRadius: '8px'
-                                }
-                              }}
-                            />
-                          </Box>
-                          <Button
-                            variant="contained"
-                            onClick={verifyEmailOtp}
-                            disabled={verifyingOtp || emailOtp.length !== 6}
-                            sx={{
-                              bgcolor: '#1a237e',
-                              '&:hover': {
-                                bgcolor: '#303f9f'
-                              },
-                              minWidth: '100px'
-                            }}
-                          >
-                            {verifyingOtp ? (
-                              <CircularProgress size={20} sx={{ color: 'white' }} />
-                            ) : (
-                              'सत्यापित करें'
-                            )}
-                          </Button>
-                        </Box>
-                      )}
-                      
-                      {emailVerified && (
-                        <Box sx={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          color: '#4caf50', 
-                          bgcolor: '#f1f8e9', 
-                          p: 2, 
-                          borderRadius: 1,
-                          border: '1px solid #c8e6c9'
-                        }}>
-                          <Typography variant="body2" sx={{ fontFamily: 'Poppins' }}>
-                            ✓ ईमेल सत्यापित हो गया है
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} md={4}>
-                    <Button
-                      variant="contained"
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>ईमेल आईडी</Typography>
+                    <TextField
                       fullWidth
-                      sx={{ 
-                        bgcolor: '#FF9933', 
-                        '&:hover': { bgcolor: '#e6851a' },
-                        height: '56px',
-                        fontFamily: 'Poppins'
+                      type="email"
+                      placeholder="example@email.com"
+                      {...register('email', { 
+                        required: 'ईमेल आवश्यक है',
+                        pattern: { value: /^\S+@\S+$/i, message: 'कृपया सही ईमेल दर्ज करें' }
+                      })}
+                      error={!!errors.email}
+                      helperText={errors.email?.message}
+                      sx={{
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
                       }}
-                    >
-                      Verify Your Email
-                    </Button>
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>ईमेल की पुष्टि करें</Typography>
+                    <TextField
+                      fullWidth
+                      type="email"
+                      placeholder="ईमेल फिर से दर्ज करें"
+                      {...register('confirmEmail', { 
+                        required: 'कृपया ईमेल की पुष्टि करें',
+                        pattern: { value: /^\S+@\S+$/i, message: 'कृपया सही ईमेल दर्ज करें' },
+                        validate: (value) => {
+                          const email = watch('email');
+                          return value === email || 'ईमेल मेल नहीं खाता';
+                        }
+                      })}
+                      error={!!errors.confirmEmail}
+                      helperText={errors.confirmEmail?.message}
+                      sx={{
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}
+                    />
                   </Grid>
                 </Grid>
               </Box>
@@ -1365,6 +1241,81 @@ const Register = () => {
             </Box>
           </Paper>
         </Container>
+        
+        {/* Success Popup Dialog */}
+        <Dialog 
+          open={showSuccessPopup} 
+          onClose={() => setShowSuccessPopup(false)}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 3,
+              p: 2
+            }
+          }}
+        >
+          <DialogTitle sx={{ 
+            bgcolor: '#1976d2', 
+            color: 'white', 
+            textAlign: 'center',
+            position: 'relative',
+            fontWeight: 'bold',
+            fontSize: '1.2rem'
+          }}>
+            पंजीकरण सफल
+            <IconButton
+              onClick={() => setShowSuccessPopup(false)}
+              sx={{
+                position: 'absolute',
+                right: 8,
+                top: 8,
+                color: 'white'
+              }}
+            >
+              <Close />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent sx={{ pt: 3, textAlign: 'center' }}>
+            <Typography variant="h6" sx={{ mb: 2, color: '#1976d2', fontWeight: 600 }}>
+              प्रिय {registrationData?.name || 'शिक्षक'} जी,
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 2, lineHeight: 1.6 }}>
+              आपका PMUMS शिक्षक संघ में पंजीकरण सफल रहा है।
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 2, fontWeight: 600, color: '#1976d2' }}>
+              पंजीकरण संख्या: {registrationData?.registrationNumber}
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 2, color: '#d32f2f', fontWeight: 600 }}>
+              कृपया इसे भविष्य हेतु सुरक्षित रखें।
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 2, lineHeight: 1.6 }}>
+              3 माह पूर्ण होने पर आप कर्मचारी कल्याण कोष योजना के लाभों के पात्र होंगे।
+            </Typography>
+            <Typography variant="body1" sx={{ fontWeight: 600, color: '#1976d2' }}>
+              धन्यवाद<br/>PMUMS शिक्षक संघ
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
+            <Button
+              variant="contained"
+              onClick={() => {
+                setShowSuccessPopup(false);
+                navigate('/dashboard');
+              }}
+              sx={{
+                bgcolor: '#1976d2',
+                '&:hover': { bgcolor: '#1565c0' },
+                px: 4,
+                py: 1.5,
+                fontWeight: 600,
+                borderRadius: 2
+              }}
+            >
+              डैशबोर्ड पर जाएं
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </Layout>
   );
