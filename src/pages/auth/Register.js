@@ -277,10 +277,24 @@ const Register = () => {
 
       const response = await registerUser(registrationData);
       
+      console.log('Registration response:', response);
+      
+      // Extract registration number from backend response
+      // Backend may return it in different formats: id, registrationNumber, employeeId, etc.
+      const registrationNumber = response?.id || 
+                                response?.registrationNumber || 
+                                response?.employeeId ||
+                                response?.data?.id ||
+                                response?.data?.registrationNumber ||
+                                response?.data?.employeeId ||
+                                'PMUMS' + Date.now(); // Fallback only if all else fails
+      
+      console.log('Extracted registration number:', registrationNumber);
+      
       // Store registration data for popup
       setRegistrationData({
         name: formData.name,
-        registrationNumber: response.data?.registrationNumber || response.registrationNumber || 'PMUMS' + Date.now(),
+        registrationNumber: registrationNumber,
         ...registrationData
       });
       
