@@ -33,7 +33,7 @@ const foundersData = [
 ];
 
 const FounderCard = ({ founder }) => (
-  <Grid item xs={12} sm={4} md={4}>
+  <Grid size={{ xs: 12, sm: 4, md: 4 }}>
     <Card
       sx={{
         textAlign: 'center',

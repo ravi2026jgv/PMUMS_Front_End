@@ -73,7 +73,7 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
     try {
       const uploadData = new FormData();
       
-      // Prepare the JSON payload for RequestBody
+      // Prepare the JSON payload for @RequestPart("data")
       const requestData = {
         deathCaseId: formData.deathCaseId,
         amount: parseFloat(formData.amount),
@@ -81,12 +81,8 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
         comment: formData.comment || null
       };
       
-      // Add JSON data as a Blob with correct content type
-      const jsonBlob = new Blob([JSON.stringify(requestData)], {
-        type: 'application/json'
-      });
-      
-      uploadData.append('data', jsonBlob);
+      // Add JSON data as string (matching @RequestPart("data") String data)
+      uploadData.append('data', JSON.stringify(requestData));
       uploadData.append('file', selectedFile);
       
       // Get authorization token

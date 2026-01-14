@@ -35,9 +35,9 @@ const Home = () => {
       <Statistics />
 
       {/* Death Case Section - TEMPORARILY HIDDEN */}
-      {/* <Box sx={{ py: 8, background: '#FFF8F0' }}>
+      <Box sx={{ py: 8, background: '#FFF8F0' }}>
         <DeathCase />
-      </Box> */}
+      </Box>
 
      {/* Founders Section */}
       <Box sx={{ py: 2, background: '#f8f9fa' }}>

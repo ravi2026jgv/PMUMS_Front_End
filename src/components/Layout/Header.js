@@ -168,7 +168,6 @@ const Header = () => {
               {/* Auth Buttons */}
               {isAuthenticated && (
                 <>
-                  {/* Dashboard hidden for now
                   <Button
                     component={Link}
                     to="/dashboard"
@@ -186,7 +185,7 @@ const Header = () => {
                   >
                     DASHBOARD
                   </Button>
-                  */}
+                 
                   
                   {/* User Menu */}
                   <div>
@@ -279,21 +278,19 @@ const Header = () => {
                     {item.label}
                   </MenuItem>
                 ))}
-                {isAuthenticated && (
-                  <>
-                    {/* Dashboard hidden for now
+                {isAuthenticated && [
+                    /* Dashboard hidden for now
                     <MenuItem component={Link} to="/dashboard" onClick={handleMobileMenuClose}>
                       DASHBOARD
                     </MenuItem>
-                    */}
-                    <MenuItem component={Link} to="/profile" onClick={handleMobileMenuClose}>
+                    */
+                    <MenuItem key="profile" component={Link} to="/profile" onClick={handleMobileMenuClose}>
                       PROFILE
-                    </MenuItem>
-                    <MenuItem onClick={handleLogout}>
+                    </MenuItem>,
+                    <MenuItem key="logout" onClick={handleLogout}>
                       LOGOUT
                     </MenuItem>
-                  </>
-                )}
+                ]}
               </Menu>
             </Box>
           </Toolbar>

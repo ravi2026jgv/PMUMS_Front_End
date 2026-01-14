@@ -61,7 +61,7 @@ const AsahyogList = () => {
       setLoading(true);
       setError('');
       
-      const response = await publicApi.get('/admin/non-donors/paginated', {
+      const response = await publicApi.get('/admin/donors/paginated', {
         params: {
           month: selectedMonth,
           year: selectedYear,

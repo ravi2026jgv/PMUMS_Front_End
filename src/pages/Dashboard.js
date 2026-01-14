@@ -22,9 +22,11 @@ import {
 } from '@mui/icons-material';
 import Layout from '../components/Layout/Layout';
 import DeathCase from '../components/DeathCase';
+import CreateDeathCase from '../components/CreateDeathCase';
 
 const Dashboard = () => {
   const [openDeathCase, setOpenDeathCase] = useState(false);
+  const [openCreateDeathCase, setOpenCreateDeathCase] = useState(false);
 
   const handleOpenDeathCase = () => {
     setOpenDeathCase(true);
@@ -32,6 +34,14 @@ const Dashboard = () => {
 
   const handleCloseDeathCase = () => {
     setOpenDeathCase(false);
+  };
+
+  const handleOpenCreateDeathCase = () => {
+    setOpenCreateDeathCase(true);
+  };
+
+  const handleCloseCreateDeathCase = () => {
+    setOpenCreateDeathCase(false);
   };
 
   const statsCards = [
@@ -233,7 +243,7 @@ const Dashboard = () => {
                 <Button
                   variant="contained"
                   startIcon={<Add />}
-                  onClick={handleOpenDeathCase}
+                  onClick={handleOpenCreateDeathCase}
                   sx={{
                     background: 'linear-gradient(135deg, #d32f2f 0%, #f44336 100%)',
                     color: 'white',
@@ -419,6 +429,13 @@ const Dashboard = () => {
         >
           <DeathCase />
         </Dialog>
+
+        {/* Create Death Case Dialog */}
+        <CreateDeathCase
+          open={openCreateDeathCase}
+          onClose={handleCloseCreateDeathCase}
+          onSuccess={() => console.log('Death case created successfully')}
+        />
       </Box>
     </Layout>
   );

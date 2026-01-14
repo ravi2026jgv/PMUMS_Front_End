@@ -27,7 +27,7 @@ const Statistics = () => {
         >
           <Grid container spacing={8} alignItems="center" justifyContent="center">
           {/* Left side - Description */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Box 
               sx={{ 
                 pr: { md: 14 },
@@ -88,7 +88,7 @@ const Statistics = () => {
           </Grid>
 
           {/* Right side - Statistics */}
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Box 
               sx={{ 
                 height: '100%',

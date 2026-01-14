@@ -64,7 +64,7 @@ const SahyogList = () => {
       setLoading(true);
       setError('');
       
-      const response = await api.get('/admin/monthly-sahyog/non-donors', {
+      const response = await api.get('/admin/monthly-sahyog/donors', {
         params: {
           month: selectedMonth,
           year: selectedYear
