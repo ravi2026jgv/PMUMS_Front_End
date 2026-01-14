@@ -553,7 +553,7 @@ const DeathCase = () => {
                       fontFamily: 'Poppins'
                     }}
                   >
-                    सहयोग करें
+                    Upload payment receipt
                   </Button>
                 </Box>
               </Card>

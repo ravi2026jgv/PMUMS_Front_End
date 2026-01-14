@@ -168,6 +168,7 @@ const Header = () => {
               {/* Auth Buttons */}
               {isAuthenticated && (
                 <>
+                  {/* Dashboard hidden for now
                   <Button
                     component={Link}
                     to="/dashboard"
@@ -185,6 +186,7 @@ const Header = () => {
                   >
                     DASHBOARD
                   </Button>
+                  */}
                  
                   
                   {/* User Menu */}
