@@ -274,9 +274,9 @@ const DeathCase = () => {
                         <Typography variant="body1" sx={{ mb: 1 }}>
                           <strong>Registration Number:</strong> {deathCase.employeeCode || 'N/A'}
                         </Typography>
-                        <Typography variant="body1">
+                        {/* <Typography variant="body1">
                           <strong>Registration Date:</strong> {formatDate(deathCase.caseDate)}
-                        </Typography>
+                        </Typography> */}
                       </Box>
                     </Grid>
 
