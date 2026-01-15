@@ -132,7 +132,8 @@ const Niyamawali = () => {
               इस योजना की सदस्यता पूर्णतः निःशुल्क रहेगी।
             </Typography>
 
-            {/* Important Notice */}
+            {/* Important Notice - Commented out temporarily */}
+            {/*
             <Typography variant="subtitle2" sx={{ 
               fontWeight: 'bold',
               color: '#1a237e',
@@ -169,6 +170,7 @@ const Niyamawali = () => {
             }}>
               यदि आपने 14-12-2025 प्रातः 8:00 बजे के बाद या उपरोक्त अवधि के दौरान पंजीकरण किया है, तो कृपया अपना पंजीकरण PMUMS की आधिकारिक वेबसाइट पर पुनः (दोबारा) अनिवार्य रूप से करें, ताकि आपका पंजीकरण मान्य माना जा सके। असुविधा के लिए खेद है।
             </Typography>
+            */}
 
             {/* 2. योजना का उद्देश्य */}
             <Typography variant="subtitle2" sx={{ 
