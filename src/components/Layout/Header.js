@@ -56,7 +56,7 @@ const Header = () => {
     { label: 'HOME', path: '/' },
     { label: 'ABOUT', path: '/about' },
     { label: 'OUR MEMBERS', path: '/teachers-list' },
-    { label: 'SAHYOG LIST', path: '/sahyog-list' },
+    // { label: 'SAHYOG LIST', path: '/sahyog-list' },  // Hidden temporarily
     { label: 'ASAHYOG LIST', path: '/asahyog-list' },
     { label: 'NIYAMAWALI', path: '/niyamawali' },
     { label: 'CONTACT', path: '/contact' }
