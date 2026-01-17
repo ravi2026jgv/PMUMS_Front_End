@@ -255,11 +255,17 @@ const TeachersList = () => {
     if (!dateString) return 'N/A';
     try {
       const date = new Date(dateString);
-      return date.toLocaleDateString('en-IN', {
+      const formattedDate = date.toLocaleDateString('en-IN', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric'
       });
+      const formattedTime = date.toLocaleTimeString('en-IN', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+      return `${formattedDate} ${formattedTime}`;
     } catch (error) {
       console.error('Error formatting date:', error);
       return 'N/A';
@@ -310,6 +316,7 @@ const TeachersList = () => {
                 alignItems: 'center',
                 mb: 2
               }}>
+                {/* Location filters - Hidden temporarily
                 <FormControl sx={{ minWidth: 200 }}>
                   <InputLabel>संभाग चुनें</InputLabel>
                   <Select
@@ -357,6 +364,7 @@ const TeachersList = () => {
                     ))}
                   </Select>
                 </FormControl>
+                */}
 
                 <TextField
                   placeholder="नाम से खोजें"
@@ -386,6 +394,7 @@ const TeachersList = () => {
                   }}
                 />
 
+                {/* Clear Filters button - Hidden temporarily
                 <Button
                   variant="contained"
                   onClick={clearFilters}
@@ -397,6 +406,7 @@ const TeachersList = () => {
                 >
                   फिल्टर साफ़ करें
                 </Button>
+                */}
               </Box>
 
               {/* Filter info */}

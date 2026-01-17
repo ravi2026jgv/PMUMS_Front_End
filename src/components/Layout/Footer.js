@@ -226,13 +226,20 @@ const Footer = () => {
               </Box>
 
               {/* Phone */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Typography variant="body2" sx={{ 
                   color: 'rgba(255,255,255,0.9)',
                   fontSize: '0.9rem',
                   fontFamily: 'Arial, sans-serif'
                 }}>
-                  📞 मोबाइल : +91 70002 32795
+                  📞 मोबाइल : +91 94245 49545 (R K Gupta, प्रांतीय आई टी सेल प्रभारी)
+                </Typography>
+                <Typography variant="body2" sx={{ 
+                  color: 'rgba(255,255,255,0.9)',
+                  fontSize: '0.9rem',
+                  fontFamily: 'Arial, sans-serif'
+                }}>
+                  📞 मोबाइल : +91 90749 08265 (Hirdesh Shrivastava, प्रांतीय सह आई टी सेल प्रभारी)
                 </Typography>
               </Box>
 

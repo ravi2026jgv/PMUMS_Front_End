@@ -102,6 +102,21 @@ const SelfDonation = () => {
           <Grid item xs={12} md={6}>
             {/* Payment Options */}
             <Box sx={{ textAlign: 'center' }}>
+              {/* Warning Message */}
+              <Typography
+                variant="body2"
+                sx={{
+                  color: '#ff1744',
+                  mb: 2,
+                  fontSize: '1rem',
+                  fontFamily: 'Noto Sans Devanagari, Arial, sans-serif',
+                  fontWeight: 'bold',
+                  textAlign: 'center'
+                }}
+              >
+                इस QR code पर नॉमिनी के लिए सहयोग न करें
+              </Typography>
+
               <Typography
                 variant="h4"
                 sx={{

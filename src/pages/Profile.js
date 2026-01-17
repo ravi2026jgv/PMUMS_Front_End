@@ -531,13 +531,14 @@ const Profile = () => {
                     fullWidth
                     defaultValue={profileData?.name || ''}
                     {...register('name', { required: 'नाम आवश्यक है' })}
-                    disabled={!isEditing}
+                    disabled={true}
                     error={!!errors.name}
                     helperText={errors.name?.message}
                     sx={{
                       '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                         border: '1px solid #ccc',
-                        borderRadius: '8px'
+                        borderRadius: '8px',
+                        backgroundColor: '#f5f5f5'
                       }
                     }}
                   />
@@ -858,11 +859,12 @@ const Profile = () => {
                     fullWidth
                     defaultValue={profileData?.departmentUniqueId || ''}
                     {...register('departmentUniqueId')}
-                    disabled={!isEditing}
+                    disabled={true}
                     sx={{
                       '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                         border: '1px solid #ccc',
-                        borderRadius: '8px'
+                        borderRadius: '8px',
+                        backgroundColor: '#f5f5f5'
                       }
                     }}
                   />

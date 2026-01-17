@@ -38,6 +38,12 @@ const Register = () => {
   const [error, setError] = useState('');
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [registrationData, setRegistrationData] = useState(null);
+  const [locationErrors, setLocationErrors] = useState({
+    state: '',
+    sambhag: '',
+    district: '',
+    block: ''
+  });
 
   // Location hierarchy state
   const [locationHierarchy, setLocationHierarchy] = useState(null);
@@ -211,9 +217,19 @@ const Register = () => {
   };
 
   const onSubmit = async (data) => {
+    // Clear previous location errors
+    setLocationErrors({ state: '', sambhag: '', district: '', block: '' });
+    
     // Validate location selection
-    if (!selectedState || !selectedSambhag || !selectedDistrict) {
-      setError('कृपया सभी स्थान विवरण भरें (राज्य, संभाग, जिला)');
+    const newLocationErrors = {};
+    if (!selectedState) newLocationErrors.state = 'राज्य चुनना आवश्यक है';
+    if (!selectedSambhag) newLocationErrors.sambhag = 'संभाग चुनना आवश्यक है';
+    if (!selectedDistrict) newLocationErrors.district = 'जिला चुनना आवश्यक है';
+    if (!selectedBlock) newLocationErrors.block = 'ब्लॉक चुनना आवश्यक है';
+    
+    if (Object.keys(newLocationErrors).length > 0) {
+      setLocationErrors(newLocationErrors);
+      setError('कृपया सभी स्थान विवरण भरें (राज्य, संभाग, जिला, ब्लॉक)');
       return;
     }
 
@@ -366,7 +382,7 @@ const Register = () => {
               <Box sx={{ mb: 4, p: { xs: 2, md: 3 }, border: '1px solid #e0e0e0', borderRadius: 2 }}>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={4}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नाम</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नाम *</Typography>
                     <TextField
                       fullWidth
                       placeholder="Name"
@@ -383,7 +399,7 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={4}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>उपनाम</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>उपनाम *</Typography>
                     <TextField
                       fullWidth
                       placeholder="Surname"
@@ -399,11 +415,13 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={4}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पिता का नाम (वैकल्पिक)</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पिता का नाम *</Typography>
                     <TextField
                       fullWidth
-                      placeholder="Father Name (Optional)"
-                      {...register('fatherName')}
+                      placeholder="Father Name"
+                      {...register('fatherName', { required: 'Father name is required' })}
+                      error={!!errors.fatherName}
+                      helperText={errors.fatherName?.message}
                       sx={{
                         '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
@@ -413,7 +431,7 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={4}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>लिंग</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>लिंग *</Typography>
                     <FormControl 
                       fullWidth 
                       error={!!errors.gender}
@@ -454,7 +472,7 @@ const Register = () => {
                     </FormControl>
                   </Grid>
                   <Grid item xs={12} md={4}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>वैवाहिक स्थिति</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>वैवाहिक स्थिति *</Typography>
                     <FormControl 
                       fullWidth 
                       error={!!errors.maritalStatus}
@@ -496,7 +514,7 @@ const Register = () => {
                     </FormControl>
                   </Grid>
                   <Grid item xs={12} md={4}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>जन्मतिथि</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>जन्मतिथि *</Typography>
                     <TextField
                       fullWidth
                       placeholder="yyyy-mm-dd"
@@ -513,7 +531,7 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={1}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>Country Code</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>Country Code *</Typography>
                     <TextField
                       fullWidth
                       value="+91"
@@ -528,7 +546,7 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={5}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>मोबाइल नंबर</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>मोबाइल नंबर *</Typography>
                     <TextField
                       fullWidth
                       placeholder="10 अंकों का नंबर"
@@ -557,7 +575,7 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={5}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>मोबाइल नंबर की पुष्टि</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>मोबाइल नंबर की पुष्टि *</Typography>
                     <TextField
                       fullWidth
                       placeholder="10 अंकों का नंबर"
@@ -590,7 +608,7 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>ईमेल आईडी</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>ईमेल आईडी *</Typography>
                     <TextField
                       fullWidth
                       type="email"
@@ -610,7 +628,7 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>ईमेल की पुष्टि करें</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>ईमेल की पुष्टि करें *</Typography>
                     <TextField
                       fullWidth
                       type="email"
@@ -646,9 +664,10 @@ const Register = () => {
               <Box sx={{ mb: 4, p: { xs: 2, md: 3 }, border: '1px solid #e0e0e0', borderRadius: 2 }}>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={4}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>राज्य</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>राज्य *</Typography>
                     <FormControl 
                       fullWidth
+                      error={!!locationErrors.state}
                       sx={{
                         '& .MuiOutlinedInput-notchedOutline': {
                           border: '1px solid #ccc',
@@ -689,13 +708,15 @@ const Register = () => {
                           ))
                         )}
                       </Select>
+                      <FormHelperText>{locationErrors.state}</FormHelperText>
                     </FormControl>
                   </Grid>
                   <Grid item xs={12} md={4}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>संभाग</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>संभाग *</Typography>
                     <FormControl 
                       fullWidth
                       disabled={!selectedState || loadingLocations}
+                      error={!!locationErrors.sambhag}
                       sx={{
                         '& .MuiOutlinedInput-notchedOutline': {
                           border: '1px solid #ccc',
@@ -741,10 +762,11 @@ const Register = () => {
                     </FormControl>
                   </Grid>
                   <Grid item xs={12} md={4}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>जिला</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>जिला *</Typography>
                     <FormControl 
                       fullWidth
                       disabled={!selectedSambhag || loadingLocations}
+                      error={!!locationErrors.district}
                       sx={{
                         '& .MuiOutlinedInput-notchedOutline': {
                           border: '1px solid #ccc',
@@ -787,13 +809,15 @@ const Register = () => {
                           </MenuItem>
                         )}
                       </Select>
+                      <FormHelperText>{locationErrors.district}</FormHelperText>
                     </FormControl>
                   </Grid>
                   <Grid item xs={12} md={4}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>ब्लॉक</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>ब्लॉक *</Typography>
                     <FormControl 
                       fullWidth
                       disabled={!selectedDistrict || loadingLocations}
+                      error={!!locationErrors.block}
                       sx={{
                         '& .MuiOutlinedInput-notchedOutline': {
                           border: '1px solid #ccc',
@@ -836,14 +860,17 @@ const Register = () => {
                           </MenuItem>
                         )}
                       </Select>
+                      <FormHelperText>{locationErrors.block}</FormHelperText>
                     </FormControl>
                   </Grid>
                   <Grid item xs={12} md={8}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पूरा पता</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पूरा पता *</Typography>
                     <TextField
                       fullWidth
                       placeholder="House No, Street, Landmark..."
-                      {...register('homeAddress')}
+                      {...register('homeAddress', { required: 'Home address is required' })}
+                      error={!!errors.homeAddress}
+                      helperText={errors.homeAddress?.message}
                       sx={{
                         '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
@@ -853,11 +880,12 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={4}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पिन कोड</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पिन कोड *</Typography>
                     <TextField
                       fullWidth
                       placeholder="6 अंकों का कोड"
                       {...register('pinCode', {
+                        required: 'Pin code is required',
                         pattern: { value: /^[0-9]{6}$/, message: 'Invalid PIN code' }
                       })}
                       error={!!errors.pinCode}
@@ -883,9 +911,10 @@ const Register = () => {
               <Box sx={{ mb: 4, p: { xs: 2, md: 3 }, border: '1px solid #e0e0e0', borderRadius: 2 }}>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={4}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>विभाग का नाम</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>विभाग का नाम *</Typography>
                     <FormControl 
                       fullWidth
+                      error={!!errors.department}
                       sx={{
                         '& .MuiOutlinedInput-notchedOutline': {
                           border: '1px solid #ccc',
@@ -893,7 +922,7 @@ const Register = () => {
                         }
                       }}>
                       <Select
-                        {...register('department')}
+                        {...register('department', { required: 'Department is required' })}
                         displayEmpty
                         defaultValue=""
                         MenuProps={{
@@ -918,14 +947,17 @@ const Register = () => {
                         <MenuItem value="शिक्षा विभाग">शिक्षा विभाग</MenuItem>
                         <MenuItem value="आदिम जाति कल्याण विभाग">आदिम जाति कल्याण विभाग</MenuItem>
                       </Select>
+                      <FormHelperText>{errors.department?.message}</FormHelperText>
                     </FormControl>
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पदस्थ स्कूल/कार्यालय का नाम</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पदस्थ स्कूल/कार्यालय का नाम *</Typography>
                     <TextField
                       fullWidth
                       placeholder="Posted School/Office Name"
-                      {...register('schoolOfficeName')}
+                      {...register('schoolOfficeName', { required: 'School/Office name is required' })}
+                      error={!!errors.schoolOfficeName}
+                      helperText={errors.schoolOfficeName?.message}
                       sx={{
                         '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
@@ -935,11 +967,13 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>विभाग आईडी (Department Unique ID)</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>विभाग आईडी (Department Unique ID) *</Typography>
                     <TextField
                       fullWidth
                       placeholder="Unique ID"
-                      {...register('departmentUniqueId')}
+                      {...register('departmentUniqueId', { required: 'Department unique ID is required' })}
+                      error={!!errors.departmentUniqueId}
+                      helperText={errors.departmentUniqueId?.message}
                       sx={{
                         '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
@@ -949,11 +983,13 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>संकुल का नाम (वैकल्पिक)</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>संकुल का नाम *</Typography>
                     <TextField
                       fullWidth
-                      placeholder="Sankul Name (Optional)"
-                      {...register('sankulName')}
+                      placeholder="Sankul Name"
+                      {...register('sankulName', { required: 'Sankul name is required' })}
+                      error={!!errors.sankulName}
+                      helperText={errors.sankulName?.message}
                       sx={{
                         '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
@@ -963,27 +999,31 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नियुक्ति वर्ष (वैकल्पिक)</Typography>
-                    <TextField
-                      fullWidth
-                      type="date"
-                      placeholder="Joining Date (Optional)"
-                      {...register('joiningDate')}
-                      sx={{
-                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                          border: '1px solid #ccc',
-                          borderRadius: '8px'
-                        }
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>सेवानिवृत्ति की तिथि (वैकल्पिक)</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नियुक्ति वर्ष *</Typography>
                     <TextField
                       fullWidth
                       type="date"
-                      placeholder="Retirement Date (Optional)"
-                      {...register('retirementDate')}
+                      placeholder="Joining Date"
+                      {...register('joiningDate', { required: 'Joining date is required' })}
+                      error={!!errors.joiningDate}
+                      helperText={errors.joiningDate?.message}
+                      sx={{
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>सेवानिवृत्ति की तिथि *</Typography>
+                    <TextField
+                      fullWidth
+                      type="date"
+                      placeholder="Retirement Date"
+                      {...register('retirementDate', { required: 'Retirement date is required' })}
+                      error={!!errors.retirementDate}
+                      helperText={errors.retirementDate?.message}
                       sx={{
                         '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
@@ -1008,11 +1048,13 @@ const Register = () => {
                 </Typography>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नामांकित का नाम</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नामांकित का नाम *</Typography>
                     <TextField
                       fullWidth
                       placeholder="Nominee Name"
-                      {...register('nominee1Name')}
+                      {...register('nominee1Name', { required: 'First nominee name is required' })}
+                      error={!!errors.nominee1Name}
+                      helperText={errors.nominee1Name?.message}
                       sx={{
                         '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
@@ -1022,9 +1064,10 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नामांकित का संबंध</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नामांकित का संबंध *</Typography>
                     <FormControl 
                       fullWidth
+                      error={!!errors.nominee1Relation}
                       sx={{
                         '& .MuiOutlinedInput-notchedOutline': {
                           border: '1px solid #ccc',
@@ -1032,7 +1075,7 @@ const Register = () => {
                         }
                       }}>
                       <Select
-                        {...register('nominee1Relation')}
+                        {...register('nominee1Relation', { required: 'First nominee relation is required' })}
                         displayEmpty
                         defaultValue=""
                       >
@@ -1058,11 +1101,13 @@ const Register = () => {
                 </Typography>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नामांकित का नाम</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नामांकित का नाम *</Typography>
                     <TextField
                       fullWidth
                       placeholder="Nominee Name"
-                      {...register('nominee2Name')}
+                      {...register('nominee2Name', { required: 'Second nominee name is required' })}
+                      error={!!errors.nominee2Name}
+                      helperText={errors.nominee2Name?.message}
                       sx={{
                         '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',
@@ -1072,9 +1117,10 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नामांकित का संबंध</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नामांकित का संबंध *</Typography>
                     <FormControl 
                       fullWidth
+                      error={!!errors.nominee2Relation}
                       sx={{
                         '& .MuiOutlinedInput-notchedOutline': {
                           border: '1px solid #ccc',
@@ -1082,7 +1128,7 @@ const Register = () => {
                         }
                       }}>
                       <Select
-                        {...register('nominee2Relation')}
+                        {...register('nominee2Relation', { required: 'Second nominee relation is required' })}
                         displayEmpty
                         defaultValue=""
                       >
@@ -1099,6 +1145,7 @@ const Register = () => {
                         <MenuItem value="दादी">दादी (Grandmother)</MenuItem>
                         <MenuItem value="अन्य">अन्य (Other)</MenuItem>
                       </Select>
+                      <FormHelperText>{errors.nominee2Relation?.message}</FormHelperText>
                     </FormControl>
                   </Grid>
                 </Grid>
@@ -1114,7 +1161,7 @@ const Register = () => {
               <Box sx={{ mb: 4, p: { xs: 2, md: 3 }, border: '1px solid #e0e0e0', borderRadius: 2 }}>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पासवर्ड बनाएं</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पासवर्ड बनाएं *</Typography>
                     <TextField
                       fullWidth
                       type="password"
@@ -1133,7 +1180,7 @@ const Register = () => {
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पासवर्ड की पुष्टि करें</Typography>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पासवर्ड की पुष्टि करें *</Typography>
                     <TextField
                       fullWidth
                       type="password"
