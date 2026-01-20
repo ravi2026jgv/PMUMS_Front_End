@@ -44,10 +44,10 @@ const Home = () => {
         <Founders />
       </Box>
 
-      {/* Self Donation Section - Payment Interface */}
-      <Box sx={{ py: 8, background: '#FFF8F0' }}>
+      {/* Self Donation Section - Payment Interface - TEMPORARILY HIDDEN */}
+      {/* <Box sx={{ py: 8, background: '#FFF8F0' }}>
         <SelfDonation />
-      </Box>
+      </Box> */}
     </Layout>
   );
 };

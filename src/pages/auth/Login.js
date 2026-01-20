@@ -36,8 +36,6 @@ const Login = () => {
   const onSubmit = async (data) => {
     try {
       setError('');
-      console.log('Login attempt with data:', data);
-      console.log('Redirect destination:', from);
       
       // Map employeeId to userId for backend compatibility
       const credentials = {
@@ -46,30 +44,32 @@ const Login = () => {
       };
       
       const response = await login(credentials);
-      console.log('Login successful, response:', response);
       
       // Get user data from response
       const userData = response.user || response.data?.user;
       const userRole = userData?.role || userData?.roles;
       
-      console.log('User role:', userRole);
-      
       // Redirect based on role
       if (userRole === 'ADMIN' || (Array.isArray(userRole) && userRole.includes('ADMIN'))) {
-        console.log('Admin user detected, redirecting to admin dashboard');
         setTimeout(() => {
           navigate('/admin/dashboard', { replace: true });
         }, 100);
       } else {
-        console.log('Regular user, redirecting to home or previous page');
         setTimeout(() => {
           navigate(from === '/admin/dashboard' ? '/' : from, { replace: true });
         }, 100);
       }
       
     } catch (err) {
-      console.error('Login error:', err);
-      setError(err.response?.data?.message || 'लॉगिन में त्रुटि हुई है');
+      let errorMessage = 'लॉगिन में त्रुटि हुई है';
+      
+      if (err.response?.status === 403) {
+        errorMessage = 'लॉगिन की अनुमति नहीं है। कृपया अपनी ID और पासवर्ड जाँच लें।';
+      } else if (err.response?.status === 401) {
+        errorMessage = 'गलत ID या पासवर्ड। कृपया पुनः कोशिश करें।';
+      }
+      
+      setError(err.response?.data?.message || errorMessage);
     }
   };
 
@@ -266,6 +266,24 @@ const Login = () => {
               </Button>
 
               <Box sx={{ textAlign: 'center' }}>
+                <Link
+                  component={RouterLink}
+                  to="/forgot-password"
+                  sx={{
+                    color: '#1a237e',
+                    textDecoration: 'none',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    mb: 3,
+                    display: 'block',
+                    '&:hover': {
+                      textDecoration: 'underline'
+                    }
+                  }}
+                >
+                  पासवर्ड भूल गए? (Forgot Password?)
+                </Link>
+                
                 <Typography
                   variant="body2"
                   sx={{
