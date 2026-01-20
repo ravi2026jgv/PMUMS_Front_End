@@ -267,7 +267,7 @@ const Login = () => {
               </Button>
 
               <Box sx={{ textAlign: 'center' }}>
-                <Link
+                {/* <Link
                   component={RouterLink}
                   to="/forgot-password"
                   sx={{
@@ -283,7 +283,7 @@ const Login = () => {
                   }}
                 >
                   पासवर्ड भूल गए? (Forgot Password?)
-                </Link>
+                </Link> */}
                 
                 <Typography
                   variant="body2"
