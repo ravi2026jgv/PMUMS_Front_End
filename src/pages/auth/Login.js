@@ -224,7 +224,8 @@ const Login = () => {
               />
 
               <Box sx={{ textAlign: 'right', mb: 3 }}>
-                <Link
+                {/* TEMPORARILY HIDDEN - Forgot password link commented out due to issues */}
+                {/* <Link
                   component={RouterLink}
                   to="/forgot-password"
                   sx={{
@@ -237,7 +238,7 @@ const Login = () => {
                   }}
                 >
                   Forgot password?
-                </Link>
+                </Link> */}
               </Box>
 
               <Button
