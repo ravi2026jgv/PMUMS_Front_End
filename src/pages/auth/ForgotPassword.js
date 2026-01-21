@@ -29,6 +29,7 @@ const ForgotPassword = () => {
   const [success, setSuccess] = useState('');
   const [email, setEmail] = useState('');
   const [otpSent, setOtpSent] = useState(false);
+  const [emailInput, setEmailInput] = useState(''); // Direct state for email input
 
   const {
     register,
@@ -41,12 +42,16 @@ const ForgotPassword = () => {
 
   // Step 1: Send OTP to email
   const handleSendOTP = async (data) => {
+    console.log('🚀 handleSendOTP called with data:', data);
+    
     if (!data.email) {
+      console.log('❌ No email provided');
       setError('Please enter a valid email address');
       return;
     }
     
     try {
+      console.log('⏳ Starting OTP send process...');
       setLoading(true);
       setError('');
       setSuccess('');
@@ -193,20 +198,15 @@ const ForgotPassword = () => {
                   </Typography>
                 </StepLabel>
                 <StepContent>
-                  <form onSubmit={handleSubmit(handleSendOTP)}>
+                  <Box>
                     <TextField
                       fullWidth
                       type="email"
                       placeholder="your-email@example.com"
-                      {...register('email', {
-                        required: 'ईमेल आवश्यक है',
-                        pattern: {
-                          value: /^\S+@\S+$/i,
-                          message: 'कृपया सही ईमेल दर्ज करें'
-                        }
-                      })}
-                      error={!!errors.email}
-                      helperText={errors.email?.message}
+                      value={emailInput}
+                      onChange={(e) => setEmailInput(e.target.value)}
+                      error={!emailInput || !/^\S+@\S+$/i.test(emailInput)}
+                      helperText={!emailInput ? 'ईमेल आवश्यक है' : (!/^\S+@\S+$/i.test(emailInput) ? 'कृपया सही ईमेल दर्ज करें' : '')}
                       InputProps={{
                         startAdornment: (
                           <InputAdornment position="start">
@@ -230,11 +230,16 @@ const ForgotPassword = () => {
                     
                     <Box sx={{ mb: 2 }}>
                       <Button
-                        type="submit"
                         variant="contained"
-                        disabled={loading}
-                        onClick={() => {
-                          console.log('Button clicked - Form should submit');
+                        disabled={loading || !emailInput || !/^\S+@\S+$/i.test(emailInput)}
+                        onClick={async () => {
+                          console.log('🔘 Direct OTP button clicked');
+                          console.log('📧 Email input value:', emailInput);
+                          if (emailInput && /^\S+@\S+$/i.test(emailInput)) {
+                            await handleSendOTP({ email: emailInput });
+                          } else {
+                            console.log('❌ Invalid email, not calling API');
+                          }
                         }}
                         sx={{
                           py: 1.2,
@@ -258,26 +263,8 @@ const ForgotPassword = () => {
                       >
                         लॉगिन पर वापस जाएं
                       </Button>
-                      
-                      {/* Test button for debugging */}
-                      <Button
-                        variant="outlined"
-                        onClick={async () => {
-                          console.log('🔧 TEST: Direct API call without form');
-                          const testEmail = document.querySelector('input[type="email"]')?.value;
-                          console.log('📧 Test email:', testEmail);
-                          if (testEmail) {
-                            await handleSendOTP({ email: testEmail });
-                          } else {
-                            console.log('❌ No email found in input');
-                          }
-                        }}
-                        sx={{ mt: 1, ml: 1, color: '#ff5722' }}
-                      >
-                        Test API Call
-                      </Button>
                     </Box>
-                  </form>
+                  </Box>
                 </StepContent>
               </Step>
 
