@@ -96,15 +96,9 @@ const authErrorHandler = (error) => {
   if (error.response?.status === 401) {
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
-    toast.error('कृपया पुनः लॉगिन करें');
     window.location.href = '/login';
-  } else if (error.response?.status === 403) {
-    toast.error('आपको इस कार्य की अनुमति नहीं है');
-  } else if (error.response?.status >= 500) {
-    toast.error('सर्वर में समस्या है। कृपया बाद में प्रयास करें।');
-  } else {
-    toast.error(message);
   }
+  // Removed 403 and other error toasts to prevent unwanted popups
   
   return Promise.reject(error);
 };
@@ -119,14 +113,7 @@ const publicErrorHandler = (error) => {
     message: message
   });
   
-  // Only show user-friendly errors for public APIs, don't show auth errors
-  if (error.response?.status >= 500) {
-    toast.error('सर्वर में समस्या है। कृपया बाद में प्रयास करें।');
-  } else if (error.response?.status === 403) {
-    toast.error('यह सुविधा अभी उपलब्ध नहीं है। कृपया बाद में प्रयास करें।');
-  } else if (error.response?.status !== 401) { // Don't show 401 errors for public APIs
-    toast.error(message);
-  }
+  // Removed all toast error messages to prevent unwanted popups
   
   return Promise.reject(error);
 };
