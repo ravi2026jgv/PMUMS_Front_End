@@ -229,7 +229,7 @@ const SahyogList = () => {
                           लाभार्थी
                         </TableCell>
                         <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
-                          अपलोड तारीख
+                          रसीद अपलोड दिनांक
                         </TableCell>
                       </TableRow>
                     </TableHead>
