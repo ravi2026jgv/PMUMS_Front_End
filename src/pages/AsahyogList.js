@@ -237,15 +237,6 @@ const AsahyogList = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} md={4}>
-                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
-                  <Chip 
-                    label={`कुल असहयोगी: ${totalElements}`} 
-                    color="error" 
-                    sx={{ fontWeight: 600 }} 
-                  />
-                </Box>
-              </Grid>
             </Grid>
           </Paper>
 
