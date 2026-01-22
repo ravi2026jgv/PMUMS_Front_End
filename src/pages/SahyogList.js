@@ -139,10 +139,10 @@ const SahyogList = () => {
   const paginatedData = donors.slice((page - 1) * rowsPerPage, page * rowsPerPage);
   const totalPages = Math.ceil(donors.length / rowsPerPage);
 
-  // Count statistics
-  const paidCount = donors.filter(d => d.status === 'PAID').length;
-  const partialCount = donors.filter(d => d.status === 'PARTIAL').length;
-  const unpaidCount = donors.filter(d => d.status === 'UNPAID').length;
+  // Count statistics based on new data structure
+  const totalDonors = donors.length;
+  const uniqueDonors = new Set(donors.map(d => d.registrationNumber)).size;
+  const uniqueBeneficiaries = new Set(donors.map(d => d.beneficiary)).size;
 
   return (
     <Layout>
@@ -225,26 +225,19 @@ const SahyogList = () => {
               <Grid item xs={12} md={4}>
                 <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
                   <Chip 
-                    label={`कुल: ${donors.length}`} 
+                    label={`कुल सहयोग: ${totalDonors}`} 
                     color="primary" 
                     sx={{ fontWeight: 600 }} 
                   />
                   <Chip 
                     icon={<CheckCircle />} 
-                    label={`भुगतान: ${paidCount}`} 
+                    label={`अलग सदस्य: ${uniqueDonors}`} 
                     color="success" 
                     sx={{ fontWeight: 600 }} 
                   />
                   <Chip 
-                    icon={<Warning />} 
-                    label={`आंशिक: ${partialCount}`} 
-                    color="warning" 
-                    sx={{ fontWeight: 600 }} 
-                  />
-                  <Chip 
-                    icon={<Cancel />} 
-                    label={`अभुगतान: ${unpaidCount}`} 
-                    color="error" 
+                    label={`लाभार्थी: ${uniqueBeneficiaries}`} 
+                    color="info" 
                     sx={{ fontWeight: 600 }} 
                   />
                 </Box>
@@ -281,23 +274,41 @@ const SahyogList = () => {
                           क्र.सं.
                         </TableCell>
                         <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
-                          यूजर आईडी
+                          रजिस्ट्रेशन नं.
                         </TableCell>
                         <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
                           नाम (Name)
                         </TableCell>
                         <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
-                          भुगतान राशि (Paid Amount)
+                          विभाग
                         </TableCell>
                         <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
-                          स्थिति (Status)
+                          राज्य
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
+                          संभाग
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
+                          जिला
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
+                          ब्लॉक
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
+                          स्कूल का नाम
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
+                          लाभार्थी
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
+                          अपलोड तारीख
                         </TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {paginatedData.map((donor, index) => (
                         <TableRow
-                          key={donor.userId}
+                          key={donor.registrationNumber || index}
                           sx={{
                             '&:hover': { backgroundColor: '#f5f5f5' },
                             transition: 'background-color 0.2s',
@@ -308,23 +319,40 @@ const SahyogList = () => {
                             {(page - 1) * rowsPerPage + index + 1}
                           </TableCell>
                           <TableCell sx={{ color: '#1a237e', fontWeight: 500 }}>
-                            {donor.userId}
+                            {donor.registrationNumber || 'N/A'}
                           </TableCell>
                           <TableCell sx={{ fontWeight: 600 }}>
-                            {donor.username}
+                            {donor.name || 'N/A'}
                           </TableCell>
                           <TableCell>
-                            <Typography
-                              sx={{
-                                fontWeight: 600,
-                                color: donor.paidAmount > 0 ? '#2e7d32' : '#d32f2f'
-                              }}
-                            >
-                              ₹{donor.paidAmount.toLocaleString('en-IN')}
-                            </Typography>
+                            {donor.department || 'N/A'}
                           </TableCell>
                           <TableCell>
-                            {getStatusChip(donor.status)}
+                            {donor.state || 'N/A'}
+                          </TableCell>
+                          <TableCell>
+                            {donor.sambhag || 'N/A'}
+                          </TableCell>
+                          <TableCell>
+                            {donor.district || 'N/A'}
+                          </TableCell>
+                          <TableCell>
+                            {donor.block || 'N/A'}
+                          </TableCell>
+                          <TableCell sx={{ fontSize: '0.85rem' }}>
+                            {donor.schoolName || 'N/A'}
+                          </TableCell>
+                          <TableCell sx={{ fontWeight: 500, color: '#2e7d32' }}>
+                            {donor.beneficiary || 'N/A'}
+                          </TableCell>
+                          <TableCell sx={{ fontSize: '0.9rem' }}>
+                            {donor.receiptUploadDate ? 
+                              new Date(donor.receiptUploadDate).toLocaleDateString('hi-IN', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric'
+                              }) : 'N/A'
+                            }
                           </TableCell>
                         </TableRow>
                       ))}

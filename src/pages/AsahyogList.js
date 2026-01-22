@@ -20,7 +20,7 @@ import {
   Pagination,
 } from '@mui/material';
 import Layout from '../components/Layout/Layout';
-import { publicApi } from '../services/api';
+import api from '../services/api';
 
 const AsahyogList = () => {
   const [nonDonors, setNonDonors] = useState([]);
@@ -61,7 +61,7 @@ const AsahyogList = () => {
       setLoading(true);
       setError('');
       
-      const response = await publicApi.get('/admin/donors/paginated', {
+      const response = await api.get('/admin/monthly-sahyog/non-donors', {
         params: {
           month: selectedMonth,
           year: selectedYear,
@@ -70,12 +70,19 @@ const AsahyogList = () => {
         }
       });
       
-      const { content, pageNumber, totalPages: pages, totalElements: total } = response.data;
-      
-      setNonDonors(content || []);
-      setPage(pageNumber);
-      setTotalPages(pages);
-      setTotalElements(total);
+      // Handle both array response and paginated response
+      if (Array.isArray(response.data)) {
+        setNonDonors(response.data);
+        setTotalPages(1);
+        setTotalElements(response.data.length);
+        setPage(0);
+      } else {
+        const { content, pageNumber, totalPages: pages, totalElements: total } = response.data;
+        setNonDonors(content || []);
+        setPage(pageNumber || 0);
+        setTotalPages(pages || 1);
+        setTotalElements(total || 0);
+      }
     } catch (err) {
       console.error('Error fetching non-donors:', err);
       setError('असहयोग सूची लोड करने में त्रुटि हुई। कृपया पुनः प्रयास करें।');
@@ -243,13 +250,16 @@ const AsahyogList = () => {
                           क्र.सं.
                         </TableCell>
                         <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
-                          यूजर आईडी
+                          रजिस्ट्रेशन नं.
                         </TableCell>
                         <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
                           नाम (Name)
                         </TableCell>
                         <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
-                          मोबाइल नंबर
+                          विभाग
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
+                          राज्य
                         </TableCell>
                         <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
                           संभाग
@@ -259,6 +269,9 @@ const AsahyogList = () => {
                         </TableCell>
                         <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
                           ब्लॉक
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
+                          स्कूल का नाम
                         </TableCell>
                       </TableRow>
                     </TableHead>
@@ -276,22 +289,28 @@ const AsahyogList = () => {
                             {page * pageSize + index + 1}
                           </TableCell>
                           <TableCell sx={{ color: '#d32f2f', fontWeight: 500 }}>
-                            {user.id}
+                            {user.registrationNumber || user.id}
                           </TableCell>
                           <TableCell sx={{ fontWeight: 600 }}>
-                            {`${user.name || ''} ${user.surname || ''}`.trim() || 'N/A'}
+                            {user.name || 'N/A'}
                           </TableCell>
                           <TableCell>
-                            {user.mobileNumber || 'N/A'}
+                            {user.department || 'N/A'}
                           </TableCell>
                           <TableCell>
-                            {user.departmentSambhag || 'N/A'}
+                            {user.state || 'N/A'}
                           </TableCell>
                           <TableCell>
-                            {user.departmentDistrict || 'N/A'}
+                            {user.sambhag || 'N/A'}
                           </TableCell>
                           <TableCell>
-                            {user.departmentBlock || 'N/A'}
+                            {user.district || 'N/A'}
+                          </TableCell>
+                          <TableCell>
+                            {user.block || 'N/A'}
+                          </TableCell>
+                          <TableCell sx={{ fontSize: '0.85rem' }}>
+                            {user.schoolName || 'N/A'}
                           </TableCell>
                         </TableRow>
                       ))}
