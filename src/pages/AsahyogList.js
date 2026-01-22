@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Container,
   Paper,
@@ -37,6 +37,9 @@ const AsahyogList = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const [pageSize] = useState(20);
+  
+  // Prevent duplicate API calls
+  const abortControllerRef = useRef(null);
 
   const months = [
     { value: 1, label: 'जनवरी (January)' },
@@ -57,6 +60,14 @@ const AsahyogList = () => {
   const years = Array.from({ length: 5 }, (_, i) => currentDate.getFullYear() - i);
 
   const fetchNonDonors = useCallback(async (pageNum = 0) => {
+    // Cancel any ongoing request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Create new AbortController
+    abortControllerRef.current = new AbortController();
+    
     try {
       setLoading(true);
       setError('');
@@ -67,7 +78,8 @@ const AsahyogList = () => {
           year: selectedYear,
           page: pageNum,
           size: pageSize
-        }
+        },
+        signal: abortControllerRef.current.signal
       });
       
       // Handle both array response and paginated response
@@ -84,6 +96,10 @@ const AsahyogList = () => {
         setTotalElements(total || 0);
       }
     } catch (err) {
+      // Ignore abortion errors
+      if (err.name === 'AbortError' || err.code === 'ERR_CANCELED') {
+        return;
+      }
       console.error('Error fetching non-donors:', err);
       setError('असहयोग सूची लोड करने में त्रुटि हुई। कृपया पुनः प्रयास करें।');
       setNonDonors([]);
@@ -94,6 +110,13 @@ const AsahyogList = () => {
 
   useEffect(() => {
     fetchNonDonors(0);
+    
+    // Cleanup function to abort any ongoing requests
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [fetchNonDonors]);
 
   const handleMonthChange = (event) => {

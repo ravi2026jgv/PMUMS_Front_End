@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -34,10 +34,21 @@ const DeathCase = () => {
   const [error, setError] = useState('');
   const [selectedCase, setSelectedCase] = useState(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState({});
+  
+  // Prevent duplicate API calls
+  const abortControllerRef = useRef(null);
 
   // Fetch death cases from backend
   useEffect(() => {
     const fetchDeathCases = async () => {
+      // Cancel any ongoing request
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      
+      // Create new AbortController
+      abortControllerRef.current = new AbortController();
+      
       try {
         setLoading(true);
         setError('');
@@ -54,7 +65,9 @@ const DeathCase = () => {
         // Try to fetch from authenticated endpoint first
         let response;
         try {
-          response = await api.get('/death-cases');
+          response = await api.get('/death-cases', {
+            signal: abortControllerRef.current.signal
+          });
         } catch (authError) {
           console.log('Authenticated fetch failed, trying public endpoint:', authError.message);
           // If authenticated fails, try public endpoint
@@ -72,6 +85,10 @@ const DeathCase = () => {
         setDeathCases(cases.slice(0, 6)); // Show latest 6 cases on home page
         
       } catch (err) {
+        // Ignore abortion errors
+        if (err.name === 'AbortError' || err.code === 'ERR_CANCELED') {
+          return;
+        }
         console.error('Error fetching death cases:', err);
         setError('डेथ केस लोड करने में त्रुटि हुई है');
         console.log('Using fallback data due to API error');
@@ -116,6 +133,13 @@ const DeathCase = () => {
     };
 
     fetchDeathCases();
+    
+    // Cleanup function to abort any ongoing requests
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, []);
 
   const handleUploadClick = (deathCase) => {

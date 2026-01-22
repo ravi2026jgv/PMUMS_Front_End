@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Container,
   Paper,
@@ -32,71 +32,78 @@ const SahyogList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
-  // Month and Year filters
-  const currentDate = new Date();
-  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
+  // Server-side Pagination
+  const [page, setPage] = useState(0); // 0-indexed for API
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [pageSize] = useState(20);
   
-  // Pagination
-  const [page, setPage] = useState(1);
-  const [rowsPerPage] = useState(20);
+  // Prevent duplicate API calls
+  const abortControllerRef = useRef(null);
 
-  const months = [
-    { value: 1, label: 'जनवरी (January)' },
-    { value: 2, label: 'फरवरी (February)' },
-    { value: 3, label: 'मार्च (March)' },
-    { value: 4, label: 'अप्रैल (April)' },
-    { value: 5, label: 'मई (May)' },
-    { value: 6, label: 'जून (June)' },
-    { value: 7, label: 'जुलाई (July)' },
-    { value: 8, label: 'अगस्त (August)' },
-    { value: 9, label: 'सितंबर (September)' },
-    { value: 10, label: 'अक्टूबर (October)' },
-    { value: 11, label: 'नवंबर (November)' },
-    { value: 12, label: 'दिसंबर (December)' },
-  ];
-
-  // Generate years (last 5 years)
-  const years = Array.from({ length: 5 }, (_, i) => currentDate.getFullYear() - i);
-
-  const fetchDonors = useCallback(async () => {
+  const fetchDonors = useCallback(async (pageNum = 0) => {
+    // Cancel any ongoing request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Create new AbortController
+    abortControllerRef.current = new AbortController();
+    
     try {
       setLoading(true);
       setError('');
       
+      // Use current month and year since API requires these parameters
+      const currentDate = new Date();
+      const currentMonth = currentDate.getMonth() + 1;
+      const currentYear = currentDate.getFullYear();
+      
       const response = await api.get('/admin/monthly-sahyog/donors', {
         params: {
-          month: selectedMonth,
-          year: selectedYear
-        }
+          month: currentMonth,
+          year: currentYear,
+          page: pageNum,
+          size: pageSize
+        },
+        signal: abortControllerRef.current.signal
       });
       
-      setDonors(response.data || []);
+      // Handle paginated response
+      const { content, pageNumber, totalPages: pages, totalElements: total } = response.data;
+      
+      setDonors(content || []);
+      setPage(pageNumber || 0);
+      setTotalPages(pages || 1);
+      setTotalElements(total || 0);
     } catch (err) {
+      // Ignore abortion errors
+      if (err.name === 'AbortError' || err.code === 'ERR_CANCELED') {
+        return;
+      }
       console.error('Error fetching donors:', err);
       setError('सहयोग सूची लोड करने में त्रुटि हुई। कृपया पुनः प्रयास करें।');
       setDonors([]);
     } finally {
       setLoading(false);
     }
-  }, [selectedMonth, selectedYear]);
+  }, [pageSize]);
 
   useEffect(() => {
-    fetchDonors();
-  }, [fetchDonors]);
-
-  const handleMonthChange = (event) => {
-    setSelectedMonth(event.target.value);
-    setPage(1);
-  };
-
-  const handleYearChange = (event) => {
-    setSelectedYear(event.target.value);
-    setPage(1);
-  };
+    fetchDonors(0);
+    
+    // Cleanup function to abort any ongoing requests
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []); // Empty dependency array to run only once
 
   const handlePageChange = (event, newPage) => {
-    setPage(newPage);
+    // MUI Pagination is 1-indexed, API is 0-indexed
+    fetchDonors(newPage - 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const getStatusChip = (status) => {
@@ -135,14 +142,9 @@ const SahyogList = () => {
     }
   };
 
-  // Paginate data
-  const paginatedData = donors.slice((page - 1) * rowsPerPage, page * rowsPerPage);
-  const totalPages = Math.ceil(donors.length / rowsPerPage);
-
-  // Count statistics based on new data structure
-  const totalDonors = donors.length;
-  const uniqueDonors = new Set(donors.map(d => d.registrationNumber)).size;
-  const uniqueBeneficiaries = new Set(donors.map(d => d.beneficiary)).size;
+  // Calculate display range for current page
+  const startRecord = page * pageSize + 1;
+  const endRecord = Math.min((page + 1) * pageSize, totalElements);
 
   return (
     <Layout>
@@ -169,80 +171,6 @@ const SahyogList = () => {
             <Typography variant="body1" sx={{ textAlign: 'center', mt: 1, opacity: 0.9 }}>
               सदस्यों के मासिक सहयोग की स्थिति देखें
             </Typography>
-          </Paper>
-
-          {/* Filters */}
-          <Paper elevation={6} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
-            <Grid container spacing={3} alignItems="center">
-              <Grid item xs={12} md={4}>
-                <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>
-                  महीना चुनें (Select Month)
-                </Typography>
-                <FormControl fullWidth>
-                  <Select
-                    value={selectedMonth}
-                    onChange={handleMonthChange}
-                    displayEmpty
-                    sx={{
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        border: '1px solid #ccc',
-                        borderRadius: '8px'
-                      }
-                    }}
-                  >
-                    {months.map((month) => (
-                      <MenuItem key={month.value} value={month.value}>
-                        {month.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>
-                  वर्ष चुनें (Select Year)
-                </Typography>
-                <FormControl fullWidth>
-                  <Select
-                    value={selectedYear}
-                    onChange={handleYearChange}
-                    displayEmpty
-                    sx={{
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        border: '1px solid #ccc',
-                        borderRadius: '8px'
-                      }
-                    }}
-                  >
-                    {years.map((year) => (
-                      <MenuItem key={year} value={year}>
-                        {year}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
-                  <Chip 
-                    label={`कुल सहयोग: ${totalDonors}`} 
-                    color="primary" 
-                    sx={{ fontWeight: 600 }} 
-                  />
-                  <Chip 
-                    icon={<CheckCircle />} 
-                    label={`अलग सदस्य: ${uniqueDonors}`} 
-                    color="success" 
-                    sx={{ fontWeight: 600 }} 
-                  />
-                  <Chip 
-                    label={`लाभार्थी: ${uniqueBeneficiaries}`} 
-                    color="info" 
-                    sx={{ fontWeight: 600 }} 
-                  />
-                </Box>
-              </Grid>
-            </Grid>
           </Paper>
 
           {error && (
@@ -306,7 +234,7 @@ const SahyogList = () => {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {paginatedData.map((donor, index) => (
+                      {donors.map((donor, index) => (
                         <TableRow
                           key={donor.registrationNumber || index}
                           sx={{
@@ -316,7 +244,7 @@ const SahyogList = () => {
                           }}
                         >
                           <TableCell sx={{ fontWeight: 500 }}>
-                            {(page - 1) * rowsPerPage + index + 1}
+                            {page * pageSize + index + 1}
                           </TableCell>
                           <TableCell sx={{ color: '#1a237e', fontWeight: 500 }}>
                             {donor.registrationNumber || 'N/A'}
@@ -362,16 +290,26 @@ const SahyogList = () => {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
+                  <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: 'column',
+                    justifyContent: 'center', 
+                    alignItems: 'center',
+                    gap: 2,
+                    py: 3 
+                  }}>
                     <Pagination
                       count={totalPages}
-                      page={page}
+                      page={page + 1} // Convert 0-indexed to 1-indexed for display
                       onChange={handlePageChange}
                       color="primary"
                       size="large"
                       showFirstButton
                       showLastButton
                     />
+                    <Typography variant="body2" sx={{ color: '#666' }}>
+                      दिखाया जा रहा {startRecord}-{endRecord} कुल {totalElements} में से
+                    </Typography>
                   </Box>
                 )}
               </>

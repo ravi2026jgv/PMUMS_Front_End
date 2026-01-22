@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Container,
   Paper,
@@ -79,17 +79,35 @@ const Profile = () => {
   // Watch email field for changes
   const watchedEmail = watch('email');
 
+  // Prevent duplicate API calls
+  const locationAbortControllerRef = useRef(null);
+  const profileAbortControllerRef = useRef(null);
+
   // Fetch location hierarchy on component mount
   useEffect(() => {
     const fetchLocationHierarchy = async () => {
+      // Cancel any ongoing request
+      if (locationAbortControllerRef.current) {
+        locationAbortControllerRef.current.abort();
+      }
+      
+      // Create new AbortController
+      locationAbortControllerRef.current = new AbortController();
+      
       try {
         setLoadingLocations(true);
         
         let locationData;
         try {
-          const response = await axios.get(`${API_BASE_URL}/locations/hierarchy`);
+          const response = await axios.get(`${API_BASE_URL}/locations/hierarchy`, {
+            signal: locationAbortControllerRef.current.signal
+          });
           locationData = response.data;
         } catch (apiErr) {
+          // Ignore abortion errors
+          if (apiErr.name === 'AbortError' || apiErr.code === 'ERR_CANCELED') {
+            return;
+          }
           console.warn('Location API failed, using fallback data:', apiErr);
           
           // Fallback MP data structure
@@ -166,6 +184,13 @@ const Profile = () => {
     };
 
     fetchLocationHierarchy();
+    
+    // Cleanup function to abort any ongoing requests
+    return () => {
+      if (locationAbortControllerRef.current) {
+        locationAbortControllerRef.current.abort();
+      }
+    };
   }, []);
 
   // Initialize location dropdowns when profile data loads
@@ -238,6 +263,13 @@ const Profile = () => {
       reset(user);
     }
     loadProfileData();
+    
+    // Cleanup function to abort any ongoing requests
+    return () => {
+      if (profileAbortControllerRef.current) {
+        profileAbortControllerRef.current.abort();
+      }
+    };
   }, [user]);
 
   // Reset form when profileData changes
@@ -279,6 +311,14 @@ const Profile = () => {
   }, [profileData, reset, locationHierarchy, setValue]);
 
   const loadProfileData = async () => {
+    // Cancel any ongoing request
+    if (profileAbortControllerRef.current) {
+      profileAbortControllerRef.current.abort();
+    }
+    
+    // Create new AbortController
+    profileAbortControllerRef.current = new AbortController();
+    
     try {
       setLoading(true);
       
@@ -287,7 +327,9 @@ const Profile = () => {
       
       if (userId) {
         // Fetch latest user data by ID
-        const response = await api.get(`/users/${userId}`);
+        const response = await api.get(`/users/${userId}`, {
+          signal: profileAbortControllerRef.current.signal
+        });
         setProfileData(response.data);
         reset(response.data);
       } else {
@@ -295,6 +337,10 @@ const Profile = () => {
         throw new Error('User ID not found. Please login again.');
       }
     } catch (error) {
+      // Ignore abortion errors
+      if (error.name === 'AbortError' || error.code === 'ERR_CANCELED') {
+        return;
+      }
       console.error('Failed to load profile from API:', error);
       // Use user data from context as fallback
       if (user && typeof user === 'object' && user.id) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Box,
   Container,
@@ -62,6 +62,10 @@ const TeachersList = () => {
   // Track if filters are active
   const [filtersActive, setFiltersActive] = useState(false);
 
+  // Prevent duplicate API calls
+  const abortControllerRef = useRef(null);
+  const locationAbortControllerRef = useRef(null);
+
   // Process teacher data using actual database relationships
   const processTeacherData = (teacher) => {
     try {
@@ -98,8 +102,18 @@ const TeachersList = () => {
 
   // Fetch location hierarchy data
   const fetchLocationData = async () => {
+    // Cancel any ongoing request
+    if (locationAbortControllerRef.current) {
+      locationAbortControllerRef.current.abort();
+    }
+    
+    // Create new AbortController
+    locationAbortControllerRef.current = new AbortController();
+    
     try {
-      const response = await publicApi.get('/locations/hierarchy');
+      const response = await publicApi.get('/locations/hierarchy', {
+        signal: locationAbortControllerRef.current.signal
+      });
       const data = response.data;
       setLocationHierarchy(data);
       
@@ -113,6 +127,10 @@ const TeachersList = () => {
         setSambhagOptions(sambhags);
       }
     } catch (err) {
+      // Ignore abortion errors
+      if (err.name === 'AbortError' || err.code === 'ERR_CANCELED') {
+        return;
+      }
       console.error('Error fetching locations:', err);
     }
   };
@@ -165,6 +183,14 @@ const TeachersList = () => {
 
   // Fetch paginated teachers from API with filters
   const fetchTeachers = useCallback(async (page = 0) => {
+    // Cancel any ongoing request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Create new AbortController
+    abortControllerRef.current = new AbortController();
+    
     try {
       setLoading(true);
       setError('');
@@ -181,7 +207,9 @@ const TeachersList = () => {
       if (filters.mobileNumber) params.append('mobile', filters.mobileNumber);
       
       console.log('Fetching filtered teachers:', { page, pageSize, filters });
-      const response = await publicApi.get(`/users/filter?${params.toString()}`);
+      const response = await publicApi.get(`/users/filter?${params.toString()}`, {
+        signal: abortControllerRef.current.signal
+      });
       console.log('Filter response:', response.data);
       
       // Process the paginated response
@@ -197,6 +225,10 @@ const TeachersList = () => {
       
       console.log('Pagination info:', { pageNumber, pages, total });
     } catch (err) {
+      // Ignore abortion errors
+      if (err.name === 'AbortError' || err.code === 'ERR_CANCELED') {
+        return;
+      }
       console.error('Error fetching teachers:', err);
       setError('शिक्षकों की सूची लोड करने में त्रुटि। कृपया पुनः प्रयास करें।');
     } finally {
@@ -207,6 +239,13 @@ const TeachersList = () => {
   // Initial fetch of location data
   useEffect(() => {
     fetchLocationData();
+    
+    // Cleanup function to abort any ongoing requests
+    return () => {
+      if (locationAbortControllerRef.current) {
+        locationAbortControllerRef.current.abort();
+      }
+    };
   }, []);
 
   // Fetch teachers when filters change (with debounce for text inputs)
@@ -216,7 +255,13 @@ const TeachersList = () => {
       setCurrentPage(0);
     }, 300); // 300ms debounce for text inputs
     
-    return () => clearTimeout(debounceTimer);
+    return () => {
+      clearTimeout(debounceTimer);
+      // Cleanup function to abort any ongoing requests
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters.sambhagId, filters.districtId, filters.blockId, filters.searchName, filters.mobileNumber]);
 
