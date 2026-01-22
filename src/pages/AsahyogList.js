@@ -41,6 +41,11 @@ const AsahyogList = () => {
   // Prevent duplicate API calls
   const abortControllerRef = useRef(null);
 
+  // Helper function to handle empty strings and null values
+  const getDisplayValue = (value, fallback = 'N/A') => {
+    return value && value.trim() !== '' ? value : fallback;
+  };
+
   const months = [
     { value: 1, label: 'जनवरी (January)' },
     { value: 2, label: 'फरवरी (February)' },
@@ -312,28 +317,28 @@ const AsahyogList = () => {
                             {page * pageSize + index + 1}
                           </TableCell>
                           <TableCell sx={{ color: '#d32f2f', fontWeight: 500 }}>
-                            {user.registrationNumber || user.id}
+                            {getDisplayValue(user.registrationNumber || user.id)}
                           </TableCell>
                           <TableCell sx={{ fontWeight: 600 }}>
-                            {user.name || 'N/A'}
+                            {getDisplayValue(user.name)}
                           </TableCell>
                           <TableCell>
-                            {user.department || 'N/A'}
+                            {getDisplayValue(user.department)}
                           </TableCell>
                           <TableCell>
-                            {user.state || 'N/A'}
+                            {getDisplayValue(user.state || user.departmentState)}
                           </TableCell>
                           <TableCell>
-                            {user.sambhag || 'N/A'}
+                            {getDisplayValue(user.sambhag || user.departmentSambhag)}
                           </TableCell>
                           <TableCell>
-                            {user.district || 'N/A'}
+                            {getDisplayValue(user.district || user.departmentDistrict)}
                           </TableCell>
                           <TableCell>
-                            {user.block || 'N/A'}
+                            {getDisplayValue(user.block || user.departmentBlock)}
                           </TableCell>
                           <TableCell sx={{ fontSize: '0.85rem' }}>
-                            {user.schoolName || 'N/A'}
+                            {getDisplayValue(user.schoolName || user.schoolOfficeName)}
                           </TableCell>
                         </TableRow>
                       ))}
