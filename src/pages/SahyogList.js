@@ -36,7 +36,7 @@ const SahyogList = () => {
   const [page, setPage] = useState(0); // 0-indexed for API
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
-  const [pageSize] = useState(20);
+  const [pageSize] = useState(250);
   
   // Prevent duplicate API calls
   const abortControllerRef = useRef(null);
