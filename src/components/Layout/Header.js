@@ -59,7 +59,7 @@ const Header = () => {
     { label: 'SAHYOG LIST', path: '/sahyog-list' },  // Hidden temporarily
     { label: 'ASAHYOG LIST', path: '/asahyog-list' },
     { label: 'NIYAMAWALI', path: '/niyamawali' },
-    { label: 'CONTACT', path: '/contact' }
+    { label: 'CONTACT US', path: '/contact-us' }
   ];
 
   return (

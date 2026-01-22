@@ -274,13 +274,23 @@ const SahyogList = () => {
                             {donor.beneficiary || 'N/A'}
                           </TableCell>
                           <TableCell sx={{ fontSize: '0.9rem' }}>
-                            {donor.receiptUploadDate ? 
-                              new Date(donor.receiptUploadDate).toLocaleDateString('hi-IN', {
-                                day: '2-digit',
-                                month: '2-digit',
-                                year: 'numeric'
-                              }) : 'N/A'
-                            }
+                            {donor.receiptUploadDate ? (
+                              <>
+                                {new Date(donor.receiptUploadDate).toLocaleDateString('hi-IN', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric'
+                                })}
+                                <br />
+                                <span style={{ fontSize: '0.8rem', color: '#666' }}>
+                                  {new Date(donor.receiptUploadDate).toLocaleTimeString('hi-IN', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                    hour12: true
+                                  })}
+                                </span>
+                              </>
+                            ) : 'N/A'}
                           </TableCell>
                         </TableRow>
                       ))}

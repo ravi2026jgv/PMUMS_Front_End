@@ -22,6 +22,7 @@ import TeachersList from './pages/TeachersList';
 import NiyamawaliPage from './pages/Niyamawali';
 import SahyogList from './pages/SahyogList';
 import AsahyogList from './pages/AsahyogList';
+import ContactUs from './pages/ContactUs';
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -51,6 +52,7 @@ function App() {
               <Route path="/sahyog-list" element={<SahyogList />} />
               <Route path="/asahyog-list" element={<AsahyogList />} />
               <Route path="/niyamawali" element={<NiyamawaliPage />} />
+              <Route path="/contact-us" element={<ContactUs />} />
                 
                 {/* Protected Routes */}
                 <Route 
