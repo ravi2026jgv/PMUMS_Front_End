@@ -113,9 +113,15 @@ export const authService = {
       
       // If we have complete user data with ID, use it to fetch fresh data
       if (userData.id) {
+        // Skip API call and use cached user data
+        console.log('📋 Using cached user data, skipping API refresh');
+        return userData;
+        
+        /*
+        // Disabled automatic user data refresh
         try {
           console.log('🌐 Fetching fresh user data from API for ID:', userData.id);
-          const response = await api.get(`/users/${userData.id}`);
+          const response = await api.get(`/admin/users/${userData.id}`);
           console.log('✅ Fresh user data from API:', response.data);
           console.log('🆔 Fresh user ID from API:', response.data.id);
           
@@ -128,6 +134,7 @@ export const authService = {
           // Return saved user data as fallback if it's complete
           return userData;
         }
+        */
       }
     }
     

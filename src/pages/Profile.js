@@ -327,7 +327,7 @@ const Profile = () => {
       
       if (userId) {
         // Fetch latest user data by ID
-        const response = await api.get(`/users/${userId}`, {
+        const response = await api.get(`/admin/users/${userId}`, {
           signal: profileAbortControllerRef.current.signal
         });
         setProfileData(response.data);
@@ -411,6 +411,7 @@ const Profile = () => {
           fatherName: data.fatherName,
           email: data.email,
           countryCode: data.countryCode,
+          phoneNumber: data.phoneNumber,
           mobileNumber: data.mobileNumber,
           gender: data.gender,
           maritalStatus: data.maritalStatus,
@@ -433,7 +434,7 @@ const Profile = () => {
           nominee2Relation: data.nominee2Relation,
         };
 
-        const response = await api.put(`/users/${userId}`, updatePayload);
+        const response = await api.put(`/admin/users/${userId}`, updatePayload);
         setProfileData(response.data);
         // Update localStorage with new user data
         localStorage.setItem('user', JSON.stringify(response.data));
@@ -905,12 +906,11 @@ const Profile = () => {
                     fullWidth
                     defaultValue={profileData?.departmentUniqueId || ''}
                     {...register('departmentUniqueId')}
-                    disabled={true}
+                    disabled={!isEditing}
                     sx={{
                       '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                         border: '1px solid #ccc',
-                        borderRadius: '8px',
-                        backgroundColor: '#f5f5f5'
+                        borderRadius: '8px'
                       }
                     }}
                   />

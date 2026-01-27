@@ -17,7 +17,12 @@ import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import Profile from './pages/Profile';
 import Dashboard from './pages/Dashboard';
+import AdminDashboard from './pages/AdminDashboard';
+import ManagerDashboard from './pages/ManagerDashboard';
 import About from './pages/About';
+import RoleBasedDashboard from './components/RoleBasedDashboard';
+import QueryManagement from './components/QueryManagement';
+import NonDonorList from './components/NonDonorList';
 import TeachersList from './pages/TeachersList';
 import NiyamawaliPage from './pages/Niyamawali';
 import SahyogList from './pages/SahyogList';
@@ -60,6 +65,62 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <Dashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/dashboard" 
+                  element={
+                    <ProtectedRoute requiredRoles={["ADMIN", "SAMBHAG_MANAGER", "DISTRICT_MANAGER", "BLOCK_MANAGER"]}>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/manager/dashboard" 
+                  element={
+                    <ProtectedRoute requiredRoles={["SAMBHAG_MANAGER", "DISTRICT_MANAGER", "BLOCK_MANAGER"]}>
+                      <ManagerDashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/sambhag/dashboard" 
+                  element={
+                    <ProtectedRoute requiredRole="SAMBHAG_MANAGER">
+                      <RoleBasedDashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/district/dashboard" 
+                  element={
+                    <ProtectedRoute requiredRole="DISTRICT_MANAGER">
+                      <RoleBasedDashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/block/dashboard" 
+                  element={
+                    <ProtectedRoute requiredRole="BLOCK_MANAGER">
+                      <RoleBasedDashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/queries" 
+                  element={
+                    <ProtectedRoute requiredRole="ADMIN">
+                      <QueryManagement />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/admin/non-donors" 
+                  element={
+                    <ProtectedRoute requiredRole="ADMIN">
+                      <NonDonorList />
                     </ProtectedRoute>
                   } 
                 />

@@ -49,16 +49,28 @@ const Login = () => {
       const userData = response.user || response.data?.user;
       const userRole = userData?.role || userData?.roles;
       
-      // Redirect based on role
-      if (userRole === 'ADMIN' || (Array.isArray(userRole) && userRole.includes('ADMIN'))) {
-        setTimeout(() => {
-          navigate('/admin/dashboard', { replace: true });
-        }, 100);
+      // Redirect based on role hierarchy
+      let redirectPath = '/';
+      
+      if (userRole === 'ADMIN' || userRole === 'ROLE_ADMIN' || (Array.isArray(userRole) && (userRole.includes('ADMIN') || userRole.includes('ROLE_ADMIN')))) {
+        redirectPath = '/admin/dashboard';
+      } else if (userRole === 'SAMBHAG_MANAGER' || userRole === 'ROLE_SAMBHAG_MANAGER' || (Array.isArray(userRole) && (userRole.includes('SAMBHAG_MANAGER') || userRole.includes('ROLE_SAMBHAG_MANAGER')))) {
+        redirectPath = '/sambhag/dashboard';
+      } else if (userRole === 'DISTRICT_MANAGER' || userRole === 'ROLE_DISTRICT_MANAGER' || (Array.isArray(userRole) && (userRole.includes('DISTRICT_MANAGER') || userRole.includes('ROLE_DISTRICT_MANAGER')))) {
+        redirectPath = '/district/dashboard';
+      } else if (userRole === 'BLOCK_MANAGER' || userRole === 'ROLE_BLOCK_MANAGER' || (Array.isArray(userRole) && (userRole.includes('BLOCK_MANAGER') || userRole.includes('ROLE_BLOCK_MANAGER')))) {
+        redirectPath = '/block/dashboard';
       } else {
-        setTimeout(() => {
-          navigate(from === '/admin/dashboard' ? '/' : from, { replace: true });
-        }, 100);
+        // Regular users go to home or intended page
+        redirectPath = from === '/admin/dashboard' || 
+                      from === '/sambhag/dashboard' || 
+                      from === '/district/dashboard' || 
+                      from === '/block/dashboard' ? '/' : from;
       }
+      
+      setTimeout(() => {
+        navigate(redirectPath, { replace: true });
+      }, 100);
       
     } catch (err) {
       let errorMessage = 'लॉगिन में त्रुटि हुई है';

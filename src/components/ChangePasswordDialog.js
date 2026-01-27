@@ -58,7 +58,7 @@ const ChangePasswordDialog = ({ open, onClose, onSuccess }) => {
         return;
       }
       
-      await api.put(`/users/${userId}/password`, {
+      await api.put(`/admin/users/${userId}/password`, {
         currentPassword: data.currentPassword,
         newPassword: data.newPassword,
       });

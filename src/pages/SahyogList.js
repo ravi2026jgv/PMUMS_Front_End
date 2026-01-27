@@ -17,7 +17,10 @@ import {
   FormControl,
   Select,
   MenuItem,
+  InputLabel,
   Pagination,
+  TextField,
+  Button,
 } from '@mui/material';
 import {
   CheckCircle,
@@ -32,14 +35,53 @@ const SahyogList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
+  // Month and Year filters
+  const currentDate = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
+  
   // Server-side Pagination
   const [page, setPage] = useState(0); // 0-indexed for API
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const [pageSize] = useState(250);
   
+  // User filters
+  const [filters, setFilters] = useState({
+    userId: '',
+    fullName: '',
+    mobileNumber: ''
+  });
+  
   // Prevent duplicate API calls
   const abortControllerRef = useRef(null);
+
+  const months = [
+    { value: 1, label: 'जनवरी (January)' },
+    { value: 2, label: 'फरवरी (February)' },
+    { value: 3, label: 'मार्च (March)' },
+    { value: 4, label: 'अप्रैल (April)' },
+    { value: 5, label: 'मई (May)' },
+    { value: 6, label: 'जून (June)' },
+    { value: 7, label: 'जुलाई (July)' },
+    { value: 8, label: 'अगस्त (August)' },
+    { value: 9, label: 'सितंबर (September)' },
+    { value: 10, label: 'अक्टूबर (October)' },
+    { value: 11, label: 'नवंबर (November)' },
+    { value: 12, label: 'दिसंबर (December)' },
+  ];
+
+  const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);
+
+  const handleMonthChange = (event) => {
+    setSelectedMonth(event.target.value);
+    setPage(0); // Reset to first page
+  };
+
+  const handleYearChange = (event) => {
+    setSelectedYear(event.target.value);
+    setPage(0); // Reset to first page
+  };
 
   const fetchDonors = useCallback(async (pageNum = 0) => {
     // Cancel any ongoing request
@@ -54,17 +96,15 @@ const SahyogList = () => {
       setLoading(true);
       setError('');
       
-      // Use current month and year since API requires these parameters
-      const currentDate = new Date();
-      const currentMonth = currentDate.getMonth() + 1;
-      const currentYear = currentDate.getFullYear();
-      
-      const response = await api.get('/admin/monthly-sahyog/donors', {
+      const response = await api.get('/admin/monthly-sahyog/donors/search', {
         params: {
-          month: currentMonth,
-          year: currentYear,
+          month: selectedMonth,
+          year: selectedYear,
           page: pageNum,
-          size: pageSize
+          size: pageSize,
+          ...(filters.userId && { userId: filters.userId }),
+          ...(filters.fullName && { name: filters.fullName }),
+          ...(filters.mobileNumber && { mobile: filters.mobileNumber })
         },
         signal: abortControllerRef.current.signal
       });
@@ -87,7 +127,7 @@ const SahyogList = () => {
     } finally {
       setLoading(false);
     }
-  }, [pageSize]);
+  }, [pageSize, selectedMonth, selectedYear, filters.userId, filters.fullName, filters.mobileNumber]);
 
   useEffect(() => {
     fetchDonors(0);
@@ -178,6 +218,137 @@ const SahyogList = () => {
               {error}
             </Alert>
           )}
+
+          {/* Filters */}
+          <Paper elevation={4} sx={{ p: 3, mb: 3, borderRadius: 2 }}>
+            <Typography variant="h6" sx={{ mb: 2, color: '#1a237e', fontWeight: 'bold' }}>
+              फ़िल्टर (Filters)
+            </Typography>
+            <Grid container spacing={2} alignItems="end">
+              <Grid item xs={12} sm={6} md={2.4}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>महीना चुनें (Month)</InputLabel>
+                  <Select
+                    value={selectedMonth}
+                    onChange={handleMonthChange}
+                    label="महीना चुनें (Month)"
+                  >
+                    {months.map((month) => (
+                      <MenuItem key={month.value} value={month.value}>
+                        {month.label}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={6} md={2.4}>
+                <FormControl fullWidth size="small">
+                  <InputLabel>वर्ष चुनें (Year)</InputLabel>
+                  <Select
+                    value={selectedYear}
+                    onChange={handleYearChange}
+                    label="वर्ष चुनें (Year)"
+                  >
+                    {years.map((year) => (
+                      <MenuItem key={year} value={year}>
+                        {year}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} sm={4} md={2.4}>
+                <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
+                  यूजर आईडी (User ID)
+                </Typography>
+                <TextField
+                  fullWidth
+                  placeholder="यूजर आईडी दर्ज करें"
+                  value={filters.userId}
+                  onChange={(e) => setFilters(prev => ({ ...prev, userId: e.target.value }))}
+                  size="small"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      border: '2px solid #1976d2',
+                      borderRadius: '8px',
+                      '&:hover': {
+                        borderColor: '#1565c0',
+                      },
+                      '&.Mui-focused': {
+                        borderColor: '#1976d2',
+                      }
+                    }
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={4} md={2.4}>
+                <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
+                  पूरा नाम (Full Name)
+                </Typography>
+                <TextField
+                  fullWidth
+                  placeholder="पूरा नाम दर्ज करें"
+                  value={filters.fullName}
+                  onChange={(e) => setFilters(prev => ({ ...prev, fullName: e.target.value }))}
+                  size="small"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      border: '2px solid #1976d2',
+                      borderRadius: '8px',
+                      '&:hover': {
+                        borderColor: '#1565c0',
+                      },
+                      '&.Mui-focused': {
+                        borderColor: '#1976d2',
+                      }
+                    }
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={4} md={2.4}>
+                <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
+                  मोबाइल (Mobile)
+                </Typography>
+                <TextField
+                  fullWidth
+                  placeholder="मोबाइल नंबर दर्ज करें"
+                  value={filters.mobileNumber}
+                  onChange={(e) => setFilters(prev => ({ ...prev, mobileNumber: e.target.value }))}
+                  size="small"
+                  sx={{
+                    '& .MuiOutlinedInput-root': {
+                      border: '2px solid #1976d2',
+                      borderRadius: '8px',
+                      '&:hover': {
+                        borderColor: '#1565c0',
+                      },
+                      '&.Mui-focused': {
+                        borderColor: '#1976d2',
+                      }
+                    }
+                  }}
+                />
+              </Grid>
+            </Grid>
+            <Box sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'flex-start' }}>
+              <Button 
+                variant="contained" 
+                onClick={() => fetchDonors(0)}
+                sx={{ bgcolor: '#1a237e' }}
+              >
+                खोजें (Search)
+              </Button>
+              <Button 
+                variant="outlined" 
+                onClick={() => {
+                  setFilters({ userId: '', fullName: '', mobileNumber: '' });
+                  fetchDonors(0);
+                }}
+              >
+                साफ़ करें (Clear)
+              </Button>
+            </Box>
+          </Paper>
 
           {/* Data Table */}
           <Paper elevation={6} sx={{ borderRadius: 2, overflow: 'hidden' }}>

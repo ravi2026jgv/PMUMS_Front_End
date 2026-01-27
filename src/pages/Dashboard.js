@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Paper,
@@ -20,13 +20,27 @@ import {
   PersonOff,
   Add,
 } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout/Layout';
 import DeathCase from '../components/DeathCase';
 import CreateDeathCase from '../components/CreateDeathCase';
 
 const Dashboard = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [openDeathCase, setOpenDeathCase] = useState(false);
   const [openCreateDeathCase, setOpenCreateDeathCase] = useState(false);
+
+  // Redirect admin and manager roles to AdminDashboard
+  useEffect(() => {
+    if (user && user.role) {
+      const adminManagerRoles = ['ROLE_ADMIN', 'ROLE_SAMBHAG_MANAGER', 'ROLE_DISTRICT_MANAGER', 'ROLE_BLOCK_MANAGER'];
+      if (adminManagerRoles.includes(user.role)) {
+        navigate('/admin/dashboard', { replace: true });
+      }
+    }
+  }, [user, navigate]);
 
   const handleOpenDeathCase = () => {
     setOpenDeathCase(true);

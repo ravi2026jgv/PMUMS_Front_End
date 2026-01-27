@@ -13,7 +13,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  IconButton,
+
   Chip,
   Button,
   Dialog,
@@ -32,13 +32,17 @@ import {
   TablePagination,
   CircularProgress,
   Collapse,
+
 } from '@mui/material';
 import {
   AdminPanelSettings,
   People,
   Edit,
   Delete,
+  CheckCircle,
+  Cancel,
   Block,
+  LockOpen,
   Lock,
   PersonAdd,
   Download,
@@ -57,26 +61,19 @@ import {
 } from '@mui/icons-material';
 import Layout from '../components/Layout/Layout';
 import { useAuth } from '../context/AuthContext';
-import { adminAPI, managerAPI } from '../services/api';
+import { adminAPI } from '../services/api';
 
 const AdminDashboard = () => {
   const { user } = useAuth();
   
-  // State Management - All hooks must be called first
+  // State Management
   const [activeTab, setActiveTab] = useState(0);
   const [users, setUsers] = useState([]);
   const [totalUsers, setTotalUsers] = useState(0);
   const [deathCases, setDeathCases] = useState([]);
   const [payments, setPayments] = useState([]);
-  const [receipts, setReceipts] = useState([]);
-  const [totalReceipts, setTotalReceipts] = useState(0);
-  const [receiptsLoading, setReceiptsLoading] = useState(false);
   const [queries, setQueries] = useState([]);
   const [assignments, setAssignments] = useState([]);
-  const [managerAssignments, setManagerAssignments] = useState([]);
-  const [managerUsersDialog, setManagerUsersDialog] = useState(false);
-  const [managerUsers, setManagerUsers] = useState([]);
-  const [selectedManagerInfo, setSelectedManagerInfo] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedDeathCase, setSelectedDeathCase] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -137,9 +134,6 @@ const AdminDashboard = () => {
     account2: false,
     account3: false
   });
-  
-  // Death cases list collapse state
-  const [deathCasesListExpanded, setDeathCasesListExpanded] = useState(true);
 
   // Location hierarchy state for death case form
   const [locationHierarchy, setLocationHierarchy] = useState(null);
@@ -363,70 +357,6 @@ const AdminDashboard = () => {
     }
   };
 
-  // Export death cases to Excel
-  const handleExportDeathCases = async () => {
-    alert('Export button clicked!'); // Test if function is called
-    console.log('Export button clicked - starting death cases export...');
-    try {
-      setExportLoading(true);
-      console.log('Making API call to export death cases...');
-      
-      const response = await adminAPI.exportDeathCases();
-      console.log('Export response:', response);
-      console.log('Response data type:', typeof response.data);
-      console.log('Response data size:', response.data?.size || 'unknown');
-      
-      if (!response.data) {
-        throw new Error('No data received from server');
-      }
-      
-      // Create and download Excel file
-      const blob = new Blob([response.data], { 
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
-      });
-      console.log('Blob created, size:', blob.size);
-      
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      
-      // Generate filename with current timestamp
-      const now = new Date();
-      const timestamp = now.toISOString().slice(0, 19).replace(/[-:]/g, '').replace('T', '_');
-      const filename = `death_cases_${timestamp}.xlsx`;
-      link.setAttribute('download', filename);
-      
-      console.log('Downloading file:', filename);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      
-      showSnackbar('मृत्यु मामले सफलतापूर्वक एक्सपोर्ट किए गए!', 'success');
-      console.log('Export completed successfully');
-    } catch (error) {
-      console.error('Death cases export error:', error);
-      console.error('Error details:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-        statusText: error.response?.statusText
-      });
-      
-      let errorMessage = 'मृत्यु मामले एक्सपोर्ट करने में त्रुटि!';
-      if (error.response?.status === 404) {
-        errorMessage = 'एक्सपोर्ट API उपलब्ध नहीं है!';
-      } else if (error.response?.status === 403) {
-        errorMessage = 'एक्सपोर्ट करने की अनुमति नहीं है!';
-      }
-      
-      showSnackbar(errorMessage, 'error');
-    } finally {
-      setExportLoading(false);
-      console.log('Export loading state reset');
-    }
-  };
-
   // Fetch death cases
   const fetchDeathCases = async () => {
     try {
@@ -480,34 +410,6 @@ const AdminDashboard = () => {
       showSnackbar('API से डेटा लोड नहीं हुआ, टेस्ट डेटा दिखाया जा रहा है!', 'warning');
     } finally {
       setDeathCasesLoading(false);
-    }
-  };
-
-  // Fetch receipts
-  const fetchReceipts = async (page = 0, size = 20) => {
-    try {
-      console.log('Fetching receipts...');
-      setReceiptsLoading(true);
-      const response = await adminAPI.getReceipts({ page, size });
-      console.log('Receipts response:', response);
-      
-      if (response && response.data) {
-        const { content, totalElements } = response.data;
-        setReceipts(content || []);
-        setTotalReceipts(totalElements || 0);
-        console.log(`Loaded ${content?.length || 0} receipts out of ${totalElements || 0} total`);
-      } else {
-        console.warn('Unexpected receipts response structure:', response);
-        setReceipts([]);
-        setTotalReceipts(0);
-      }
-    } catch (error) {
-      console.error('Error fetching receipts:', error);
-      showSnackbar('रसीदें लोड करने में त्रुटि!', 'error');
-      setReceipts([]);
-      setTotalReceipts(0);
-    } finally {
-      setReceiptsLoading(false);
     }
   };
 
@@ -786,6 +688,14 @@ const AdminDashboard = () => {
       [section]: !prev[section]
     }));
   };
+  
+  // Handle section expand/collapse
+  const handleSectionToggle = (section) => {
+    setSectionExpanded(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
 
   // Handle role assignment form changes
   const handleRoleAssignmentChange = (field, value) => {
@@ -928,130 +838,23 @@ const AdminDashboard = () => {
     }
   };
 
-  // Fetch manager assignments using new endpoint
+  // Fetch manager assignments
   const fetchManagerAssignments = async () => {
     try {
       setAssignmentsLoading(true);
-      console.log('Fetching manager assignments...');
-      const response = await managerAPI.getAssignments();
-      console.log('Manager assignments response:', response);
-      console.log('Assignment data structure:', response.data?.[0]); // Log first assignment
-      setManagerAssignments(response.data || []);
-      // Also keep the old assignments for backward compatibility
+      const response = await adminAPI.getManagerAssignments();
       setAssignments(response.data || []);
     } catch (error) {
-      console.error('Error fetching manager assignments:', error);
-      showSnackbar('मैनेजर असाइनमेंट लोड करने में त्रुटि!', 'error');
-      // Set empty arrays to prevent undefined errors
-      setManagerAssignments([]);
-      setAssignments([]);
+      console.error('Error fetching assignments:', error);
+      showSnackbar('असाइनमेंट लोड करने में त्रुटि!', 'error');
     } finally {
       setAssignmentsLoading(false);
-    }
-  };
-
-  // Fetch accessible users for current manager by location
-  const fetchManagerUsers = async (locationType = null, locationId = null) => {
-    try {
-      console.log('=== DEBUG: fetchManagerUsers called ===');
-      console.log('locationType parameter:', locationType);
-      console.log('locationId parameter:', locationId);
-      
-      if (!locationType || !locationId) {
-        console.log('Missing required parameters, fetching all accessible users');
-        // Fallback to general users endpoint if location params not provided
-        const response = await managerAPI.getAccessibleUsers();
-        console.log('Fallback API response received:', response);
-        return response.data || [];
-      }
-      
-      // Use location-based endpoint with required parameters
-      const params = { 
-        locationType: locationType,
-        locationId: locationId,
-        page: 0,
-        size: 20
-      };
-      console.log('API params being sent:', params);
-      console.log('About to call managerAPI.getUsersByLocation...');
-      
-      const response = await managerAPI.getUsersByLocation(params);
-      console.log('Location-based API response received:', response);
-      console.log('Response data:', response.data);
-      
-      // Handle paginated response
-      if (response.data && response.data.content) {
-        console.log('Paginated response content:', response.data.content);
-        return response.data.content;
-      }
-      
-      return response.data || [];
-    } catch (error) {
-      console.error('Error in fetchManagerUsers:', error);
-      console.error('Error details:', error.response?.data || error.message);
-      showSnackbar('उपयोगकर्ता डेटा लोड करने में त्रुटि!', 'error');
-      return [];
-    }
-  };
-
-  // Handle viewing manager's users
-  const handleViewManagerUsers = async (assignment) => {
-    try {
-      console.log('=== DEBUG: handleViewManagerUsers called ===');
-      console.log('Assignment object:', assignment);
-      console.log('Assignment keys:', Object.keys(assignment || {}));
-      
-      // Extract location information from assignment
-      let locationType = null;
-      let locationId = null;
-      
-      // Determine location type and ID based on manager level
-      if (assignment.managerLevel === 'SAMBHAG' && assignment.sambhagId) {
-        locationType = 'SAMBHAG';
-        locationId = assignment.sambhagId;
-      } else if (assignment.managerLevel === 'DISTRICT' && assignment.districtId) {
-        locationType = 'DISTRICT';
-        locationId = assignment.districtId;
-      } else if (assignment.managerLevel === 'BLOCK' && assignment.blockId) {
-        locationType = 'BLOCK';
-        locationId = assignment.blockId;
-      }
-      
-      console.log('Extracted location info:', { locationType, locationId });
-      
-      if (!locationType || !locationId) {
-        showSnackbar('स्थान की जानकारी नहीं मिली!', 'error');
-        console.log('Missing location info, trying fallback...');
-        // Try fallback without location parameters
-        const users = await fetchManagerUsers();
-        console.log('Fallback users:', users);
-        setManagerUsers(users);
-        setSelectedManagerInfo(assignment);
-        setManagerUsersDialog(true);
-        return;
-      }
-      
-      console.log('About to call fetchManagerUsers with location params');
-      const users = await fetchManagerUsers(locationType, locationId);
-      console.log('Manager Users received:', users);
-      
-      // Set the users data and open dialog
-      setManagerUsers(users);
-      setSelectedManagerInfo(assignment);
-      setManagerUsersDialog(true);
-      showSnackbar(`${assignment.managerName || 'मैनेजर'} के ${users.length} उपयोगकर्ता मिले`, 'success');
-      
-      console.log('Sample user data structure:', users[0]);
-    } catch (error) {
-      console.error('Error in handleViewManagerUsers:', error);
-      showSnackbar('उपयोगकर्ता डेटा लोड करने में त्रुटि!', 'error');
     }
   };
 
   // Load data on component mount and when dependencies change
   useEffect(() => {
     fetchUsers();
-    fetchReceipts();
     fetchManagerAssignments(); // Load assignments on mount
   }, [page, rowsPerPage, filters]);
 
@@ -1074,35 +877,6 @@ const AdminDashboard = () => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
-
-  // Role-based access control - Dashboard should be visible for managers and admin only
-  const allowedRoles = ['ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_SAMBHAG_MANAGER', 'ROLE_DISTRICT_MANAGER', 'ROLE_BLOCK_MANAGER'];
-  const hasAccess = user && allowedRoles.includes(user.role);
-
-  // Debug logging
-  console.log('Current user:', user);
-  console.log('User role:', user?.role);
-  console.log('Has access:', hasAccess);
-  console.log('Allowed roles:', allowedRoles);
-
-  // Temporarily disable access control for debugging
-  // if (!hasAccess) {
-  if (false) { // Always allow access for debugging
-    return (
-      <Layout>
-        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-          <Alert severity="error" sx={{ textAlign: 'center' }}>
-            <Typography variant="h6" gutterBottom>
-              पहुंच नकारी गई
-            </Typography>
-            <Typography variant="body1">
-              आपको इस डैशबोर्ड तक पहुंचने की अनुमति नहीं है। केवल एडमिन और मैनेजर इसे देख सकते हैं।
-            </Typography>
-          </Alert>
-        </Container>
-      </Layout>
-    );
-  }
 
   // Dynamic admin stats based on real data
   const adminStats = [
@@ -1221,26 +995,12 @@ const AdminDashboard = () => {
       showSnackbar('उपयोगकर्ता स्थिति अपडेट करने में त्रुटि!', 'error');
     }
   };
-  
-  // Handle death case status update (OPEN/CLOSED)
-  const handleUpdateDeathCaseStatus = async (deathCaseId, newStatus) => {
-    try {
-      console.log('Updating death case status:', { deathCaseId, newStatus });
-      
-      if (newStatus === 'close' || newStatus === 'CLOSED') {
-        await adminAPI.closeDeathCase(deathCaseId);
-        showSnackbar('मृत्यु सहायता मामला बंद किया गया!', 'success');
-      } else if (newStatus === 'open' || newStatus === 'OPEN') {
-        await adminAPI.openDeathCase(deathCaseId);
-        showSnackbar('मृत्यु सहायता मामला खोला गया!', 'success');
-      }
-      
-      // Refresh the death cases list
-      fetchDeathCases();
-    } catch (error) {
-      console.error('Error updating death case status:', error);
-      showSnackbar('मामले की स्थिति अपडेट करने में त्रुटि!', 'error');
-    }
+
+  const handleUpdateDeathCaseStatus = (caseId, newStatus) => {
+    setDeathCases(prev => prev.map(deathCase => 
+      deathCase.id === caseId ? { ...deathCase, status: newStatus } : deathCase
+    ));
+    showSnackbar(`मृत्यु मामला अपडेट किया गया: ${getStatusLabel(newStatus)}`, 'success');
   };
 
   const handleUpdateQueryStatus = (queryId, newStatus) => {
@@ -1410,7 +1170,7 @@ const AdminDashboard = () => {
                       }}
                     >
                       {user.status?.toLowerCase() === 'blocked' ? 
-                        <Lock fontSize="small" sx={{ color: '#4caf50' }} /> : 
+                        <LockOpen fontSize="small" sx={{ color: '#4caf50' }} /> : 
                         <Lock fontSize="small" sx={{ color: '#f44336' }} />
                       }
                     </IconButton>
@@ -1446,7 +1206,7 @@ const AdminDashboard = () => {
     <Paper elevation={6} sx={{ borderRadius: 3, overflow: 'hidden' }}>
       <Box sx={{ p: 3, bgcolor: '#f5f5f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-          मैनेजर असाइनमेंट ({managerAssignments.length})
+          मैनेजर असाइनमेंट ({assignments.length})
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button 
@@ -1459,42 +1219,28 @@ const AdminDashboard = () => {
           </Button>
         </Box>
       </Box>
-      {assignmentsLoading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-          <CircularProgress />
-        </Box>
-      ) : (
-        <TableContainer>
-          <Table>
-            <TableHead>
-              <TableRow sx={{ bgcolor: '#e3f2fd' }}>
-                <TableCell><strong>मैनेजर</strong></TableCell>
-                <TableCell><strong>स्तर</strong></TableCell>
-                <TableCell><strong>असाइन किया गया क्षेत्र</strong></TableCell>
-                <TableCell><strong>असाइनमेंट की तारीख</strong></TableCell>
-                <TableCell><strong>स्थिति</strong></TableCell>
-                <TableCell><strong>कार्रवाई</strong></TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {managerAssignments.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
-                    <Typography variant="body2" color="textSecondary">
-                      कोई मैनेजर असाइनमेंट नहीं मिला
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                managerAssignments.map((assignment) => (
+      <TableContainer>
+        <Table>
+          <TableHead>
+            <TableRow sx={{ bgcolor: '#e3f2fd' }}>
+              <TableCell><strong>मैनेजर</strong></TableCell>
+              <TableCell><strong>स्तर</strong></TableCell>
+              <TableCell><strong>असाइन किया गया क्षेत्र</strong></TableCell>
+              <TableCell><strong>असाइनमेंट की तारीख</strong></TableCell>
+              <TableCell><strong>स्थिति</strong></TableCell>
+              <TableCell><strong>कार्रवाई</strong></TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {assignments.map((assignment) => (
               <TableRow key={assignment.id} hover>
                 <TableCell>
                   <Box>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {assignment.managerName || 'नाम अनुपलब्ध'}
+                      {assignment.managerName}
                     </Typography>
                     <Typography variant="caption" color="textSecondary">
-                      {assignment.managerEmail || 'ईमेल अनुपलब्ध'}
+                      {assignment.managerEmail}
                     </Typography>
                   </Box>
                 </TableCell>
@@ -1502,7 +1248,7 @@ const AdminDashboard = () => {
                   <Chip
                     label={assignment.managerLevel === 'SAMBHAG' ? 'संभाग' : 
                            assignment.managerLevel === 'DISTRICT' ? 'जिला' : 
-                           assignment.managerLevel === 'BLOCK' ? 'ब्लॉक' : (assignment.managerLevel || 'अज्ञात')}
+                           assignment.managerLevel === 'BLOCK' ? 'ब्लॉक' : assignment.managerLevel}
                     size="small"
                     sx={{
                       bgcolor: assignment.managerLevel === 'SAMBHAG' ? '#9c27b0' : 
@@ -1514,9 +1260,7 @@ const AdminDashboard = () => {
                 </TableCell>
                 <TableCell>
                   <Typography variant="body2">
-                    {typeof assignment.locationDisplay === 'string' ? assignment.locationDisplay : 
-                     typeof assignment.fullLocationPath === 'string' ? assignment.fullLocationPath : 
-                     'स्थान जानकारी उपलब्ध नहीं'}
+                    {assignment.locationDisplay || assignment.fullLocationPath}
                   </Typography>
                   {assignment.notes && (
                     <Typography variant="caption" color="textSecondary" display="block">
@@ -1526,10 +1270,10 @@ const AdminDashboard = () => {
                 </TableCell>
                 <TableCell>
                   <Typography variant="caption">
-                    {assignment.assignedAt ? new Date(assignment.assignedAt).toLocaleDateString('hi-IN') : 'तारीख अनुपलब्ध'}
+                    {new Date(assignment.assignedAt).toLocaleDateString('hi-IN')}
                   </Typography>
                   <Typography variant="caption" display="block" color="textSecondary">
-                    द्वारा: {assignment.assignedByName || 'अज्ञात'}
+                    द्वारा: {assignment.assignedByName}
                   </Typography>
                 </TableCell>
                 <TableCell>
@@ -1546,8 +1290,7 @@ const AdminDashboard = () => {
                   <Box sx={{ display: 'flex', gap: 0.5 }}>
                     <IconButton
                       size="small"
-                      title="उपयोगकर्ता देखें"
-                      onClick={() => handleViewManagerUsers(assignment)}
+                      title="देखें"
                     >
                       <Visibility fontSize="small" />
                     </IconButton>
@@ -1568,29 +1311,19 @@ const AdminDashboard = () => {
                   </Box>
                 </TableCell>
               </TableRow>
-            )))}
+            ))}
           </TableBody>
         </Table>
       </TableContainer>
-      )}
     </Paper>
   );
 
   const renderDeathCasesTab = () => (
     <Paper elevation={6} sx={{ borderRadius: 3, overflow: 'hidden' }}>
       <Box sx={{ p: 3, bgcolor: '#f5f5f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-            मृत्यु सहायता मामले ({deathCases.length})
-          </Typography>
-          <IconButton 
-            size="small" 
-            onClick={() => setDeathCasesListExpanded(!deathCasesListExpanded)}
-            sx={{ color: '#d32f2f' }}
-          >
-            {deathCasesListExpanded ? <ExpandLess /> : <ExpandMore />}
-          </IconButton>
-        </Box>
+        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+          मृत्यु सहायता मामले ({deathCases.length})
+        </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button 
             variant="contained" 
@@ -1603,70 +1336,9 @@ const AdminDashboard = () => {
           <Button 
             variant="outlined" 
             startIcon={<Download />}
-            onClick={async () => {
-              console.log('Export button clicked - starting death cases export...');
-              try {
-                setExportLoading(true);
-                console.log('Making API call to export death cases...');
-                
-                const response = await adminAPI.exportDeathCases();
-                console.log('Export response:', response);
-                console.log('Response data type:', typeof response.data);
-                console.log('Response data size:', response.data?.size || 'unknown');
-                
-                if (!response.data) {
-                  throw new Error('No data received from server');
-                }
-                
-                // Create and download Excel file
-                const blob = new Blob([response.data], { 
-                  type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
-                });
-                console.log('Blob created, size:', blob.size);
-                
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                
-                // Generate filename with current timestamp
-                const now = new Date();
-                const timestamp = now.toISOString().slice(0, 19).replace(/[-:]/g, '').replace('T', '_');
-                const filename = `death_cases_${timestamp}.xlsx`;
-                link.setAttribute('download', filename);
-                
-                console.log('Downloading file:', filename);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(url);
-                
-                showSnackbar('मृत्यु मामले सफलतापूर्वक एक्सपोर्ट किए गए!', 'success');
-                console.log('Export completed successfully');
-              } catch (error) {
-                console.error('Death cases export error:', error);
-                console.error('Error details:', {
-                  message: error.message,
-                  response: error.response?.data,
-                  status: error.response?.status,
-                  statusText: error.response?.statusText
-                });
-                
-                let errorMessage = 'मृत्यु मामले एक्सपोर्ट करने में त्रुटि!';
-                if (error.response?.status === 404) {
-                  errorMessage = 'एक्सपोर्ट API उपलब्ध नहीं है!';
-                } else if (error.response?.status === 403) {
-                  errorMessage = 'एक्सपोर्ट करने की अनुमति नहीं है!';
-                }
-                
-                showSnackbar(errorMessage, 'error');
-              } finally {
-                setExportLoading(false);
-                console.log('Export loading state reset');
-              }
-            }}
-            disabled={exportLoading}
+            onClick={() => setExportDialog(true)}
           >
-            {exportLoading ? 'एक्सपोर्ट हो रहा है...' : 'एक्सपोर्ट'}
+            एक्सपोर्ट
           </Button>
         </Box>
       </Box>
@@ -1702,7 +1374,7 @@ const AdminDashboard = () => {
                 </TableCell>
               </TableRow>
             ) : deathCases.map((deathCase) => (
-              <TableRow key={deathCase.id || deathCase.caseId || deathCase.deathCaseId || Math.random()} hover>
+              <TableRow key={deathCase.id} hover>
                 <TableCell>
                   <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                     {deathCase.deceasedName}
@@ -1748,37 +1420,20 @@ const AdminDashboard = () => {
                   </Box>
                 </TableCell>
                 <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <Chip 
-                      label={deathCase.status === 'OPEN' ? 'खुला' : 'बंद'}
-                      size="small"
-                      sx={{ 
-                        bgcolor: deathCase.status === 'OPEN' ? '#4caf50' : '#f44336',
-                        color: 'white'
-                      }}
-                    />
-                    {(deathCase.isHidden === true) && (
-                      <Chip
-                        label="छुपाया गया"
-                        size="small"
-                        icon={<Lock fontSize="small" />}
-                        sx={{
-                          bgcolor: '#f44336',
-                          color: 'white',
-                          '& .MuiChip-icon': {
-                            color: 'white'
-                          }
-                        }}
-                      />
-                    )}
-                  </Box>
+                  <Chip 
+                    label={deathCase.status === 'OPEN' ? 'खुला' : deathCase.status === 'CLOSED' ? 'बंद' : deathCase.status}
+                    size="small"
+                    sx={{ 
+                      bgcolor: deathCase.status === 'OPEN' ? '#ff9800' : deathCase.status === 'CLOSED' ? '#4caf50' : '#f44336',
+                      color: 'white'
+                    }}
+                  />
                 </TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', gap: 0.5 }}>
                     <IconButton 
                       size="small" 
                       onClick={() => {
-                        console.log('Selected death case for view:', deathCase);
                         setSelectedDeathCase(deathCase);
                         setDeathCaseDialog(true);
                       }}
@@ -1786,26 +1441,6 @@ const AdminDashboard = () => {
                       color="primary"
                     >
                       <Visibility fontSize="small" />
-                    </IconButton>
-                    
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        console.log('Death case object:', deathCase);
-                        const id = deathCase.id || deathCase.caseId || deathCase.deathCaseId;
-                        console.log('Extracted ID:', id);
-                        handleUpdateDeathCaseStatus(id, deathCase.status === 'OPEN' ? 'close' : 'open');
-                      }}
-                      title={deathCase.status === 'OPEN' ? 'बंद करें' : 'खोलें'}
-                      sx={{
-                        color: deathCase.status === 'OPEN' ? '#4caf50' : '#f44336',
-                        bgcolor: deathCase.status === 'OPEN' ? '#4caf5020' : '#f4433620',
-                        '&:hover': {
-                          bgcolor: deathCase.status === 'OPEN' ? '#4caf5040' : '#f4433640'
-                        }
-                      }}
-                    >
-                      <Lock fontSize="small" />
                     </IconButton>
                     {deathCase.nominee1QrCode && (
                       <IconButton 
@@ -1954,7 +1589,7 @@ const AdminDashboard = () => {
                       title="हल करें"
                       color="success"
                     >
-                      <Add fontSize="small" />
+                      <CheckCircle fontSize="small" />
                     </IconButton>
                     <IconButton 
                       size="small" 
@@ -1962,7 +1597,7 @@ const AdminDashboard = () => {
                       title="अस्वीकार करें"
                       color="error"
                     >
-                      <Delete fontSize="small" />
+                      <Cancel fontSize="small" />
                     </IconButton>
                     <IconButton 
                       size="small" 
@@ -2708,21 +2343,10 @@ const AdminDashboard = () => {
                     <Typography variant="body2">
                       <strong>स्थिति:</strong>{' '}
                       <Chip
-                        label={
-                          selectedDeathCase.status === 'OPEN' ? 'खुला' : 
-                          selectedDeathCase.status === 'CLOSED' ? 'बंद' : 
-                          selectedDeathCase.status === 'ACTIVE' ? 'सक्रिय' :
-                          selectedDeathCase.status === 'INACTIVE' ? 'निष्क्रिय' :
-                          selectedDeathCase.status
-                        }
+                        label={selectedDeathCase.status === 'OPEN' ? 'खुला' : selectedDeathCase.status === 'CLOSED' ? 'बंद' : selectedDeathCase.status}
                         size="small"
                         sx={{
-                          bgcolor: 
-                            selectedDeathCase.status === 'OPEN' ? '#ff9800' : 
-                            selectedDeathCase.status === 'CLOSED' ? '#4caf50' : 
-                            selectedDeathCase.status === 'ACTIVE' ? '#4caf50' :
-                            selectedDeathCase.status === 'INACTIVE' ? '#f44336' :
-                            '#f44336',
+                          bgcolor: selectedDeathCase.status === 'OPEN' ? '#ff9800' : selectedDeathCase.status === 'CLOSED' ? '#4caf50' : '#f44336',
                           color: 'white',
                           ml: 1
                         }}
@@ -2954,8 +2578,8 @@ const AdminDashboard = () => {
                     <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 'bold' }}>
                       मृतक की जानकारी
                     </Typography>
-                    <IconButton size="medium" sx={{ color: '#d32f2f', '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.1)' } }}>
-                      {sectionExpanded.basicInfo ? <ExpandLess fontSize="large" /> : <ExpandMore fontSize="large" />}
+                    <IconButton size="small" sx={{ color: '#d32f2f' }}>
+                      {sectionExpanded.basicInfo ? <ExpandLess /> : <ExpandMore />}
                     </IconButton>
                   </Box>
                   <Collapse in={sectionExpanded.basicInfo}>
@@ -3072,9 +2696,7 @@ const AdminDashboard = () => {
                         sx={{ '& .MuiInputLabel-root': { fontWeight: 'bold' } }}
                       />
                     </Grid>
-                      </Grid>
-                    </Box>
-                  </Collapse>
+                  </Grid>
                 </Paper>
               </Grid>
               
@@ -3095,8 +2717,8 @@ const AdminDashboard = () => {
                     <Typography variant="h6" sx={{ color: '#9c27b0', fontWeight: 'bold' }}>
                       स्थान की जानकारी
                     </Typography>
-                    <IconButton size="medium" sx={{ color: '#9c27b0', '&:hover': { bgcolor: 'rgba(156, 39, 176, 0.1)' } }}>
-                      {sectionExpanded.locationInfo ? <ExpandLess fontSize="large" /> : <ExpandMore fontSize="large" />}
+                    <IconButton size="small" sx={{ color: '#9c27b0' }}>
+                      {sectionExpanded.locationInfo ? <ExpandLess /> : <ExpandMore />}
                     </IconButton>
                   </Box>
                   <Collapse in={sectionExpanded.locationInfo}>
@@ -3191,9 +2813,7 @@ const AdminDashboard = () => {
                         </Select>
                       </FormControl>
                     </Grid>
-                      </Grid>
-                    </Box>
-                  </Collapse>
+                  </Grid>
                 </Paper>
               </Grid>
 
@@ -3214,8 +2834,8 @@ const AdminDashboard = () => {
                     <Typography variant="h6" sx={{ color: '#2e7d32', fontWeight: 'bold' }}>
                       नॉमिनी की जानकारी
                     </Typography>
-                    <IconButton size="medium" sx={{ color: '#2e7d32', '&:hover': { bgcolor: 'rgba(46, 125, 50, 0.1)' } }}>
-                      {sectionExpanded.nomineeInfo ? <ExpandLess fontSize="large" /> : <ExpandMore fontSize="large" />}
+                    <IconButton size="small" sx={{ color: '#2e7d32' }}>
+                      {sectionExpanded.nomineeInfo ? <ExpandLess /> : <ExpandMore />}
                     </IconButton>
                   </Box>
                   <Collapse in={sectionExpanded.nomineeInfo}>
@@ -3292,9 +2912,7 @@ const AdminDashboard = () => {
                         />
                       </Button>
                     </Grid>
-                      </Grid>
-                    </Box>
-                  </Collapse>
+                  </Grid>
                 </Paper>
               </Grid>
 
@@ -3307,28 +2925,11 @@ const AdminDashboard = () => {
               
               {/* Account 1 Section */}
               <Grid item xs={12}>
-                <Paper elevation={2} sx={{ borderRadius: 2, border: '2px solid #f57c00' }}>
-                  <Box 
-                    sx={{ 
-                      p: 2, 
-                      bgcolor: '#fff3e0', 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center',
-                      cursor: 'pointer'
-                    }}
-                    onClick={() => handleSectionToggle('account1')}
-                  >
-                    <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 'bold' }}>
-                      खाता 1 (अनिवार्य *)
-                    </Typography>
-                    <IconButton size="medium" sx={{ color: '#f57c00', '&:hover': { bgcolor: 'rgba(245, 124, 0, 0.1)' } }}>
-                      {sectionExpanded.account1 ? <ExpandLess fontSize="large" /> : <ExpandMore fontSize="large" />}
-                    </IconButton>
-                  </Box>
-                  <Collapse in={sectionExpanded.account1}>
-                    <Box sx={{ p: 3 }}>
-                      <Grid container spacing={2}>
+                <Paper elevation={2} sx={{ p: 3, bgcolor: '#fff3e0', borderRadius: 2, border: '2px solid #f57c00' }}>
+                  <Typography variant="h6" sx={{ mb: 2, color: '#d32f2f', fontWeight: 'bold' }}>
+                    खाता 1 (अनिवार्य *)
+                  </Typography>
+                  <Grid container spacing={2}>
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
@@ -3369,36 +2970,17 @@ const AdminDashboard = () => {
                         sx={{ '& .MuiInputLabel-root': { fontWeight: 'bold' } }}
                       />
                     </Grid>
-                      </Grid>
-                    </Box>
-                  </Collapse>
+                  </Grid>
                 </Paper>
               </Grid>
 
               {/* Account 2 Section */}
               <Grid item xs={12}>
-                <Paper elevation={2} sx={{ borderRadius: 2, border: '2px solid #1976d2' }}>
-                  <Box 
-                    sx={{ 
-                      p: 2, 
-                      bgcolor: '#e3f2fd', 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center',
-                      cursor: 'pointer'
-                    }}
-                    onClick={() => handleSectionToggle('account2')}
-                  >
-                    <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 'bold' }}>
-                      खाता 2 (अनिवार्य *)
-                    </Typography>
-                    <IconButton size="medium" sx={{ color: '#1976d2', '&:hover': { bgcolor: 'rgba(25, 118, 210, 0.1)' } }}>
-                      {sectionExpanded.account2 ? <ExpandLess fontSize="large" /> : <ExpandMore fontSize="large" />}
-                    </IconButton>
-                  </Box>
-                  <Collapse in={sectionExpanded.account2}>
-                    <Box sx={{ p: 3 }}>
-                      <Grid container spacing={2}>
+                <Paper elevation={2} sx={{ p: 3, bgcolor: '#e3f2fd', borderRadius: 2, border: '2px solid #1976d2' }}>
+                  <Typography variant="h6" sx={{ mb: 2, color: '#d32f2f', fontWeight: 'bold' }}>
+                    खाता 2 (अनिवार्य *)
+                  </Typography>
+                  <Grid container spacing={2}>
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
@@ -3439,36 +3021,17 @@ const AdminDashboard = () => {
                         sx={{ '& .MuiInputLabel-root': { fontWeight: 'bold' } }}
                       />
                     </Grid>
-                      </Grid>
-                    </Box>
-                  </Collapse>
+                  </Grid>
                 </Paper>
               </Grid>
 
               {/* Account 3 Section */}
               <Grid item xs={12}>
-                <Paper elevation={2} sx={{ borderRadius: 2, border: '2px solid #4caf50' }}>
-                  <Box 
-                    sx={{ 
-                      p: 2, 
-                      bgcolor: '#e8f5e8', 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center',
-                      cursor: 'pointer'
-                    }}
-                    onClick={() => handleSectionToggle('account3')}
-                  >
-                    <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 'bold' }}>
-                      खाता 3 (अनिवार्य *)
-                    </Typography>
-                    <IconButton size="medium" sx={{ color: '#4caf50', '&:hover': { bgcolor: 'rgba(76, 175, 80, 0.1)' } }}>
-                      {sectionExpanded.account3 ? <ExpandLess fontSize="large" /> : <ExpandMore fontSize="large" />}
-                    </IconButton>
-                  </Box>
-                  <Collapse in={sectionExpanded.account3}>
-                    <Box sx={{ p: 3 }}>
-                      <Grid container spacing={2}>
+                <Paper elevation={2} sx={{ p: 3, bgcolor: '#e8f5e8', borderRadius: 2, border: '2px solid #4caf50' }}>
+                  <Typography variant="h6" sx={{ mb: 2, color: '#d32f2f', fontWeight: 'bold' }}>
+                    खाता 3 (अनिवार्य *)
+                  </Typography>
+                  <Grid container spacing={2}>
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
@@ -3597,107 +3160,6 @@ const AdminDashboard = () => {
               sx={{ bgcolor: '#d32f2f' }}
             >
               {deathCaseFormLoading ? 'सेव हो रहा है...' : 'सेव करें'}
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* Manager Users Dialog */}
-        <Dialog 
-          open={managerUsersDialog} 
-          onClose={() => setManagerUsersDialog(false)}
-          maxWidth="lg"
-          fullWidth
-        >
-          <DialogTitle>
-            {selectedManagerInfo ? `${selectedManagerInfo.managerName} के उपयोगकर्ता` : 'मैनेजर उपयोगकर्ता'}
-            <Typography variant="subtitle2" color="textSecondary">
-              {selectedManagerInfo && (
-                `${selectedManagerInfo.managerLevel === 'SAMBHAG' ? 'संभाग' : 
-                   selectedManagerInfo.managerLevel === 'DISTRICT' ? 'जिला' : 
-                   selectedManagerInfo.managerLevel === 'BLOCK' ? 'ब्लॉक' : selectedManagerInfo.managerLevel} प्रबंधक`
-              )}
-            </Typography>
-          </DialogTitle>
-          <DialogContent dividers>
-            {managerUsers.length === 0 ? (
-              <Typography variant="body2" color="textSecondary" align="center" sx={{ py: 4 }}>
-                कोई उपयोगकर्ता नहीं मिला
-              </Typography>
-            ) : (
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell><strong>नाम</strong></TableCell>
-                      <TableCell><strong>ईमेल</strong></TableCell>
-                      <TableCell><strong>मोबाइल</strong></TableCell>
-                      <TableCell><strong>विभाग</strong></TableCell>
-                      <TableCell><strong>स्थान</strong></TableCell>
-                      <TableCell><strong>भूमिका</strong></TableCell>
-                      <TableCell><strong>स्थिति</strong></TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {managerUsers.map((user) => (
-                      <TableRow key={user.id} hover>
-                        <TableCell>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {user.name} {user.surname}
-                          </Typography>
-                          {user.fatherName && (
-                            <Typography variant="caption" color="textSecondary">
-                              {user.fatherName}
-                            </Typography>
-                          )}
-                        </TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>{user.mobileNumber}</TableCell>
-                        <TableCell>
-                          <Typography variant="body2">{user.department}</Typography>
-                          {user.schoolOfficeName && (
-                            <Typography variant="caption" display="block" color="textSecondary">
-                              {user.schoolOfficeName}
-                            </Typography>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="caption">
-                            {user.departmentBlock && `${user.departmentBlock}, `}
-                            {user.departmentDistrict && `${user.departmentDistrict}, `}
-                            {user.departmentSambhag}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={user.role === 'ROLE_ADMIN' ? 'एडमिन' :
-                                   user.role === 'ROLE_SAMBHAG_MANAGER' ? 'संभाग प्रबंधक' :
-                                   user.role === 'ROLE_DISTRICT_MANAGER' ? 'जिला प्रबंधक' :
-                                   user.role === 'ROLE_BLOCK_MANAGER' ? 'ब्लॉक प्रबंधक' : 
-                                   'उपयोगकर्ता'}
-                            size="small"
-                            color={user.role === 'ROLE_ADMIN' ? 'error' : 
-                                   user.role.includes('MANAGER') ? 'primary' : 'default'}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={user.status === 'ACTIVE' ? 'सक्रिय' : 
-                                   user.status === 'BLOCKED' ? 'अवरोधित' : 'निष्क्रिय'}
-                            size="small"
-                            color={user.status === 'ACTIVE' ? 'success' : 
-                                   user.status === 'BLOCKED' ? 'error' : 'default'}
-                          />
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setManagerUsersDialog(false)}>
-              बंद करें
             </Button>
           </DialogActions>
         </Dialog>

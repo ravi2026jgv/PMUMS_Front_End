@@ -1,8 +1,7 @@
 import axios from 'axios';
-import toast from 'react-hot-toast';
 
 // API base URL - direct connection to backend
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://13.204.36.38:8080/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 // Create axios instance for authenticated requests
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -91,8 +90,6 @@ publicApi.interceptors.request.use(
 
 // Response interceptor for error handling (apply to both instances)
 const authErrorHandler = (error) => {
-  const message = error.response?.data?.message || 'कुछ गलत हुआ है';
-  
   if (error.response?.status === 401) {
     localStorage.removeItem('authToken');
     localStorage.removeItem('user');
@@ -130,3 +127,167 @@ publicApi.interceptors.response.use(
 
 export default api;
 export { publicApi };
+
+// Admin API functions
+const adminAPI = {
+  // Get all users with pagination and filters
+  getUsers: (page = 0, size = 20, filters = {}) => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      size: size.toString(),
+      ...filters
+    });
+    return api.get(`/admin/users?${params}`);
+  },
+
+  // Get specific user by ID
+  getUser: (id) => {
+    return api.get(`/admin/users/${id}`);
+  },
+
+  // Block user
+  blockUser: (id) => {
+    return api.put(`/admin/users/${id}/block`);
+  },
+
+  // Unblock user
+  unblockUser: (id) => {
+    return api.put(`/admin/users/${id}/unblock`);
+  },
+
+  // Soft delete user
+  deleteUser: (id) => {
+    return api.delete(`/admin/users/${id}`);
+  },
+
+  // Update user role
+  updateUserRole: (id, role) => {
+    return api.put(`/admin/users/${id}/role`, { role });
+  },
+
+  // Export users as CSV
+  exportUsers: (month, year) => {
+    return api.get('/admin/users/export', { 
+      params: { month, year },
+      responseType: 'text' // Since it returns CSV as string
+    });
+  },
+
+  // Get all death cases
+  getDeathCases: () => {
+    return api.get('/death-cases');
+  },
+
+  // Create death case
+  createDeathCase: (formData) => {
+    return api.post('/death-cases', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+  },
+
+  // Open death case
+  openDeathCase: (id) => {
+    return api.put(`/death-cases/${id}/show`);
+  },
+
+  // Close death case
+  closeDeathCase: (id) => {
+    return api.put(`/death-cases/${id}/hide`);
+  },
+
+  // Activate death case (kept for backward compatibility)
+  activateDeathCase: (id) => {
+    return api.put(`/death-cases/${id}/activate`);
+  },
+
+  // Deactivate death case (kept for backward compatibility)
+  deactivateDeathCase: (id) => {
+    return api.put(`/death-cases/${id}/deactivate`);
+  },
+
+  // Hide death case (Admin only)
+  hideDeathCase: (id) => {
+    return api.patch(`/death-cases/${id}/hide`);
+  },
+
+  // Show/Unhide death case (Admin only)
+  showDeathCase: (id) => {
+    return api.patch(`/death-cases/${id}/show`);
+  },
+
+  // Get dashboard stats (if you have this endpoint)
+  getDashboardStats: () => {
+    return api.get('/admin/dashboard/stats');
+  },
+
+  // Export death cases to Excel
+  exportDeathCases: () => {
+    return api.get('/death-cases/export', {
+      responseType: 'blob',
+      headers: {
+        'Accept': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      }
+    });
+  },
+
+  // Get all receipts
+  getReceipts: (params = {}) => {
+    return api.get('/receipts', { params });
+  },
+
+  // Get manager assignments
+  getManagerAssignments: (params = {}) => {
+    return api.get('/manager/assignments', { params });
+  },
+
+  // Create manager assignment
+  createManagerAssignment: (assignmentData) => {
+    return api.post('/manager/assignments', assignmentData);
+  },
+
+  // Location APIs - Using same pattern as registration
+  getLocationHierarchy: () => {
+    return api.get('/locations/hierarchy');
+  }
+};
+
+// Manager API endpoints
+const managerAPI = {
+  // Manager Assignment APIs
+  createAssignment: (assignmentData) => api.post('/manager/assignments', assignmentData),
+  getAssignments: (params = {}) => api.get('/manager/assignments', { params }),
+  getAssignmentsByLocation: (params = {}) => api.get('/manager/assignments/location', { params }),
+  removeAssignment: (assignmentId) => api.delete(`/manager/assignments/${assignmentId}`),
+
+  // Manager User Management APIs
+  getAccessibleUsers: (params = {}) => api.get('/manager/users', { params }),
+  getUsersByLocation: (params = {}) => api.get('/manager/users/location', { params }),
+  getUserStats: () => api.get('/manager/users/stats'),
+  blockUser: (userId, reason) => api.put(`/manager/users/${userId}/block`, { reason }),
+  unblockUser: (userId) => api.put(`/manager/users/${userId}/unblock`),
+  updateUserRole: (userId, role) => api.put(`/manager/users/${userId}/role`, { role }),
+
+  // Manager Query System APIs
+  createQuery: (queryData) => api.post('/manager/queries', queryData),
+  getQueries: (params = {}) => api.get('/manager/queries', { params }),
+  getQueryStats: () => api.get('/manager/queries/stats'),
+  assignQuery: (queryId, managerId) => api.put(`/manager/queries/${queryId}/assign`, { managerId }),
+  updateQueryStatus: (queryId, status) => api.put(`/manager/queries/${queryId}/status`, { status }),
+  resolveQuery: (queryId, resolution) => api.put(`/manager/queries/${queryId}/resolve`, { resolution }),
+  escalateQuery: (queryId) => api.put(`/manager/queries/${queryId}/escalate`),
+  getPendingQueries: (params = {}) => api.get('/manager/queries/pending', { params }),
+  getUrgentQueries: (params = {}) => api.get('/manager/queries/urgent', { params }),
+  getMyQueries: (params = {}) => api.get('/manager/queries/my-queries', { params }),
+
+  // Manager Dashboard APIs
+  getDashboardOverview: () => api.get('/manager/dashboard/overview'),
+  getManagerScope: (params = {}) => api.get('/manager/scope', { params }),
+  getQuickStats: () => api.get('/manager/dashboard/stats'),
+  getAlerts: () => api.get('/manager/dashboard/alerts'),
+  getPermissions: () => api.get('/manager/dashboard/permissions')
+};
+
+// Export all APIs
+export { adminAPI, managerAPI };

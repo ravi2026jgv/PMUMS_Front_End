@@ -21,7 +21,8 @@ import {
   InputAdornment,
   CircularProgress,
   Alert,
-  Chip
+  Chip,
+  Grid
 } from '@mui/material';
 import {
   Search,
@@ -55,6 +56,7 @@ const TeachersList = () => {
     districtName: '',
     blockId: '',
     blockName: '',
+    userId: '',
     searchName: '',
     mobileNumber: ''
   });
@@ -203,6 +205,7 @@ const TeachersList = () => {
       if (filters.sambhagId) params.append('sambhagId', filters.sambhagId);
       if (filters.districtId) params.append('districtId', filters.districtId);
       if (filters.blockId) params.append('blockId', filters.blockId);
+      if (filters.userId) params.append('userId', filters.userId);
       if (filters.searchName) params.append('name', filters.searchName);
       if (filters.mobileNumber) params.append('mobile', filters.mobileNumber);
       
@@ -234,7 +237,7 @@ const TeachersList = () => {
     } finally {
       setLoading(false);
     }
-  }, [filters.sambhagId, filters.districtId, filters.blockId, filters.searchName, filters.mobileNumber, pageSize]);
+  }, [filters.sambhagId, filters.districtId, filters.blockId, filters.userId, filters.searchName, filters.mobileNumber, pageSize]);
 
   // Initial fetch of location data
   useEffect(() => {
@@ -263,7 +266,7 @@ const TeachersList = () => {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters.sambhagId, filters.districtId, filters.blockId, filters.searchName, filters.mobileNumber]);
+  }, [filters.sambhagId, filters.districtId, filters.blockId, filters.userId, filters.searchName, filters.mobileNumber]);
 
   // Check filters active state
   useEffect(() => {
@@ -279,6 +282,7 @@ const TeachersList = () => {
       districtName: '',
       blockId: '',
       blockName: '',
+      userId: '',
       searchName: '',
       mobileNumber: ''
     });
@@ -354,105 +358,176 @@ const TeachersList = () => {
           {/* Filters */}
           <Card sx={{ mb: 4, borderRadius: 3, boxShadow: '0 5px 15px rgba(0,0,0,0.08)' }}>
             <CardContent sx={{ p: 3 }}>
-              <Box sx={{ 
-                display: 'flex', 
-                gap: 2, 
-                flexWrap: 'wrap',
-                alignItems: 'center',
-                mb: 2
-              }}>
+              <Grid container spacing={2} alignItems="end">
                 {/* Location filters - Hidden temporarily
-                <FormControl sx={{ minWidth: 200 }}>
-                  <InputLabel>संभाग चुनें</InputLabel>
-                  <Select
-                    value={filters.sambhagId}
-                    label="संभाग चुनें"
-                    onChange={(e) => handleSambhagChange(e.target.value)}
-                  >
-                    <MenuItem value="">सभी संभाग</MenuItem>
-                    {sambhagOptions.map((sambhag) => (
-                      <MenuItem key={sambhag.id} value={sambhag.id}>
-                        {sambhag.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <Grid item xs={12} sm={4} md={2}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>संभाग चुनें</InputLabel>
+                    <Select
+                      value={filters.sambhagId}
+                      label="संभाग चुनें"
+                      onChange={(e) => handleSambhagChange(e.target.value)}
+                    >
+                      <MenuItem value="">सभी संभाग</MenuItem>
+                      {sambhagOptions.map((sambhag) => (
+                        <MenuItem key={sambhag.id} value={sambhag.id}>
+                          {sambhag.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
 
-                <FormControl sx={{ minWidth: 200 }} disabled={!filters.sambhagId}>
-                  <InputLabel>जिला चुनें</InputLabel>
-                  <Select
-                    value={filters.districtId}
-                    label="जिला चुनें"
-                    onChange={(e) => handleDistrictChange(e.target.value)}
-                  >
-                    <MenuItem value="">सभी जिले</MenuItem>
-                    {districtOptions.map((district) => (
-                      <MenuItem key={district.id} value={district.id}>
-                        {district.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <Grid item xs={12} sm={4} md={2}>
+                  <FormControl fullWidth size="small" disabled={!filters.sambhagId}>
+                    <InputLabel>जिला चुनें</InputLabel>
+                    <Select
+                      value={filters.districtId}
+                      label="जिला चुनें"
+                      onChange={(e) => handleDistrictChange(e.target.value)}
+                    >
+                      <MenuItem value="">सभी जिले</MenuItem>
+                      {districtOptions.map((district) => (
+                        <MenuItem key={district.id} value={district.id}>
+                          {district.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
 
-                <FormControl sx={{ minWidth: 200 }} disabled={!filters.districtId}>
-                  <InputLabel>ब्लॉक चुनें</InputLabel>
-                  <Select
-                    value={filters.blockId}
-                    label="ब्लॉक चुनें"
-                    onChange={(e) => handleBlockChange(e.target.value)}
-                  >
-                    <MenuItem value="">सभी ब्लॉक</MenuItem>
-                    {blockOptions.map((block) => (
-                      <MenuItem key={block.id} value={block.id}>
-                        {block.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <Grid item xs={12} sm={4} md={2}>
+                  <FormControl fullWidth size="small" disabled={!filters.districtId}>
+                    <InputLabel>ब्लॉक चुनें</InputLabel>
+                    <Select
+                      value={filters.blockId}
+                      label="ब्लॉक चुनें"
+                      onChange={(e) => handleBlockChange(e.target.value)}
+                    >
+                      <MenuItem value="">सभी ब्लॉक</MenuItem>
+                      {blockOptions.map((block) => (
+                        <MenuItem key={block.id} value={block.id}>
+                          {block.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
                 */}
 
-                <TextField
-                  placeholder="नाम से खोजें"
-                  value={filters.searchName}
-                  onChange={(e) => setFilters(prev => ({ ...prev, searchName: e.target.value }))}
-                  sx={{ minWidth: 200 }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Search />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
+                <Grid item xs={12} sm={4} md={4}>
+                  <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
+                    यूजर आईडी (User ID)
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    placeholder="यूजर आईडी से खोजें"
+                    value={filters.userId}
+                    onChange={(e) => setFilters(prev => ({ ...prev, userId: e.target.value }))}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        border: '2px solid #2e7d32',
+                        borderRadius: '8px',
+                        '&:hover': {
+                          borderColor: '#1b5e20',
+                        },
+                        '&.Mui-focused': {
+                          borderColor: '#2e7d32',
+                        }
+                      }
+                    }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Search />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
 
-                <TextField
-                  placeholder="मोबाइल नंबर से खोजें"
-                  value={filters.mobileNumber}
-                  onChange={(e) => setFilters(prev => ({ ...prev, mobileNumber: e.target.value }))}
-                  sx={{ minWidth: 200 }}
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Search />
-                      </InputAdornment>
-                    ),
-                  }}
-                />
+                <Grid item xs={12} sm={4} md={4}>
+                  <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
+                    नाम (Name)
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    placeholder="नाम से खोजें"
+                    value={filters.searchName}
+                    onChange={(e) => setFilters(prev => ({ ...prev, searchName: e.target.value }))}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        border: '2px solid #2e7d32',
+                        borderRadius: '8px',
+                        '&:hover': {
+                          borderColor: '#1b5e20',
+                        },
+                        '&.Mui-focused': {
+                          borderColor: '#2e7d32',
+                        }
+                      }
+                    }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Search />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={4} md={4}>
+                  <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
+                    मोबाइल (Mobile)
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    placeholder="मोबाइल नंबर से खोजें"
+                    value={filters.mobileNumber}
+                    onChange={(e) => setFilters(prev => ({ ...prev, mobileNumber: e.target.value }))}
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        border: '2px solid #2e7d32',
+                        borderRadius: '8px',
+                        '&:hover': {
+                          borderColor: '#1b5e20',
+                        },
+                        '&.Mui-focused': {
+                          borderColor: '#2e7d32',
+                        }
+                      }
+                    }}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Search />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
 
                 {/* Clear Filters button - Hidden temporarily
-                <Button
-                  variant="contained"
-                  onClick={clearFilters}
-                  sx={{
-                    background: '#ff9800',
-                    '&:hover': { background: '#f57c00' }
-                  }}
-                  startIcon={<FilterList />}
-                >
-                  फिल्टर साफ़ करें
-                </Button>
+                <Grid item xs={12} sm={4} md={3}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    onClick={clearFilters}
+                    sx={{
+                      background: '#ff9800',
+                      '&:hover': { background: '#f57c00' }
+                    }}
+                    startIcon={<FilterList />}
+                  >
+                    फिल्टर साफ़ करें
+                  </Button>
+                </Grid>
                 */}
-              </Box>
+              </Grid>
 
               {/* Filter info */}
               {filtersActive && (

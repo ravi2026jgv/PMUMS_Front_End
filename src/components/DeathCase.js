@@ -82,7 +82,22 @@ const DeathCase = () => {
         
         const cases = Array.isArray(response.data) ? response.data : [];
         console.log('Fetched death cases:', cases);
-        setDeathCases(cases.slice(0, 6)); // Show latest 6 cases on home page
+        
+        // Filter to show only active/open and non-hidden cases on home page
+        const visibleCases = cases.filter(deathCase => {
+          // Check if case is open/active (show on homepage) and not hidden
+          // Backend typically returns: OPEN, CLOSED, ACTIVE, INACTIVE
+          const isActiveOrOpen = deathCase.status === 'OPEN' || deathCase.status === 'ACTIVE';
+          // Handle missing isHidden field from backend - only hide if explicitly true
+          const isNotHidden = deathCase.isHidden !== true;
+          
+          console.log(`Death case ${deathCase.deceasedName}: status=${deathCase.status}, isHidden=${deathCase.isHidden}, showing=${isActiveOrOpen && isNotHidden}`);
+          
+          return isActiveOrOpen && isNotHidden;
+        });
+        
+        console.log(`Showing ${visibleCases.length} out of ${cases.length} death cases on home page`);
+        setDeathCases(visibleCases.slice(0, 6)); // Show latest 6 visible cases on home page
         
       } catch (err) {
         // Ignore abortion errors
@@ -124,7 +139,8 @@ const DeathCase = () => {
             bankName: 'SBI Bank'
           },
           description: 'PMUMS मध्यप्रदेश के पंजीकृत शिक्षक श्री राकेश कुमार अहिरवार का दिनांक 05/12/2025 को स्वास्थ्य कारणों से आकस्मिक देहावसान हो गया। परिवार को इस कठिन समय में आर्थिक सहायता की आवश्यकता है।',
-          status: 'ACTIVE',
+          status: 'OPEN',
+          isHidden: false,
           createdAt: '2025-08-31T10:30:00Z'
         }]);
       } finally {

@@ -13,12 +13,7 @@ import {
 } from '@mui/material';
 import {
   AccountCircle,
-  Home,
-  Login,
-  PersonAdd,
   ExitToApp,
-  Dashboard,
-  Person,
   Menu as MenuIcon,
 } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
@@ -29,6 +24,10 @@ const Header = () => {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMenuAnchor, setMobileMenuAnchor] = React.useState(null);
+
+  console.log('Header component rendering');
+  console.log('User:', user);
+  console.log('Is authenticated:', isAuthenticated);
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -56,6 +55,7 @@ const Header = () => {
     { label: 'HOME', path: '/' },
     { label: 'ABOUT', path: '/about' },
     { label: 'OUR MEMBERS', path: '/teachers-list' },
+    { label: 'LATE TEACHERS LIST', path: 'https://pmums.in/death-case/', external: true },
     { label: 'SAHYOG LIST', path: '/sahyog-list' },  // Hidden temporarily
     { label: 'ASAHYOG LIST', path: '/asahyog-list' },
     { label: 'NIYAMAWALI', path: '/niyamawali' },
@@ -145,33 +145,12 @@ const Header = () => {
               gap: 0.5
             }}>
               {navigationItems.map((item) => (
-                <Button
-                  key={item.path}
-                  component={Link}
-                  to={item.path}
-                  sx={{ 
-                    color: 'white',
-                    fontWeight: 600,
-                    fontSize: '0.9rem',
-                    px: 2,
-                    py: 1,
-                    textTransform: 'uppercase',
-                    '&:hover': {
-                      bgcolor: 'rgba(255,255,255,0.1)'
-                    }
-                  }}
-                >
-                  {item.label}
-                </Button>
-              ))}
-
-              {/* Auth Buttons */}
-              {isAuthenticated && (
-                <>
-                  {/* Dashboard hidden for now
+                item.external ? (
                   <Button
-                    component={Link}
-                    to="/dashboard"
+                    key={item.path}
+                    href={item.path}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     sx={{ 
                       color: 'white',
                       fontWeight: 600,
@@ -184,13 +163,82 @@ const Header = () => {
                       }
                     }}
                   >
-                    DASHBOARD
+                    {item.label}
                   </Button>
-                  */}
-                 
+                ) : (
+                  <Button
+                    key={item.path}
+                    component={Link}
+                    to={item.path}
+                    sx={{ 
+                      color: 'white',
+                      fontWeight: 600,
+                      fontSize: '0.9rem',
+                      px: 2,
+                      py: 1,
+                      textTransform: 'uppercase',
+                      '&:hover': {
+                        bgcolor: 'rgba(255,255,255,0.1)'
+                      }
+                    }}
+                  >
+                    {item.label}
+                  </Button>
+                )
+              ))}
+
+              {/* Auth Buttons */}
+              {isAuthenticated && (
+                <>
+                  {/* Role-based Dashboard Links */}
+                  {(user?.role === 'ADMIN' || user?.role === 'ROLE_ADMIN') && (
+                    <Button
+                      component={Link}
+                      to="/admin/dashboard"
+                      sx={{ 
+                        bgcolor: '#dc2626',
+                        color: 'white',
+                        fontWeight: 600,
+                        fontSize: '0.9rem',
+                        px: 2,
+                        py: 1,
+                        textTransform: 'uppercase',
+                        '&:hover': {
+                          bgcolor: '#b91c1c'
+                        }
+                      }}
+                    >
+                      ADMIN DASHBOARD
+                    </Button>
+                  )}
+                  
+                  {/* Manager Dashboard - For Manager Roles */}
+                  {(user?.role === 'SAMBHAG_MANAGER' || user?.role === 'ROLE_SAMBHAG_MANAGER' || 
+                    user?.role === 'DISTRICT_MANAGER' || user?.role === 'ROLE_DISTRICT_MANAGER' || 
+                    user?.role === 'BLOCK_MANAGER' || user?.role === 'ROLE_BLOCK_MANAGER') && (
+                    <Button
+                      component={Link}
+                      to="/manager/dashboard"
+                      sx={{ 
+                        bgcolor: '#1976d2',
+                        color: 'white',
+                        fontWeight: 600,
+                        fontSize: '0.9rem',
+                        px: 2,
+                        py: 1,
+                        textTransform: 'uppercase',
+                        '&:hover': {
+                          bgcolor: '#1565c0'
+                        }
+                      }}
+                    >
+                      MANAGER DASHBOARD
+                    </Button>
+                  )}
+
                   
                   {/* User Menu */}
-                  <div>
+                  <>
                     <IconButton
                       size="large"
                       aria-label="account of current user"
@@ -238,7 +286,7 @@ const Header = () => {
                         लॉगआउट
                       </MenuItem>
                     </Menu>
-                  </div>
+                  </>
                 </>
               )}
             </Box>
@@ -271,28 +319,77 @@ const Header = () => {
                 onClose={handleMobileMenuClose}
               >
                 {navigationItems.map((item) => (
-                  <MenuItem 
-                    key={item.path}
-                    component={Link} 
-                    to={item.path} 
-                    onClick={handleMobileMenuClose}
-                  >
-                    {item.label}
-                  </MenuItem>
-                ))}
-                {isAuthenticated && [
-                    /* Dashboard hidden for now
-                    <MenuItem component={Link} to="/dashboard" onClick={handleMobileMenuClose}>
-                      DASHBOARD
+                  item.external ? (
+                    <MenuItem 
+                      key={item.path}
+                      component="a"
+                      href={item.path}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={handleMobileMenuClose}
+                      sx={{ textDecoration: 'none', color: 'inherit' }}
+                    >
+                      {item.label}
                     </MenuItem>
-                    */
-                    <MenuItem key="profile" component={Link} to="/profile" onClick={handleMobileMenuClose}>
+                  ) : (
+                    <MenuItem 
+                      key={item.path}
+                      component={Link} 
+                      to={item.path} 
+                      onClick={handleMobileMenuClose}
+                    >
+                      {item.label}
+                    </MenuItem>
+                  )
+                ))}
+                {isAuthenticated && (
+                  <>
+                    {/* Role-based Dashboard Links for Mobile */}
+                    {(user?.role === 'ADMIN' || user?.role === 'ROLE_ADMIN') && (
+                      <MenuItem 
+                        component={Link} 
+                        to="/admin/dashboard" 
+                        onClick={handleMobileMenuClose}
+                        sx={{ 
+                          bgcolor: '#dc2626', 
+                          color: 'white',
+                          '&:hover': {
+                            bgcolor: '#b91c1c'
+                          }
+                        }}
+                      >
+                        ADMIN DASHBOARD
+                      </MenuItem>
+                    )}
+                    
+                    {/* Manager Dashboard - Unified for all manager roles */}
+                    {(user?.role === 'SAMBHAG_MANAGER' || user?.role === 'ROLE_SAMBHAG_MANAGER' || 
+                      user?.role === 'DISTRICT_MANAGER' || user?.role === 'ROLE_DISTRICT_MANAGER' ||
+                      user?.role === 'BLOCK_MANAGER' || user?.role === 'ROLE_BLOCK_MANAGER') && (
+                      <MenuItem 
+                        component={Link} 
+                        to="/manager/dashboard" 
+                        onClick={handleMobileMenuClose}
+                        sx={{ 
+                          bgcolor: '#1976d2', 
+                          color: 'white',
+                          '&:hover': {
+                            bgcolor: '#1565c0'
+                          }
+                        }}
+                      >
+                        MANAGER DASHBOARD
+                      </MenuItem>
+                    )}
+                    
+                    <MenuItem component={Link} to="/profile" onClick={handleMobileMenuClose}>
                       PROFILE
-                    </MenuItem>,
-                    <MenuItem key="logout" onClick={handleLogout}>
+                    </MenuItem>
+                    <MenuItem onClick={handleLogout}>
                       LOGOUT
                     </MenuItem>
-                ]}
+                  </>
+                )}
               </Menu>
             </Box>
           </Toolbar>
