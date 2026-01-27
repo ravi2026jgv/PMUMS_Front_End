@@ -36,7 +36,7 @@ const Home = () => {
 
       {/* Death Case Section - TEMPORARILY HIDDEN */}
       <Box sx={{ py: 8, background: '#FFF8F0' }}>
-        <DeathCase />
+        {/* <DeathCase /> */}
       </Box>
 
      {/* Founders Section */}

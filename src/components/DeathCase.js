@@ -108,41 +108,6 @@ const DeathCase = () => {
         setError('डेथ केस लोड करने में त्रुटि हुई है');
         console.log('Using fallback data due to API error');
         // Use fallback data if API fails
-        setDeathCases([{
-          id: 1,
-          deceasedName: 'श्री राकेश कुमार अहिरवार',
-          employeeCode: 'PMUMS20246261',
-          department: 'शिक्षा विभाग',
-          district: 'भोपाल',
-          caseDate: '2025-08-31',
-          userImage: '/Profile photo.png',
-          nominee1Name: 'श्रीमती सपना अहिरवार',
-          nominee2Name: 'बॉबी अहिरवार',
-          nominee1QrCode: '/sapna_Ahirwar_QR_1.png',
-          nominee2QrCode: '/Boby_Ahirwar_QR_2.png',
-          account1: {
-            accountHolderName: 'श्रीमती सपना अहिरवार',
-            accountNumber: '44472186841',
-            ifscCode: 'SBIN0062229',
-            bankName: 'SBI Bank'
-          },
-          account2: {
-            accountHolderName: 'बॉबी अहिरवार',
-            accountNumber: '44547141657',
-            ifscCode: 'SBIN0062229',
-            bankName: 'SBI Bank'
-          },
-          account3: {
-            accountHolderName: 'रश्मि अहिरवार',
-            accountNumber: '40670606893',
-            ifscCode: 'SBIN0062229',
-            bankName: 'SBI Bank'
-          },
-          description: 'PMUMS मध्यप्रदेश के पंजीकृत शिक्षक श्री राकेश कुमार अहिरवार का दिनांक 05/12/2025 को स्वास्थ्य कारणों से आकस्मिक देहावसान हो गया। परिवार को इस कठिन समय में आर्थिक सहायता की आवश्यकता है।',
-          status: 'OPEN',
-          isHidden: false,
-          createdAt: '2025-08-31T10:30:00Z'
-        }]);
       } finally {
         setLoading(false);
       }

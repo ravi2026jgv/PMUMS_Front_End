@@ -40,7 +40,7 @@ const TeachersList = () => {
   const [currentPage, setCurrentPage] = useState(0); // 0-indexed for API
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
-  const [pageSize] = useState(250); // Users per page
+  const [pageSize] = useState(20); // Users per page
   
   // Location data for cascading dropdowns
   const [locationHierarchy, setLocationHierarchy] = useState(null);

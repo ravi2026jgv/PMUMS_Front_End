@@ -44,7 +44,7 @@ const SahyogList = () => {
   const [page, setPage] = useState(0); // 0-indexed for API
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
-  const [pageSize] = useState(250);
+  const [pageSize] = useState(20);
   
   // User filters
   const [filters, setFilters] = useState({
@@ -129,6 +129,24 @@ const SahyogList = () => {
     }
   }, [pageSize, selectedMonth, selectedYear, filters.userId, filters.fullName, filters.mobileNumber]);
 
+  // Fetch donors with debounced filtering when filters change
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      fetchDonors(0);
+      setPage(0);
+    }, 300); // 300ms debounce for text inputs
+    
+    return () => {
+      clearTimeout(debounceTimer);
+      // Cleanup function to abort any ongoing requests
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedMonth, selectedYear, filters.userId, filters.fullName, filters.mobileNumber]);
+
+  // Initial load on component mount
   useEffect(() => {
     fetchDonors(0);
     
@@ -138,7 +156,7 @@ const SahyogList = () => {
         abortControllerRef.current.abort();
       }
     };
-  }, []); // Empty dependency array to run only once
+  }, []); // Empty dependency array - runs only once on mount
 
   const handlePageChange = (event, newPage) => {
     // MUI Pagination is 1-indexed, API is 0-indexed
@@ -226,12 +244,26 @@ const SahyogList = () => {
             </Typography>
             <Grid container spacing={2} alignItems="end">
               <Grid item xs={12} sm={6} md={2.4}>
+                <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
+                  महीना चुनें (Month)
+                </Typography>
                 <FormControl fullWidth size="small">
-                  <InputLabel>महीना चुनें (Month)</InputLabel>
                   <Select
                     value={selectedMonth}
                     onChange={handleMonthChange}
-                    label="महीना चुनें (Month)"
+                    displayEmpty
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        border: '2px solid #1976d2',
+                        borderRadius: '8px',
+                        '&:hover': {
+                          borderColor: '#1565c0',
+                        },
+                        '&.Mui-focused': {
+                          borderColor: '#1976d2',
+                        }
+                      }
+                    }}
                   >
                     {months.map((month) => (
                       <MenuItem key={month.value} value={month.value}>
@@ -242,12 +274,26 @@ const SahyogList = () => {
                 </FormControl>
               </Grid>
               <Grid item xs={12} sm={6} md={2.4}>
+                <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
+                  वर्ष चुनें (Year)
+                </Typography>
                 <FormControl fullWidth size="small">
-                  <InputLabel>वर्ष चुनें (Year)</InputLabel>
                   <Select
                     value={selectedYear}
                     onChange={handleYearChange}
-                    label="वर्ष चुनें (Year)"
+                    displayEmpty
+                    sx={{
+                      '& .MuiOutlinedInput-root': {
+                        border: '2px solid #1976d2',
+                        borderRadius: '8px',
+                        '&:hover': {
+                          borderColor: '#1565c0',
+                        },
+                        '&.Mui-focused': {
+                          borderColor: '#1976d2',
+                        }
+                      }
+                    }}
                   >
                     {years.map((year) => (
                       <MenuItem key={year} value={year}>
@@ -330,24 +376,6 @@ const SahyogList = () => {
                 />
               </Grid>
             </Grid>
-            <Box sx={{ mt: 3, display: 'flex', gap: 2, justifyContent: 'flex-start' }}>
-              <Button 
-                variant="contained" 
-                onClick={() => fetchDonors(0)}
-                sx={{ bgcolor: '#1a237e' }}
-              >
-                खोजें (Search)
-              </Button>
-              <Button 
-                variant="outlined" 
-                onClick={() => {
-                  setFilters({ userId: '', fullName: '', mobileNumber: '' });
-                  fetchDonors(0);
-                }}
-              >
-                साफ़ करें (Clear)
-              </Button>
-            </Box>
           </Paper>
 
           {/* Data Table */}

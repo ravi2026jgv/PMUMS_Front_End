@@ -309,7 +309,7 @@ const ManagerDashboard = () => {
         title: 'कुल उपयोगकर्ता',
         value: dashboardData.userStats?.totalUsers || 0,
         icon: <People sx={{ fontSize: 40 }} />,
-        color: '#1976d2',
+        color: '#1E3A8A',
         subtitle: 'प्रबंधित उपयोगकर्ता'
       },
       {
@@ -407,12 +407,12 @@ const ManagerDashboard = () => {
       <TableContainer>
         <Table>
           <TableHead>
-            <TableRow sx={{ bgcolor: '#f0f0f0' }}>
-              <TableCell><strong>उपयोगकर्ता</strong></TableCell>
-              <TableCell><strong>भूमिका</strong></TableCell>
-              <TableCell><strong>स्थान</strong></TableCell>
-              <TableCell><strong>स्थिति</strong></TableCell>
-              <TableCell><strong>कार्रवाई</strong></TableCell>
+            <TableRow sx={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #303f9f 100%)' }}>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>उपयोगकर्ता</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>भूमिका</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>स्थान</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>स्थिति</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>कार्रवाई</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -420,7 +420,7 @@ const ManagerDashboard = () => {
               <TableRow key={user.id} hover>
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Avatar sx={{ bgcolor: '#1976d2' }}>
+                    <Avatar sx={{ bgcolor: '#1E3A8A', mr: 2 }}>
                       {user.name?.charAt(0) || 'U'}
                     </Avatar>
                     <Box>
@@ -520,7 +520,7 @@ const ManagerDashboard = () => {
   // Queries Management Tab
   const renderQueriesTab = () => (
     <Paper elevation={6} sx={{ borderRadius: 3, overflow: 'hidden' }}>
-      <Box sx={{ p: 3, bgcolor: '#f5f5f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Box sx={{ p: 3, background: 'linear-gradient(135deg, #1E3A8A15, #1E3A8A05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
           क्वेरी प्रबंधन ({totalQueries})
         </Typography>
@@ -529,7 +529,7 @@ const ManagerDashboard = () => {
             variant="contained"
             startIcon={<Add />}
             onClick={() => setCreateQueryOpen(true)}
-            sx={{ bgcolor: '#1976d2' }}
+            sx={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #303f9f 100%)', color: 'white' }}
           >
             नई क्वेरी
           </Button>
@@ -538,12 +538,12 @@ const ManagerDashboard = () => {
       <TableContainer>
         <Table>
           <TableHead>
-            <TableRow sx={{ bgcolor: '#f0f0f0' }}>
-              <TableCell><strong>क्वेरी</strong></TableCell>
-              <TableCell><strong>प्राथमिकता</strong></TableCell>
-              <TableCell><strong>स्थिति</strong></TableCell>
-              <TableCell><strong>बनाई गई</strong></TableCell>
-              <TableCell><strong>कार्रवाई</strong></TableCell>
+            <TableRow sx={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #303f9f 100%)' }}>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>क्वेरी</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>प्राथमिकता</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>स्थिति</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>बनाई गई</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>कार्रवाई</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -652,7 +652,7 @@ const ManagerDashboard = () => {
       <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1a237e', mb: 1 }}>
+        <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1E3A8A', mb: 1 }}>
           <Dashboard sx={{ mr: 2, verticalAlign: 'middle' }} />
           मैनेजर डैशबोर्ड
         </Typography>
@@ -695,10 +695,18 @@ const ManagerDashboard = () => {
           value={activeTab}
           onChange={(e, newValue) => setActiveTab(newValue)}
           sx={{
-            bgcolor: '#f5f5f5',
+            background: 'linear-gradient(135deg, #1E3A8A 0%, #303f9f 100%)',
             '& .MuiTab-root': {
               fontWeight: 600,
-              fontSize: '1rem'
+              fontSize: '1rem',
+              color: 'white',
+              '&.Mui-selected': {
+                color: '#fff',
+                backgroundColor: 'rgba(255,255,255,0.2)'
+              }
+            },
+            '& .MuiTabs-indicator': {
+              backgroundColor: '#fff'
             }
           }}
         >
