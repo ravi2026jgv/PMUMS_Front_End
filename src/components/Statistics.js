@@ -118,7 +118,7 @@ const Statistics = () => {
                     display: 'block'
                   }}
                 >
-                  62000+
+                  80000+
                 </Typography>
                 <Typography
                   variant="body1"
@@ -153,7 +153,7 @@ const Statistics = () => {
                     display: 'block'
                   }}
                 >
-                  4000000+
+                  7800000+
                 </Typography>
                 <Typography
                   variant="body1"
