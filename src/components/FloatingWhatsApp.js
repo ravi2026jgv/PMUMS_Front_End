@@ -26,7 +26,7 @@ const FloatingWhatsApp = () => {
   
   const handleWhatsAppClick = () => {
     const phoneNumber = whatsappNumber.replace(/\D/g, ''); // Remove non-digits
-    const textMessage = message.trim() || defaultMessage;
+    const textMessage = defaultMessage;
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(textMessage)}`;
     window.open(whatsappUrl, '_blank');
   };
@@ -262,7 +262,7 @@ const FloatingWhatsApp = () => {
           arrow
         >
           <Fab
-            onClick={isOpen ? toggleChat : toggleChat}
+            onClick={handleWhatsAppClick}
             sx={{
               position: 'fixed',
               bottom: 20,
@@ -281,11 +281,7 @@ const FloatingWhatsApp = () => {
               animation: 'pulse 2s infinite'
             }}
           >
-            {isOpen ? (
-              <Close sx={{ fontSize: 28 }} />
-            ) : (
-              <WhatsApp sx={{ fontSize: 32 }} />
-            )}
+            <WhatsApp sx={{ fontSize: 32 }} />
           </Fab>
         </Tooltip>
       </Zoom>

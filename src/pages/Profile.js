@@ -327,7 +327,7 @@ const Profile = () => {
       
       if (userId) {
         // Fetch latest user data by ID
-        const response = await api.get(`/admin/users/${userId}`, {
+        const response = await api.get(`/users/${userId}`, {
           signal: profileAbortControllerRef.current.signal
         });
         setProfileData(response.data);
@@ -378,6 +378,18 @@ const Profile = () => {
     try {
       setLoading(true);
       setError('');
+      
+      // Custom validation for location dropdowns
+      const validationErrors = [];
+      if (!selectedSambhag) validationErrors.push('संभाग चुनना आवश्यक है');
+      if (!selectedDistrict) validationErrors.push('जिला चुनना आवश्यक है');
+      if (!selectedBlock) validationErrors.push('ब्लॉक चुनना आवश्यक है');
+      
+      if (validationErrors.length > 0) {
+        setError(validationErrors.join(', '));
+        setLoading(false);
+        return;
+      }
       
       // Get user ID from context or localStorage - should always be available now
       const userId = user?.id || JSON.parse(localStorage.getItem('user') || '{}')?.id;
@@ -578,7 +590,7 @@ const Profile = () => {
                     fullWidth
                     defaultValue={profileData?.name || ''}
                     {...register('name', { required: 'नाम आवश्यक है' })}
-                    disabled={true}
+                    disabled={!isEditing}
                     error={!!errors.name}
                     helperText={errors.name?.message}
                     sx={{
@@ -595,8 +607,10 @@ const Profile = () => {
                   <TextField
                     fullWidth
                     defaultValue={profileData?.surname || ''}
-                    {...register('surname')}
+                    {...register('surname', { required: 'उपनाम आवश्यक है' })}
                     disabled={!isEditing}
+                    error={!!errors.surname}
+                    helperText={errors.surname?.message}
                     sx={{
                       '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                         border: '1px solid #ccc',
@@ -610,8 +624,10 @@ const Profile = () => {
                   <TextField
                     fullWidth
                     defaultValue={profileData?.fatherName || ''}
-                    {...register('fatherName')}
+                    {...register('fatherName', { required: 'पिता/पति का नाम आवश्यक है' })}
                     disabled={!isEditing}
+                    error={!!errors.fatherName}
+                    helperText={errors.fatherName?.message}
                     sx={{
                       '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                         border: '1px solid #ccc',
@@ -626,8 +642,9 @@ const Profile = () => {
                     name="gender"
                     control={control}
                     defaultValue={profileData?.gender || ''}
+                    rules={{ required: 'लिंग चुनना आवश्यक है' }}
                     render={({ field }) => (
-                      <FormControl fullWidth disabled={!isEditing}>
+                      <FormControl fullWidth disabled={!isEditing} error={!!errors.gender}>
                         <Select
                           {...field}
                           displayEmpty
@@ -643,6 +660,7 @@ const Profile = () => {
                           <MenuItem value="female">महिला (Female)</MenuItem>
                           <MenuItem value="other">अन्य (Other)</MenuItem>
                         </Select>
+                        {errors.gender && <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>{errors.gender?.message}</Typography>}
                       </FormControl>
                     )}
                   />
@@ -653,8 +671,9 @@ const Profile = () => {
                     name="maritalStatus"
                     control={control}
                     defaultValue={profileData?.maritalStatus || ''}
+                    rules={{ required: 'वैवाहिक स्थिति चुनना आवश्यक है' }}
                     render={({ field }) => (
-                      <FormControl fullWidth disabled={!isEditing}>
+                      <FormControl fullWidth disabled={!isEditing} error={!!errors.maritalStatus}>
                         <Select
                           {...field}
                           displayEmpty
@@ -671,6 +690,7 @@ const Profile = () => {
                           <MenuItem value="divorced">तलाकशुदा (Divorced)</MenuItem>
                           <MenuItem value="widowed">विधवा/विधुर (Widowed)</MenuItem>
                         </Select>
+                        {errors.maritalStatus && <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>{errors.maritalStatus?.message}</Typography>}
                       </FormControl>
                     )}
                   />
@@ -681,8 +701,10 @@ const Profile = () => {
                     fullWidth
                     type="date"
                     defaultValue={profileData?.dateOfBirth || ''}
-                    {...register('dateOfBirth')}
+                    {...register('dateOfBirth', { required: 'जन्मतिथि आवश्यक है' })}
                     disabled={!isEditing}
+                    error={!!errors.dateOfBirth}
+                    helperText={errors.dateOfBirth?.message}
                     sx={{
                       '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                         border: '1px solid #ccc',
@@ -696,9 +718,11 @@ const Profile = () => {
                   <TextField
                     fullWidth
                     defaultValue={profileData?.countryCode || '+91'}
-                    {...register('countryCode')}
+                    {...register('countryCode', { required: 'Country Code आवश्यक है' })}
                     disabled={!isEditing}
                     placeholder="+91"
+                    error={!!errors.countryCode}
+                    helperText={errors.countryCode?.message}
                     sx={{
                       '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                         border: '1px solid #ccc',
@@ -727,8 +751,10 @@ const Profile = () => {
                   <TextField
                     fullWidth
                     defaultValue={profileData?.mobileNumber || ''}
-                    {...register('mobileNumber')}
+                    {...register('mobileNumber', { required: 'मोबाइल नंबर आवश्यक है', pattern: { value: /^[0-9]{10}$/, message: 'वैध मोबाइल नंबर दर्ज करें' } })}
                     disabled={!isEditing}
+                    error={!!errors.mobileNumber}
+                    helperText={errors.mobileNumber?.message}
                     sx={{
                       '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                         border: '1px solid #ccc',
@@ -801,8 +827,10 @@ const Profile = () => {
                     multiline
                     rows={3}
                     defaultValue={profileData?.homeAddress || ''}
-                    {...register('homeAddress')}
+                    {...register('homeAddress', { required: 'पूरा पता आवश्यक है' })}
                     disabled={!isEditing}
+                    error={!!errors.homeAddress}
+                    helperText={errors.homeAddress?.message}
                     sx={{
                       '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                         border: '1px solid #ccc',
@@ -817,9 +845,11 @@ const Profile = () => {
                     fullWidth
                     type="number"
                     defaultValue={profileData?.pincode || ''}
-                    {...register('pincode')}
+                    {...register('pincode', { required: 'पिन कोड आवश्यक है', pattern: { value: /^[0-9]{6}$/, message: 'वैध 6 अंकों का पिन कोड दर्ज करें' } })}
                     disabled={!isEditing}
                     placeholder="जैसे: 462001"
+                    error={!!errors.pincode}
+                    helperText={errors.pincode?.message}
                     sx={{
                       '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 },
                         border: '1px solid #ccc',
@@ -846,10 +876,12 @@ const Profile = () => {
                     name="department"
                     control={control}
                     defaultValue={profileData?.department || ''}
+                    rules={{ required: 'विभाग का नाम चुनना आवश्यक है' }}
                     render={({ field }) => (
                       <FormControl 
                         fullWidth
                         disabled={!isEditing}
+                        error={!!errors.department}
                         sx={{
                           '& .MuiOutlinedInput-notchedOutline': {
                             border: '1px solid #ccc',
@@ -881,6 +913,7 @@ const Profile = () => {
                           <MenuItem value="शिक्षा विभाग">शिक्षा विभाग</MenuItem>
                           <MenuItem value="आदिम जाति कल्याण विभाग">आदिम जाति कल्याण विभाग</MenuItem>
                         </Select>
+                        {errors.department && <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>{errors.department?.message}</Typography>}
                       </FormControl>
                     )}
                   />
@@ -890,8 +923,10 @@ const Profile = () => {
                   <TextField
                     fullWidth
                     defaultValue={profileData?.schoolOfficeName || ''}
-                    {...register('schoolOfficeName')}
+                    {...register('schoolOfficeName', { required: 'स्कूल/कार्यालय का नाम आवश्यक है' })}
                     disabled={!isEditing}
+                    error={!!errors.schoolOfficeName}
+                    helperText={errors.schoolOfficeName?.message}
                     sx={{
                       '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                         border: '1px solid #ccc',
@@ -905,8 +940,10 @@ const Profile = () => {
                   <TextField
                     fullWidth
                     defaultValue={profileData?.departmentUniqueId || ''}
-                    {...register('departmentUniqueId')}
+                    {...register('departmentUniqueId', { required: 'विभाग आईडी आवश्यक है' })}
                     disabled={!isEditing}
+                    error={!!errors.departmentUniqueId}
+                    helperText={errors.departmentUniqueId?.message}
                     sx={{
                       '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                         border: '1px solid #ccc',
@@ -1026,8 +1063,10 @@ const Profile = () => {
                   <TextField
                     fullWidth
                     defaultValue={profileData?.sankulName || ''}
-                    {...register('sankulName')}
+                    {...register('sankulName', { required: 'संकुल का नाम आवश्यक है' })}
                     disabled={!isEditing}
+                    error={!!errors.sankulName}
+                    helperText={errors.sankulName?.message}
                     sx={{
                       '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                         border: '1px solid #ccc',
@@ -1042,8 +1081,10 @@ const Profile = () => {
                     fullWidth
                     type="date"
                     defaultValue={profileData?.joiningDate || ''}
-                    {...register('joiningDate')}
+                    {...register('joiningDate', { required: 'नियुक्ति तिथि आवश्यक है' })}
                     disabled={!isEditing}
+                    error={!!errors.joiningDate}
+                    helperText={errors.joiningDate?.message}
                     sx={{
                       '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                         border: '1px solid #ccc',
@@ -1088,8 +1129,10 @@ const Profile = () => {
                   <TextField
                     fullWidth
                     defaultValue={profileData?.nominee1Name || ''}
-                    {...register('nominee1Name')}
+                    {...register('nominee1Name', { required: 'पहले नामांकित का नाम आवश्यक है' })}
                     disabled={!isEditing}
+                    error={!!errors.nominee1Name}
+                    helperText={errors.nominee1Name?.message}
                     sx={{
                       '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                         border: '1px solid #ccc',
@@ -1104,8 +1147,9 @@ const Profile = () => {
                     name="nominee1Relation"
                     control={control}
                     defaultValue={profileData?.nominee1Relation || ''}
+                    rules={{ required: 'पहले नामांकित का संबंध आवश्यक है' }}
                     render={({ field }) => (
-                      <FormControl fullWidth disabled={!isEditing}>
+                      <FormControl fullWidth disabled={!isEditing} error={!!errors.nominee1Relation}>
                         <Select
                           {...field}
                           displayEmpty
@@ -1129,6 +1173,7 @@ const Profile = () => {
                           <MenuItem value="दादी">दादी (Grandmother)</MenuItem>
                           <MenuItem value="अन्य">अन्य (Other)</MenuItem>
                         </Select>
+                        {errors.nominee1Relation && <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>{errors.nominee1Relation?.message}</Typography>}
                       </FormControl>
                     )}
                   />
@@ -1144,8 +1189,10 @@ const Profile = () => {
                   <TextField
                     fullWidth
                     defaultValue={profileData?.nominee2Name || ''}
-                    {...register('nominee2Name')}
+                    {...register('nominee2Name', { required: 'दूसरे नामांकित का नाम आवश्यक है' })}
                     disabled={!isEditing}
+                    error={!!errors.nominee2Name}
+                    helperText={errors.nominee2Name?.message}
                     sx={{
                       '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                         border: '1px solid #ccc',
@@ -1160,6 +1207,7 @@ const Profile = () => {
                     name="nominee2Relation"
                     control={control}
                     defaultValue={profileData?.nominee2Relation || ''}
+                    rules={{ required: 'दूसरे नामांकित का संबंध आवश्यक है' }}
                     render={({ field }) => (
                       <FormControl fullWidth disabled={!isEditing}>
                         <Select
