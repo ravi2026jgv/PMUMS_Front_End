@@ -434,7 +434,7 @@ const Profile = () => {
           nominee2Relation: data.nominee2Relation,
         };
 
-        const response = await api.put(`/admin/users/${userId}`, updatePayload);
+        const response = await api.put(`/users/${userId}`, updatePayload);
         setProfileData(response.data);
         // Update localStorage with new user data
         localStorage.setItem('user', JSON.stringify(response.data));

@@ -9,6 +9,7 @@ import theme from './theme/theme';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AnnouncementPopup from './components/AnnouncementPopup';
+import FloatingWhatsApp from './components/FloatingWhatsApp';
 
 // Pages
 import Home from './pages/Home';
@@ -151,6 +152,9 @@ function App() {
               
               {/* Announcement Popup */}
               <AnnouncementPopup />
+              
+              {/* Floating WhatsApp */}
+              <FloatingWhatsApp />
             </Router>
           </AuthProvider>
       </ThemeProvider>
