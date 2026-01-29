@@ -257,12 +257,12 @@ const FloatingWhatsApp = () => {
       {/* Floating Action Button */}
       <Zoom in={true} timeout={300}>
         <Tooltip
-          title="Chat with us on WhatsApp"
+          title="Join our WhatsApp Channel"
           placement="left"
           arrow
         >
           <Fab
-            onClick={handleWhatsAppClick}
+            onClick={handleChannelClick}
             sx={{
               position: 'fixed',
               bottom: 20,
