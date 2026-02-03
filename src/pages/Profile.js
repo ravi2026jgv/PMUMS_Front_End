@@ -590,9 +590,9 @@ const Profile = () => {
                     fullWidth
                     defaultValue={profileData?.name || ''}
                     {...register('name', { required: 'नाम आवश्यक है' })}
-                    disabled={!isEditing}
+                    disabled={true}
                     error={!!errors.name}
-                    helperText={errors.name?.message}
+                    // helperText="नाम फ़ील्ड लॉक है (Name field is locked)"
                     sx={{
                       '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                         border: '1px solid #ccc',
