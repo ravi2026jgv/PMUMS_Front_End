@@ -22,7 +22,7 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    deathCaseId: 1, // Default value, should be passed as prop in real scenario
+    deathCaseId: donationInfo?.caseId, // Use the actual death case ID from props
     amount: '',
     paymentDate: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
     comment: ''
@@ -127,7 +127,7 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
   const handleClose = () => {
     setSelectedFile(null);
     setFormData({
-      deathCaseId: 1,
+      deathCaseId: donationInfo?.caseId,
       amount: '',
       paymentDate: new Date().toISOString().split('T')[0],
       comment: ''
@@ -179,6 +179,13 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
               <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1, fontFamily: 'Poppins' }}>
                 रसीद की जानकारी
               </Typography>
+              {donationInfo?.caseId && (
+                <Alert severity="info" sx={{ mb: 2 }}>
+                  डेथ केस ID: {donationInfo.caseId}
+                  {donationInfo.beneficiaryName && ` - ${donationInfo.beneficiaryName}`}
+                  {donationInfo.registrationNumber && ` (${donationInfo.registrationNumber})`}
+                </Alert>
+              )}
             </Grid>
             
             <Grid item xs={6}>

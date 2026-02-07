@@ -498,7 +498,9 @@ IFSC: ${dc.account3?.ifscCode || 'IFSC CODE'}`;
         open={receiptUploadOpen}
         onClose={() => setReceiptUploadOpen(false)}
         donationInfo={{
-          caseId: selectedCase?.id
+          caseId: selectedCase?.id,
+          beneficiaryName: selectedCase?.deceasedName,
+          registrationNumber: selectedCase?.employeeCode
         }}
       />
 
