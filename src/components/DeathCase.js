@@ -149,6 +149,9 @@ const DeathCase = () => {
                         श्री {dc.deceasedName}
                       </Typography>
                       <Typography variant="body2">
+                        Employee Code: {dc.employeeCode}
+                      </Typography>
+                      <Typography variant="body2">
                         मृत्यु दिनांक: {formatDate(dc.caseDate)}
                       </Typography>
                     </Box>
@@ -158,6 +161,28 @@ const DeathCase = () => {
                     <Typography variant="body2" color="text.secondary">
                       {dc.description}
                     </Typography>
+                  )}
+
+                  {/* Death Certificate Section */}
+                  {dc.certificate1 && (
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                        DEATH CERTIFICATE
+                      </Typography>
+                      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                        <img
+                          src={dc.certificate1}
+                          alt="Death Certificate"
+                          style={{
+                            maxWidth: '200px',
+                            maxHeight: '150px',
+                            objectFit: 'cover',
+                            borderRadius: '8px',
+                            border: '2px solid #ddd'
+                          }}
+                        />
+                      </Box>
+                    </Box>
                   )}
 
                   {/* Payment Details */}
@@ -171,9 +196,9 @@ const DeathCase = () => {
                       {/* QR Code 1 */}
                       <Grid item xs={6}>
                         <Box textAlign="center">
-                          {dc.qrCode1 ? (
+                          {dc.nominee1QrCode ? (
                             <img
-                              src={dc.qrCode1}
+                              src={dc.nominee1QrCode}
                               alt="QR Code 1"
                               style={{
                                 width: '120px',
@@ -199,7 +224,7 @@ const DeathCase = () => {
                             </Box>
                           )}
                           <Chip
-                            label="QR-1"
+                            label={`QR-1 ${dc.nominee1Name || 'Nominee 1'}`}
                             size="small"
                             sx={{ bgcolor: '#ffcc80', color: '#333', fontSize: '0.7rem', mt: 1 }}
                           />
@@ -207,9 +232,9 @@ const DeathCase = () => {
                             variant="contained"
                             size="small"
                             onClick={() => {
-                              if (dc.qrCode1) {
+                              if (dc.nominee1QrCode) {
                                 const link = document.createElement('a');
-                                link.href = dc.qrCode1;
+                                link.href = dc.nominee1QrCode;
                                 link.download = `QR-Code-1-${dc.deceasedName || 'DeathCase'}.png`;
                                 document.body.appendChild(link);
                                 link.click();
@@ -237,9 +262,9 @@ const DeathCase = () => {
                       {/* QR Code 2 */}
                       <Grid item xs={6}>
                         <Box textAlign="center">
-                          {dc.qrCode2 ? (
+                          {dc.nominee2QrCode ? (
                             <img
-                              src={dc.qrCode2}
+                              src={dc.nominee2QrCode}
                               alt="QR Code 2"
                               style={{
                                 width: '120px',
@@ -265,7 +290,7 @@ const DeathCase = () => {
                             </Box>
                           )}
                           <Chip
-                            label="QR-2"
+                            label={`QR-2 ${dc.nominee2Name || 'Nominee 2'}`}
                             size="small"
                             sx={{ bgcolor: '#ffcc80', color: '#333', fontSize: '0.7rem', mt: 1 }}
                           />
@@ -273,9 +298,9 @@ const DeathCase = () => {
                             variant="contained"
                             size="small"
                             onClick={() => {
-                              if (dc.qrCode2) {
+                              if (dc.nominee2QrCode) {
                                 const link = document.createElement('a');
-                                link.href = dc.qrCode2;
+                                link.href = dc.nominee2QrCode;
                                 link.download = `QR-Code-2-${dc.deceasedName || 'DeathCase'}.png`;
                                 document.body.appendChild(link);
                                 link.click();
