@@ -125,7 +125,8 @@ const AdminDashboard = () => {
   const [deathCaseFiles, setDeathCaseFiles] = useState({
     userImage: null,
     nominee1QrCode: null,
-    nominee2QrCode: null
+    nominee2QrCode: null,
+    certificate1: null
   });
   
   // Section collapse/expand state for death case form
@@ -702,6 +703,9 @@ const AdminDashboard = () => {
       if (deathCaseFiles.nominee2QrCode) {
         formData.append('nominee2QrCode', deathCaseFiles.nominee2QrCode);
       }
+      if (deathCaseFiles.certificate1) {
+        formData.append('certificate1', deathCaseFiles.certificate1);
+      }
       
       const response = await adminAPI.createDeathCase(formData);
       console.log('Death case created:', response);
@@ -725,7 +729,7 @@ const AdminDashboard = () => {
         account3: { bankName: '', accountNumber: '', ifscCode: '', accountHolderName: '' },
         status: 'OPEN'
       });
-      setDeathCaseFiles({ userImage: null, nominee1QrCode: null, nominee2QrCode: null });
+      setDeathCaseFiles({ userImage: null, nominee1QrCode: null, nominee2QrCode: null, certificate1: null });
       setSelectedSambhag('');
       setSelectedDistrict('');
       setSelectedBlock('');
@@ -3004,6 +3008,31 @@ const AdminDashboard = () => {
                           hidden
                           accept="image/*"
                           onChange={(e) => handleFileUpload('userImage', e.target.files[0])}
+                        />
+                      </Button>
+                    </Grid>
+                    
+                    <Grid item xs={12} md={6}>
+                      <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1, color: '#666' }}>
+                        प्रमाण पत्र
+                      </Typography>
+                      <Button
+                        variant="outlined"
+                        component="label"
+                        fullWidth
+                        sx={{ 
+                          height: 56,
+                          justifyContent: 'flex-start',
+                          textTransform: 'none',
+                          borderStyle: 'dashed'
+                        }}
+                      >
+                        {deathCaseFiles.certificate1 ? deathCaseFiles.certificate1.name : 'प्रमाण पत्र अपलोड करें'}
+                        <input
+                          type="file"
+                          hidden
+                          accept="image/*"
+                          onChange={(e) => handleFileUpload('certificate1', e.target.files[0])}
                         />
                       </Button>
                     </Grid>

@@ -29,17 +29,16 @@ const DeathCase = () => {
   const navigate = useNavigate();
   const [receiptUploadOpen, setReceiptUploadOpen] = useState(false);
   const [loginAlertOpen, setLoginAlertOpen] = useState(false);
-  // const [deathCases, setDeathCases] = useState([]);
-  // const [loading, setLoading] = useState(true);
-  // const [error, setError] = useState('');
+  const [deathCases, setDeathCases] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [selectedCase, setSelectedCase] = useState(null);
-  // const [expandedDescriptions, setExpandedDescriptions] = useState({});
+  const [expandedDescriptions, setExpandedDescriptions] = useState({});
   
   // Prevent duplicate API calls
-  // const abortControllerRef = useRef(null);
+  const abortControllerRef = useRef(null);
 
-  // Fetch death cases from backend - COMMENTED OUT FOR NOW
-  /*
+  // Fetch death cases from backend
   useEffect(() => {
     const fetchDeathCases = async () => {
       // Cancel any ongoing request
@@ -53,15 +52,6 @@ const DeathCase = () => {
       try {
         setLoading(true);
         setError('');
-        
-        // Test if fallback images are accessible
-        const testImages = ['/Profile photo.png', '/sapna_Ahirwar_QR_1.png', '/Boby_Ahirwar_QR_2.png'];
-        testImages.forEach(imagePath => {
-          const img = new Image();
-          img.onload = () => console.log(`✓ Image loaded successfully: ${imagePath}`);
-          img.onerror = () => console.log(`✗ Image failed to load: ${imagePath}`);
-          img.src = imagePath;
-        });
         
         // Try to fetch from authenticated endpoint first
         let response;
@@ -87,7 +77,6 @@ const DeathCase = () => {
         // Filter to show only active/open and non-hidden cases on home page
         const visibleCases = cases.filter(deathCase => {
           // Check if case is open/active (show on homepage) and not hidden
-          // Backend typically returns: OPEN, CLOSED, ACTIVE, INACTIVE
           const isActiveOrOpen = deathCase.status === 'OPEN' || deathCase.status === 'ACTIVE';
           // Handle missing isHidden field from backend - only hide if explicitly true
           const isNotHidden = deathCase.isHidden !== true;
@@ -123,18 +112,13 @@ const DeathCase = () => {
       }
     };
   }, []);
-  */
 
   const handleUploadClick = (deathCase) => {
     if (!isAuthenticated) {
       setLoginAlertOpen(true);
       return;
     }
-    // Hardcoded death case with only ID "1" - other details will come from UI form
-    const hardcodedDeathCase = {
-      id: "1"
-    };
-    setSelectedCase(hardcodedDeathCase);
+    setSelectedCase(deathCase);
     setReceiptUploadOpen(true);
   };
 
@@ -143,7 +127,6 @@ const DeathCase = () => {
     navigate('/login');
   };
 
-  /* COMMENTED OUT - NOT NEEDED FOR UPLOAD ONLY VERSION
   const toggleDescription = (caseId) => {
     setExpandedDescriptions(prev => ({
       ...prev,
@@ -155,7 +138,6 @@ const DeathCase = () => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('hi-IN');
   };
-  */
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
@@ -180,33 +162,6 @@ const DeathCase = () => {
         </Typography>
       </Box>
 
-      {/* Simple Upload Button - Only functionality needed */}
-      <Box sx={{ textAlign: 'center', py: 8 }}>
-        <Button
-          variant="contained"
-          size="large"
-          onClick={() => handleUploadClick()}
-          sx={{
-            bgcolor: '#FF9933',
-            '&:hover': { bgcolor: '#e6851a' },
-            py: 3,
-            px: 6,
-            fontSize: '1.2rem',
-            fontWeight: 600,
-            borderRadius: 3,
-            fontFamily: 'Poppins',
-            boxShadow: '0 4px 12px rgba(255, 153, 51, 0.3)'
-          }}
-        >
-          Upload Payment Receipt
-        </Button>
-        <Typography variant="body2" sx={{ mt: 2, color: '#666' }}>
-          सहयोग रसीद अपलोड करने के लिए क्लिक करें
-        </Typography>
-      </Box>
-
-      {/* ALL THE COMPLEX UI IS COMMENTED OUT FOR NOW */}
-      {/*
       {error && (
         <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
           {error}
@@ -216,9 +171,9 @@ const DeathCase = () => {
       {loading && (
         <Grid container spacing={3}>
           {[1, 2, 3, 4, 5, 6].map((item) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={item}>
+            <Grid item xs={12} md={6} key={item}>
               <Card sx={{ borderRadius: 3, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                <Skeleton variant="rectangular" height={200} />
+                <Skeleton variant="rectangular" height={400} />
                 <CardContent>
                   <Skeleton variant="text" width="80%" />
                   <Skeleton variant="text" width="60%" />
@@ -233,7 +188,7 @@ const DeathCase = () => {
       {!loading && deathCases.length > 0 && (
         <Grid container spacing={3}>
           {deathCases.map((deathCase, index) => (
-            <Grid size={{ xs: 12 }} key={deathCase.id || index}>
+            <Grid item xs={12} md={6} key={deathCase.id || index}>
               <Card
                 sx={{
                   borderRadius: 3,
@@ -243,10 +198,276 @@ const DeathCase = () => {
                     transform: 'translateY(-2px)',
                     boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
                   },
-                  overflow: 'hidden'
+                  overflow: 'hidden',
+                  border: '2px solid #e0e0e0'
                 }}
               >
-                ... (all the complex card content) ...
+                {/* Header with dates */}
+                <Box sx={{ 
+                  bgcolor: '#f5f5f5', 
+                  p: 2, 
+                  borderBottom: '1px solid #e0e0e0',
+                  textAlign: 'center'
+                }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333' }}>
+                    DEATH CASE FORMAT
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: '#666', mt: 1 }}>
+                    सहायोग प्रारंभ {formatDate(deathCase.createdAt)} सहायोग समाप्त {formatDate(deathCase.caseDate)}
+                  </Typography>
+                </Box>
+
+                <CardContent sx={{ p: 3 }}>
+                  {/* Deceased Information with Photo */}
+                  <Box sx={{ 
+                    bgcolor: '#ffebee', 
+                    p: 2, 
+                    borderRadius: 2, 
+                    mb: 2,
+                    border: '1px solid #ffcdd2'
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+                      {/* Photo */}
+                      <Box sx={{ flexShrink: 0 }}>
+                        {deathCase.userImage ? (
+                          <CardMedia
+                            component="img"
+                            sx={{
+                              width: 80,
+                              height: 80,
+                              borderRadius: '50%',
+                              objectFit: 'cover',
+                              border: '3px solid #2196f3'
+                            }}
+                            image={deathCase.userImage}
+                            alt={deathCase.deceasedName}
+                          />
+                        ) : (
+                          <Avatar
+                            sx={{
+                              width: 80,
+                              height: 80,
+                              bgcolor: '#2196f3',
+                              fontSize: '2rem',
+                              fontWeight: 'bold'
+                            }}
+                          >
+                            {deathCase.deceasedName?.charAt(0) || 'श्री'}
+                          </Avatar>
+                        )}
+                      </Box>
+
+                      {/* Details */}
+                      <Box sx={{ flexGrow: 1 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#333', mb: 1 }}>
+                          श्री {deathCase.deceasedName}
+                        </Typography>
+                        <Typography variant="body2" sx={{ mb: 0.5 }}>
+                          • प्राथमिक शाला {deathCase.district || 'बंगपुरा, जिला दतिया (म.प्र.)'}
+                        </Typography>
+                        <Typography variant="body2" sx={{ mb: 0.5 }}>
+                          • PMUMS पंजीयन क्रमांक: <strong>{deathCase.employeeCode}</strong>
+                        </Typography>
+                        <Typography variant="body2" sx={{ mb: 0.5 }}>
+                          • पंजीयन दिनांक: {formatDate(deathCase.createdAt)}
+                        </Typography>
+                        <Typography variant="body2">
+                          • मृत्यु दिनांक: {formatDate(deathCase.caseDate)}
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    {/* Description */}
+                    {deathCase.description && (
+                      <Typography variant="body2" sx={{ mt: 2, color: '#555', lineHeight: 1.5 }}>
+                        {deathCase.description}
+                      </Typography>
+                    )}
+                  </Box>
+
+                  {/* Death Certificate Section */}
+                  {deathCase.certificate1 && (
+                    <Box sx={{ mb: 2 }}>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+                          DEATH CERTIFICATE
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                        <img
+                          src={deathCase.certificate1}
+                          alt="Death Certificate"
+                          style={{
+                            maxWidth: '200px',
+                            maxHeight: '150px',
+                            objectFit: 'cover',
+                            borderRadius: '8px',
+                            border: '2px solid #ddd'
+                          }}
+                        />
+                      </Box>
+                    </Box>
+                  )}
+
+                  {/* Nominee Details */}
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+                      NOMINEE DETAILS
+                    </Typography>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Chip
+                        label={`श्रीमती ${deathCase.nominee1Name || 'सरपना अहीरवार'}`}
+                        sx={{ bgcolor: '#ffcc80', color: '#333', fontWeight: 'bold' }}
+                      />
+                      {deathCase.nominee2Name && (
+                        <Chip
+                          label={`${deathCase.nominee2Name}`}
+                          sx={{ bgcolor: '#ffcc80', color: '#333', fontWeight: 'bold' }}
+                        />
+                      )}
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                      <Chip label="बाली अहीरवार" sx={{ bgcolor: '#a5d6a7', color: '#333' }} />
+                      <Chip label="पुत्र" sx={{ bgcolor: '#a5d6a7', color: '#333' }} />
+                    </Box>
+                  </Box>
+
+                  {/* Payment Details */}
+                  <Box sx={{ mb: 3 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 2, textAlign: 'center' }}>
+                      PAYMENT DETAILS
+                    </Typography>
+                    
+                    <Grid container spacing={2}>
+                      {/* Account 1 QR Code */}
+                      {deathCase.account1 && (
+                        <Grid item xs={4}>
+                          <Box sx={{ textAlign: 'center' }}>
+                            {deathCase.nominee1QrCode ? (
+                              <img
+                                src={deathCase.nominee1QrCode}
+                                alt="QR Code 1"
+                                style={{
+                                  width: '100px',
+                                  height: '100px',
+                                  objectFit: 'cover',
+                                  borderRadius: '8px',
+                                  border: '2px solid #333'
+                                }}
+                              />
+                            ) : (
+                              <Box sx={{
+                                width: '100px',
+                                height: '100px',
+                                bgcolor: '#f5f5f5',
+                                border: '2px solid #333',
+                                borderRadius: '8px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                mx: 'auto'
+                              }}>
+                                <Typography variant="caption">QR-1</Typography>
+                              </Box>
+                            )}
+                            <Chip
+                              label="QR-1 बाली अहीरवार"
+                              sx={{ bgcolor: '#ffcc80', color: '#333', fontSize: '0.7rem', mt: 1 }}
+                              size="small"
+                            />
+                          </Box>
+                        </Grid>
+                      )}
+
+                      {/* Account 2 QR Code */}
+                      {deathCase.account2 && (
+                        <Grid item xs={4}>
+                          <Box sx={{ textAlign: 'center' }}>
+                            {deathCase.nominee2QrCode ? (
+                              <img
+                                src={deathCase.nominee2QrCode}
+                                alt="QR Code 2"
+                                style={{
+                                  width: '100px',
+                                  height: '100px',
+                                  objectFit: 'cover',
+                                  borderRadius: '8px',
+                                  border: '2px solid #333'
+                                }}
+                              />
+                            ) : (
+                              <Box sx={{
+                                width: '100px',
+                                height: '100px',
+                                bgcolor: '#f5f5f5',
+                                border: '2px solid #333',
+                                borderRadius: '8px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                mx: 'auto'
+                              }}>
+                                <Typography variant="caption">QR-2</Typography>
+                              </Box>
+                            )}
+                            <Chip
+                              label="QR-2 बाली अहीरवार"
+                              sx={{ bgcolor: '#ffcc80', color: '#333', fontSize: '0.7rem', mt: 1 }}
+                              size="small"
+                            />
+                          </Box>
+                        </Grid>
+                      )}
+
+                      {/* Account 3 QR Code */}
+                      {deathCase.account3 && (
+                        <Grid item xs={4}>
+                          <Box sx={{ textAlign: 'center' }}>
+                            <Box sx={{
+                              width: '100px',
+                              height: '100px',
+                              bgcolor: '#f5f5f5',
+                              border: '2px solid #333',
+                              borderRadius: '8px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              mx: 'auto'
+                            }}>
+                              <Typography variant="caption">QR-3</Typography>
+                            </Box>
+                            <Chip
+                              label="QR-3 बाली अहीरवार"
+                              sx={{ bgcolor: '#ffcc80', color: '#333', fontSize: '0.7rem', mt: 1 }}
+                              size="small"
+                            />
+                          </Box>
+                        </Grid>
+                      )}
+                    </Grid>
+                  </Box>
+
+                  {/* Upload Payment Proof Button */}
+                  <Box sx={{ textAlign: 'center', mt: 2 }}>
+                    <Button
+                      variant="contained"
+                      onClick={() => handleUploadClick(deathCase)}
+                      sx={{
+                        bgcolor: '#ff9800',
+                        '&:hover': { bgcolor: '#f57c00' },
+                        py: 1.5,
+                        px: 4,
+                        fontSize: '1rem',
+                        fontWeight: 600,
+                        borderRadius: 2,
+                        fontFamily: 'Poppins',
+                        boxShadow: '0 4px 12px rgba(255, 152, 0, 0.3)'
+                      }}
+                    >
+                      UPLOAD PAYMENT PROOF
+                    </Button>
+                  </Box>
+                </CardContent>
               </Card>
             </Grid>
           ))}
@@ -262,8 +483,7 @@ const DeathCase = () => {
             नए अनुरोधों के लिए कृपया बाद में जांचें।
           </Typography>
         </Box>
-      )}
-      */}
+      )}}
 
       {/* Receipt Upload Dialog */}
       <ReceiptUpload

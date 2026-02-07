@@ -67,6 +67,8 @@ const CreateDeathCase = ({ open, onClose, onSuccess }) => {
   const [nominee2Preview, setNominee2Preview] = useState(null);
   const [userImageFile, setUserImageFile] = useState(null);
   const [userImagePreview, setUserImagePreview] = useState(null);
+  const [certificate1File, setCertificate1File] = useState(null);
+  const [certificate1Preview, setCertificate1Preview] = useState(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -159,6 +161,35 @@ const CreateDeathCase = ({ open, onClose, onSuccess }) => {
     setUserImagePreview(null);
   };
 
+  const handleCertificateChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setError('कृपया केवल इमेज फाइल अपलोड करें');
+        return;
+      }
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError('फाइल का आकार 5MB से कम होना चाहिए');
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCertificate1File(file);
+        setCertificate1Preview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+    setError('');
+  };
+
+  const handleRemoveCertificate = () => {
+    setCertificate1File(null);
+    setCertificate1Preview(null);
+  };
+
   const validateForm = () => {
     if (!formData.deceasedName.trim()) {
       setError('दिवंगत का नाम आवश्यक है');
@@ -238,6 +269,9 @@ const CreateDeathCase = ({ open, onClose, onSuccess }) => {
       if (nominee2QrCodeFile) {
         formDataToSend.append('nominee2QrCode', nominee2QrCodeFile);
       }
+      if (certificate1File) {
+        formDataToSend.append('certificate1', certificate1File);
+      }
 
       await api.post('/death-cases', formDataToSend, {
         headers: {
@@ -257,6 +291,8 @@ const CreateDeathCase = ({ open, onClose, onSuccess }) => {
         setNominee2Preview(null);
         setUserImageFile(null);
         setUserImagePreview(null);
+        setCertificate1File(null);
+        setCertificate1Preview(null);
         if (onSuccess) onSuccess();
         onClose();
       }, 2000);
@@ -489,6 +525,76 @@ const CreateDeathCase = ({ open, onClose, onSuccess }) => {
                 </Box>
                 <Typography variant="caption" sx={{ color: '#666', display: 'block', mt: 1 }}>
                   समर्थित: JPG, PNG, GIF (अधिकतम 5MB)
+                </Typography>
+              </Grid>
+              
+              {/* Certificate Upload */}
+              <Grid item xs={12}>
+                <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 1, fontSize: '0.95rem' }}>
+                  प्रमाण पत्र (वैकल्पिक)
+                </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+                  <input
+                    accept="image/*"
+                    style={{ display: 'none' }}
+                    id="certificate-upload"
+                    type="file"
+                    onChange={handleCertificateChange}
+                    disabled={loading}
+                  />
+                  <label htmlFor="certificate-upload">
+                    <Button
+                      variant="outlined"
+                      component="span"
+                      startIcon={<CloudUpload />}
+                      disabled={loading}
+                      sx={{
+                        borderColor: '#1976d2',
+                        color: '#1976d2',
+                        '&:hover': {
+                          borderColor: '#1565c0',
+                          bgcolor: 'rgba(25, 118, 210, 0.04)'
+                        }
+                      }}
+                    >
+                      प्रमाण पत्र चुनें
+                    </Button>
+                  </label>
+                  
+                  {certificate1Preview && (
+                    <Box sx={{ position: 'relative', display: 'inline-block' }}>
+                      <img
+                        src={certificate1Preview}
+                        alt="प्रमाण पत्र पूर्वावलोकन"
+                        style={{
+                          width: '100px',
+                          height: '100px',
+                          objectFit: 'cover',
+                          borderRadius: '8px',
+                          border: '2px solid #e0e0e0'
+                        }}
+                      />
+                      <IconButton
+                        size="small"
+                        onClick={handleRemoveCertificate}
+                        sx={{
+                          position: 'absolute',
+                          top: -8,
+                          right: -8,
+                          bgcolor: '#f44336',
+                          color: 'white',
+                          '&:hover': { bgcolor: '#d32f2f' },
+                          width: 24,
+                          height: 24
+                        }}
+                      >
+                        <Delete sx={{ fontSize: 16 }} />
+                      </IconButton>
+                    </Box>
+                  )}
+                </Box>
+                <Typography variant="caption" sx={{ color: '#666', display: 'block', mt: 1 }}>
+                  मृत्यु प्रमाण पत्र, आधार कार्ड या अन्य दस्तावेज़
                 </Typography>
               </Grid>
             </Grid>
