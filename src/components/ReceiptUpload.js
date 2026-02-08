@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -20,12 +20,22 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    deathCaseId: donationInfo?.caseId,
+    deathCaseId: donationInfo?.caseId || null,
     amount: '',
-    paymentDate: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
+    paymentDate: new Date().toISOString().split('T')[0],
     referenceName: '',
     utrNumber: ''
   });
+
+  // Update deathCaseId when donationInfo changes
+  useEffect(() => {
+    if (donationInfo?.caseId) {
+      setFormData(prev => ({
+        ...prev,
+        deathCaseId: donationInfo.caseId
+      }));
+    }
+  }, [donationInfo?.caseId]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -35,6 +45,11 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
   };
 
   const handleUpload = async () => {
+    if (!formData.deathCaseId) {
+      setError('डेथ केस ID नहीं मिला। कृपया पुनः प्रयास करें।');
+      return;
+    }
+    
     if (!formData.amount || !formData.utrNumber) {
       setError('कृपया सभी आवश्यक फील्ड भरें');
       return;
@@ -47,9 +62,11 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
       const requestData = {
         deathCaseId: formData.deathCaseId,
         amount: parseFloat(formData.amount),
-        referenceName: formData.referenceName,
+        referenceName: formData.referenceName || null,
         utrNumber: formData.utrNumber
       };
+      
+      console.log('Submitting receipt for Death Case ID:', formData.deathCaseId);
       
       // Get authorization token
       const token = localStorage.getItem('authToken');
