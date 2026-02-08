@@ -38,7 +38,6 @@ import {
   People,
   Edit,
   Delete,
-  Block,
   Lock,
   PersonAdd,
   Download,
@@ -67,12 +66,12 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [totalUsers, setTotalUsers] = useState(0);
   const [deathCases, setDeathCases] = useState([]);
-  const [payments, setPayments] = useState([]);
-  const [receipts, setReceipts] = useState([]);
-  const [totalReceipts, setTotalReceipts] = useState(0);
-  const [receiptsLoading, setReceiptsLoading] = useState(false);
+  const [payments] = useState([]);
+  const [ setReceipts] = useState([]);
+  const [ setTotalReceipts] = useState(0);
+  const [ setReceiptsLoading] = useState(false);
   const [queries, setQueries] = useState([]);
-  const [assignments, setAssignments] = useState([]);
+  const [ setAssignments] = useState([]);
   const [managerAssignments, setManagerAssignments] = useState([]);
   const [managerUsersDialog, setManagerUsersDialog] = useState(false);
   const [managerUsers, setManagerUsers] = useState([]);
@@ -82,7 +81,6 @@ const AdminDashboard = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState('');
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-  const [loading, setLoading] = useState(false);
   const [usersLoading, setUsersLoading] = useState(false);
   const [assignmentsLoading, setAssignmentsLoading] = useState(false);
   
@@ -145,7 +143,7 @@ const AdminDashboard = () => {
   // Location hierarchy state for death case form
   const [locationHierarchy, setLocationHierarchy] = useState(null);
   const [loadingLocations, setLoadingLocations] = useState(false);
-  const [selectedState, setSelectedState] = useState('');
+  const [setSelectedState] = useState('');
   const [selectedSambhag, setSelectedSambhag] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [selectedBlock, setSelectedBlock] = useState('');
