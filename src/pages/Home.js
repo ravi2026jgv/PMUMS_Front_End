@@ -29,7 +29,7 @@ const Home = () => {
 
       {/* Self Donation Section - Payment Interface - TEMPORARILY HIDDEN */}
       <Box sx={{ py: 8, background: '#FFF8F0' }}>
-         {/* <SelfDonation /> */}
+         <SelfDonation />
       </Box>
     </Layout>
   );

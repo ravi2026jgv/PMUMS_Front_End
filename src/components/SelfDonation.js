@@ -51,6 +51,17 @@ const SelfDonation = () => {
           </Typography>
         </Box>
 
+  <Typography
+            variant="h6"
+            sx={{
+              color: 'red',
+              fontWeight: 600,
+              fontSize: { xs: '1rem', md: '1.2rem' },
+              fontFamily: 'Noto Sans Devanagari, Arial, sans-serif',
+              textAlign: 'center'
+            }}
+          >
+कृपया ध्यान दें: यहाँ प्रदर्शित QR कोड अथवा “Pay” बटन के माध्यम से किया गया सहयोग केवल संस्था के लिए मान्य होगा, इसे व्यक्तिगत/नॉमिनी सहयोग के रूप में स्वीकार नहीं किया जाएगा।          </Typography>
         <Typography
           variant="body1"
           sx={{
