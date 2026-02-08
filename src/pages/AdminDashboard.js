@@ -67,11 +67,11 @@ const AdminDashboard = () => {
   const [totalUsers, setTotalUsers] = useState(0);
   const [deathCases, setDeathCases] = useState([]);
   const [payments] = useState([]);
-  const [ setReceipts] = useState([]);
-  const [ setTotalReceipts] = useState(0);
-  const [ setReceiptsLoading] = useState(false);
+  const [receipts, setReceipts] = useState([]);
+  const [totalReceipts, setTotalReceipts] = useState(0);
+  const [receiptsLoading, setReceiptsLoading] = useState(false);
   const [queries, setQueries] = useState([]);
-  const [ setAssignments] = useState([]);
+  const [assignments, setAssignments] = useState([]);
   const [managerAssignments, setManagerAssignments] = useState([]);
   const [managerUsersDialog, setManagerUsersDialog] = useState(false);
   const [managerUsers, setManagerUsers] = useState([]);
@@ -143,7 +143,7 @@ const AdminDashboard = () => {
   // Location hierarchy state for death case form
   const [locationHierarchy, setLocationHierarchy] = useState(null);
   const [loadingLocations, setLoadingLocations] = useState(false);
-  const [setSelectedState] = useState('');
+  const [selectedState, setSelectedState] = useState('');
   const [selectedSambhag, setSelectedSambhag] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [selectedBlock, setSelectedBlock] = useState('');
