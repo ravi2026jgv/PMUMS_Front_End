@@ -20,7 +20,7 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    deathCaseId: donationInfo?.caseId || 1,
+    deathCaseId: donationInfo?.caseId,
     amount: '',
     paymentDate: new Date().toISOString().split('T')[0], // Today's date in YYYY-MM-DD format
     referenceName: '',
