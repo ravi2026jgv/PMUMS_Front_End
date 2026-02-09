@@ -50,6 +50,8 @@ const AsahyogList = () => {
   
   // Prevent duplicate API calls
   const abortControllerRef = useRef(null);
+  const requestIdRef = useRef(0); // Track request ID to handle race conditions
+  const isInitialMount = useRef(true); // Track initial mount
 
   // Helper function to handle empty strings and null values
   const getDisplayValue = (value, fallback = 'N/A') => {
@@ -75,6 +77,10 @@ const AsahyogList = () => {
   const years = Array.from({ length: 5 }, (_, i) => currentDate.getFullYear() - i);
 
   const fetchNonDonors = useCallback(async (pageNum = 0) => {
+    // Increment request ID to track this request
+    requestIdRef.current += 1;
+    const thisRequestId = requestIdRef.current;
+    
     // Cancel any ongoing request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -100,6 +106,11 @@ const AsahyogList = () => {
         signal: abortControllerRef.current.signal
       });
       
+      // Only update state if this is the latest request
+      if (thisRequestId !== requestIdRef.current) {
+        return;
+      }
+      
       // Handle both array response and paginated response
       if (Array.isArray(response.data)) {
         setNonDonors(response.data);
@@ -107,9 +118,11 @@ const AsahyogList = () => {
         setTotalElements(response.data.length);
         setPage(0);
       } else {
-        const { content, pageNumber, totalPages: pages, totalElements: total } = response.data;
+        // Spring Boot uses 'number' not 'pageNumber'
+        const { content, number, pageNumber, totalPages: pages, totalElements: total } = response.data;
+        const actualPageNumber = number !== undefined ? number : (pageNumber !== undefined ? pageNumber : pageNum);
         setNonDonors(content || []);
-        setPage(pageNumber || 0);
+        setPage(actualPageNumber);
         setTotalPages(pages || 1);
         setTotalElements(total || 0);
       }
@@ -122,30 +135,34 @@ const AsahyogList = () => {
       setError('असहयोग सूची लोड करने में त्रुटि हुई। कृपया पुनः प्रयास करें।');
       setNonDonors([]);
     } finally {
-      setLoading(false);
+      if (thisRequestId === requestIdRef.current) {
+        setLoading(false);
+      }
     }
   }, [selectedMonth, selectedYear, pageSize, filters.userId, filters.fullName, filters.mobileNumber]);
 
   // Fetch non-donors with debounced filtering when filters change
   useEffect(() => {
+    // Skip on initial mount
+    if (isInitialMount.current) {
+      return;
+    }
+    
     const debounceTimer = setTimeout(() => {
       fetchNonDonors(0);
-      setPage(0);
     }, 300); // 300ms debounce for text inputs
     
     return () => {
       clearTimeout(debounceTimer);
-      // Cleanup function to abort any ongoing requests
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedMonth, selectedYear, filters.userId, filters.fullName, filters.mobileNumber]);
 
   // Initial load on component mount
   useEffect(() => {
-    fetchNonDonors(0);
+    fetchNonDonors(0).then(() => {
+      isInitialMount.current = false;
+    });
     
     // Cleanup function to abort any ongoing requests
     return () => {
@@ -166,8 +183,10 @@ const AsahyogList = () => {
   };
 
   const handlePageChange = (event, newPage) => {
+    const pageNum = parseInt(newPage, 10);
+    if (isNaN(pageNum) || pageNum < 1) return;
     // MUI Pagination is 1-indexed, API is 0-indexed
-    fetchNonDonors(newPage - 1);
+    fetchNonDonors(pageNum - 1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 

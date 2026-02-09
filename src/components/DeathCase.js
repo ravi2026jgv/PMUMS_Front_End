@@ -26,6 +26,42 @@ const DeathCase = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
+  // Download QR code using canvas approach (bypasses CORS properly)
+const downloadQRCode = async (imageUrl, fileName) => {
+  if (!imageUrl) {
+    alert('QR Code not available');
+    return;
+  }
+
+  try {
+    const response = await fetch(imageUrl, {
+      mode: 'cors',
+      cache: 'no-cache'
+    });
+
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+
+    const blob = await response.blob();
+
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+
+    document.body.appendChild(link);
+    link.click();
+
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+  } catch (error) {
+    console.error('Download failed:', error);
+    alert('डाउनलोड संभव नहीं है। कृपया इमेज को long-press या right-click करके सेव करें।');
+  }
+};
+
   const [receiptUploadOpen, setReceiptUploadOpen] = useState(false);
   const [loginAlertOpen, setLoginAlertOpen] = useState(false);
   const [deathCases, setDeathCases] = useState([]);
@@ -204,22 +240,23 @@ const DeathCase = () => {
                     </Typography>
 
                     {/* QR Codes Row */}
-                    <Box sx={{ mb: 4, justifyContent: 'center', display: 'flex' }}>
-                      <Grid container spacing={10} sx={{ px: 12 }}>
+                    <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
+                      <Grid container spacing={{ xs: 2, sm: 4, md: 10 }} sx={{ px: { xs: 1, sm: 4, md: 12 }, justifyContent: 'center' }}>
                         {/* QR Code 1 */}
-                        <Grid item xs={6}>
+                        <Grid item xs={12} sm={6} sx={{ display: 'flex', justifyContent: 'center' }}>
                           <Box sx={{ 
                             bgcolor: '#ffcc80', 
                             p: 2.5, 
                             borderRadius: 4, 
                             textAlign: 'center',
                             minHeight: '300px',
-                            minWidth: '220px',
+                            width: { xs: '250px', sm: '220px' },
+                            maxWidth: '100%',
                             display: 'flex',
                             flexDirection: 'column',
                             justifyContent: 'space-between'
                           }}>
-                            <Box sx={{display: 'grid', gap: 1}}>
+                            <Box sx={{display: 'grid', gap: 1, justifyContent: 'center'}}>
                               {dc.nominee1QrCode ? (
                                 <img
                                   src={dc.nominee1QrCode}
@@ -256,34 +293,7 @@ const DeathCase = () => {
                               <Button
                               variant="contained"
                               size="small"
-                              onClick={async () => {
-                                if (dc.nominee1QrCode) {
-                                  try {
-                                    // Use CORS proxy to fetch the image
-                                    const proxyUrl = 'https://corsproxy.io/?';
-                                    const response = await fetch(proxyUrl + encodeURIComponent(dc.nominee1QrCode));
-                                    const blob = await response.blob();
-                                    const url = window.URL.createObjectURL(blob);
-                                    const link = document.createElement('a');
-                                    link.href = url;
-                                    link.download = `QR-Code-1-${dc.deceasedName || 'DeathCase'}.png`;
-                                    document.body.appendChild(link);
-                                    link.click();
-                                    document.body.removeChild(link);
-                                    window.URL.revokeObjectURL(url);
-                                  } catch (error) {
-                                    console.error('Download failed:', error);
-                                    // Final fallback: create downloadable link
-                                    const link = document.createElement('a');
-                                    link.href = dc.nominee1QrCode;
-                                    link.download = `QR-Code-1-${dc.deceasedName || 'DeathCase'}.png`;
-                                    link.target = '_blank';
-                                    link.click();
-                                  }
-                                } else {
-                                  alert('QR Code not available');
-                                }
-                              }}
+                              onClick={() => downloadQRCode(dc.nominee1QrCode, `QR-Code-1-${dc.deceasedName || 'DeathCase'}.png`)}
                               sx={{ 
                                 bgcolor: '#ff9800', 
                                 borderRadius: 3,
@@ -301,19 +311,20 @@ const DeathCase = () => {
                         </Grid>
 
                         {/* QR Code 2 */}
-                        <Grid item xs={6}>
+                        <Grid item xs={12} sm={6} sx={{ display: 'flex', justifyContent: 'center' }}>
                           <Box sx={{ 
                             bgcolor: '#ffcc80', 
                             p: 2.5, 
                             borderRadius: 4, 
                             textAlign: 'center',
                             minHeight: '300px',
-                            minWidth: '220px',
+                            width: { xs: '250px', sm: '220px' },
+                            maxWidth: '100%',
                             display: 'flex',
                             flexDirection: 'column',
                             justifyContent: 'space-between'
                           }}>
-                            <Box sx={{display: 'grid', gap: 1}}>
+                            <Box sx={{display: 'grid', gap: 1, justifyContent: 'center'}}>
                               {dc.nominee2QrCode ? (
                                 <img
                                   src={dc.nominee2QrCode}
@@ -350,34 +361,7 @@ const DeathCase = () => {
                                <Button
                               variant="contained"
                               size="small"
-                              onClick={async () => {
-                                if (dc.nominee2QrCode) {
-                                  try {
-                                    // Use CORS proxy to fetch the image
-                                    const proxyUrl = 'https://corsproxy.io/?';
-                                    const response = await fetch(proxyUrl + encodeURIComponent(dc.nominee2QrCode));
-                                    const blob = await response.blob();
-                                    const url = window.URL.createObjectURL(blob);
-                                    const link = document.createElement('a');
-                                    link.href = url;
-                                    link.download = `QR-Code-2-${dc.deceasedName || 'DeathCase'}.png`;
-                                    document.body.appendChild(link);
-                                    link.click();
-                                    document.body.removeChild(link);
-                                    window.URL.revokeObjectURL(url);
-                                  } catch (error) {
-                                    console.error('Download failed:', error);
-                                    // Final fallback: create downloadable link
-                                    const link = document.createElement('a');
-                                    link.href = dc.nominee2QrCode;
-                                    link.download = `QR-Code-2-${dc.deceasedName || 'DeathCase'}.png`;
-                                    link.target = '_blank';
-                                    link.click();
-                                  }
-                                } else {
-                                  alert('QR Code not available');
-                                }
-                              }}
+                              onClick={() => downloadQRCode(dc.nominee2QrCode, `QR-Code-2-${dc.deceasedName || 'DeathCase'}.png`)}
                               sx={{ 
                                 bgcolor: '#ff9800', 
                                 borderRadius: 3,
@@ -398,9 +382,9 @@ const DeathCase = () => {
 
                     {/* Bank Details Row */}
                     <Box sx={{ mb: 4, justifyContent: 'center', display: 'flex' }}>
-                      <Grid container spacing={10} sx={{ px: 12 }}>
+                      <Grid container spacing={10} sx={{ px: 12,justifyContent: 'center' }}>
                         {/* Bank Details 1 */}
-                        <Grid item xs={4}>
+                        <Grid item xs={4} sx={{ display: 'flex', justifyContent: 'center' }}  >
                           <Box sx={{ 
                             bgcolor: '#ffcc80', 
                             p: 2.5, 
@@ -412,7 +396,7 @@ const DeathCase = () => {
                             flexDirection: 'column',
                             justifyContent: 'space-between'
                           }}>
-                            <Box sx={{display: 'grid', gap: 1}}>
+                            <Box sx={{display: 'grid', gap: 1, justifyContent: 'center'}}>
                               <Typography variant="caption" fontWeight="bold" display="block" fontSize="1.2rem" sx={{ mb: 1 }}>
                                 BANK DETAILS 01:
                               </Typography>
@@ -459,7 +443,7 @@ IFSC: ${dc.account1?.ifscCode || 'IFSC CODE'}`;
                         </Grid>
 
                         {/* Bank Details 2 */}
-                        <Grid item xs={4}>
+                        <Grid item xs={4} sx={{ display: 'flex', justifyContent: 'center' }}>
                           <Box sx={{ 
                             bgcolor: '#ffcc80', 
                             p: 2.5, 
@@ -471,7 +455,7 @@ IFSC: ${dc.account1?.ifscCode || 'IFSC CODE'}`;
                             flexDirection: 'column',
                             justifyContent: 'space-between'
                           }}>
-                            <Box sx={{display: 'grid', gap: 1}}>
+                            <Box sx={{display: 'grid', gap: 1, justifyContent: 'center'}}>
                               <Typography variant="caption" fontWeight="bold" display="block" fontSize="1.2rem" sx={{ mb: 1 }}>
                                 BANK DETAILS 02:
                               </Typography>
@@ -518,7 +502,7 @@ IFSC: ${dc.account2?.ifscCode || 'IFSC CODE'}`;
                         </Grid>
 
                         {/* Bank Details 3 */}
-                        <Grid item xs={4}>
+                        <Grid item xs={4} sx={{ display: 'flex', justifyContent: 'center' }}>
                           <Box sx={{ 
                             bgcolor: '#ffcc80', 
                             p: 2.5, 
@@ -530,7 +514,7 @@ IFSC: ${dc.account2?.ifscCode || 'IFSC CODE'}`;
                             flexDirection: 'column',
                             justifyContent: 'space-between'
                           }}>
-                            <Box sx={{display: 'grid', gap: 1}}>
+                            <Box sx={{display: 'grid', gap: 1, justifyContent: 'center'}}>
                               <Typography variant="caption" fontWeight="bold" display="block" fontSize="1.2rem" sx={{ mb: 1 }}>
                                 BANK DETAILS 03:
                               </Typography>

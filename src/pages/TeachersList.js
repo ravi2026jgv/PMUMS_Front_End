@@ -67,7 +67,9 @@ const TeachersList = () => {
   // Prevent duplicate API calls
   const abortControllerRef = useRef(null);
   const locationAbortControllerRef = useRef(null);
-
+  const isInitialMount = useRef(true); // Track initial mount
+  const requestIdRef = useRef(0); // Track request ID to handle race conditions
+  
   // Process teacher data using actual database relationships
   const processTeacherData = (teacher) => {
     try {
@@ -176,15 +178,22 @@ const TeachersList = () => {
     }));
   };
 
-  // Check if any filter is active
-  const checkFiltersActive = useCallback(() => {
+  // Check if any filter is active (simple function, not useCallback)
+  const updateFiltersActive = () => {
     const hasActiveFilters = filters.sambhagId || filters.districtId || 
                             filters.blockId || filters.searchName || filters.mobileNumber;
     setFiltersActive(hasActiveFilters);
-  }, [filters]);
+  };
 
   // Fetch paginated teachers from API with filters
-  const fetchTeachers = useCallback(async (page = 0) => {
+  const fetchTeachers = async (page = 0, currentFilters = filters) => {
+    // Validate and sanitize page number
+    const validPage = Math.max(0, parseInt(page, 10) || 0);
+    
+    // Increment request ID to track this request
+    requestIdRef.current += 1;
+    const thisRequestId = requestIdRef.current;
+    
     // Cancel any ongoing request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -199,34 +208,43 @@ const TeachersList = () => {
       
       // Build query params for server-side filtering
       const params = new URLSearchParams();
-      params.append('page', page);
+      params.append('page', validPage);
       params.append('size', pageSize);
       
-      if (filters.sambhagId) params.append('sambhagId', filters.sambhagId);
-      if (filters.districtId) params.append('districtId', filters.districtId);
-      if (filters.blockId) params.append('blockId', filters.blockId);
-      if (filters.userId) params.append('userId', filters.userId);
-      if (filters.searchName) params.append('name', filters.searchName);
-      if (filters.mobileNumber) params.append('mobile', filters.mobileNumber);
+      if (currentFilters.sambhagId) params.append('sambhagId', currentFilters.sambhagId);
+      if (currentFilters.districtId) params.append('districtId', currentFilters.districtId);
+      if (currentFilters.blockId) params.append('blockId', currentFilters.blockId);
+      if (currentFilters.userId) params.append('userId', currentFilters.userId);
+      if (currentFilters.searchName) params.append('name', currentFilters.searchName);
+      if (currentFilters.mobileNumber) params.append('mobile', currentFilters.mobileNumber);
       
-      console.log('Fetching filtered teachers:', { page, pageSize, filters });
+      console.log(`[Request ${thisRequestId}] Fetching page: ${validPage}`);
       const response = await publicApi.get(`/users/filter?${params.toString()}`, {
         signal: abortControllerRef.current.signal
       });
-      console.log('Filter response:', response.data);
+      
+      // Only update state if this is the latest request
+      if (thisRequestId !== requestIdRef.current) {
+        console.log(`[Request ${thisRequestId}] Ignoring stale response, current is ${requestIdRef.current}`);
+        return;
+      }
+      
+      console.log(`[Request ${thisRequestId}] API Response - pageNumber:`, response.data.number || response.data.pageNumber);
       
       // Process the paginated response
-      const { content, pageNumber, totalPages: pages, totalElements: total } = response.data;
+      // Spring Boot uses 'number' for page number, not 'pageNumber'
+      const { content, number, pageNumber, totalPages: pages, totalElements: total } = response.data;
+      const actualPageNumber = number !== undefined ? number : (pageNumber !== undefined ? pageNumber : validPage);
       
       // Process teachers data
       const processedTeachers = content.map(teacher => processTeacherData(teacher));
       
       setTeachers(processedTeachers);
-      setCurrentPage(pageNumber);
-      setTotalPages(pages);
-      setTotalElements(total);
+      setCurrentPage(actualPageNumber);
+      setTotalPages(pages || 0);
+      setTotalElements(total || 0);
       
-      console.log('Pagination info:', { pageNumber, pages, total });
+      console.log(`[Request ${thisRequestId}] State updated - currentPage:`, actualPageNumber);
     } catch (err) {
       // Ignore abortion errors
       if (err.name === 'AbortError' || err.code === 'ERR_CANCELED') {
@@ -235,13 +253,19 @@ const TeachersList = () => {
       console.error('Error fetching teachers:', err);
       setError('शिक्षकों की सूची लोड करने में त्रुटि। कृपया पुनः प्रयास करें।');
     } finally {
-      setLoading(false);
+      // Only update loading if this is still the latest request
+      if (thisRequestId === requestIdRef.current) {
+        setLoading(false);
+      }
     }
-  }, [filters.sambhagId, filters.districtId, filters.blockId, filters.userId, filters.searchName, filters.mobileNumber, pageSize]);
+  };
 
-  // Initial fetch of location data
+  // Initial fetch of location data and teachers
   useEffect(() => {
     fetchLocationData();
+    fetchTeachers(0, filters).then(() => {
+      isInitialMount.current = false;
+    });
     
     // Cleanup function to abort any ongoing requests
     return () => {
@@ -249,29 +273,26 @@ const TeachersList = () => {
         locationAbortControllerRef.current.abort();
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Fetch teachers when filters change (with debounce for text inputs)
+  // Fetch teachers when filters change (skip initial mount)
   useEffect(() => {
-    const debounceTimer = setTimeout(() => {
-      fetchTeachers(0);
-      setCurrentPage(0);
-    }, 300); // 300ms debounce for text inputs
+    // Update filters active state
+    updateFiltersActive();
     
-    return () => {
-      clearTimeout(debounceTimer);
-      // Cleanup function to abort any ongoing requests
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
+    // Skip on initial mount - initial fetch is done separately
+    if (isInitialMount.current) {
+      return;
+    }
+    
+    const debounceTimer = setTimeout(() => {
+      fetchTeachers(0, filters);
+    }, 300);
+    
+    return () => clearTimeout(debounceTimer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters.sambhagId, filters.districtId, filters.blockId, filters.userId, filters.searchName, filters.mobileNumber]);
-
-  // Check filters active state
-  useEffect(() => {
-    checkFiltersActive();
-  }, [checkFiltersActive]);
 
   // Clear all filters
   const clearFilters = () => {
@@ -291,11 +312,21 @@ const TeachersList = () => {
   };
 
   // Handle page change
-  const handlePageChange = (event, page) => {
+  const handlePageChange = (event, newPage) => {
+    // MUI Pagination passes the new page number (1-indexed)
+    const pageNum = parseInt(newPage, 10);
+    console.log('Page change triggered:', pageNum);
+    
+    // Validate page number
+    if (isNaN(pageNum) || pageNum < 1) {
+      console.error('Invalid page number:', newPage);
+      return;
+    }
+    
     // MUI Pagination is 1-indexed, API is 0-indexed
-    const newPage = page - 1;
-    setCurrentPage(newPage);
-    fetchTeachers(newPage);
+    const pageIndex = pageNum - 1;
+    console.log('Fetching page index:', pageIndex);
+    fetchTeachers(pageIndex, filters);
     // Scroll to top of table
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -668,6 +699,12 @@ const TeachersList = () => {
                     showLastButton
                     siblingCount={1}
                     boundaryCount={1}
+                    disabled={loading}
+                    sx={{
+                      '& .MuiPaginationItem-root': {
+                        cursor: loading ? 'not-allowed' : 'pointer',
+                      }
+                    }}
                   />
                   <Typography variant="body2" sx={{ color: '#666' }}>
                     पृष्ठ {(currentPage + 1).toLocaleString('hi-IN')} / {totalPages.toLocaleString('hi-IN')}
