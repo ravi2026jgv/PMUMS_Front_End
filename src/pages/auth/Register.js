@@ -1317,14 +1317,14 @@ const Register = () => {
           }}
         >
           <DialogTitle sx={{ 
-            bgcolor: '#1976d2', 
+            bgcolor: '#4caf50', 
             color: 'white', 
             textAlign: 'center',
             position: 'relative',
             fontWeight: 'bold',
             fontSize: '1.2rem'
           }}>
-            पंजीकरण सफल
+            ✅ पंजीकरण सफल
             <IconButton
               onClick={() => setShowSuccessPopup(false)}
               sx={{
@@ -1342,16 +1342,19 @@ const Register = () => {
               प्रिय {registrationData?.name || 'शिक्षक'} जी,
             </Typography>
             <Typography variant="body1" sx={{ mb: 2, lineHeight: 1.6 }}>
-              आपका PMUMS शिक्षक संघ में पंजीकरण सफल रहा है।
+              आपका PMUMS शिक्षक संघ में पंजीकरण सफलतापूर्वक पूर्ण हो गया है।
             </Typography>
-            <Typography variant="body1" sx={{ mb: 2, fontWeight: 600, color: '#1976d2' }}>
-              पंजीकरण संख्या: {registrationData?.registrationNumber}
+            <Typography variant="body1" sx={{ mb: 1, fontWeight: 500 }}>
+              पंजीकरण संख्या:
+            </Typography>
+            <Typography variant="h5" sx={{ mb: 2, fontWeight: 700, color: '#1976d2' }}>
+              PMUMS{registrationData?.registrationNumber}
             </Typography>
             <Typography variant="body2" sx={{ mb: 2, color: '#d32f2f', fontWeight: 600 }}>
-              कृपया इसे भविष्य हेतु सुरक्षित रखें।
+              कृपया इस पंजीकरण संख्या को भविष्य हेतु सुरक्षित रखें।
             </Typography>
             <Typography variant="body1" sx={{ mb: 2, lineHeight: 1.6 }}>
-              3 माह पूर्ण होने पर आप कर्मचारी कल्याण कोष योजना के लाभों के पात्र होंगे।
+              आप अब कर्मचारी कल्याण कोष योजना से जुड़े सदस्य हैं।
             </Typography>
             <Typography variant="body1" sx={{ fontWeight: 600, color: '#1976d2' }}>
               धन्यवाद<br/>PMUMS शिक्षक संघ
