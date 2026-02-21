@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   Container,
   Paper,
@@ -32,6 +32,7 @@ import {
   TablePagination,
   CircularProgress,
   Collapse,
+  InputAdornment,
 } from '@mui/material';
 import {
   AdminPanelSettings,
@@ -53,6 +54,9 @@ import {
   Save,
   ExpandMore,
   ExpandLess,
+  Search,
+  Clear,
+  RemoveCircleOutline,
 } from '@mui/icons-material';
 import Layout from '../components/Layout/Layout';
 import { useAuth } from '../context/AuthContext';
@@ -170,14 +174,15 @@ const AdminDashboard = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
   const [filters, setFilters] = useState({
+    userId: '',
     name: '',
     email: '',
-    mobile: '',
+    mobileNumber: '',
     role: '',
     status: '',
-    sambhag: '',
-    district: '',
-    block: ''
+    sambhagId: '',
+    districtId: '',
+    blockId: ''
   });
 
   // Role hierarchy - updated to match your backend
@@ -208,7 +213,7 @@ const AdminDashboard = () => {
       }
     } catch (error) {
       console.error('Error fetching users:', error);
-      showSnackbar('उपयोगकर्ता डेटा लोड करने में त्रुटि!', 'error');
+      showSnackbar('Error loading user data!', 'error');
       setUsers([]);
       setTotalUsers(0);
     } finally {
@@ -217,49 +222,49 @@ const AdminDashboard = () => {
   };
 
   const handleDeleteUser = async (userId) => {
-    if (!window.confirm('क्या आप वाकई इस उपयोगकर्ता को हटाना चाहते हैं?')) {
+    if (!window.confirm('Are you sure you want to delete this user?')) {
       return;
     }
     
     try {
       await adminAPI.deleteUser(userId);
-      showSnackbar('उपयोगकर्ता सफलतापूर्वक हटाया गया!', 'success');
+      showSnackbar('User deleted successfully!', 'success');
       fetchUsers(); // Refresh the users list
     } catch (error) {
       console.error('Error deleting user:', error);
-      showSnackbar('उपयोगकर्ता हटाने में त्रुटि!', 'error');
+      showSnackbar('Error deleting User!', 'error');
     }
   };
 
   const handleUpdateUserRole = async (userId, newRole) => {
     try {
       await adminAPI.updateUserRole(userId, newRole);
-      showSnackbar('उपयोगकर्ता की भूमिका सफलतापूर्वक अपडेट की गई!', 'success');
+      showSnackbar('User Role updated successfully!', 'success');
       fetchUsers(); // Refresh the users list
     } catch (error) {
       console.error('Error updating user role:', error);
-      showSnackbar('भूमिका अपडेट करने में त्रुटि!', 'error');
+      showSnackbar('Error updating Role!', 'error');
     }
   };
 
   // Handle role assignment form submission
   const handleRoleAssignmentSubmit = async () => {
     if (!roleAssignmentData.role) {
-      showSnackbar('कृपया भूमिका का चयन करें!', 'error');
+      showSnackbar('Please select a Role!', 'error');
       return;
     }
 
     // Validate location selection based on role
     if (roleAssignmentData.role === 'ROLE_SAMBHAG_MANAGER' && !roleAssignmentData.sambhagId) {
-      showSnackbar('कृपया संभाग का चयन करें!', 'error');
+      showSnackbar('Please select a Division!', 'error');
       return;
     }
     if (roleAssignmentData.role === 'ROLE_DISTRICT_MANAGER' && (!roleAssignmentData.sambhagId || !roleAssignmentData.districtId)) {
-      showSnackbar('कृपया संभाग और जिला का चयन करें!', 'error');
+      showSnackbar('Please select Division and District!', 'error');
       return;
     }
     if (roleAssignmentData.role === 'ROLE_BLOCK_MANAGER' && (!roleAssignmentData.sambhagId || !roleAssignmentData.districtId || !roleAssignmentData.blockId)) {
-      showSnackbar('कृपया संभाग, जिला और ब्लॉक का चयन करें!', 'error');
+      showSnackbar('Please select Division, District and Block!', 'error');
       return;
     }
 
@@ -275,10 +280,10 @@ const AdminDashboard = () => {
       setRoleAssignmentDialog(false);
       setSelectedUserForRole(null);
       setRoleAssignmentData({ role: '', sambhagId: '', districtId: '', blockId: '' });
-      showSnackbar('भूमिका सफलतापूर्वक असाइन की गई!', 'success');
+      showSnackbar('Role assigned successfully!', 'success');
     } catch (error) {
       console.error('Error in role assignment:', error);
-      showSnackbar('भूमिका असाइन करने में त्रुटि हुई!', 'error');
+      showSnackbar('Error assigning Role!', 'error');
     }
   };
 
@@ -311,7 +316,7 @@ const AdminDashboard = () => {
         sambhagId: roleAssignmentData.sambhagId || null,
         districtId: roleAssignmentData.districtId || null,
         blockId: roleAssignmentData.blockId || null,
-        notes: `${selectedUserForRole.name} को ${locationDisplay} का ${managerLevel === 'SAMBHAG' ? 'संभाग प्रबंधक' : managerLevel === 'DISTRICT' ? 'जिला प्रबंधक' : 'ब्लॉक प्रबंधक'} नियुक्त किया गया`
+        notes: `${selectedUserForRole.name} to ${locationDisplay} as ${managerLevel === 'SAMBHAG' ? 'Division Manager' : managerLevel === 'DISTRICT' ? 'District Manager' : 'Block Manager'} has been appointed`
       };
       
       // Debug: Log the payload being sent
@@ -329,7 +334,7 @@ const AdminDashboard = () => {
       console.error('Error creating manager assignment:', error);
       
       // Show specific error message if available
-      const errorMessage = error.response?.data?.error || 'मैनेजर असाइनमेंट बनाने में त्रुटि हुई';
+      const errorMessage = error.response?.data?.error || 'Error creating manager assignment';
       showSnackbar(errorMessage, 'error');
       throw error; // Re-throw to be handled by parent function
     }
@@ -353,10 +358,10 @@ const AdminDashboard = () => {
       window.URL.revokeObjectURL(url);
       
       setExportDialog(false);
-      showSnackbar('उपयोगकर्ता डेटा सफलतापूर्वक एक्सपोर्ट किया गया!', 'success');
+      showSnackbar('User data exported successfully!', 'success');
     } catch (error) {
       console.error('Error exporting users:', error);
-      showSnackbar('एक्सपोर्ट करने में त्रुटि हुई!', 'error');
+      showSnackbar('Error exporting!', 'error');
     } finally {
       setExportLoading(false);
     }
@@ -401,7 +406,7 @@ const AdminDashboard = () => {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
       
-      showSnackbar('मृत्यु मामले सफलतापूर्वक एक्सपोर्ट किए गए!', 'success');
+      showSnackbar('Death cases exported successfully!', 'success');
       console.log('Export completed successfully');
     } catch (error) {
       console.error('Death cases export error:', error);
@@ -412,11 +417,11 @@ const AdminDashboard = () => {
         statusText: error.response?.statusText
       });
       
-      let errorMessage = 'मृत्यु मामले एक्सपोर्ट करने में त्रुटि!';
+      let errorMessage = 'Error exporting death cases!';
       if (error.response?.status === 404) {
-        errorMessage = 'एक्सपोर्ट API उपलब्ध नहीं है!';
+        errorMessage = 'Export API not available!';
       } else if (error.response?.status === 403) {
-        errorMessage = 'एक्सपोर्ट करने की अनुमति नहीं है!';
+        errorMessage = 'No permission to export!';
       }
       
       showSnackbar(errorMessage, 'error');
@@ -453,30 +458,30 @@ const AdminDashboard = () => {
       const mockData = [
         {
           id: 1,
-          deceasedName: 'राम शर्मा',
+          deceasedName: 'Ram Sharma',
           employeeCode: 'EMP001',
-          department: 'शिक्षा विभाग',
-          district: 'भोपाल',
-          nominee1Name: 'सीता शर्मा',
+          department: 'Education Department',
+          district: 'Bhopal',
+          nominee1Name: 'Sita Sharma',
           nominee2Name: null,
           status: 'OPEN',
           caseDate: new Date().toISOString()
         },
         {
           id: 2,
-          deceasedName: 'श्याम वर्मा',
+          deceasedName: 'Shyam Verma',
           employeeCode: 'EMP002', 
-          department: 'स्वास्थ्य विभाग',
-          district: 'इंदौर',
-          nominee1Name: 'गीता वर्मा',
-          nominee2Name: 'राज वर्मा',
+          department: 'Health Department',
+          district: 'Indore',
+          nominee1Name: 'Geeta Verma',
+          nominee2Name: 'Raj Verma',
           status: 'CLOSED',
           caseDate: new Date().toISOString()
         }
       ];
       console.log('Using mock data for testing:', mockData);
       setDeathCases(mockData);
-      showSnackbar('API से डेटा लोड नहीं हुआ, टेस्ट डेटा दिखाया जा रहा है!', 'warning');
+      showSnackbar('Could not load data from API, showing test data!', 'warning');
     } finally {
       setDeathCasesLoading(false);
     }
@@ -502,7 +507,7 @@ const AdminDashboard = () => {
       }
     } catch (error) {
       console.error('Error fetching receipts:', error);
-      showSnackbar('रसीदें लोड करने में त्रुटि!', 'error');
+      showSnackbar('Error loading Receipts!', 'error');
       setReceipts([]);
       setTotalReceipts(0);
     } finally {
@@ -537,32 +542,32 @@ const AdminDashboard = () => {
         const fallbackData = {
           states: [{
             id: 'MP',
-            name: 'मध्य प्रदेश',
+            name: 'Madhya Pradesh',
             sambhags: [
               {
                 id: 'BHOPAL',
-                name: 'भोपाल संभाग',
+                name: 'Bhopal Division',
                 districts: [
                   {
                     id: 'BHOPAL_DIST',
-                    name: 'भोपाल',
-                    blocks: [{ id: 'BHOPAL_BLOCK', name: 'भोपाल' }]
+                    name: 'Bhopal',
+                    blocks: [{ id: 'BHOPAL_BLOCK', name: 'Bhopal' }]
                   },
                   {
                     id: 'RAISEN_DIST', 
-                    name: 'रायसेन',
-                    blocks: [{ id: 'BEGUMGANJ', name: 'बेगमगंज' }]
+                    name: 'Raisen',
+                    blocks: [{ id: 'BEGUMGANJ', name: 'Begumganj' }]
                   }
                 ]
               },
               {
                 id: 'INDORE',
-                name: 'इंदौर संभाग', 
+                name: 'Indore Division', 
                 districts: [
                   {
                     id: 'INDORE_DIST',
-                    name: 'इंदौर',
-                    blocks: [{ id: 'INDORE_BLOCK', name: 'इंदौर' }]
+                    name: 'Indore',
+                    blocks: [{ id: 'INDORE_BLOCK', name: 'Indore' }]
                   }
                 ]
               }
@@ -625,47 +630,47 @@ const AdminDashboard = () => {
       
       // Validate required fields
       if (!deathCaseFormData.deceasedName.trim()) {
-        showSnackbar('कृपया मृतक का नाम दर्ज करें!', 'error');
+        showSnackbar('Please enter Deceased Name!', 'error');
         return;
       }
       
       if (!deathCaseFormData.employeeCode.trim()) {
-        showSnackbar('कृपया कर्मचारी कोड दर्ज करें!', 'error');
+        showSnackbar('Please enter Employee Code!', 'error');
         return;
       }
       
       if (!deathCaseFormData.department) {
-        showSnackbar('कृपया विभाग चुनें!', 'error');
+        showSnackbar('Please select Department!', 'error');
         return;
       }
       
       if (!selectedSambhag) {
-        showSnackbar('कृपया संभाग चुनें!', 'error');
+        showSnackbar('Please select division!', 'error');
         return;
       }
       
       if (!selectedDistrict) {
-        showSnackbar('कृपया जिला चुनें!', 'error');
+        showSnackbar('Please select district!', 'error');
         return;
       }
       
       if (!deathCaseFormData.nominee1Name.trim()) {
-        showSnackbar('कृपया प्रथम नॉमिनी का नाम दर्ज करें!', 'error');
+        showSnackbar('Please enter First Nominee Name!', 'error');
         return;
       }
       
       if (!deathCaseFormData.account1.bankName.trim() || !deathCaseFormData.account1.accountNumber.trim() || !deathCaseFormData.account1.ifscCode.trim() || !deathCaseFormData.account1.accountHolderName.trim()) {
-        showSnackbar('कृपया पहले खाते की पूरी जानकारी दर्ज करें!', 'error');
+        showSnackbar('Please enter complete first account details!', 'error');
         return;
       }
       
       if (!deathCaseFormData.account2.bankName.trim() || !deathCaseFormData.account2.accountNumber.trim() || !deathCaseFormData.account2.ifscCode.trim() || !deathCaseFormData.account2.accountHolderName.trim()) {
-        showSnackbar('कृपया दूसरे खाते की पूरी जानकारी दर्ज करें!', 'error');
+        showSnackbar('Please enter complete second account details!', 'error');
         return;
       }
       
       if (!deathCaseFormData.account3.bankName.trim() || !deathCaseFormData.account3.accountNumber.trim() || !deathCaseFormData.account3.ifscCode.trim() || !deathCaseFormData.account3.accountHolderName.trim()) {
-        showSnackbar('कृपया तीसरे खाते की पूरी जानकारी दर्ज करें!', 'error');
+        showSnackbar('Please enter complete third account details!', 'error');
         return;
       }
 
@@ -708,7 +713,7 @@ const AdminDashboard = () => {
       const response = await adminAPI.createDeathCase(formData);
       console.log('Death case created:', response);
       
-      showSnackbar('मृत्यु सहायता मामला सफलतापूर्वक जोड़ा गया!', 'success');
+      showSnackbar('Death assistance case added successfully!', 'success');
       
       // Reset form and close dialog
       setDeathCaseFormData({
@@ -748,7 +753,7 @@ const AdminDashboard = () => {
       
     } catch (error) {
       console.error('Error creating death case:', error);
-      showSnackbar('मृत्यु सहायता मामला जोड़ने में त्रुटि हुई!', 'error');
+      showSnackbar('Error adding death assistance case!', 'error');
     } finally {
       setDeathCaseFormLoading(false);
     }
@@ -844,67 +849,67 @@ const AdminDashboard = () => {
         locationData = {
           states: [{
             id: 'MP',
-            name: 'मध्य प्रदेश',
+            name: 'Madhya Pradesh',
             sambhags: [
               {
                 id: 1,
-                name: 'भोपाल संभाग',
+                name: 'Bhopal Division',
                 districts: [
                   {
                     id: 1,
-                    name: 'भोपाल',
+                    name: 'Bhopal',
                     blocks: [
-                      { id: 1, name: 'भोपाल' },
-                      { id: 2, name: 'हुजूर' },
-                      { id: 3, name: 'बैरसिया' }
+                      { id: 1, name: 'Bhopal' },
+                      { id: 2, name: 'Huzur' },
+                      { id: 3, name: 'Berasia' }
                     ]
                   },
                   {
                     id: 2,
-                    name: 'रायसेन',
+                    name: 'Raisen',
                     blocks: [
-                      { id: 4, name: 'बेगमगंज' },
-                      { id: 5, name: 'गैरतगंज' },
-                      { id: 6, name: 'बारेली' }
+                      { id: 4, name: 'Begumganj' },
+                      { id: 5, name: 'Gairatganj' },
+                      { id: 6, name: 'Bareli' }
                     ]
                   }
                 ]
               },
               {
                 id: 2,
-                name: 'इंदौर संभाग',
+                name: 'Indore Division',
                 districts: [
                   {
                     id: 3,
-                    name: 'इंदौर',
+                    name: 'Indore',
                     blocks: [
-                      { id: 7, name: 'इंदौर' },
-                      { id: 8, name: 'महू' },
-                      { id: 9, name: 'सांवेर' }
+                      { id: 7, name: 'Indore' },
+                      { id: 8, name: 'Mhow' },
+                      { id: 9, name: 'Sanwer' }
                     ]
                   },
                   {
                     id: 4,
-                    name: 'देवास',
+                    name: 'Dewas',
                     blocks: [
-                      { id: 10, name: 'देवास' },
-                      { id: 11, name: 'बागली' },
-                      { id: 12, name: 'खातेगांव' }
+                      { id: 10, name: 'Dewas' },
+                      { id: 11, name: 'Bagli' },
+                      { id: 12, name: 'Khategaon' }
                     ]
                   }
                 ]
               },
               {
                 id: 3,
-                name: 'उज्जैन संभाग',
+                name: 'Ujjain Division',
                 districts: [
                   {
                     id: 5,
-                    name: 'उज्जैन',
+                    name: 'Ujjain',
                     blocks: [
-                      { id: 13, name: 'उज्जैन' },
-                      { id: 14, name: 'घटिया' },
-                      { id: 15, name: 'खाचरौद' }
+                      { id: 13, name: 'Ujjain' },
+                      { id: 14, name: 'Ghatiya' },
+                      { id: 15, name: 'Khachrod' }
                     ]
                   }
                 ]
@@ -924,7 +929,7 @@ const AdminDashboard = () => {
       
     } catch (err) {
       console.error('Error setting up location hierarchy:', err);
-      showSnackbar('स्थान डेटा लोड करने में त्रुटि। कृपया पुनः प्रयास करें।', 'error');
+      showSnackbar('Error loading location data. Please try again.', 'error');
     } finally {
       setLoadingLocations(false);
     }
@@ -935,7 +940,8 @@ const AdminDashboard = () => {
     try {
       setAssignmentsLoading(true);
       console.log('Fetching manager assignments...');
-      const response = await managerAPI.getAssignments();
+      // Use adminAPI for admin dashboard to get all manager assignments
+      const response = await adminAPI.getManagerAssignments();
       console.log('Manager assignments response:', response);
       console.log('Assignment data structure:', response.data?.[0]); // Log first assignment
       setManagerAssignments(response.data || []);
@@ -943,12 +949,78 @@ const AdminDashboard = () => {
       setAssignments(response.data || []);
     } catch (error) {
       console.error('Error fetching manager assignments:', error);
-      showSnackbar('मैनेजर असाइनमेंट लोड करने में त्रुटि!', 'error');
+      showSnackbar('Error loading manager assignment!', 'error');
       // Set empty arrays to prevent undefined errors
       setManagerAssignments([]);
       setAssignments([]);
     } finally {
       setAssignmentsLoading(false);
+    }
+  };
+
+  // Remove manager assignment - DELETE /api/manager/assignments/{assignmentId}
+  const handleRemoveAssignment = async (assignmentId, managerName) => {
+    if (!window.confirm(`Are you sure you want to remove manager access for ${managerName || 'this user'}?`)) {
+      return;
+    }
+    
+    try {
+      await adminAPI.removeManagerAssignment(assignmentId);
+      showSnackbar('Manager access removed successfully!', 'success');
+      fetchManagerAssignments(); // Refresh the assignments list
+    } catch (error) {
+      console.error('Error removing assignment:', error);
+      showSnackbar('Error removing manager access!', 'error');
+    }
+  };
+
+  // Remove ALL manager access from a user (used in Users tab)
+  const handleRemoveAllManagerAccess = async (user) => {
+    const userName = user.name || 'this user';
+    if (!window.confirm(`Are you sure you want to remove ALL manager access from ${userName}? This will:\n\n1. Remove all location assignments\n2. Change role back to USER`)) {
+      return;
+    }
+    
+    try {
+      // Use single API call to remove all assignments
+      const response = await adminAPI.removeAllManagerAccess(user.id);
+      console.log('Remove all access response:', response.data);
+      
+      // Then change the role back to USER
+      await handleUpdateUserRole(user.id, 'ROLE_USER');
+      
+      const removedCount = response.data?.assignmentsRemoved || 0;
+      showSnackbar(`All manager access removed from ${userName}! (${removedCount} assignments removed)`, 'success');
+      fetchUsers(); // Refresh the users list
+    } catch (error) {
+      console.error('Error removing all manager access:', error);
+      showSnackbar('Error removing manager access!', 'error');
+    }
+  };
+
+  // Get manager scope/access for a specific user - GET /api/manager/scope?managerId={userId}
+  const fetchManagerScope = async (managerId) => {
+    try {
+      const response = await adminAPI.getManagerScope(managerId);
+      console.log('Manager scope:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching manager scope:', error);
+      showSnackbar('Error loading manager scope!', 'error');
+      return null;
+    }
+  };
+
+  // Get all assignments for a specific user - GET /api/manager/assignments?managerId={userId}
+  const fetchUserAssignments = async (managerId) => {
+    try {
+      const response = await adminAPI.getManagerAssignments({ managerId });
+      console.log('User assignments:', response.data);
+      return response.data || [];
+    } catch (error) {
+      console.error('Error fetching user assignments:', error);
+      showSnackbar('Error loading user assignments!', 'error');
+      return [];
     }
   };
 
@@ -991,7 +1063,7 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error('Error in fetchManagerUsers:', error);
       console.error('Error details:', error.response?.data || error.message);
-      showSnackbar('उपयोगकर्ता डेटा लोड करने में त्रुटि!', 'error');
+      showSnackbar('Error loading user data!', 'error');
       return [];
     }
   };
@@ -1022,7 +1094,7 @@ const AdminDashboard = () => {
       console.log('Extracted location info:', { locationType, locationId });
       
       if (!locationType || !locationId) {
-        showSnackbar('स्थान की जानकारी नहीं मिली!', 'error');
+        showSnackbar('Location information not found!', 'error');
         console.log('Missing location info, trying fallback...');
         // Try fallback without location parameters
         const users = await fetchManagerUsers();
@@ -1035,27 +1107,38 @@ const AdminDashboard = () => {
       
       console.log('About to call fetchManagerUsers with location params');
       const users = await fetchManagerUsers(locationType, locationId);
-      console.log('Manager Users received:', users);
+      console.log('Manager Userssss received:', users);
       
       // Set the users data and open dialog
       setManagerUsers(users);
       setSelectedManagerInfo(assignment);
       setManagerUsersDialog(true);
-      showSnackbar(`${assignment.managerName || 'मैनेजर'} के ${users.length} उपयोगकर्ता मिले`, 'success');
+      showSnackbar(`${assignment.managerName || 'Manager'} 's ${users.length} Users found`, 'success');
       
       console.log('Sample user data structure:', users[0]);
     } catch (error) {
       console.error('Error in handleViewManagerUsers:', error);
-      showSnackbar('उपयोगकर्ता डेटा लोड करने में त्रुटि!', 'error');
+      showSnackbar('Error loading user data!', 'error');
     }
   };
 
-  // Load data on component mount and when dependencies change
+  // Load data on component mount and when page/rowsPerPage changes
   useEffect(() => {
     fetchUsers();
     fetchReceipts();
     fetchManagerAssignments(); // Load assignments on mount
-  }, [page, rowsPerPage, filters]);
+  }, [page, rowsPerPage]);
+
+  // Debounced search - triggers when filters change
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      setPage(0); // Reset to first page when filters change
+      fetchUsers();
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(debounceTimer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters.name, filters.mobileNumber, filters.email, filters.userId]);
 
   // Handle filter changes
   const handleFilterChange = (filterName, value) => {
@@ -1095,10 +1178,10 @@ const AdminDashboard = () => {
         <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
           <Alert severity="error" sx={{ textAlign: 'center' }}>
             <Typography variant="h6" gutterBottom>
-              पहुंच नकारी गई
+              Access Denied
             </Typography>
             <Typography variant="body1">
-              आपको इस डैशबोर्ड तक पहुंचने की अनुमति नहीं है। केवल एडमिन और मैनेजर इसे देख सकते हैं।
+              You do not have permission to access this Dashboard. Only Admin and Managers can view it.
             </Typography>
           </Alert>
         </Container>
@@ -1109,36 +1192,36 @@ const AdminDashboard = () => {
   // Dynamic admin stats based on real data
   const adminStats = [
     {
-      title: 'कुल उपयोगकर्ता',
+      title: 'Total Users',
       value: totalUsers.toString(),
       icon: <People sx={{ fontSize: 40 }} />,
       color: '#1a237e',
       growth: '+18%',
-      subtitle: 'सभी पंजीकृत सदस्य'
+      subtitle: 'All Registered Members'
     },
     {
-      title: 'वर्तमान पेज',
+      title: 'Current Page',
       value: `${page + 1}/${Math.ceil(totalUsers / rowsPerPage) || 1}`,
       icon: <PersonAdd sx={{ fontSize: 40 }} />,
       color: '#388e3c',
-      growth: `${users.length} सदस्य`,
-      subtitle: 'पृष्ठ जानकारी'
+      growth: `${users.length} Members`,
+      subtitle: 'Page Information'
     },
     {
-      title: 'ब्लॉक्ड उपयोगकर्ता',
+      title: 'Blocked Users',
       value: users.filter(u => u.status === 'BLOCKED').length.toString(),
       icon: <Assignment sx={{ fontSize: 40 }} />,
       color: '#f57c00',
       growth: '-5%',
-      subtitle: 'ब्लॉक किए गए सदस्य'
+      subtitle: 'Blocked Members'
     },
     {
-      title: 'एडमिन्स',
+      title: 'Admins',
       value: users.filter(u => u.role === 'ROLE_ADMIN').length.toString(),
       icon: <ManageAccounts sx={{ fontSize: 40 }} />,
       color: '#d32f2f',
       growth: '+2%',
-      subtitle: 'सिस्टम एडमिन'
+      subtitle: 'System Admin'
     },
   ];
 
@@ -1158,24 +1241,24 @@ const AdminDashboard = () => {
 
   const getStatusLabel = (status) => {
     const labels = {
-      active: 'सक्रिय',
-      inactive: 'निष्क्रिय',
-      blocked: 'अवरोधित',
-      pending: 'लंबित',
-      approved: 'स्वीकृत',
-      rejected: 'अस्वीकृत',
-      completed: 'पूर्ण',
+      active: 'Active',
+      inactive: 'Inactive',
+      blocked: 'Blocked',
+      pending: 'Pending',
+      approved: 'Approved',
+      rejected: 'Rejected',
+      completed: 'Completed',
     };
     return labels[status] || status;
   };
 
   const getRoleLabel = (role) => {
     const labels = {
-      ADMIN: 'एडमिन',
-      SAMBHAG_MANAGER: 'संभाग प्रबंधक',
-      DISTRICT_MANAGER: 'जिला प्रबंधक',
-      BLOCK_MANAGER: 'ब्लॉक प्रबंधक',
-      USER: 'उपयोगकर्ता',
+      ADMIN: 'Admin',
+      SAMBHAG_MANAGER: 'Division Manager',
+      DISTRICT_MANAGER: 'District Manager',
+      BLOCK_MANAGER: 'Block Manager',
+      USER: 'User',
     };
     return labels[role] || role;
   };
@@ -1204,23 +1287,23 @@ const AdminDashboard = () => {
       // If it's a role change, use updateUserRole API
       if (['ROLE_USER', 'ROLE_SAMBHAG_MANAGER', 'ROLE_DISTRICT_MANAGER', 'ROLE_BLOCK_MANAGER'].includes(newStatus)) {
         await adminAPI.updateUserRole(userId, newStatus);
-        showSnackbar('उपयोगकर्ता की भूमिका सफलतापूर्वक अपडेट की गई!', 'success');
+        showSnackbar('User Role updated successfully!', 'success');
       } 
       // If it's a status change (block/unblock)
       else if (newStatus === 'blocked') {
         await adminAPI.blockUser(userId);
-        showSnackbar('उपयोगकर्ता सफलतापूर्वक ब्लॉक किया गया!', 'success');
+        showSnackbar('User blocked successfully!', 'success');
       } 
       else if (newStatus === 'active') {
         await adminAPI.unblockUser(userId);
-        showSnackbar('उपयोगकर्ता सफलतापूर्वक अनब्लॉक किया गया!', 'success');
+        showSnackbar('User unblocked successfully!', 'success');
       }
       
       // Refresh the users list
       fetchUsers();
     } catch (error) {
       console.error('Error updating user status:', error);
-      showSnackbar('उपयोगकर्ता स्थिति अपडेट करने में त्रुटि!', 'error');
+      showSnackbar('Error updating user status!', 'error');
     }
   };
   
@@ -1231,17 +1314,17 @@ const AdminDashboard = () => {
       
       if (newStatus === 'close' || newStatus === 'CLOSED') {
         await adminAPI.closeDeathCase(deathCaseId);
-        showSnackbar('मृत्यु सहायता मामला बंद किया गया!', 'success');
+        showSnackbar('Death assistance case closed!', 'success');
       } else if (newStatus === 'open' || newStatus === 'OPEN') {
         await adminAPI.openDeathCase(deathCaseId);
-        showSnackbar('मृत्यु सहायता मामला खोला गया!', 'success');
+        showSnackbar('Death assistance case opened!', 'success');
       }
       
       // Refresh the death cases list
       fetchDeathCases();
     } catch (error) {
       console.error('Error updating death case status:', error);
-      showSnackbar('मामले की स्थिति अपडेट करने में त्रुटि!', 'error');
+      showSnackbar('Error updating case status!', 'error');
     }
   };
 
@@ -1249,12 +1332,12 @@ const AdminDashboard = () => {
     setQueries(prev => prev.map(query => 
       query.id === queryId ? { ...query, status: newStatus } : query
     ));
-    showSnackbar(`क्वेरी स्थिति अपडेट की गई: ${getStatusLabel(newStatus)}`, 'success');
+    showSnackbar(`Query status updated: ${getStatusLabel(newStatus)}`, 'success');
   };
 
   const handleExportData = (type) => {
     // Implementation for Excel export
-    showSnackbar(`${type} डेटा एक्सपोर्ट किया गया`, 'success');
+    showSnackbar(`${type} Data exported`, 'success');
   };
 
   const showSnackbar = (message, severity = 'success') => {
@@ -1265,42 +1348,135 @@ const AdminDashboard = () => {
     setSnackbar(prev => ({ ...prev, open: false }));
   };
 
+  // Clear filters function
+  const clearFilters = () => {
+    setFilters({
+      userId: '',
+      name: '',
+      email: '',
+      mobileNumber: '',
+      role: '',
+      status: '',
+      sambhagId: '',
+      districtId: '',
+      blockId: ''
+    });
+  };
+
+  // Check if any filter is active
+  const hasActiveFilters = filters.userId || filters.name || filters.mobileNumber || filters.email;
+
   // Render functions for different tabs
   const renderUsersTab = () => (
     <Paper elevation={6} sx={{ borderRadius: 3, overflow: 'hidden' }}>
-      <Box sx={{ p: 3, bgcolor: '#f5f5f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Box sx={{ p: 3, bgcolor: '#f5f5f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
         <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-          उपयोगकर्ता प्रबंधन ({usersLoading ? 'लोड हो रहा है...' : `${totalUsers} में से ${users.length} दिखाए गए`})
+          User Management ({usersLoading ? 'Loading...' : `${totalUsers} of ${users.length} shown`})
         </Typography>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button 
-            variant="contained" 
-            startIcon={<PersonAdd />}
-            onClick={() => handleOpenDialog('addUser')}
-            sx={{ bgcolor: '#4caf50' }}
-          >
-            नया उपयोगकर्ता
-          </Button>
-          <Button 
-            variant="outlined" 
-            startIcon={<Download />}
-            onClick={() => handleExportData('users')}
-          >
-            एक्सपोर्ट
-          </Button>
-        </Box>
       </Box>
+      
+      {/* Search Filters */}
+      <Box sx={{ p: 3, bgcolor: '#fff', borderBottom: '1px solid #e0e0e0' }}>
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} sm={4} md={3}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Search by User ID"
+              value={filters.userId || ''}
+              onChange={(e) => setFilters(prev => ({ ...prev, userId: e.target.value }))}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  border: '2px solid #1976d2',
+                  borderRadius: '8px',
+                  '&:hover': { borderColor: '#1565c0' },
+                  '&.Mui-focused': { borderColor: '#1976d2' }
+                }
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search color="primary" />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={4} md={3}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Search by Name"
+              value={filters.name}
+              onChange={(e) => setFilters(prev => ({ ...prev, name: e.target.value }))}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  border: '2px solid #1976d2',
+                  borderRadius: '8px',
+                  '&:hover': { borderColor: '#1565c0' },
+                  '&.Mui-focused': { borderColor: '#1976d2' }
+                }
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search color="primary" />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={4} md={3}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Search by Mobile"
+              value={filters.mobileNumber}
+              onChange={(e) => setFilters(prev => ({ ...prev, mobileNumber: e.target.value }))}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  border: '2px solid #1976d2',
+                  borderRadius: '8px',
+                  '&:hover': { borderColor: '#1565c0' },
+                  '&.Mui-focused': { borderColor: '#1976d2' }
+                }
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Phone color="primary" />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={12} md={3}>
+            <Button
+              fullWidth
+              variant="outlined"
+              color="error"
+              startIcon={<Clear />}
+              onClick={clearFilters}
+              disabled={!hasActiveFilters}
+              sx={{ height: '40px' }}
+            >
+              Clear Filters
+            </Button>
+          </Grid>
+        </Grid>
+      </Box>
+      
       <TableContainer>
         <Table>
           <TableHead>
             <TableRow sx={{ bgcolor: '#e3f2fd' }}>
-              <TableCell><strong>नाम</strong></TableCell>
-              <TableCell><strong>ईमेल/फोन</strong></TableCell>
-              <TableCell><strong>भूमिका</strong></TableCell>
-              <TableCell><strong>स्थान</strong></TableCell>
-              <TableCell><strong>स्थिति</strong></TableCell>
-              <TableCell><strong>अंतिम लॉगिन</strong></TableCell>
-              <TableCell><strong>कार्य</strong></TableCell>
+              <TableCell><strong>Name</strong></TableCell>
+              <TableCell><strong>Email/Phone</strong></TableCell>
+              <TableCell><strong>Role</strong></TableCell>
+              <TableCell><strong>Location</strong></TableCell>
+              <TableCell><strong>Status</strong></TableCell>
+              <TableCell><strong>Last Login</strong></TableCell>
+              <TableCell><strong>Actions</strong></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -1308,7 +1484,7 @@ const AdminDashboard = () => {
               <TableRow>
                 <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                   <Typography variant="body1" color="textSecondary">
-                    उपयोगकर्ता डेटा लोड हो रहा है...
+                    Loading user data...
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -1316,7 +1492,7 @@ const AdminDashboard = () => {
               <TableRow>
                 <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                   <Typography variant="body1" color="textSecondary">
-                    कोई उपयोगकर्ता नहीं मिला
+                    No User found
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -1388,7 +1564,7 @@ const AdminDashboard = () => {
                           fetchLocationHierarchy();
                         }
                       }}
-                      title="भूमिका असाइन करें"
+                      title="Assign Role"
                       color="primary"
                       sx={{
                         bgcolor: '#1976d220',
@@ -1399,10 +1575,26 @@ const AdminDashboard = () => {
                     >
                       <ManageAccounts fontSize="small" sx={{ color: '#1976d2' }} />
                     </IconButton>
+                    {/* Remove Manager Access button - only show for manager roles */}
+                    {user.role && (user.role.includes('MANAGER') || user.role.includes('manager')) && (
+                      <IconButton 
+                        size="small" 
+                        onClick={() => handleRemoveAllManagerAccess(user)}
+                        title="Remove Manager Access"
+                        sx={{
+                          bgcolor: '#ff980020',
+                          '&:hover': {
+                            bgcolor: '#ff980040'
+                          }
+                        }}
+                      >
+                        <RemoveCircleOutline fontSize="small" sx={{ color: '#ff9800' }} />
+                      </IconButton>
+                    )}
                     <IconButton 
                       size="small" 
                       onClick={() => handleUpdateUserStatus(user.id, user.status?.toLowerCase() === 'blocked' ? 'active' : 'blocked')}
-                      title={user.status?.toLowerCase() === 'blocked' ? 'अनब्लॉक करें' : 'ब्लॉक करें'}
+                      title={user.status?.toLowerCase() === 'blocked' ? 'Unblock' : 'Block'}
                       color={user.status?.toLowerCase() === 'blocked' ? 'success' : 'error'}
                       sx={{
                         bgcolor: user.status?.toLowerCase() === 'blocked' ? '#4caf5020' : '#f4433620',
@@ -1419,7 +1611,7 @@ const AdminDashboard = () => {
                     <IconButton 
                       size="small" 
                       onClick={() => handleDeleteUser(user.id)}
-                      title="हटाएं"
+                      title="Delete"
                       color="error"
                     >
                       <Delete fontSize="small" />
@@ -1439,7 +1631,7 @@ const AdminDashboard = () => {
         rowsPerPage={rowsPerPage}
         onRowsPerPageChange={handleRowsPerPageChange}
         labelDisplayedRows={({ from, to, count }) => `${from + 1}-${Math.min(to + 1, count)} of ${count}`}
-        labelRowsPerPage="प्रति पृष्ठ पंक्तियाँ:"
+        labelRowsPerPage="Rows per page:"
       />
     </Paper>
   );
@@ -1448,7 +1640,7 @@ const AdminDashboard = () => {
     <Paper elevation={6} sx={{ borderRadius: 3, overflow: 'hidden' }}>
       <Box sx={{ p: 3, bgcolor: '#f5f5f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-          मैनेजर असाइनमेंट ({managerAssignments.length})
+          Manager Assignment ({managerAssignments.length})
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button 
@@ -1457,7 +1649,7 @@ const AdminDashboard = () => {
             onClick={() => setDialogOpen(true)}
             sx={{ bgcolor: '#1976d2' }}
           >
-            नया असाइनमेंट
+            New Assignment
           </Button>
         </Box>
       </Box>
@@ -1470,12 +1662,12 @@ const AdminDashboard = () => {
           <Table>
             <TableHead>
               <TableRow sx={{ bgcolor: '#e3f2fd' }}>
-                <TableCell><strong>मैनेजर</strong></TableCell>
-                <TableCell><strong>स्तर</strong></TableCell>
-                <TableCell><strong>असाइन किया गया क्षेत्र</strong></TableCell>
-                <TableCell><strong>असाइनमेंट की तारीख</strong></TableCell>
-                <TableCell><strong>स्थिति</strong></TableCell>
-                <TableCell><strong>कार्रवाई</strong></TableCell>
+                <TableCell><strong>Manager</strong></TableCell>
+                <TableCell><strong>Level</strong></TableCell>
+                <TableCell><strong>Assigned Area</strong></TableCell>
+                <TableCell><strong>Assignment Date</strong></TableCell>
+                <TableCell><strong>Status</strong></TableCell>
+                <TableCell><strong>Actions</strong></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -1483,7 +1675,7 @@ const AdminDashboard = () => {
                 <TableRow>
                   <TableCell colSpan={6} align="center" sx={{ py: 4 }}>
                     <Typography variant="body2" color="textSecondary">
-                      कोई मैनेजर असाइनमेंट नहीं मिला
+                      No Manager Assignment found
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -1493,18 +1685,18 @@ const AdminDashboard = () => {
                 <TableCell>
                   <Box>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {assignment.managerName || 'नाम अनुपलब्ध'}
+                      {assignment.managerName || 'Name unavailable'}
                     </Typography>
                     <Typography variant="caption" color="textSecondary">
-                      {assignment.managerEmail || 'ईमेल अनुपलब्ध'}
+                      {assignment.managerEmail || 'Email unavailable'}
                     </Typography>
                   </Box>
                 </TableCell>
                 <TableCell>
                   <Chip
-                    label={assignment.managerLevel === 'SAMBHAG' ? 'संभाग' : 
-                           assignment.managerLevel === 'DISTRICT' ? 'जिला' : 
-                           assignment.managerLevel === 'BLOCK' ? 'ब्लॉक' : (assignment.managerLevel || 'अज्ञात')}
+                    label={assignment.managerLevel === 'SAMBHAG' ? 'Division' : 
+                           assignment.managerLevel === 'DISTRICT' ? 'District' : 
+                           assignment.managerLevel === 'BLOCK' ? 'Block' : (assignment.managerLevel || 'Unknown')}
                     size="small"
                     sx={{
                       bgcolor: assignment.managerLevel === 'SAMBHAG' ? '#9c27b0' : 
@@ -1518,7 +1710,7 @@ const AdminDashboard = () => {
                   <Typography variant="body2">
                     {typeof assignment.locationDisplay === 'string' ? assignment.locationDisplay : 
                      typeof assignment.fullLocationPath === 'string' ? assignment.fullLocationPath : 
-                     'स्थान जानकारी उपलब्ध नहीं'}
+                     'Location information not available'}
                   </Typography>
                   {assignment.notes && (
                     <Typography variant="caption" color="textSecondary" display="block">
@@ -1528,15 +1720,15 @@ const AdminDashboard = () => {
                 </TableCell>
                 <TableCell>
                   <Typography variant="caption">
-                    {assignment.assignedAt ? new Date(assignment.assignedAt).toLocaleDateString('hi-IN') : 'तारीख अनुपलब्ध'}
+                    {assignment.assignedAt ? new Date(assignment.assignedAt).toLocaleDateString('en-IN') : 'Date unavailable'}
                   </Typography>
                   <Typography variant="caption" display="block" color="textSecondary">
-                    द्वारा: {assignment.assignedByName || 'अज्ञात'}
+                    By: {assignment.assignedByName || 'Unknown'}
                   </Typography>
                 </TableCell>
                 <TableCell>
                   <Chip
-                    label={assignment.isActive ? 'सक्रिय' : 'निष्क्रिय'}
+                    label={assignment.isActive ? 'Active' : 'Inactive'}
                     size="small"
                     sx={{
                       bgcolor: assignment.isActive ? '#4caf50' : '#f44336',
@@ -1548,22 +1740,23 @@ const AdminDashboard = () => {
                   <Box sx={{ display: 'flex', gap: 0.5 }}>
                     <IconButton
                       size="small"
-                      title="उपयोगकर्ता देखें"
+                      title="View Users"
                       onClick={() => handleViewManagerUsers(assignment)}
                     >
                       <Visibility fontSize="small" />
                     </IconButton>
                     <IconButton
                       size="small"
-                      title="संपादित करें"
+                      title="Edit"
                       color="primary"
                     >
                       <Edit fontSize="small" />
                     </IconButton>
                     <IconButton
                       size="small"
-                      title="हटाएं"
+                      title="Remove Access"
                       color="error"
+                      onClick={() => handleRemoveAssignment(assignment.id, assignment.managerName)}
                     >
                       <Delete fontSize="small" />
                     </IconButton>
@@ -1583,7 +1776,7 @@ const AdminDashboard = () => {
       <Box sx={{ p: 3, bgcolor: '#f5f5f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-            मृत्यु सहायता मामले ({deathCases.length})
+            Death Assistance Cases ({deathCases.length})
           </Typography>
           <IconButton 
             size="small" 
@@ -1600,7 +1793,7 @@ const AdminDashboard = () => {
             onClick={() => setCreateDeathCaseDialog(true)}
             sx={{ bgcolor: '#d32f2f' }}
           >
-            नया मामला
+            New Case
           </Button>
           <Button 
             variant="outlined" 
@@ -1642,7 +1835,7 @@ const AdminDashboard = () => {
                 document.body.removeChild(link);
                 window.URL.revokeObjectURL(url);
                 
-                showSnackbar('मृत्यु मामले सफलतापूर्वक एक्सपोर्ट किए गए!', 'success');
+                showSnackbar('Death cases exported successfully!', 'success');
                 console.log('Export completed successfully');
               } catch (error) {
                 console.error('Death cases export error:', error);
@@ -1653,11 +1846,11 @@ const AdminDashboard = () => {
                   statusText: error.response?.statusText
                 });
                 
-                let errorMessage = 'मृत्यु मामले एक्सपोर्ट करने में त्रुटि!';
+                let errorMessage = 'Error exporting death cases!';
                 if (error.response?.status === 404) {
-                  errorMessage = 'एक्सपोर्ट API उपलब्ध नहीं है!';
+                  errorMessage = 'Export API not available!';
                 } else if (error.response?.status === 403) {
-                  errorMessage = 'एक्सपोर्ट करने की अनुमति नहीं है!';
+                  errorMessage = 'No permission to export!';
                 }
                 
                 showSnackbar(errorMessage, 'error');
@@ -1668,7 +1861,7 @@ const AdminDashboard = () => {
             }}
             disabled={exportLoading}
           >
-            {exportLoading ? 'एक्सपोर्ट हो रहा है...' : 'एक्सपोर्ट'}
+            {exportLoading ? 'Exporting...' : 'Export'}
           </Button>
         </Box>
       </Box>
@@ -1676,13 +1869,13 @@ const AdminDashboard = () => {
         <Table>
           <TableHead>
             <TableRow sx={{ bgcolor: '#ffebee' }}>
-              <TableCell><strong>मृतक का नाम</strong></TableCell>
-              <TableCell><strong>कर्मचारी कोड</strong></TableCell>
-              <TableCell><strong>विभाग</strong></TableCell>
-              <TableCell><strong>जिला</strong></TableCell>
-              <TableCell><strong>नॉमिनी</strong></TableCell>
-              <TableCell><strong>स्थिति</strong></TableCell>
-              <TableCell><strong>कार्य</strong></TableCell>
+              <TableCell><strong>Deceased Name</strong></TableCell>
+              <TableCell><strong>Employee Code</strong></TableCell>
+              <TableCell><strong>Department</strong></TableCell>
+              <TableCell><strong>District</strong></TableCell>
+              <TableCell><strong>Nominee</strong></TableCell>
+              <TableCell><strong>Status</strong></TableCell>
+              <TableCell><strong>Actions</strong></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -1691,7 +1884,7 @@ const AdminDashboard = () => {
                 <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                   <CircularProgress size={40} />
                   <Typography variant="body2" sx={{ mt: 2 }}>
-                    मृत्यु मामले लोड हो रहे हैं...
+                    Loading death cases...
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -1699,7 +1892,7 @@ const AdminDashboard = () => {
               <TableRow>
                 <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
                   <Typography variant="body1" color="textSecondary">
-                    कोई मृत्यु मामला नहीं मिला
+                    No Death Case found
                   </Typography>
                 </TableCell>
               </TableRow>
@@ -1744,7 +1937,7 @@ const AdminDashboard = () => {
                     )}
                     {!deathCase.nominee1Name && !deathCase.nominee2Name && (
                       <Typography variant="caption" color="textSecondary">
-                        कोई नॉमिनी नहीं
+                        No Nominee
                       </Typography>
                     )}
                   </Box>
@@ -1752,7 +1945,7 @@ const AdminDashboard = () => {
                 <TableCell>
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <Chip 
-                      label={deathCase.status === 'OPEN' ? 'खुला' : 'बंद'}
+                      label={deathCase.status === 'OPEN' ? 'Open' : 'Closed'}
                       size="small"
                       sx={{ 
                         bgcolor: deathCase.status === 'OPEN' ? '#4caf50' : '#f44336',
@@ -1761,7 +1954,7 @@ const AdminDashboard = () => {
                     />
                     {(deathCase.isHidden === true) && (
                       <Chip
-                        label="छुपाया गया"
+                        label="Hidden"
                         size="small"
                         icon={<Lock fontSize="small" />}
                         sx={{
@@ -1784,7 +1977,7 @@ const AdminDashboard = () => {
                         setSelectedDeathCase(deathCase);
                         setDeathCaseDialog(true);
                       }}
-                      title="विवरण देखें"
+                      title="View Details"
                       color="primary"
                     >
                       <Visibility fontSize="small" />
@@ -1798,7 +1991,7 @@ const AdminDashboard = () => {
                         console.log('Extracted ID:', id);
                         handleUpdateDeathCaseStatus(id, deathCase.status === 'OPEN' ? 'close' : 'open');
                       }}
-                      title={deathCase.status === 'OPEN' ? 'बंद करें' : 'खोलें'}
+                      title={deathCase.status === 'OPEN' ? 'Close' : 'Open'}
                       sx={{
                         color: deathCase.status === 'OPEN' ? '#4caf50' : '#f44336',
                         bgcolor: deathCase.status === 'OPEN' ? '#4caf5020' : '#f4433620',
@@ -1813,7 +2006,7 @@ const AdminDashboard = () => {
                       <IconButton 
                         size="small" 
                         onClick={() => window.open(deathCase.nominee1QrCode, '_blank')}
-                        title="नॉमिनी 1 QR कोड"
+                        title="Nominee 1 QR Code"
                         color="success"
                       >
                         <Download fontSize="small" />
@@ -1823,7 +2016,7 @@ const AdminDashboard = () => {
                       <IconButton 
                         size="small" 
                         onClick={() => window.open(deathCase.nominee2QrCode, '_blank')}
-                        title="नॉमिनी 2 QR कोड"
+                        title="Nominee 2 QR Code"
                         color="success"
                       >
                         <Download fontSize="small" />
@@ -1843,26 +2036,26 @@ const AdminDashboard = () => {
     <Paper elevation={6} sx={{ borderRadius: 3, overflow: 'hidden' }}>
       <Box sx={{ p: 3, bgcolor: '#f5f5f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-          भुगतान प्रबंधन ({payments.length})
+          Payments Management ({payments.length})
         </Typography>
         <Button 
           variant="outlined" 
           startIcon={<Download />}
           onClick={() => handleExportData('payments')}
         >
-          एक्सपोर्ट
+          Export
         </Button>
       </Box>
       <TableContainer>
         <Table>
           <TableHead>
             <TableRow sx={{ bgcolor: '#e8f5e8' }}>
-              <TableCell><strong>उपयोगकर्ता</strong></TableCell>
-              <TableCell><strong>राशि</strong></TableCell>
-              <TableCell><strong>प्रकार</strong></TableCell>
-              <TableCell><strong>दिनांक</strong></TableCell>
-              <TableCell><strong>स्थिति</strong></TableCell>
-              <TableCell><strong>कार्य</strong></TableCell>
+              <TableCell><strong>User</strong></TableCell>
+              <TableCell><strong>Amount</strong></TableCell>
+              <TableCell><strong>Type</strong></TableCell>
+              <TableCell><strong>Date</strong></TableCell>
+              <TableCell><strong>Status</strong></TableCell>
+              <TableCell><strong>Actions</strong></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -1872,7 +2065,7 @@ const AdminDashboard = () => {
                 <TableCell>₹{payment.amount.toLocaleString('hi-IN')}</TableCell>
                 <TableCell>
                   <Chip 
-                    label={payment.type === 'donation' ? 'दान' : 'अन्य'}
+                    label={payment.type === 'donation' ? 'Donation' : 'Other'}
                     size="small"
                     variant="outlined"
                   />
@@ -1889,7 +2082,7 @@ const AdminDashboard = () => {
                   />
                 </TableCell>
                 <TableCell>
-                  <IconButton size="small" title="विवरण देखें">
+                  <IconButton size="small" title="View Details">
                     <Visibility fontSize="small" />
                   </IconButton>
                 </TableCell>
@@ -1905,26 +2098,26 @@ const AdminDashboard = () => {
     <Paper elevation={6} sx={{ borderRadius: 3, overflow: 'hidden' }}>
       <Box sx={{ p: 3, bgcolor: '#f5f5f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-          क्वेरी प्रबंधन ({queries.length})
+          Queries Management ({queries.length})
         </Typography>
         <Button 
           variant="outlined" 
           startIcon={<Download />}
           onClick={() => handleExportData('queries')}
         >
-          एक्सपोर्ट
+          Export
         </Button>
       </Box>
       <TableContainer>
         <Table>
           <TableHead>
             <TableRow sx={{ bgcolor: '#fff3e0' }}>
-              <TableCell><strong>उपयोगकर्ता</strong></TableCell>
-              <TableCell><strong>विषय</strong></TableCell>
-              <TableCell><strong>संदेश</strong></TableCell>
-              <TableCell><strong>स्थिति</strong></TableCell>
-              <TableCell><strong>दिनांक</strong></TableCell>
-              <TableCell><strong>कार्य</strong></TableCell>
+              <TableCell><strong>User</strong></TableCell>
+              <TableCell><strong>Subject</strong></TableCell>
+              <TableCell><strong>Message</strong></TableCell>
+              <TableCell><strong>Status</strong></TableCell>
+              <TableCell><strong>Date</strong></TableCell>
+              <TableCell><strong>Actions</strong></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -1953,7 +2146,7 @@ const AdminDashboard = () => {
                     <IconButton 
                       size="small" 
                       onClick={() => handleUpdateQueryStatus(query.id, 'approved')}
-                      title="हल करें"
+                      title="Resolve"
                       color="success"
                     >
                       <Add fontSize="small" />
@@ -1961,7 +2154,7 @@ const AdminDashboard = () => {
                     <IconButton 
                       size="small" 
                       onClick={() => handleUpdateQueryStatus(query.id, 'rejected')}
-                      title="अस्वीकार करें"
+                      title="Reject"
                       color="error"
                     >
                       <Delete fontSize="small" />
@@ -1969,7 +2162,7 @@ const AdminDashboard = () => {
                     <IconButton 
                       size="small" 
                       onClick={() => handleUpdateQueryStatus(query.id, 'pending')}
-                      title="लंबित करें"
+                      title="Mark Pending"
                       color="warning"
                     >
                       <Assignment fontSize="small" />
@@ -2022,15 +2215,15 @@ const AdminDashboard = () => {
                       WebkitTextFillColor: 'transparent',
                       mb: 1
                     }}>
-                      एडमिन डैशबोर्ड
+                      Admin Dashboard
                     </Typography>
                     <Typography variant="h6" sx={{ color: '#666' }}>
-                      संपूर्ण प्रबंधन नियंत्रण केंद्र
+                      Complete Management Control Center
                     </Typography>
                   </Box>
                 </Box>
                 <Chip 
-                  label={`स्वागत है, ${user?.name || 'Admin'}`}
+                  label={`Welcome, ${user?.name || 'Admin'}`}
                   color="error"
                   sx={{ 
                     fontWeight: 'bold',
@@ -2044,7 +2237,7 @@ const AdminDashboard = () => {
           </Paper>
 
           {/* Stats Cards */}
-          <Grid container spacing={3} sx={{ mb: 4 }}>
+          {/* <Grid container spacing={3} sx={{ mb: 4 }}>
             {adminStats.map((stat, index) => (
               <Grid item xs={12} sm={6} lg={3} key={index}>
                 <Card
@@ -2096,30 +2289,15 @@ const AdminDashboard = () => {
                 </Card>
               </Grid>
             ))}
-          </Grid>
+          </Grid> */}
 
           {/* Quick Action Panel */}
           <Paper elevation={12} sx={{ borderRadius: 4, mb: 4, overflow: 'hidden' }}>
             <Box sx={{ p: 3, bgcolor: '#f5f5f5' }}>
               <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
-                त्वरित कार्य
+                Quick Actions
               </Typography>
               <Grid container spacing={2}>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    startIcon={<Support />}
-                    onClick={() => window.open('/admin/queries', '_blank')}
-                    sx={{ 
-                      bgcolor: '#ff9800',
-                      py: 2,
-                      '&:hover': { bgcolor: '#f57c00' }
-                    }}
-                  >
-                    क्वेरी प्रबंधन
-                  </Button>
-                </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                   <Button
                     fullWidth
@@ -2132,22 +2310,7 @@ const AdminDashboard = () => {
                       '&:hover': { bgcolor: '#1976d2' }
                     }}
                   >
-                    उपयोगकर्ता एक्सपोर्ट
-                  </Button>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    startIcon={<ManageAccounts />}
-                    onClick={() => setActiveTab(4)}
-                    sx={{ 
-                      bgcolor: '#9c27b0',
-                      py: 2,
-                      '&:hover': { bgcolor: '#7b1fa2' }
-                    }}
-                  >
-                    रोल प्रबंधन
+                    User Export
                   </Button>
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
@@ -2162,7 +2325,7 @@ const AdminDashboard = () => {
                       '&:hover': { bgcolor: '#388e3c' }
                     }}
                   >
-                    मृत्यु मामले
+                    Death Cases
                   </Button>
                 </Grid>
               </Grid>
@@ -2188,34 +2351,15 @@ const AdminDashboard = () => {
             >
               <Tab 
                 icon={<People />} 
-                label="उपयोगकर्ता प्रबंधन" 
+                label="User Management" 
                 iconPosition="start"
               />
               <Tab 
                 icon={<Assignment />} 
-                label="मृत्यु सहायता मामले" 
+                label="Death Assistance Cases" 
                 iconPosition="start"
               />
-              <Tab 
-                icon={<Payment />} 
-                label="भुगतान प्रबंधन" 
-                iconPosition="start"
-              />
-              <Tab 
-                icon={<Support />} 
-                label="क्वेरी प्रबंधन" 
-                iconPosition="start"
-              />
-              <Tab 
-                icon={<BusinessCenter />} 
-                label="मैनेजर असाइनमेंट" 
-                iconPosition="start"
-              />
-              <Tab 
-                icon={<ManageAccounts />} 
-                label="रोल प्रबंधन" 
-                iconPosition="start"
-              />
+           
             </Tabs>
 
             <Box sx={{ p: 3 }}>
@@ -2226,10 +2370,10 @@ const AdminDashboard = () => {
               {activeTab === 4 && renderAssignmentsTab()}
               {activeTab === 5 && (
                 <Alert severity="info" sx={{ borderRadius: 2 }}>
-                  <Typography variant="h6" gutterBottom>रोल प्रबंधन</Typography>
+                  <Typography variant="h6" gutterBottom>Role Management</Typography>
                   <Typography>
-                    यहाँ आप विभिन्न भूमिकाओं को प्रबंधित कर सकते हैं: एडमिन, संभाग प्रबंधक, जिला प्रबंधक, ब्लॉक प्रबंधक।
-                    प्रत्येक भूमिका के अपने अधिकार और जिम्मेदारियाँ हैं।
+                    Here you can manage various roles: Admin, Division Manager, District Manager, Block Manager.
+                    Each role has its own rights and responsibilities.
                   </Typography>
                 </Alert>
               )}
@@ -2261,10 +2405,10 @@ const AdminDashboard = () => {
           fullWidth
         >
           <DialogTitle>
-            {dialogType === 'editUser' ? 'उपयोगकर्ता संपादित करें' : 
-             dialogType === 'addUser' ? 'नया उपयोगकर्ता जोड़ें' :
-             dialogType === 'addDeathCase' ? 'नया मृत्यु मामला जोड़ें' :
-             'विवरण देखें'}
+            {dialogType === 'editUser' ? 'Edit User' : 
+             dialogType === 'addUser' ? 'Add New User' :
+             dialogType === 'addDeathCase' ? 'Add New Death Case' :
+             'View Details'}
           </DialogTitle>
           <DialogContent dividers>
             {(dialogType === 'editUser' || dialogType === 'addUser') && (
@@ -2272,7 +2416,7 @@ const AdminDashboard = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="नाम"
+                    label="Name"
                     defaultValue={selectedUser?.name || ''}
                     variant="outlined"
                   />
@@ -2280,7 +2424,7 @@ const AdminDashboard = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="ईमेल"
+                    label="Email"
                     defaultValue={selectedUser?.email || ''}
                     variant="outlined"
                   />
@@ -2288,17 +2432,17 @@ const AdminDashboard = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="फोन नंबर"
+                    label="Phone Number"
                     defaultValue={selectedUser?.phone || ''}
                     variant="outlined"
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <FormControl fullWidth>
-                    <InputLabel>भूमिका</InputLabel>
+                    <InputLabel>Role</InputLabel>
                     <Select
                       defaultValue={selectedUser?.role || 'USER'}
-                      label="भूमिका"
+                      label="Role"
                     >
                       {roles.map(role => (
                         <MenuItem key={role} value={role}>
@@ -2311,7 +2455,7 @@ const AdminDashboard = () => {
                 <Grid item xs={12} sm={4}>
                   <TextField
                     fullWidth
-                    label="संभाग"
+                    label="Division"
                     defaultValue={selectedUser?.sambhag || ''}
                     variant="outlined"
                   />
@@ -2319,7 +2463,7 @@ const AdminDashboard = () => {
                 <Grid item xs={12} sm={4}>
                   <TextField
                     fullWidth
-                    label="जिला"
+                    label="District"
                     defaultValue={selectedUser?.district || ''}
                     variant="outlined"
                   />
@@ -2327,17 +2471,17 @@ const AdminDashboard = () => {
                 <Grid item xs={12} sm={4}>
                   <TextField
                     fullWidth
-                    label="ब्लॉक"
+                    label="Block"
                     defaultValue={selectedUser?.block || ''}
                     variant="outlined"
                   />
                 </Grid>
                 <Grid item xs={12}>
                   <FormControl fullWidth>
-                    <InputLabel>स्थिति</InputLabel>
+                    <InputLabel>Status</InputLabel>
                     <Select
                       defaultValue={selectedUser?.status || 'active'}
-                      label="स्थिति"
+                      label="Status"
                     >
                       {userStatuses.map(status => (
                         <MenuItem key={status} value={status}>
@@ -2355,21 +2499,21 @@ const AdminDashboard = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="आवेदक का नाम"
+                    label="Applicant Name"
                     variant="outlined"
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="मृतक का नाम"
+                    label="Deceased Name"
                     variant="outlined"
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="मृत्यु दिनांक"
+                    label="Death Date"
                     type="date"
                     InputLabelProps={{ shrink: true }}
                     variant="outlined"
@@ -2378,7 +2522,7 @@ const AdminDashboard = () => {
                 <Grid item xs={12} sm={6}>
                   <TextField
                     fullWidth
-                    label="सहायता राशि"
+                    label="Assistance Amount"
                     type="number"
                     variant="outlined"
                   />
@@ -2386,7 +2530,7 @@ const AdminDashboard = () => {
                 <Grid item xs={12}>
                   <TextField
                     fullWidth
-                    label="टिप्पणी"
+                    label="Comments"
                     multiline
                     rows={3}
                     variant="outlined"
@@ -2396,13 +2540,13 @@ const AdminDashboard = () => {
             )}
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleCloseDialog}>रद्द करें</Button>
+            <Button onClick={handleCloseDialog}>Cancel</Button>
             <Button 
               onClick={handleCloseDialog} 
               variant="contained"
               sx={{ bgcolor: '#4caf50' }}
             >
-              सहेजें
+              Save
             </Button>
           </DialogActions>
         </Dialog>
@@ -2418,23 +2562,23 @@ const AdminDashboard = () => {
           }}
         >
           <DialogTitle sx={{ bgcolor: '#1976d2', color: 'white', fontWeight: 'bold' }}>
-            भूमिका असाइनमेंट
+            Role Assignment
           </DialogTitle>
           
           <DialogContent sx={{ pt: 3 }}>
             {selectedUserForRole && (
               <Box sx={{ mb: 3, p: 2, bgcolor: '#f5f5f5', borderRadius: 2 }}>
                 <Typography variant="h6" sx={{ mb: 1 }}>
-                  चयनित उपयोगकर्ता: {selectedUserForRole.name}
+                  Selected User: {selectedUserForRole.name}
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
                   {selectedUserForRole.email}
                 </Typography>
                 <Typography variant="body2" color="textSecondary">
-                  वर्तमान भूमिका: {selectedUserForRole.role === 'ROLE_USER' ? 'उपयोगकर्ता' : 
-                                  selectedUserForRole.role === 'ROLE_SAMBHAG_MANAGER' ? 'संभाग प्रबंधक' :
-                                  selectedUserForRole.role === 'ROLE_DISTRICT_MANAGER' ? 'जिला प्रबंधक' :
-                                  selectedUserForRole.role === 'ROLE_BLOCK_MANAGER' ? 'ब्लॉक प्रबंधक' : selectedUserForRole.role}
+                  Current Role: {selectedUserForRole.role === 'ROLE_USER' ? 'User' : 
+                                  selectedUserForRole.role === 'ROLE_SAMBHAG_MANAGER' ? 'Division Manager' :
+                                  selectedUserForRole.role === 'ROLE_DISTRICT_MANAGER' ? 'District Manager' :
+                                  selectedUserForRole.role === 'ROLE_BLOCK_MANAGER' ? 'Block Manager' : selectedUserForRole.role}
                 </Typography>
               </Box>
             )}
@@ -2442,16 +2586,16 @@ const AdminDashboard = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               {/* Role Selection */}
               <FormControl fullWidth required>
-                <InputLabel>नई भूमिका का चयन करें</InputLabel>
+                <InputLabel>Select New Role</InputLabel>
                 <Select
                   value={roleAssignmentData.role}
-                  label="नई भूमिका का चयन करें"
+                  label="Select New Role"
                   onChange={(e) => handleRoleAssignmentChange('role', e.target.value)}
                 >
-                  <MenuItem value="ROLE_SAMBHAG_MANAGER">संभाग प्रबंधक</MenuItem>
-                  <MenuItem value="ROLE_DISTRICT_MANAGER">जिला प्रबंधक</MenuItem>
-                  <MenuItem value="ROLE_BLOCK_MANAGER">ब्लॉक प्रबंधक</MenuItem>
-                  <MenuItem value="ROLE_USER">सामान्य उपयोगकर्ता</MenuItem>
+                  <MenuItem value="ROLE_SAMBHAG_MANAGER">Division Manager</MenuItem>
+                  <MenuItem value="ROLE_DISTRICT_MANAGER">District Manager</MenuItem>
+                  <MenuItem value="ROLE_BLOCK_MANAGER">Block Manager</MenuItem>
+                  <MenuItem value="ROLE_USER">Regular User</MenuItem>
                 </Select>
               </FormControl>
 
@@ -2460,10 +2604,10 @@ const AdminDashboard = () => {
                 roleAssignmentData.role === 'ROLE_DISTRICT_MANAGER' || 
                 roleAssignmentData.role === 'ROLE_BLOCK_MANAGER') && (
                 <FormControl fullWidth required>
-                  <InputLabel>संभाग का चयन करें</InputLabel>
+                  <InputLabel>Select Division</InputLabel>
                   <Select
                     value={roleAssignmentData.sambhagId}
-                    label="संभाग का चयन करें"
+                    label="Select Division"
                     onChange={(e) => handleRoleAssignmentChange('sambhagId', e.target.value)}
                     disabled={loadingLocations}
                   >
@@ -2474,13 +2618,13 @@ const AdminDashboard = () => {
                     ))}
                     {availableSambhags.length === 0 && !loadingLocations && (
                       <MenuItem disabled>
-                        कोई संभाग उपलब्ध नहीं
+                        No Division available
                       </MenuItem>
                     )}
                   </Select>
                   {loadingLocations && (
                     <Typography variant="caption" color="textSecondary" sx={{ mt: 1 }}>
-                      संभाग लोड हो रहे हैं...
+                      Loading Divisions...
                     </Typography>
                   )}
                 </FormControl>
@@ -2489,10 +2633,10 @@ const AdminDashboard = () => {
               {(roleAssignmentData.role === 'ROLE_DISTRICT_MANAGER' || 
                 roleAssignmentData.role === 'ROLE_BLOCK_MANAGER') && roleAssignmentData.sambhagId && (
                 <FormControl fullWidth required>
-                  <InputLabel>जिला का चयन करें</InputLabel>
+                  <InputLabel>Select District</InputLabel>
                   <Select
                     value={roleAssignmentData.districtId}
-                    label="जिला का चयन करें"
+                    label="Select District"
                     onChange={(e) => handleRoleAssignmentChange('districtId', e.target.value)}
                     disabled={loadingLocations}
                   >
@@ -2503,13 +2647,13 @@ const AdminDashboard = () => {
                     ))}
                     {availableDistricts.length === 0 && !loadingLocations && (
                       <MenuItem disabled>
-                        कोई जिला उपलब्ध नहीं
+                        No District available
                       </MenuItem>
                     )}
                   </Select>
                   {loadingLocations && (
                     <Typography variant="caption" color="textSecondary" sx={{ mt: 1 }}>
-                      जिले लोड हो रहे हैं...
+                      Loading Districts...
                     </Typography>
                   )}
                 </FormControl>
@@ -2517,10 +2661,10 @@ const AdminDashboard = () => {
 
               {roleAssignmentData.role === 'ROLE_BLOCK_MANAGER' && roleAssignmentData.districtId && (
                 <FormControl fullWidth required>
-                  <InputLabel>ब्लॉक का चयन करें</InputLabel>
+                  <InputLabel>Select Block</InputLabel>
                   <Select
                     value={roleAssignmentData.blockId}
-                    label="ब्लॉक का चयन करें"
+                    label="Select Block"
                     onChange={(e) => handleRoleAssignmentChange('blockId', e.target.value)}
                     disabled={loadingLocations}
                   >
@@ -2531,20 +2675,20 @@ const AdminDashboard = () => {
                     ))}
                     {availableBlocks.length === 0 && !loadingLocations && (
                       <MenuItem disabled>
-                        कोई ब्लॉक उपलब्ध नहीं
+                        No Block available
                       </MenuItem>
                     )}
                   </Select>
                   {loadingLocations && (
                     <Typography variant="caption" color="textSecondary" sx={{ mt: 1 }}>
-                      ब्लॉक लोड हो रहे हैं...
+                      Loading Blocks...
                     </Typography>
                   )}
                 </FormControl>
               )}
               
               <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
-                💡 चयनित भूमिका के अनुसार उपयोगकर्ता को उपयुक्त अधिकार और जिम्मेदारियां मिलेंगी।
+                💡 The user will get appropriate rights and responsibilities according to the selected role.
               </Typography>
             </Box>
           </DialogContent>
@@ -2553,7 +2697,7 @@ const AdminDashboard = () => {
             <Button 
               onClick={() => setRoleAssignmentDialog(false)}
             >
-              रद्द करें
+              Cancel
             </Button>
             <Button 
               onClick={handleRoleAssignmentSubmit}
@@ -2561,7 +2705,7 @@ const AdminDashboard = () => {
               disabled={!roleAssignmentData.role}
               sx={{ bgcolor: '#1976d2' }}
             >
-              भूमिका असाइन करें
+              Assign Role
             </Button>
           </DialogActions>
         </Dialog>
@@ -2577,42 +2721,42 @@ const AdminDashboard = () => {
           }}
         >
           <DialogTitle sx={{ bgcolor: '#2196f3', color: 'white', fontWeight: 'bold' }}>
-            उपयोगकर्ता डेटा एक्सपोर्ट करें
+            Export User Data
           </DialogTitle>
           
           <DialogContent sx={{ pt: 3 }}>
             <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
-              कृपया एक्सपोर्ट के लिए महीना और साल चुनें
+              Please select Month and Year for export
             </Typography>
             
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               {/* Month Selection */}
               <FormControl fullWidth required>
-                <InputLabel>महीना</InputLabel>
+                <InputLabel>Month</InputLabel>
                 <Select
                   value={exportMonth}
-                  label="महीना"
+                  label="Month"
                   onChange={(e) => setExportMonth(e.target.value)}
                 >
-                  <MenuItem value={1}>जनवरी</MenuItem>
-                  <MenuItem value={2}>फरवरी</MenuItem>
-                  <MenuItem value={3}>मार्च</MenuItem>
-                  <MenuItem value={4}>अप्रैल</MenuItem>
-                  <MenuItem value={5}>मई</MenuItem>
-                  <MenuItem value={6}>जून</MenuItem>
-                  <MenuItem value={7}>जुलाई</MenuItem>
-                  <MenuItem value={8}>अगस्त</MenuItem>
-                  <MenuItem value={9}>सितंबर</MenuItem>
-                  <MenuItem value={10}>अक्टूबर</MenuItem>
-                  <MenuItem value={11}>नवंबर</MenuItem>
-                  <MenuItem value={12}>दिसंबर</MenuItem>
+                  <MenuItem value={1}>January</MenuItem>
+                  <MenuItem value={2}>February</MenuItem>
+                  <MenuItem value={3}>March</MenuItem>
+                  <MenuItem value={4}>April</MenuItem>
+                  <MenuItem value={5}>May</MenuItem>
+                  <MenuItem value={6}>June</MenuItem>
+                  <MenuItem value={7}>July</MenuItem>
+                  <MenuItem value={8}>August</MenuItem>
+                  <MenuItem value={9}>September</MenuItem>
+                  <MenuItem value={10}>October</MenuItem>
+                  <MenuItem value={11}>November</MenuItem>
+                  <MenuItem value={12}>December</MenuItem>
                 </Select>
               </FormControl>
 
               {/* Year Selection */}
               <TextField
                 fullWidth
-                label="साल"
+                label="Year"
                 type="number"
                 value={exportYear}
                 onChange={(e) => setExportYear(parseInt(e.target.value))}
@@ -2624,7 +2768,7 @@ const AdminDashboard = () => {
               />
               
               <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-                💡 चयनित महीने और साल के अनुसार उपयोगकर्ता डेटा CSV फॉर्मेट में डाउनलोड होगा।
+                💡 User data will be downloaded in CSV format according to selected month and year.
               </Typography>
             </Box>
           </DialogContent>
@@ -2633,7 +2777,7 @@ const AdminDashboard = () => {
             <Button 
               onClick={() => setExportDialog(false)}
             >
-              रद्द करें
+              Cancel
             </Button>
             <Button 
               onClick={handleExportUsers}
@@ -2642,7 +2786,7 @@ const AdminDashboard = () => {
               startIcon={exportLoading ? <CircularProgress size={18} /> : <Download />}
               sx={{ bgcolor: '#2196f3' }}
             >
-              {exportLoading ? 'एक्सपोर्ट हो रहा है...' : 'एक्सपोर्ट करें'}
+              {exportLoading ? 'Exporting...' : 'Export'}
             </Button>
           </DialogActions>
         </Dialog>
@@ -2661,7 +2805,7 @@ const AdminDashboard = () => {
           }}
         >
           <DialogTitle sx={{ bgcolor: '#d32f2f', color: 'white', fontWeight: 'bold' }}>
-            मृत्यु सहायता मामले का विवरण
+            Death Assistance Case Details
           </DialogTitle>
           
           {selectedDeathCase && (
@@ -2671,13 +2815,13 @@ const AdminDashboard = () => {
                 <Grid item xs={12} md={6}>
                   <Paper elevation={2} sx={{ p: 2, bgcolor: '#f5f5f5' }}>
                     <Typography variant="h6" sx={{ mb: 2, color: '#d32f2f' }}>
-                      मृतक की जानकारी
+                      Deceased Information
                     </Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                       {selectedDeathCase.userImage && (
                         <img 
                           src={selectedDeathCase.userImage} 
-                          alt="मृतक की फोटो"
+                          alt="Deceased Photo"
                           style={{
                             width: 60,
                             height: 60,
@@ -2692,29 +2836,29 @@ const AdminDashboard = () => {
                           {selectedDeathCase.deceasedName}
                         </Typography>
                         <Typography variant="body2" color="textSecondary">
-                          कोड: {selectedDeathCase.employeeCode}
+                          Code: {selectedDeathCase.employeeCode}
                         </Typography>
                       </Box>
                     </Box>
                     <Typography variant="body2" sx={{ mb: 1 }}>
-                      <strong>विभाग:</strong> {selectedDeathCase.department}
+                      <strong>Department:</strong> {selectedDeathCase.department}
                     </Typography>
                     <Typography variant="body2" sx={{ mb: 1 }}>
-                      <strong>जिला:</strong> {selectedDeathCase.district}
+                      <strong>District:</strong> {selectedDeathCase.district}
                     </Typography>
                     {selectedDeathCase.caseDate && (
                       <Typography variant="body2" sx={{ mb: 1 }}>
-                        <strong>मामले की दिनांक:</strong> {new Date(selectedDeathCase.caseDate).toLocaleDateString('hi-IN')}
+                        <strong>Case Date:</strong> {new Date(selectedDeathCase.caseDate).toLocaleDateString('hi-IN')}
                       </Typography>
                     )}
                     <Typography variant="body2">
-                      <strong>स्थिति:</strong>{' '}
+                      <strong>Status:</strong>{' '}
                       <Chip
                         label={
-                          selectedDeathCase.status === 'OPEN' ? 'खुला' : 
-                          selectedDeathCase.status === 'CLOSED' ? 'बंद' : 
-                          selectedDeathCase.status === 'ACTIVE' ? 'सक्रिय' :
-                          selectedDeathCase.status === 'INACTIVE' ? 'निष्क्रिय' :
+                          selectedDeathCase.status === 'OPEN' ? 'Open' : 
+                          selectedDeathCase.status === 'CLOSED' ? 'Closed' : 
+                          selectedDeathCase.status === 'ACTIVE' ? 'Active' :
+                          selectedDeathCase.status === 'INACTIVE' ? 'Inactive' :
                           selectedDeathCase.status
                         }
                         size="small"
@@ -2737,10 +2881,10 @@ const AdminDashboard = () => {
                 <Grid item xs={12} md={6}>
                   <Paper elevation={2} sx={{ p: 2, bgcolor: '#f5f5f5' }}>
                     <Typography variant="h6" sx={{ mb: 2, color: '#d32f2f' }}>
-                      विवरण
+                      Details
                     </Typography>
                     <Typography variant="body2">
-                      {selectedDeathCase.description || 'कोई विवरण उपलब्ध नहीं है'}
+                      {selectedDeathCase.description || 'No details available'}
                     </Typography>
                   </Paper>
                 </Grid>
@@ -2750,10 +2894,10 @@ const AdminDashboard = () => {
                   <Grid item xs={12} md={6}>
                     <Paper elevation={2} sx={{ p: 2, bgcolor: '#e8f5e8' }}>
                       <Typography variant="h6" sx={{ mb: 2, color: '#2e7d32' }}>
-                        प्रथम नॉमिनी
+                        First Nominee
                       </Typography>
                       <Typography variant="body2" sx={{ mb: 2 }}>
-                        <strong>नाम:</strong> {selectedDeathCase.nominee1Name}
+                        <strong>Name:</strong> {selectedDeathCase.nominee1Name}
                       </Typography>
                       {selectedDeathCase.nominee1QrCode && (
                         <Button
@@ -2763,7 +2907,7 @@ const AdminDashboard = () => {
                           onClick={() => window.open(selectedDeathCase.nominee1QrCode, '_blank')}
                           sx={{ borderColor: '#2e7d32', color: '#2e7d32' }}
                         >
-                          QR कोड डाउनलोड
+                          QR Code Download
                         </Button>
                       )}
                     </Paper>
@@ -2774,12 +2918,12 @@ const AdminDashboard = () => {
                 <Grid item xs={12} md={6}>
                   <Paper elevation={2} sx={{ p: 2, bgcolor: selectedDeathCase.nominee2Name ? '#e3f2fd' : '#fafafa' }}>
                     <Typography variant="h6" sx={{ mb: 2, color: selectedDeathCase.nominee2Name ? '#1976d2' : '#757575' }}>
-                      द्वितीय नॉमिनी
+                      Second Nominee
                     </Typography>
                     {selectedDeathCase.nominee2Name ? (
                       <>
                         <Typography variant="body2" sx={{ mb: 2 }}>
-                          <strong>नाम:</strong> {selectedDeathCase.nominee2Name}
+                          <strong>Name:</strong> {selectedDeathCase.nominee2Name}
                         </Typography>
                         {selectedDeathCase.nominee2QrCode && (
                           <Button
@@ -2789,13 +2933,13 @@ const AdminDashboard = () => {
                             onClick={() => window.open(selectedDeathCase.nominee2QrCode, '_blank')}
                             sx={{ borderColor: '#1976d2', color: '#1976d2' }}
                           >
-                            QR कोड डाउनलोड
+                            QR Code Download
                           </Button>
                         )}
                       </>
                     ) : (
                       <Typography variant="body2" color="textSecondary">
-                        कोई द्वितीय नॉमिनी नहीं है
+                        No Second Nominee 
                       </Typography>
                     )}
                   </Paper>
@@ -2806,26 +2950,26 @@ const AdminDashboard = () => {
                   <Grid item xs={12}>
                     <Paper elevation={2} sx={{ p: 2, bgcolor: '#fff3e0' }}>
                       <Typography variant="h6" sx={{ mb: 2, color: '#f57c00' }}>
-                        बैंक खाते की जानकारी
+                        Bank Account Information
                       </Typography>
                       <Grid container spacing={2}>
                         {selectedDeathCase.account1 && (
                           <Grid item xs={12} md={4}>
                             <Box sx={{ p: 2, bgcolor: 'white', borderRadius: 1, border: '1px solid #e0e0e0' }}>
                               <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
-                                खाता 1
+                                Account 1
                               </Typography>
                               <Typography variant="body2" sx={{ mb: 0.5 }}>
-                                <strong>बैंक:</strong> {selectedDeathCase.account1.bankName}
+                                <strong>Bank:</strong> {selectedDeathCase.account1.bankName}
                               </Typography>
                               <Typography variant="body2" sx={{ mb: 0.5 }}>
-                                <strong>खाता नंबर:</strong> {selectedDeathCase.account1.accountNumber}
+                                <strong>Account Number:</strong> {selectedDeathCase.account1.accountNumber}
                               </Typography>
                               <Typography variant="body2" sx={{ mb: 0.5 }}>
                                 <strong>IFSC:</strong> {selectedDeathCase.account1.ifscCode}
                               </Typography>
                               <Typography variant="body2">
-                                <strong>खाताधारक:</strong> {selectedDeathCase.account1.accountHolderName}
+                                <strong>Account Holder:</strong> {selectedDeathCase.account1.accountHolderName}
                               </Typography>
                             </Box>
                           </Grid>
@@ -2834,19 +2978,19 @@ const AdminDashboard = () => {
                           <Grid item xs={12} md={4}>
                             <Box sx={{ p: 2, bgcolor: 'white', borderRadius: 1, border: '1px solid #e0e0e0' }}>
                               <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
-                                खाता 2
+                                Account 2
                               </Typography>
                               <Typography variant="body2" sx={{ mb: 0.5 }}>
-                                <strong>बैंक:</strong> {selectedDeathCase.account2.bankName}
+                                <strong>Bank:</strong> {selectedDeathCase.account2.bankName}
                               </Typography>
                               <Typography variant="body2" sx={{ mb: 0.5 }}>
-                                <strong>खाता नंबर:</strong> {selectedDeathCase.account2.accountNumber}
+                                <strong>Account Number:</strong> {selectedDeathCase.account2.accountNumber}
                               </Typography>
                               <Typography variant="body2" sx={{ mb: 0.5 }}>
                                 <strong>IFSC:</strong> {selectedDeathCase.account2.ifscCode}
                               </Typography>
                               <Typography variant="body2">
-                                <strong>खाताधारक:</strong> {selectedDeathCase.account2.accountHolderName}
+                                <strong>Account Holder:</strong> {selectedDeathCase.account2.accountHolderName}
                               </Typography>
                             </Box>
                           </Grid>
@@ -2855,19 +2999,19 @@ const AdminDashboard = () => {
                           <Grid item xs={12} md={4}>
                             <Box sx={{ p: 2, bgcolor: 'white', borderRadius: 1, border: '1px solid #e0e0e0' }}>
                               <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
-                                खाता 3
+                                Account 3
                               </Typography>
                               <Typography variant="body2" sx={{ mb: 0.5 }}>
-                                <strong>बैंक:</strong> {selectedDeathCase.account3.bankName}
+                                <strong>Bank:</strong> {selectedDeathCase.account3.bankName}
                               </Typography>
                               <Typography variant="body2" sx={{ mb: 0.5 }}>
-                                <strong>खाता नंबर:</strong> {selectedDeathCase.account3.accountNumber}
+                                <strong>Account Number:</strong> {selectedDeathCase.account3.accountNumber}
                               </Typography>
                               <Typography variant="body2" sx={{ mb: 0.5 }}>
                                 <strong>IFSC:</strong> {selectedDeathCase.account3.ifscCode}
                               </Typography>
                               <Typography variant="body2">
-                                <strong>खाताधारक:</strong> {selectedDeathCase.account3.accountHolderName}
+                                <strong>Account Holder:</strong> {selectedDeathCase.account3.accountHolderName}
                               </Typography>
                             </Box>
                           </Grid>
@@ -2887,7 +3031,7 @@ const AdminDashboard = () => {
                 setSelectedDeathCase(null);
               }}
             >
-              बंद करें
+              Close
             </Button>
           </DialogActions>
         </Dialog>
@@ -2934,7 +3078,7 @@ const AdminDashboard = () => {
           }}
         >
           <DialogTitle sx={{ bgcolor: '#d32f2f', color: 'white', fontWeight: 'bold' }}>
-            नया मृत्यु सहायता मामला
+            New Death Assistance Case
           </DialogTitle>
           
           <DialogContent sx={{ pt: 3 }}>
@@ -2954,7 +3098,7 @@ const AdminDashboard = () => {
                     onClick={() => handleSectionToggle('basicInfo')}
                   >
                     <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 'bold' }}>
-                      मृतक की जानकारी
+                      Deceased Information
                     </Typography>
                     <IconButton size="medium" sx={{ color: '#d32f2f', '&:hover': { bgcolor: 'rgba(211, 47, 47, 0.1)' } }}>
                       {sectionExpanded.basicInfo ? <ExpandLess fontSize="large" /> : <ExpandMore fontSize="large" />}
@@ -2966,7 +3110,7 @@ const AdminDashboard = () => {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label="मृतक का नाम *"
+                        label="Deceased Name *"
                         value={deathCaseFormData.deceasedName}
                         onChange={(e) => handleDeathCaseFormChange('deceasedName', e.target.value)}
                         variant="outlined"
@@ -2977,7 +3121,7 @@ const AdminDashboard = () => {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label="कर्मचारी कोड *"
+                        label="Employee Code *"
                         value={deathCaseFormData.employeeCode}
                         onChange={(e) => handleDeathCaseFormChange('employeeCode', e.target.value)}
                         variant="outlined"
@@ -2987,7 +3131,7 @@ const AdminDashboard = () => {
                     
                     <Grid item xs={12} md={6}>
                       <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1, color: '#666' }}>
-                        मृतक की फोटो
+                        Deceased Photo
                       </Typography>
                       <Button
                         variant="outlined"
@@ -3000,7 +3144,7 @@ const AdminDashboard = () => {
                           borderStyle: 'dashed'
                         }}
                       >
-                        {deathCaseFiles.userImage ? deathCaseFiles.userImage.name : 'फोटो अपलोड करें'}
+                        {deathCaseFiles.userImage ? deathCaseFiles.userImage.name : 'Upload Photo'}
                         <input
                           type="file"
                           hidden
@@ -3012,7 +3156,7 @@ const AdminDashboard = () => {
                     
                     <Grid item xs={12} md={6}>
                       <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1, color: '#666' }}>
-                        प्रमाण पत्र
+                        Certificate
                       </Typography>
                       <Button
                         variant="outlined"
@@ -3025,7 +3169,7 @@ const AdminDashboard = () => {
                           borderStyle: 'dashed'
                         }}
                       >
-                        {deathCaseFiles.certificate1 ? deathCaseFiles.certificate1.name : 'प्रमाण पत्र अपलोड करें'}
+                        {deathCaseFiles.certificate1 ? deathCaseFiles.certificate1.name : 'Upload Certificate'}
                         <input
                           type="file"
                           hidden
@@ -3041,21 +3185,21 @@ const AdminDashboard = () => {
                         variant="outlined"
                         sx={{ '& .MuiInputLabel-root': { fontWeight: 'bold' } }}
                       >
-                        <InputLabel>विभाग *</InputLabel>
+                        <InputLabel>Department *</InputLabel>
                         <Select
                           value={deathCaseFormData.department}
                           onChange={(e) => handleDeathCaseFormChange('department', e.target.value)}
-                          label="विभाग *"
+                          label="Department *"
                           displayEmpty
                         >
-                          <MenuItem value="">विभाग चुनें...</MenuItem>
-                          <MenuItem value="शिक्षा विभाग">शिक्षा विभाग</MenuItem>
-                          <MenuItem value="आदिम जाति कल्याण विभाग">आदिम जाति कल्याण विभाग</MenuItem>
-                          <MenuItem value="स्वास्थ्य विभाग">स्वास्थ्य विभाग</MenuItem>
-                          <MenuItem value="कृषि विभाग">कृषि विभाग</MenuItem>
-                          <MenuItem value="वन विभाग">वन विभाग</MenuItem>
-                          <MenuItem value="पुलिस विभाग">पुलिस विभाग</MenuItem>
-                          <MenuItem value="राजस्व विभाग">राजस्व विभाग</MenuItem>
+                          <MenuItem value="">Select Department...</MenuItem>
+                          <MenuItem value="Education Department">Education Department</MenuItem>
+                          <MenuItem value="Tribal Welfare Department">Tribal Welfare Department</MenuItem>
+                          <MenuItem value="Health Department">Health Department</MenuItem>
+                          <MenuItem value="Agriculture Department">Agriculture Department</MenuItem>
+                          <MenuItem value="Forest Department">Forest Department</MenuItem>
+                          <MenuItem value="Police Department">Police Department</MenuItem>
+                          <MenuItem value="Revenue Department">Revenue Department</MenuItem>
                         </Select>
                       </FormControl>
                     </Grid>
@@ -3063,7 +3207,7 @@ const AdminDashboard = () => {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label="मामले की दिनांक"
+                        label="Case Date"
                         type="date"
                         value={deathCaseFormData.caseDate}
                         onChange={(e) => handleDeathCaseFormChange('caseDate', e.target.value)}
@@ -3075,14 +3219,14 @@ const AdminDashboard = () => {
                     
                     <Grid item xs={12} md={6}>
                       <FormControl fullWidth variant="outlined">
-                        <InputLabel sx={{ fontWeight: 'bold' }}>स्थिति</InputLabel>
+                        <InputLabel sx={{ fontWeight: 'bold' }}>Status</InputLabel>
                         <Select
                           value={deathCaseFormData.status}
                           onChange={(e) => handleDeathCaseFormChange('status', e.target.value)}
-                          label="स्थिति"
+                          label="Status"
                         >
-                          <MenuItem value="OPEN">खुला</MenuItem>
-                          <MenuItem value="CLOSED">बंद</MenuItem>
+                          <MenuItem value="OPEN">Open</MenuItem>
+                          <MenuItem value="CLOSED">Closed</MenuItem>
                         </Select>
                       </FormControl>
                     </Grid>
@@ -3092,7 +3236,7 @@ const AdminDashboard = () => {
                         fullWidth
                         multiline
                         rows={3}
-                        label="विवरण"
+                        label="Details"
                         value={deathCaseFormData.description}
                         onChange={(e) => handleDeathCaseFormChange('description', e.target.value)}
                         variant="outlined"
@@ -3120,7 +3264,7 @@ const AdminDashboard = () => {
                     onClick={() => handleSectionToggle('locationInfo')}
                   >
                     <Typography variant="h6" sx={{ color: '#9c27b0', fontWeight: 'bold' }}>
-                      स्थान की जानकारी
+                      Location Information
                     </Typography>
                     <IconButton size="medium" sx={{ color: '#9c27b0', '&:hover': { bgcolor: 'rgba(156, 39, 176, 0.1)' } }}>
                       {sectionExpanded.locationInfo ? <ExpandLess fontSize="large" /> : <ExpandMore fontSize="large" />}
@@ -3136,14 +3280,14 @@ const AdminDashboard = () => {
                         variant="outlined"
                         sx={{ '& .MuiInputLabel-root': { fontWeight: 'bold' } }}
                       >
-                        <InputLabel>संभाग *</InputLabel>
+                        <InputLabel>Division *</InputLabel>
                         <Select
                           value={selectedSambhag}
                           onChange={handleSambhagChange}
-                          label="संभाग *"
+                          label="Division *"
                           displayEmpty
                         >
-                          <MenuItem value="">संभाग चुनें...</MenuItem>
+                          <MenuItem value="">Select Division...</MenuItem>
                           {availableSambhags && availableSambhags.length > 0 ? (
                             availableSambhags.map((sambhag) => (
                               <MenuItem key={sambhag.id} value={sambhag.id}>
@@ -3152,7 +3296,7 @@ const AdminDashboard = () => {
                             ))
                           ) : (
                             <MenuItem disabled>
-                              {loadingLocations ? 'लोड हो रहा है...' : 'कोई संभाग उपलब्ध नहीं'}
+                              {loadingLocations ? 'Loading...' : 'No Division available'}
                             </MenuItem>
                           )}
                         </Select>
@@ -3166,14 +3310,14 @@ const AdminDashboard = () => {
                         variant="outlined"
                         sx={{ '& .MuiInputLabel-root': { fontWeight: 'bold' } }}
                       >
-                        <InputLabel>जिला *</InputLabel>
+                        <InputLabel>District *</InputLabel>
                         <Select
                           value={selectedDistrict}
                           onChange={handleDistrictChange}
-                          label="जिला *"
+                          label="District *"
                           displayEmpty
                         >
-                          <MenuItem value="">जिला चुनें...</MenuItem>
+                          <MenuItem value="">Select District...</MenuItem>
                           {availableDistricts && availableDistricts.length > 0 ? (
                             availableDistricts.map((district) => (
                               <MenuItem key={district.id} value={district.id}>
@@ -3182,7 +3326,7 @@ const AdminDashboard = () => {
                             ))
                           ) : (
                             <MenuItem disabled>
-                              {!selectedSambhag ? 'पहले संभाग चुनें' : 'कोई जिला उपलब्ध नहीं'}
+                              {!selectedSambhag ? 'Select Division first' : 'No District available'}
                             </MenuItem>
                           )}
                         </Select>
@@ -3196,14 +3340,14 @@ const AdminDashboard = () => {
                         variant="outlined"
                         sx={{ '& .MuiInputLabel-root': { fontWeight: 'bold' } }}
                       >
-                        <InputLabel>ब्लॉक</InputLabel>
+                        <InputLabel>Block</InputLabel>
                         <Select
                           value={selectedBlock}
                           onChange={handleBlockChange}
-                          label="ब्लॉक"
+                          label="Block"
                           displayEmpty
                         >
-                          <MenuItem value="">ब्लॉक चुनें...</MenuItem>
+                          <MenuItem value="">Select Block...</MenuItem>
                           {availableBlocks && availableBlocks.length > 0 ? (
                             availableBlocks.map((block) => (
                               <MenuItem key={block.id} value={block.id}>
@@ -3212,7 +3356,7 @@ const AdminDashboard = () => {
                             ))
                           ) : (
                             <MenuItem disabled>
-                              {!selectedDistrict ? 'पहले जिला चुनें' : 'कोई ब्लॉक उपलब्ध नहीं'}
+                              {!selectedDistrict ? 'Select District first' : 'No Block available'}
                             </MenuItem>
                           )}
                         </Select>
@@ -3239,7 +3383,7 @@ const AdminDashboard = () => {
                     onClick={() => handleSectionToggle('nomineeInfo')}
                   >
                     <Typography variant="h6" sx={{ color: '#2e7d32', fontWeight: 'bold' }}>
-                      नॉमिनी की जानकारी
+                      Nominee Information
                     </Typography>
                     <IconButton size="medium" sx={{ color: '#2e7d32', '&:hover': { bgcolor: 'rgba(46, 125, 50, 0.1)' } }}>
                       {sectionExpanded.nomineeInfo ? <ExpandLess fontSize="large" /> : <ExpandMore fontSize="large" />}
@@ -3251,7 +3395,7 @@ const AdminDashboard = () => {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label="प्रथम नॉमिनी का नाम *"
+                        label="First Nominee Name *"
                         value={deathCaseFormData.nominee1Name}
                         onChange={(e) => handleDeathCaseFormChange('nominee1Name', e.target.value)}
                         variant="outlined"
@@ -3261,7 +3405,7 @@ const AdminDashboard = () => {
                     
                     <Grid item xs={12} md={6}>
                       <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1, color: '#666' }}>
-                        प्रथम नॉमिनी QR कोड
+                        First Nominee QR Code
                       </Typography>
                       <Button
                         variant="outlined"
@@ -3274,7 +3418,7 @@ const AdminDashboard = () => {
                           borderStyle: 'dashed'
                         }}
                       >
-                        {deathCaseFiles.nominee1QrCode ? deathCaseFiles.nominee1QrCode.name : 'QR कोड अपलोड करें'}
+                        {deathCaseFiles.nominee1QrCode ? deathCaseFiles.nominee1QrCode.name : 'Upload QR Code'}
                         <input
                           type="file"
                           hidden
@@ -3287,7 +3431,7 @@ const AdminDashboard = () => {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label="द्वितीय नॉमिनी का नाम"
+                        label="Second Nominee Name"
                         value={deathCaseFormData.nominee2Name}
                         onChange={(e) => handleDeathCaseFormChange('nominee2Name', e.target.value)}
                         variant="outlined"
@@ -3297,7 +3441,7 @@ const AdminDashboard = () => {
                     
                     <Grid item xs={12} md={6}>
                       <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1, color: '#666' }}>
-                        द्वितीय नॉमिनी QR कोड
+                        Second Nominee QR Code
                       </Typography>
                       <Button
                         variant="outlined"
@@ -3310,7 +3454,7 @@ const AdminDashboard = () => {
                           borderStyle: 'dashed'
                         }}
                       >
-                        {deathCaseFiles.nominee2QrCode ? deathCaseFiles.nominee2QrCode.name : 'QR कोड अपलोड करें'}
+                        {deathCaseFiles.nominee2QrCode ? deathCaseFiles.nominee2QrCode.name : 'Upload QR Code'}
                         <input
                           type="file"
                           hidden
@@ -3328,7 +3472,7 @@ const AdminDashboard = () => {
               {/* Bank Account Information */}
               <Grid item xs={12}>
                 <Typography variant="h6" sx={{ mb: 2, color: '#f57c00' }}>
-                  बैंक खाता जानकारी (सभी 3 खाते अनिवार्य *)
+                  Bank Account Information (All 3 accounts required *)
                 </Typography>
               </Grid>
               
@@ -3347,7 +3491,7 @@ const AdminDashboard = () => {
                     onClick={() => handleSectionToggle('account1')}
                   >
                     <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 'bold' }}>
-                      खाता 1 (अनिवार्य *)
+                      Account 1 (Required *)
                     </Typography>
                     <IconButton size="medium" sx={{ color: '#f57c00', '&:hover': { bgcolor: 'rgba(245, 124, 0, 0.1)' } }}>
                       {sectionExpanded.account1 ? <ExpandLess fontSize="large" /> : <ExpandMore fontSize="large" />}
@@ -3359,7 +3503,7 @@ const AdminDashboard = () => {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label="बैंक का नाम *"
+                        label="Bank Name *"
                         value={deathCaseFormData.account1.bankName}
                         onChange={(e) => handleDeathCaseFormChange('account1.bankName', e.target.value)}
                         variant="outlined"
@@ -3369,7 +3513,7 @@ const AdminDashboard = () => {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label="खाता संख्या *"
+                        label="Account Number *"
                         value={deathCaseFormData.account1.accountNumber}
                         onChange={(e) => handleDeathCaseFormChange('account1.accountNumber', e.target.value)}
                         variant="outlined"
@@ -3379,7 +3523,7 @@ const AdminDashboard = () => {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label="IFSC कोड *"
+                        label="IFSC Code *"
                         value={deathCaseFormData.account1.ifscCode}
                         onChange={(e) => handleDeathCaseFormChange('account1.ifscCode', e.target.value)}
                         variant="outlined"
@@ -3389,7 +3533,7 @@ const AdminDashboard = () => {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label="खाताधारक का नाम *"
+                        label="Account Holder Name *"
                         value={deathCaseFormData.account1.accountHolderName}
                         onChange={(e) => handleDeathCaseFormChange('account1.accountHolderName', e.target.value)}
                         variant="outlined"
@@ -3417,7 +3561,7 @@ const AdminDashboard = () => {
                     onClick={() => handleSectionToggle('account2')}
                   >
                     <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 'bold' }}>
-                      खाता 2 (अनिवार्य *)
+                      Account 2 (Required *)
                     </Typography>
                     <IconButton size="medium" sx={{ color: '#1976d2', '&:hover': { bgcolor: 'rgba(25, 118, 210, 0.1)' } }}>
                       {sectionExpanded.account2 ? <ExpandLess fontSize="large" /> : <ExpandMore fontSize="large" />}
@@ -3429,7 +3573,7 @@ const AdminDashboard = () => {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label="बैंक का नाम *"
+                        label="Bank Name *"
                         value={deathCaseFormData.account2.bankName}
                         onChange={(e) => handleDeathCaseFormChange('account2.bankName', e.target.value)}
                         variant="outlined"
@@ -3439,7 +3583,7 @@ const AdminDashboard = () => {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label="खाता संख्या *"
+                        label="Account Number *"
                         value={deathCaseFormData.account2.accountNumber}
                         onChange={(e) => handleDeathCaseFormChange('account2.accountNumber', e.target.value)}
                         variant="outlined"
@@ -3449,7 +3593,7 @@ const AdminDashboard = () => {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label="IFSC कोड *"
+                        label="IFSC Code *"
                         value={deathCaseFormData.account2.ifscCode}
                         onChange={(e) => handleDeathCaseFormChange('account2.ifscCode', e.target.value)}
                         variant="outlined"
@@ -3459,7 +3603,7 @@ const AdminDashboard = () => {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label="खाताधारक का नाम *"
+                        label="Account Holder Name *"
                         value={deathCaseFormData.account2.accountHolderName}
                         onChange={(e) => handleDeathCaseFormChange('account2.accountHolderName', e.target.value)}
                         variant="outlined"
@@ -3487,7 +3631,7 @@ const AdminDashboard = () => {
                     onClick={() => handleSectionToggle('account3')}
                   >
                     <Typography variant="h6" sx={{ color: '#d32f2f', fontWeight: 'bold' }}>
-                      खाता 3 (अनिवार्य *)
+                      Account 3 (Required *)
                     </Typography>
                     <IconButton size="medium" sx={{ color: '#4caf50', '&:hover': { bgcolor: 'rgba(76, 175, 80, 0.1)' } }}>
                       {sectionExpanded.account3 ? <ExpandLess fontSize="large" /> : <ExpandMore fontSize="large" />}
@@ -3499,7 +3643,7 @@ const AdminDashboard = () => {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label="बैंक का नाम *"
+                        label="Bank Name *"
                         value={deathCaseFormData.account3.bankName}
                         onChange={(e) => handleDeathCaseFormChange('account3.bankName', e.target.value)}
                         variant="outlined"
@@ -3509,7 +3653,7 @@ const AdminDashboard = () => {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label="खाता संख्या *"
+                        label="Account Number *"
                         value={deathCaseFormData.account3.accountNumber}
                         onChange={(e) => handleDeathCaseFormChange('account3.accountNumber', e.target.value)}
                         variant="outlined"
@@ -3519,7 +3663,7 @@ const AdminDashboard = () => {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label="IFSC कोड *"
+                        label="IFSC Code *"
                         value={deathCaseFormData.account3.ifscCode}
                         onChange={(e) => handleDeathCaseFormChange('account3.ifscCode', e.target.value)}
                         variant="outlined"
@@ -3529,7 +3673,7 @@ const AdminDashboard = () => {
                     <Grid item xs={12} md={6}>
                       <TextField
                         fullWidth
-                        label="खाताधारक का नाम *"
+                        label="Account Holder Name *"
                         value={deathCaseFormData.account3.accountHolderName}
                         onChange={(e) => handleDeathCaseFormChange('account3.accountHolderName', e.target.value)}
                         variant="outlined"
@@ -3595,7 +3739,7 @@ const AdminDashboard = () => {
               }}
               disabled={deathCaseFormLoading}
             >
-              रद्द करें
+              Cancel
             </Button>
             <Button 
               variant="contained"
@@ -3623,12 +3767,12 @@ const AdminDashboard = () => {
               startIcon={deathCaseFormLoading ? <CircularProgress size={18} /> : <Save />}
               sx={{ bgcolor: '#d32f2f' }}
             >
-              {deathCaseFormLoading ? 'सेव हो रहा है...' : 'सेव करें'}
+              {deathCaseFormLoading ? 'Saving...' : 'Save'}
             </Button>
           </DialogActions>
         </Dialog>
 
-        {/* Manager Users Dialog */}
+        {/* Manager Userssss Dialog */}
         <Dialog 
           open={managerUsersDialog} 
           onClose={() => setManagerUsersDialog(false)}
@@ -3636,32 +3780,32 @@ const AdminDashboard = () => {
           fullWidth
         >
           <DialogTitle>
-            {selectedManagerInfo ? `${selectedManagerInfo.managerName} के उपयोगकर्ता` : 'मैनेजर उपयोगकर्ता'}
+            {selectedManagerInfo ? `${selectedManagerInfo.managerName} 's Users` : 'Manager Usersss'}
             <Typography variant="subtitle2" color="textSecondary">
               {selectedManagerInfo && (
-                `${selectedManagerInfo.managerLevel === 'SAMBHAG' ? 'संभाग' : 
-                   selectedManagerInfo.managerLevel === 'DISTRICT' ? 'जिला' : 
-                   selectedManagerInfo.managerLevel === 'BLOCK' ? 'ब्लॉक' : selectedManagerInfo.managerLevel} प्रबंधक`
+                `${selectedManagerInfo.managerLevel === 'SAMBHAG' ? 'Division' : 
+                   selectedManagerInfo.managerLevel === 'DISTRICT' ? 'District' : 
+                   selectedManagerInfo.managerLevel === 'BLOCK' ? 'Block' : selectedManagerInfo.managerLevel} Manager`
               )}
             </Typography>
           </DialogTitle>
           <DialogContent dividers>
             {managerUsers.length === 0 ? (
               <Typography variant="body2" color="textSecondary" align="center" sx={{ py: 4 }}>
-                कोई उपयोगकर्ता नहीं मिला
+                No User found
               </Typography>
             ) : (
               <TableContainer>
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell><strong>नाम</strong></TableCell>
-                      <TableCell><strong>ईमेल</strong></TableCell>
-                      <TableCell><strong>मोबाइल</strong></TableCell>
-                      <TableCell><strong>विभाग</strong></TableCell>
-                      <TableCell><strong>स्थान</strong></TableCell>
-                      <TableCell><strong>भूमिका</strong></TableCell>
-                      <TableCell><strong>स्थिति</strong></TableCell>
+                      <TableCell><strong>Name</strong></TableCell>
+                      <TableCell><strong>Email</strong></TableCell>
+                      <TableCell><strong>Mobile</strong></TableCell>
+                      <TableCell><strong>Department</strong></TableCell>
+                      <TableCell><strong>Location</strong></TableCell>
+                      <TableCell><strong>Role</strong></TableCell>
+                      <TableCell><strong>Status</strong></TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -3696,11 +3840,11 @@ const AdminDashboard = () => {
                         </TableCell>
                         <TableCell>
                           <Chip
-                            label={user.role === 'ROLE_ADMIN' ? 'एडमिन' :
-                                   user.role === 'ROLE_SAMBHAG_MANAGER' ? 'संभाग प्रबंधक' :
-                                   user.role === 'ROLE_DISTRICT_MANAGER' ? 'जिला प्रबंधक' :
-                                   user.role === 'ROLE_BLOCK_MANAGER' ? 'ब्लॉक प्रबंधक' : 
-                                   'उपयोगकर्ता'}
+                            label={user.role === 'ROLE_ADMIN' ? 'Admin' :
+                                   user.role === 'ROLE_SAMBHAG_MANAGER' ? 'Division Manager' :
+                                   user.role === 'ROLE_DISTRICT_MANAGER' ? 'District Manager' :
+                                   user.role === 'ROLE_BLOCK_MANAGER' ? 'Block Manager' : 
+                                   'User'}
                             size="small"
                             color={user.role === 'ROLE_ADMIN' ? 'error' : 
                                    user.role.includes('MANAGER') ? 'primary' : 'default'}
@@ -3708,8 +3852,8 @@ const AdminDashboard = () => {
                         </TableCell>
                         <TableCell>
                           <Chip
-                            label={user.status === 'ACTIVE' ? 'सक्रिय' : 
-                                   user.status === 'BLOCKED' ? 'अवरोधित' : 'निष्क्रिय'}
+                            label={user.status === 'ACTIVE' ? 'Active' : 
+                                   user.status === 'BLOCKED' ? 'Blocked' : 'Inactive'}
                             size="small"
                             color={user.status === 'ACTIVE' ? 'success' : 
                                    user.status === 'BLOCKED' ? 'error' : 'default'}
@@ -3724,7 +3868,7 @@ const AdminDashboard = () => {
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setManagerUsersDialog(false)}>
-              बंद करें
+              Close
             </Button>
           </DialogActions>
         </Dialog>
@@ -3734,3 +3878,20 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

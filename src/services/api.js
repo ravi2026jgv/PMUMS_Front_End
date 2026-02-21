@@ -247,6 +247,21 @@ const adminAPI = {
     return api.post('/manager/assignments', assignmentData);
   },
 
+  // Remove manager assignment
+  removeManagerAssignment: (assignmentId) => {
+    return api.delete(`/manager/assignments/${assignmentId}`);
+  },
+
+  // Remove ALL manager assignments for a user
+  removeAllManagerAccess: (userId) => {
+    return api.delete(`/manager/assignments/user/${userId}`);
+  },
+
+  // Get manager scope for a specific user
+  getManagerScope: (managerId) => {
+    return api.get('/manager/scope', { params: { managerId } });
+  },
+
   // Location APIs - Using same pattern as registration
   getLocationHierarchy: () => {
     return api.get('/locations/hierarchy');

@@ -19,6 +19,7 @@ import {
   Visibility
 } from '@mui/icons-material';
 import Layout from '../components/Layout/Layout';
+import SelfDonation from '../components/SelfDonation';
 
 const About = () => {
   const objectives = [
@@ -418,6 +419,9 @@ const About = () => {
           </Paper>
         </Container>
       </Box>
+        <Box sx={{ py: 8, background: '#FFF8F0' }}>
+               <SelfDonation />
+            </Box>
     </Layout>
   );
 };

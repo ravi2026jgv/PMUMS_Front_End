@@ -123,7 +123,7 @@ const ManagerDashboard = () => {
       setDashboardData(response.data);
     } catch (error) {
       console.error('Error fetching dashboard overview:', error);
-      showSnackbar('डैशबोर्ड लोड करने में त्रुटि!', 'error');
+      showSnackbar('Error loading dashboard!', 'error');
     } finally {
       setLoading(false);
     }
@@ -141,7 +141,7 @@ const ManagerDashboard = () => {
       setTotalUsers(response.data.totalElements || 0);
     } catch (error) {
       console.error('Error fetching users:', error);
-      showSnackbar('उपयोगकर्ता लोड करने में त्रुटि!', 'error');
+      showSnackbar('Error loading users!', 'error');
     }
   };
 
@@ -157,7 +157,7 @@ const ManagerDashboard = () => {
       setTotalQueries(response.data.totalElements || 0);
     } catch (error) {
       console.error('Error fetching queries:', error);
-      showSnackbar('क्वेरी लोड करने में त्रुटि!', 'error');
+      showSnackbar('Error loading queries!', 'error');
     }
   };
 
@@ -167,7 +167,7 @@ const ManagerDashboard = () => {
       setAssignments(response.data || []);
     } catch (error) {
       console.error('Error fetching assignments:', error);
-      showSnackbar('असाइनमेंट लोड करने में त्रुटि!', 'error');
+      showSnackbar('Error loading assignments!', 'error');
     }
   };
 
@@ -175,66 +175,66 @@ const ManagerDashboard = () => {
   const handleBlockUser = async (userId, reason = 'Administrative action') => {
     try {
       await managerAPI.blockUser(userId, reason);
-      showSnackbar('उपयोगकर्ता सफलतापूर्वक ब्लॉक किया गया!', 'success');
+      showSnackbar('User blocked successfully!', 'success');
       fetchAccessibleUsers();
     } catch (error) {
       console.error('Error blocking user:', error);
-      showSnackbar('उपयोगकर्ता ब्लॉक करने में त्रुटि!', 'error');
+      showSnackbar('Error blocking user!', 'error');
     }
   };
 
   const handleUnblockUser = async (userId) => {
     try {
       await managerAPI.unblockUser(userId);
-      showSnackbar('उपयोगकर्ता सफलतापूर्वक अनब्लॉक किया गया!', 'success');
+      showSnackbar('User unblocked successfully!', 'success');
       fetchAccessibleUsers();
     } catch (error) {
       console.error('Error unblocking user:', error);
-      showSnackbar('उपयोगकर्ता अनब्लॉक करने में त्रुटि!', 'error');
+      showSnackbar('Error unblocking user!', 'error');
     }
   };
 
   const handleUpdateUserRole = async (userId, newRole) => {
     try {
       await managerAPI.updateUserRole(userId, newRole);
-      showSnackbar('उपयोगकर्ता की भूमिका सफलतापूर्वक अपडेट की गई!', 'success');
+      showSnackbar('User role updated successfully!', 'success');
       fetchAccessibleUsers();
     } catch (error) {
       console.error('Error updating user role:', error);
-      showSnackbar('भूमिका अपडेट करने में त्रुटि!', 'error');
+      showSnackbar('Error updating role!', 'error');
     }
   };
 
   const handleAssignQuery = async (queryId, managerId) => {
     try {
       await managerAPI.assignQuery(queryId, managerId);
-      showSnackbar('क्वेरी सफलतापूर्वक असाइन की गई!', 'success');
+      showSnackbar('Query assigned successfully!', 'success');
       fetchQueries();
     } catch (error) {
       console.error('Error assigning query:', error);
-      showSnackbar('क्वेरी असाइन करने में त्रुटि!', 'error');
+      showSnackbar('Error assigning query!', 'error');
     }
   };
 
   const handleResolveQuery = async (queryId, resolution) => {
     try {
       await managerAPI.resolveQuery(queryId, resolution);
-      showSnackbar('क्वेरी सफलतापूर्वक हल की गई!', 'success');
+      showSnackbar('Query resolved successfully!', 'success');
       fetchQueries();
     } catch (error) {
       console.error('Error resolving query:', error);
-      showSnackbar('क्वेरी हल करने में त्रुटि!', 'error');
+      showSnackbar('Error resolving query!', 'error');
     }
   };
 
   const handleEscalateQuery = async (queryId) => {
     try {
       await managerAPI.escalateQuery(queryId);
-      showSnackbar('क्वेरी सफलतापूर्वक एस्केलेट की गई!', 'success');
+      showSnackbar('Query escalated successfully!', 'success');
       fetchQueries();
     } catch (error) {
       console.error('Error escalating query:', error);
-      showSnackbar('क्वेरी एस्केलेट करने में त्रुटि!', 'error');
+      showSnackbar('Error escalating query!', 'error');
     }
   };
 
@@ -273,11 +273,11 @@ const ManagerDashboard = () => {
 
   const getRoleLabel = (role) => {
     switch (role) {
-      case 'ROLE_ADMIN': return 'एडमिन';
-      case 'ROLE_SAMBHAG_MANAGER': return 'संभाग मैनेजर';
-      case 'ROLE_DISTRICT_MANAGER': return 'जिला मैनेजर';
-      case 'ROLE_BLOCK_MANAGER': return 'ब्लॉक मैनेजर';
-      case 'ROLE_USER': return 'उपयोगकर्ता';
+      case 'ROLE_ADMIN': return 'Admin';
+      case 'ROLE_SAMBHAG_MANAGER': return 'Division Manager';
+      case 'ROLE_DISTRICT_MANAGER': return 'District Manager';
+      case 'ROLE_BLOCK_MANAGER': return 'Block Manager';
+      case 'ROLE_USER': return 'User';
       default: return role;
     }
   };
@@ -306,34 +306,34 @@ const ManagerDashboard = () => {
 
     const stats = [
       {
-        title: 'कुल उपयोगकर्ता',
+        title: 'Total Users',
         value: dashboardData.userStats?.totalUsers || 0,
         icon: <People sx={{ fontSize: 40 }} />,
         color: '#1E3A8A',
-        subtitle: 'प्रबंधित उपयोगकर्ता'
+        subtitle: 'Managed Users'
       },
       {
-        title: 'पेंडिंग क्वेरी',
+        title: 'Pending Queries',
         value: dashboardData.queryStats?.pendingCount || 0,
         icon: <Assignment sx={{ fontSize: 40 }} />,
         color: '#ff9800',
-        subtitle: 'समाधान हेतु'
+        subtitle: 'For Resolution'
       },
       {
-        title: 'हल की गई क्वेरी',
+        title: 'Resolved Queries',
         value: dashboardData.queryStats?.resolvedCount || 0,
         icon: <CheckCircle sx={{ fontSize: 40 }} />,
         color: '#4caf50',
-        subtitle: 'सफलतापूर्वक हल'
+        subtitle: 'Successfully Resolved'
       },
       {
-        title: 'प्रबंधित क्षेत्र',
+        title: 'Managed Areas',
         value: Array.isArray(dashboardData.scope?.managedLocations) ? 
                dashboardData.scope.managedLocations.length : 
                (dashboardData.scope?.totalLocations || 0),
         icon: <LocationOn sx={{ fontSize: 40 }} />,
         color: '#9c27b0',
-        subtitle: 'असाइन किए गए क्षेत्र'
+        subtitle: 'Assigned Areas'
       }
     ];
 
@@ -381,25 +381,25 @@ const ManagerDashboard = () => {
     <Paper elevation={6} sx={{ borderRadius: 3, overflow: 'hidden' }}>
       <Box sx={{ p: 3, bgcolor: '#f5f5f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-          उपयोगकर्ता प्रबंधन ({totalUsers})
+          User Management ({totalUsers})
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <TextField
             size="small"
-            placeholder="खोजें..."
+            placeholder="Search..."
             value={userFilters.search}
             onChange={(e) => setUserFilters(prev => ({ ...prev, search: e.target.value }))}
           />
           <FormControl size="small" sx={{ minWidth: 120 }}>
-            <InputLabel>स्थिति</InputLabel>
+            <InputLabel>Status</InputLabel>
             <Select
               value={userFilters.status}
-              label="स्थिति"
+              label="Status"
               onChange={(e) => setUserFilters(prev => ({ ...prev, status: e.target.value }))}
             >
-              <MenuItem value="">सभी</MenuItem>
-              <MenuItem value="ACTIVE">सक्रिय</MenuItem>
-              <MenuItem value="BLOCKED">ब्लॉक</MenuItem>
+              <MenuItem value="">All</MenuItem>
+              <MenuItem value="ACTIVE">Active</MenuItem>
+              <MenuItem value="BLOCKED">Blocked</MenuItem>
             </Select>
           </FormControl>
         </Box>
@@ -408,11 +408,11 @@ const ManagerDashboard = () => {
         <Table>
           <TableHead>
             <TableRow sx={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #303f9f 100%)' }}>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>उपयोगकर्ता</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>भूमिका</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>स्थान</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>स्थिति</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>कार्रवाई</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>User</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Role</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Location</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Status</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -454,13 +454,13 @@ const ManagerDashboard = () => {
                   </Typography>
                   {user.blockName && (
                     <Typography variant="caption" display="block">
-                      ब्लॉक: {user.blockName}
+                      Block: {user.blockName}
                     </Typography>
                   )}
                 </TableCell>
                 <TableCell>
                   <Chip
-                    label={user.status === 'ACTIVE' ? 'सक्रिय' : user.status === 'BLOCKED' ? 'ब्लॉक' : user.status}
+                    label={user.status === 'ACTIVE' ? 'Active' : user.status === 'BLOCKED' ? 'Blocked' : user.status}
                     size="small"
                     sx={{
                       bgcolor: getStatusColor(user.status),
@@ -477,7 +477,7 @@ const ManagerDashboard = () => {
                           user.id, 
                           user.role === 'ROLE_USER' ? 'ROLE_BLOCK_MANAGER' : 'ROLE_USER'
                         )}
-                        title={user.role === 'ROLE_USER' ? 'मैनेजर बनाएं' : 'यूजर बनाएं'}
+                        title={user.role === 'ROLE_USER' ? 'Make Manager' : 'Make User'}
                         color="primary"
                       >
                         <ManageAccounts fontSize="small" />
@@ -489,7 +489,7 @@ const ManagerDashboard = () => {
                         handleUnblockUser(user.id) : 
                         handleBlockUser(user.id)
                       }
-                      title={user.status === 'BLOCKED' ? 'अनब्लॉक करें' : 'ब्लॉक करें'}
+                      title={user.status === 'BLOCKED' ? 'Unblock' : 'Block'}
                       color={user.status === 'BLOCKED' ? 'success' : 'error'}
                     >
                       {user.status === 'BLOCKED' ? <LockOpen fontSize="small" /> : <Block fontSize="small" />}
@@ -512,7 +512,7 @@ const ManagerDashboard = () => {
           setUsersPage(0);
         }}
         labelDisplayedRows={({ from, to, count }) => `${from}-${to} of ${count}`}
-        labelRowsPerPage="प्रति पृष्ठ पंक्तियाँ:"
+        labelRowsPerPage="Rows per page:"
       />
     </Paper>
   );
@@ -522,7 +522,7 @@ const ManagerDashboard = () => {
     <Paper elevation={6} sx={{ borderRadius: 3, overflow: 'hidden' }}>
       <Box sx={{ p: 3, background: 'linear-gradient(135deg, #1E3A8A15, #1E3A8A05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-          क्वेरी प्रबंधन ({totalQueries})
+          Query Management ({totalQueries})
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
           <Button
@@ -531,7 +531,7 @@ const ManagerDashboard = () => {
             onClick={() => setCreateQueryOpen(true)}
             sx={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #303f9f 100%)', color: 'white' }}
           >
-            नई क्वेरी
+            New Query
           </Button>
         </Box>
       </Box>
@@ -539,11 +539,11 @@ const ManagerDashboard = () => {
         <Table>
           <TableHead>
             <TableRow sx={{ background: 'linear-gradient(135deg, #1E3A8A 0%, #303f9f 100%)' }}>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>क्वेरी</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>प्राथमिकता</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>स्थिति</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>बनाई गई</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>कार्रवाई</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Query</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Priority</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Status</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Created</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', color: 'white' }}>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -586,10 +586,10 @@ const ManagerDashboard = () => {
                 </TableCell>
                 <TableCell>
                   <Typography variant="caption">
-                    {new Date(query.createdAt).toLocaleDateString('hi-IN')}
+                    {new Date(query.createdAt).toLocaleDateString('en-IN')}
                   </Typography>
                   <Typography variant="caption" display="block">
-                    द्वारा: {query.createdByName}
+                    By: {query.createdByName}
                   </Typography>
                 </TableCell>
                 <TableCell>
@@ -597,7 +597,7 @@ const ManagerDashboard = () => {
                     <IconButton
                       size="small"
                       onClick={() => setSelectedItem(query)}
-                      title="देखें"
+                      title="View"
                     >
                       <Visibility fontSize="small" />
                     </IconButton>
@@ -605,7 +605,7 @@ const ManagerDashboard = () => {
                       <IconButton
                         size="small"
                         onClick={() => handleEscalateQuery(query.id)}
-                        title="एस्केलेट करें"
+                        title="Escalate"
                         color="warning"
                       >
                         <Escalator fontSize="small" />
@@ -618,7 +618,7 @@ const ManagerDashboard = () => {
                           setSelectedItem(query);
                           setResolveQueryOpen(true);
                         }}
-                        title="हल करें"
+                        title="Resolve"
                         color="success"
                       >
                         <CheckCircle fontSize="small" />
@@ -642,7 +642,7 @@ const ManagerDashboard = () => {
           setQueriesPage(0);
         }}
         labelDisplayedRows={({ from, to, count }) => `${from}-${to} of ${count}`}
-        labelRowsPerPage="प्रति पृष्ठ पंक्तियाँ:"
+        labelRowsPerPage="Rows per page:"
       />
     </Paper>
   );
@@ -654,14 +654,14 @@ const ManagerDashboard = () => {
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1E3A8A', mb: 1 }}>
           <Dashboard sx={{ mr: 2, verticalAlign: 'middle' }} />
-          मैनेजर डैशबोर्ड
+          Manager Dashboard
         </Typography>
         <Typography variant="body1" color="textSecondary">
-          स्वागत है, {user?.name}! आपकी भूमिका: {getRoleLabel(user?.role)}
+          Welcome, {user?.name}! Your Role: {getRoleLabel(user?.role)}
         </Typography>
         {dashboardData?.scope && (
           <Typography variant="body2" color="textSecondary">
-            प्रबंधित क्षेत्र: {dashboardData.scope.totalSambhags || 0} संभाग, {dashboardData.scope.totalDistricts || 0} जिले, {dashboardData.scope.totalBlocks || 0} ब्लॉक
+            Managed Areas: {dashboardData.scope.totalSambhags || 0} Divisions, {dashboardData.scope.totalDistricts || 0} Districts, {dashboardData.scope.totalBlocks || 0} Blocks
           </Typography>
         )}
       </Box>
@@ -679,7 +679,7 @@ const ManagerDashboard = () => {
               sx={{ mb: 1 }}
               action={
                 <Button color="inherit" size="small">
-                  देखें
+                  View
                 </Button>
               }
             >
@@ -712,22 +712,22 @@ const ManagerDashboard = () => {
         >
           <Tab 
             icon={<Dashboard />} 
-            label="ओवरव्यू" 
+            label="Overview" 
             iconPosition="start"
           />
           <Tab 
             icon={<People />} 
-            label="उपयोगकर्ता प्रबंधन" 
+            label="User Management" 
             iconPosition="start"
           />
           <Tab 
             icon={<Assignment />} 
-            label="क्वेरी प्रबंधन" 
+            label="Query Management" 
             iconPosition="start"
           />
           <Tab 
             icon={<AssignmentInd />} 
-            label="असाइनमेंट" 
+            label="Assignments" 
             iconPosition="start"
           />
         </Tabs>
@@ -736,7 +736,7 @@ const ManagerDashboard = () => {
           {activeTab === 0 && (
             <Box>
               <Typography variant="h6" sx={{ mb: 3 }}>
-                डैशबोर्ड ओवरव्यू
+                Dashboard Overview
               </Typography>
               {dashboardData && (
                 <Grid container spacing={3}>
@@ -744,7 +744,7 @@ const ManagerDashboard = () => {
                     <Card elevation={3}>
                       <CardContent>
                         <Typography variant="h6" gutterBottom>
-                          मेरा क्षेत्र
+                          My Area
                         </Typography>
                         <List dense>
                           {dashboardData.scope?.managedLocations?.map((location, index) => (
@@ -754,8 +754,8 @@ const ManagerDashboard = () => {
                               </ListItemIcon>
                               <ListItemText
                                 primary={typeof location.fullPath === 'string' ? location.fullPath : 
-                                        (location.locationName || 'स्थान नाम उपलब्ध नहीं')}
-                                secondary={`${location.userCount || 0} उपयोगकर्ता`}
+                                        (location.locationName || 'Location name not available')}
+                                secondary={`${location.userCount || 0} Users`}
                               />
                             </ListItem>
                           )) || []}
@@ -767,10 +767,10 @@ const ManagerDashboard = () => {
                     <Card elevation={3}>
                       <CardContent>
                         <Typography variant="h6" gutterBottom>
-                          हाल की गतिविधि
+                          Recent Activity
                         </Typography>
                         <Typography variant="body2" color="textSecondary">
-                          आज तक कोई नई गतिविधि नहीं है।
+                          No new activity so far.
                         </Typography>
                       </CardContent>
                     </Card>
@@ -784,10 +784,10 @@ const ManagerDashboard = () => {
           {activeTab === 3 && (
             <Box>
               <Typography variant="h6" sx={{ mb: 3 }}>
-                असाइनमेंट प्रबंधन
+                Assignment Management
               </Typography>
               <Alert severity="info">
-                असाइनमेंट सुविधा जल्द ही उपलब्ध होगी।
+                Assignment feature coming soon.
               </Alert>
             </Box>
           )}
@@ -799,7 +799,7 @@ const ManagerDashboard = () => {
         open={createQueryOpen}
         onClose={() => setCreateQueryOpen(false)}
         onSuccess={() => {
-          showSnackbar('नई क्वेरी सफलतापूर्वक बनाई गई!', 'success');
+          showSnackbar('New query created successfully!', 'success');
           fetchQueries();
         }}
       />
@@ -812,7 +812,7 @@ const ManagerDashboard = () => {
         }}
         query={selectedItem}
         onSuccess={() => {
-          showSnackbar('क्वेरी सफलतापूर्वक हल की गई!', 'success');
+          showSnackbar('Query resolved successfully!', 'success');
           fetchQueries();
           setSelectedItem(null);
         }}
