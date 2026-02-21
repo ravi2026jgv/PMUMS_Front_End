@@ -1348,7 +1348,7 @@ const Register = () => {
               पंजीकरण संख्या:
             </Typography>
             <Typography variant="h5" sx={{ mb: 2, fontWeight: 700, color: '#1976d2' }}>
-              PMUMS{registrationData?.registrationNumber}
+              {registrationData?.registrationNumber}
             </Typography>
             <Typography variant="body2" sx={{ mb: 2, color: '#d32f2f', fontWeight: 600 }}>
               कृपया इस पंजीकरण संख्या को भविष्य हेतु सुरक्षित रखें।
