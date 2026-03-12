@@ -1,0 +1,210 @@
+// ============================================
+// BACKEND CODE EXAMPLE (Spring Boot)
+// Add this to your AuthController.java
+// ============================================
+
+/*
+ * STEP 1: Add Role to User Entity
+ * Location: src/main/java/com/example/model/User.java
+ */
+@Entity
+@Table(name = "users")
+public class User {
+    @Id
+    private String id;
+    
+    private String username;
+    private String password;
+    private String name;
+    private String email;
+    
+    // ADD THIS FIELD:
+    @Column(name = "role")
+    private String role = "USER"; // Default role
+    
+    // Getter and Setter
+    public String getRole() {
+        return role;
+    }
+    
+    public void setRole(String role) {
+        this.role = role;
+    }
+    
+    // ... other fields and methods
+}
+
+/*
+ * STEP 2: Create Role Enum (Optional but recommended)
+ * Location: src/main/java/com/example/enums/Role.java
+ */
+public enum Role {
+    USER,
+    ADMIN
+}
+
+/*
+ * STEP 3: Update Login Response DTO
+ * Location: src/main/java/com/example/dto/LoginResponse.java
+ */
+public class LoginResponse {
+    private String token;
+    private UserDTO user;
+    
+    // Constructors, getters, setters
+    
+    public LoginResponse(String token, UserDTO user) {
+        this.token = token;
+        this.user = user;
+    }
+    
+    public static class UserDTO {
+        private String id;
+        private String username;
+        private String name;
+        private String email;
+        private String role; // ADD THIS FIELD
+        
+        // Include all user fields you want to return
+        
+        public UserDTO(User user) {
+            this.id = user.getId();
+            this.username = user.getUsername();
+            this.name = user.getName();
+            this.email = user.getEmail();
+            this.role = user.getRole(); // IMPORTANT: Include role
+        }
+        
+        // Getters and setters
+        public String getRole() {
+            return role;
+        }
+        
+        public void setRole(String role) {
+            this.role = role;
+        }
+    }
+}
+
+/*
+ * STEP 4: Update AuthController Login Method
+ * Location: src/main/java/com/example/controller/AuthController.java
+ */
+@RestController
+@RequestMapping("/api/auth")
+@CrossOrigin(origins = "*")
+public class AuthController {
+    
+    @Autowired
+    private AuthenticationManager authenticationManager;
+    
+    @Autowired
+    private UserRepository userRepository;
+    
+    @Autowired
+    private JwtTokenProvider tokenProvider;
+    
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        try {
+            // Authenticate
+            Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                    loginRequest.getUsername(),
+                    loginRequest.getPassword()
+                )
+            );
+            
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            
+            // Generate JWT token
+            String jwt = tokenProvider.generateToken(authentication);
+            
+            // Get user details from database
+            User user = userRepository.findByUsername(loginRequest.getUsername())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+            
+            // Create user DTO with role
+            LoginResponse.UserDTO userDTO = new LoginResponse.UserDTO(user);
+            
+            // Return response with token and user (including role)
+            LoginResponse response = new LoginResponse(jwt, userDTO);
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(new ErrorResponse("Invalid credentials"));
+        }
+    }
+}
+
+/*
+ * EXPECTED JSON RESPONSE:
+ * {
+ *   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+ *   "user": {
+ *     "id": "PMUMS202458108",
+ *     "username": "admin",
+ *     "name": "Admin User",
+ *     "email": "admin@example.com",
+ *     "role": "ADMIN"    <-- CRITICAL: This must be present
+ *   }
+ * }
+ */
+
+/*
+ * STEP 5: Update Register Method (Optional)
+ * Set default role for new users
+ */
+@PostMapping("/register")
+public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    try {
+        User user = new User();
+        // ... set all fields
+        
+        // Set default role
+        user.setRole("USER"); // All new users get USER role by default
+        
+        userRepository.save(user);
+        
+        return ResponseEntity.ok(new MessageResponse("User registered successfully"));
+    } catch (Exception e) {
+        return ResponseEntity.badRequest().body(new ErrorResponse(e.getMessage()));
+    }
+}
+
+/*
+ * STEP 6: Create Admin User Manually
+ * You can either:
+ * 1. Run SQL: UPDATE users SET role = 'ADMIN' WHERE username = 'admin';
+ * 2. Or create a one-time setup endpoint:
+ */
+@PostMapping("/setup-admin")
+public ResponseEntity<?> setupAdmin(@RequestParam String username) {
+    User user = userRepository.findByUsername(username)
+        .orElseThrow(() -> new RuntimeException("User not found"));
+    
+    user.setRole("ADMIN");
+    userRepository.save(user);
+    
+    return ResponseEntity.ok(new MessageResponse("Admin role assigned successfully"));
+}
+
+/*
+ * TESTING YOUR BACKEND:
+ * 
+ * 1. Start your Spring Boot application
+ * 2. Use Postman or curl to test login:
+ * 
+ * curl -X POST http://localhost:8080/api/auth/login \
+ *   -H "Content-Type: application/json" \
+ *   -d '{"username":"admin","password":"your_password"}'
+ * 
+ * 3. Verify the response includes "role" field
+ * 4. If role is missing, check:
+ *    - User entity has role field
+ *    - Database has role column
+ *    - LoginResponse DTO includes role
+ *    - UserDTO constructor copies role from User entity
+ */

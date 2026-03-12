@@ -1,0 +1,1388 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import {
+  Box,
+  Button,
+  Container,
+  TextField,
+  Typography,
+  Paper,
+  Grid,
+  Alert,
+  CircularProgress,
+  Link,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  FormHelperText,
+  Checkbox,
+  FormControlLabel,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+} from '@mui/material';
+import { PersonAdd, CloudUpload, Close } from '@mui/icons-material';
+import Layout from '../../components/Layout/Layout';
+import { useAuth } from '../../context/AuthContext';
+import axios from 'axios';
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://backend.pmums.com/api';
+
+const Register = () => {
+  const { register: registerUser, loading } = useAuth();
+  const navigate = useNavigate();
+  const [error, setError] = useState('');
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [registrationData, setRegistrationData] = useState(null);
+  const [locationErrors, setLocationErrors] = useState({
+    state: '',
+    sambhag: '',
+    district: '',
+    block: ''
+  });
+
+  // Location hierarchy state
+  const [locationHierarchy, setLocationHierarchy] = useState(null);
+  const [loadingLocations, setLoadingLocations] = useState(true);
+  const [selectedState, setSelectedState] = useState('');
+  const [selectedSambhag, setSelectedSambhag] = useState('');
+  const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [selectedBlock, setSelectedBlock] = useState('');
+
+  // Filtered options for cascading dropdowns
+  const [availableSambhags, setAvailableSambhags] = useState([]);
+  const [availableDistricts, setAvailableDistricts] = useState([]);
+  const [availableBlocks, setAvailableBlocks] = useState([]);
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm({
+    mode: 'onChange',
+  });
+
+  // Fetch location hierarchy on component mount
+  useEffect(() => {
+    const fetchLocationHierarchy = async () => {
+      try {
+        setLoadingLocations(true);
+        
+        // Try to fetch from API first
+        let locationData;
+        try {
+          const response = await axios.get(`${API_BASE_URL}/locations/hierarchy`);
+          locationData = response.data;
+        } catch (apiErr) {
+          console.warn('Location API failed, using fallback data:', apiErr);
+          
+          // Fallback MP data structure
+          locationData = {
+            states: [{
+              id: 'MP',
+              name: 'मध्य प्रदेश',
+              sambhags: [
+                {
+                  id: 'BHOPAL',
+                  name: 'भोपाल संभाग',
+                  districts: [
+                    {
+                      id: 'BHOPAL_DIST',
+                      name: 'भोपाल',
+                      blocks: [
+                        { id: 'BHOPAL_BLOCK', name: 'भोपाल' },
+                        { id: 'HUZUR', name: 'हुजूर' },
+                        { id: 'BERASIA', name: 'बैरसिया' }
+                      ]
+                    },
+                    {
+                      id: 'RAISEN_DIST',
+                      name: 'रायसेन',
+                      blocks: [
+                        { id: 'BEGUMGANJ', name: 'बेगमगंज' },
+                        { id: 'GAIRATGANJ', name: 'गैरतगंज' },
+                        { id: 'BARELI', name: 'बारेली' }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  id: 'INDORE',
+                  name: 'इंदौर संभाग',
+                  districts: [
+                    {
+                      id: 'INDORE_DIST',
+                      name: 'इंदौर',
+                      blocks: [
+                        { id: 'INDORE_BLOCK', name: 'इंदौर' },
+                        { id: 'MHOW', name: 'महू' },
+                        { id: 'SANWER', name: 'सांवेर' }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }]
+          };
+        }
+        
+        setLocationHierarchy(locationData);
+        
+        // Auto-select Madhya Pradesh if it's the only state
+        if (locationData.states && locationData.states.length === 1) {
+          const mpState = locationData.states[0];
+          console.log('Auto-selecting MP state:', mpState);
+          console.log('Available sambhags:', mpState.sambhags);
+          setSelectedState(mpState.id);
+          setAvailableSambhags(mpState.sambhags || []);
+        }
+        
+        // Debug: Log the complete location data
+        console.log('Complete location hierarchy loaded:', locationData);
+      } catch (err) {
+        console.error('Error setting up location hierarchy:', err);
+        setError('स्थान डेटा लोड करने में त्रुटि। कृपया पुनः प्रयास करें।');
+      } finally {
+        setLoadingLocations(false);
+      }
+    };
+
+    fetchLocationHierarchy();
+  }, []);
+
+  // Debug useEffect to track location state changes
+  useEffect(() => {
+    console.log('Location state changed:', {
+      selectedState,
+      selectedSambhag,
+      selectedDistrict,
+      selectedBlock,
+      availableSambhags: availableSambhags?.length || 0,
+      availableDistricts: availableDistricts?.length || 0,
+      availableBlocks: availableBlocks?.length || 0,
+      locationHierarchy: locationHierarchy ? 'loaded' : 'not loaded'
+    });
+  }, [selectedState, selectedSambhag, selectedDistrict, selectedBlock, availableSambhags, availableDistricts, availableBlocks, locationHierarchy]);
+
+  // Handle State selection
+  const handleStateChange = (event) => {
+    const stateId = event.target.value;
+    setSelectedState(stateId);
+    setSelectedSambhag('');
+    setSelectedDistrict('');
+    setSelectedBlock('');
+    
+    const state = locationHierarchy?.states?.find(s => s.id === stateId);
+    setAvailableSambhags(state?.sambhags || []);
+    setAvailableDistricts([]);
+    setAvailableBlocks([]);
+  };
+
+  // Handle Sambhag selection
+  const handleSambhagChange = (event) => {
+    const sambhagId = event.target.value;
+    console.log('Sambhag changed to:', sambhagId);
+    setSelectedSambhag(sambhagId);
+    setSelectedDistrict('');
+    setSelectedBlock('');
+    
+    const sambhag = availableSambhags.find(s => s.id === sambhagId);
+    console.log('Found sambhag:', sambhag);
+    console.log('Districts in sambhag:', sambhag?.districts);
+    setAvailableDistricts(sambhag?.districts || []);
+    setAvailableBlocks([]);
+  };
+
+  // Handle District selection
+  const handleDistrictChange = (event) => {
+    const districtId = event.target.value;
+    console.log('District changed to:', districtId);
+    setSelectedDistrict(districtId);
+    setSelectedBlock('');
+    
+    const district = availableDistricts.find(d => d.id === districtId);
+    console.log('Found district:', district);
+    console.log('Blocks in district:', district?.blocks);
+    setAvailableBlocks(district?.blocks || []);
+  };
+
+  // Handle Block selection
+  const handleBlockChange = (event) => {
+    setSelectedBlock(event.target.value);
+  };
+
+  const onSubmit = async (data) => {
+    // Clear previous location errors
+    setLocationErrors({ state: '', sambhag: '', district: '', block: '' });
+    
+    // Validate location selection
+    const newLocationErrors = {};
+    if (!selectedState) newLocationErrors.state = 'राज्य चुनना आवश्यक है';
+    if (!selectedSambhag) newLocationErrors.sambhag = 'संभाग चुनना आवश्यक है';
+    if (!selectedDistrict) newLocationErrors.district = 'जिला चुनना आवश्यक है';
+    if (!selectedBlock) newLocationErrors.block = 'ब्लॉक चुनना आवश्यक है';
+    
+    if (Object.keys(newLocationErrors).length > 0) {
+      setLocationErrors(newLocationErrors);
+      setError('कृपया सभी स्थान विवरण भरें (राज्य, संभाग, जिला, ब्लॉक)');
+      return;
+    }
+
+    try {
+      setError('');
+      
+      // Remove confirmPassword, confirmEmail, confirmMobileNumber, and agreeTerms, prepare data according to backend RegisterRequest DTO
+      const { confirmPassword, confirmEmail, confirmMobileNumber, agreeTerms, ...formData } = data;
+      
+      // Get location names for department fields
+      const state = locationHierarchy?.states?.find(s => s.id === selectedState);
+      const sambhag = availableSambhags.find(s => s.id === selectedSambhag);
+      const district = availableDistricts.find(d => d.id === selectedDistrict);
+      const block = availableBlocks.find(b => b.id === selectedBlock);
+      
+      // Convert frontend form values to backend enum format
+      const genderMap = {
+        'male': 'MALE',
+        'female': 'FEMALE', 
+        'other': 'OTHER'
+      };
+      
+      const maritalStatusMap = {
+        'single': 'UNMARRIED',
+        'married': 'MARRIED',
+        'divorced': 'DIVORCED',
+        'widowed': 'WIDOWED'
+      };
+      
+      // Construct request matching RegisterRequest DTO exactly
+      const registrationData = {
+        name: formData.name,
+        surname: formData.surname,
+        fatherName: formData.fatherName,
+        countryCode: '+91', // Fixed country code
+        mobileNumber: formData.mobileNumber,
+        email: formData.email,
+        pincode: formData.pinCode ? parseInt(formData.pinCode, 10) : null, // Convert to Integer for backend
+        gender: genderMap[formData.gender] || 'OTHER', // Convert to enum
+        maritalStatus: maritalStatusMap[formData.maritalStatus] || 'UNMARRIED', // Convert to enum
+        password: formData.password,
+        homeAddress: formData.homeAddress || '',
+        dateOfBirth: formData.dateOfBirth,
+        schoolOfficeName: formData.schoolOfficeName || '',
+        sankulName: formData.sankulName || '',
+        joiningDate: formData.joiningDate || null,
+        retirementDate: formData.retirementDate || null,
+        department: formData.department || '',
+        departmentUniqueId: formData.departmentUniqueId || '',
+        departmentState: state?.name || '',
+        departmentSambhag: sambhag?.name || '',
+        departmentDistrict: district?.name || '',
+        departmentBlock: block?.name || '',
+        nominee1Name: formData.nominee1Name || '',
+        nominee1Relation: formData.nominee1Relation || '',
+        nominee2Name: formData.nominee2Name || '',
+        nominee2Relation: formData.nominee2Relation || '',
+        acceptedTerms: true
+      };
+
+
+      const response = await registerUser(registrationData);
+      
+      console.log('Registration response:', response);
+      
+      // Extract registration number from backend response
+      // Backend may return it in different formats: id, registrationNumber, employeeId, etc.
+      const registrationNumber = response?.id || 
+                                response?.registrationNumber || 
+                                response?.employeeId ||
+                                response?.data?.id ||
+                                response?.data?.registrationNumber ||
+                                response?.data?.employeeId ||
+                                'PMUMS' + Date.now(); // Fallback only if all else fails
+      
+      console.log('Extracted registration number:', registrationNumber);
+      
+      // Store registration data for popup
+      setRegistrationData({
+        name: formData.name,
+        registrationNumber: registrationNumber,
+        ...registrationData
+      });
+      
+      // Show success popup
+      setShowSuccessPopup(true);
+    } catch (err) {
+      console.error('Registration error:', err);
+      console.error('Error response:', err.response);
+      console.error('Error message:', err.response?.data?.message || err.message);
+      
+      // Better error handling
+      let errorMessage = 'Registration failed. Please try again.';
+      if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.response?.status === 500) {
+        errorMessage = 'Server error occurred. Please contact support if this continues.';
+      } else if (err.response?.status === 400) {
+        errorMessage = 'Invalid data provided. Please check all fields and try again.';
+      }
+      
+      setError(errorMessage);
+    }
+  };
+
+  return (
+    <Layout>
+      <Box sx={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+        py: 4
+      }}>
+        <Container maxWidth="lg">
+          <Paper 
+            elevation={10} 
+            sx={{ 
+              p: { xs: 2, md: 4 },
+              borderRadius: 3,
+              background: '#FFFFFF',
+            }}
+          >
+            <Box sx={{ textAlign: 'center', mb: 4 }}>
+              <Typography variant="h4" sx={{ 
+                fontWeight: 'bold', 
+                color: '#1E3A8A',
+                mb: 1,
+                fontFamily: 'Poppins'
+              }}>
+                नया पंजीकरण (Registration)
+              </Typography>
+              <Typography variant="body1" sx={{ color: '#666', fontFamily: 'Poppins' }}>
+                PMUMS में सदस्यता के लिए पंजीयन करें
+              </Typography>
+            </Box>
+
+            {error && (
+              <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+                {error}
+              </Alert>
+            )}
+
+            <form onSubmit={handleSubmit(onSubmit)}>
+              {/* Section 1: Basic Information */}
+              <Paper sx={{ mb: 3, p: 2, bgcolor: '#1a237e', color: 'white' }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, fontFamily: 'Poppins' }}>
+                  1. मूल जानकारी (Basic Information)
+                </Typography>
+              </Paper>
+              
+              <Box sx={{ mb: 4, p: { xs: 2, md: 3 }, border: '1px solid #e0e0e0', borderRadius: 2 }}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={4}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नाम *</Typography>
+                    <TextField
+                      fullWidth
+                      placeholder="Name"
+                      {...register('name', { required: 'Name is required' })}
+                      error={!!errors.name}
+                      helperText={errors.name?.message}
+                      sx={{ 
+                        fontFamily: 'Poppins',
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={4}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>उपनाम *</Typography>
+                    <TextField
+                      fullWidth
+                      placeholder="Surname"
+                      {...register('surname', { required: 'Surname is required' })}
+                      error={!!errors.surname}
+                      helperText={errors.surname?.message}
+                      sx={{
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={4}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पिता का नाम *</Typography>
+                    <TextField
+                      fullWidth
+                      placeholder="Father Name"
+                      {...register('fatherName', { required: 'Father name is required' })}
+                      error={!!errors.fatherName}
+                      helperText={errors.fatherName?.message}
+                      sx={{
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={4}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>लिंग *</Typography>
+                    <FormControl 
+                      fullWidth 
+                      error={!!errors.gender}
+                      sx={{
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}>
+                      <Select
+                        {...register('gender', { required: 'Gender is required' })}
+                        displayEmpty
+                        defaultValue=""
+                        MenuProps={{
+                          PaperProps: {
+                            sx: {
+                              maxHeight: 300,
+                              minWidth: '400px',
+                              width: 'auto',
+                              '& .MuiMenuItem-root': {
+                                padding: '12px 16px',
+                                fontSize: '1rem',
+                                whiteSpace: 'nowrap',
+                                minHeight: '48px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                width: '100%'
+                              }
+                            }
+                          }
+                        }}
+                      >
+                        <MenuItem value="male">पुरुष (Male)</MenuItem>
+                        <MenuItem value="female">महिला (Female)</MenuItem>
+                        <MenuItem value="other">अन्य (Other)</MenuItem>
+                      </Select>
+                      <FormHelperText>{errors.gender?.message}</FormHelperText>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} md={4}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>वैवाहिक स्थिति *</Typography>
+                    <FormControl 
+                      fullWidth 
+                      error={!!errors.maritalStatus}
+                      sx={{
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}>
+                      <Select
+                        {...register('maritalStatus', { required: 'Marital status is required' })}
+                        displayEmpty
+                        defaultValue=""
+                        MenuProps={{
+                          PaperProps: {
+                            sx: {
+                              maxHeight: 300,
+                              minWidth: '400px',
+                              width: 'auto',
+                              '& .MuiMenuItem-root': {
+                                padding: '12px 16px',
+                                fontSize: '1rem',
+                                whiteSpace: 'nowrap',
+                                minHeight: '48px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                width: '100%'
+                              }
+                            }
+                          }
+                        }}
+                      >
+                        <MenuItem value="single">अविवाहित (Single)</MenuItem>
+                        <MenuItem value="married">विवाहित (Married)</MenuItem>
+                        <MenuItem value="divorced">तलाकशुदा (Divorced)</MenuItem>
+                        <MenuItem value="widowed">विधवा/विधुर (Widowed)</MenuItem>
+                      </Select>
+                      <FormHelperText>{errors.maritalStatus?.message}</FormHelperText>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} md={4}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>जन्मतिथि *</Typography>
+                    <TextField
+                      fullWidth
+                      placeholder="yyyy-mm-dd"
+                      type="date"
+                      {...register('dateOfBirth', { required: 'Date of birth is required' })}
+                      error={!!errors.dateOfBirth}
+                      helperText={errors.dateOfBirth?.message}
+                      sx={{
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={1}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>Country Code *</Typography>
+                    <TextField
+                      fullWidth
+                      value="+91"
+                      disabled
+                      sx={{
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                          border: '1px solid #ccc',
+                          borderRadius: '8px',
+                          bgcolor: '#f5f5f5'
+                        }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={5}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>मोबाइल नंबर *</Typography>
+                    <TextField
+                      fullWidth
+                      placeholder="10 अंकों का नंबर"
+                      {...register('mobileNumber', { 
+                        required: 'Mobile number is required',
+                        pattern: { 
+                          value: /^[0-9]{10}$/, 
+                          message: 'Only 10 digits allowed' 
+                        }
+                      })}
+                      error={!!errors.mobileNumber}
+                      helperText={errors.mobileNumber?.message}
+                      inputProps={{ 
+                        maxLength: 10,
+                        inputMode: 'numeric'
+                      }}
+                      onInput={(e) => {
+                        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                      }}
+                      sx={{
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={5}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>मोबाइल नंबर की पुष्टि *</Typography>
+                    <TextField
+                      fullWidth
+                      placeholder="10 अंकों का नंबर"
+                      {...register('confirmMobileNumber', { 
+                        required: 'Please confirm mobile number',
+                        pattern: { 
+                          value: /^[0-9]{10}$/, 
+                          message: 'Only 10 digits allowed' 
+                        },
+                        validate: (value) => {
+                          const mobileNumber = watch('mobileNumber');
+                          return value === mobileNumber || 'Mobile numbers do not match';
+                        }
+                      })}
+                      error={!!errors.confirmMobileNumber}
+                      helperText={errors.confirmMobileNumber?.message}
+                      inputProps={{ 
+                        maxLength: 10,
+                        inputMode: 'numeric'
+                      }}
+                      onInput={(e) => {
+                        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                      }}
+                      sx={{
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>ईमेल आईडी *</Typography>
+                    <TextField
+                      fullWidth
+                      type="email"
+                      placeholder="example@email.com"
+                      {...register('email', { 
+                        required: 'ईमेल आवश्यक है',
+                        pattern: { value: /^\S+@\S+$/i, message: 'कृपया सही ईमेल दर्ज करें' }
+                      })}
+                      error={!!errors.email}
+                      helperText={errors.email?.message}
+                      sx={{
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>ईमेल की पुष्टि करें *</Typography>
+                    <TextField
+                      fullWidth
+                      type="email"
+                      placeholder="ईमेल फिर से दर्ज करें"
+                      {...register('confirmEmail', { 
+                        required: 'कृपया ईमेल की पुष्टि करें',
+                        pattern: { value: /^\S+@\S+$/i, message: 'कृपया सही ईमेल दर्ज करें' },
+                        validate: (value) => {
+                          const email = watch('email');
+                          return value === email || 'ईमेल मेल नहीं खाता';
+                        }
+                      })}
+                      error={!!errors.confirmEmail}
+                      helperText={errors.confirmEmail?.message}
+                      sx={{
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}
+                    />
+                  </Grid>
+                </Grid>
+              </Box>
+
+              {/* Section 2: Address Details */}
+              <Paper sx={{ mb: 3, p: 2, bgcolor: '#1a237e', color: 'white' }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, fontFamily: 'Poppins' }}>
+                  2. पता विवरण (Address Details)
+                </Typography>
+              </Paper>
+              
+              <Box sx={{ mb: 4, p: { xs: 2, md: 3 }, border: '1px solid #e0e0e0', borderRadius: 2 }}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={4}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>राज्य *</Typography>
+                    <FormControl 
+                      fullWidth
+                      error={!!locationErrors.state}
+                      sx={{
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}>
+                      <Select
+                        value={selectedState}
+                        onChange={handleStateChange}
+                        disabled={loadingLocations}
+                        displayEmpty
+                        MenuProps={{
+                          PaperProps: {
+                            sx: {
+                              maxHeight: 300,
+                              minWidth: '350px',
+                              width: 'auto',
+                              '& .MuiMenuItem-root': {
+                                padding: '12px 16px',
+                                fontSize: '1rem',
+                                whiteSpace: 'nowrap',
+                                minHeight: '48px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                width: '100%'
+                              }
+                            }
+                          }
+                        }}
+                      >
+                        {loadingLocations ? (
+                          <MenuItem disabled>लोड हो रहा है...</MenuItem>
+                        ) : (
+                          locationHierarchy?.states?.map((state) => (
+                            <MenuItem key={state.id} value={state.id}>
+                              {state.name} ({state.code})
+                            </MenuItem>
+                          ))
+                        )}
+                      </Select>
+                      <FormHelperText>{locationErrors.state}</FormHelperText>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} md={4}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>संभाग *</Typography>
+                    <FormControl 
+                      fullWidth
+                      disabled={!selectedState || loadingLocations}
+                      error={!!locationErrors.sambhag}
+                      sx={{
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}>
+                      <Select
+                        value={selectedSambhag}
+                        onChange={handleSambhagChange}
+                        displayEmpty
+                        MenuProps={{
+                          PaperProps: {
+                            sx: {
+                              maxHeight: 300,
+                              minWidth: '380px',
+                              width: 'auto',
+                              '& .MuiMenuItem-root': {
+                                padding: '12px 16px',
+                                fontSize: '1rem',
+                                whiteSpace: 'nowrap',
+                                minHeight: '48px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                width: '100%'
+                              }
+                            }
+                          }
+                        }}
+                      >
+                        <MenuItem value="">संभाग चुनें... (Select Division)</MenuItem>
+                        {availableSambhags && availableSambhags.length > 0 ? (
+                          availableSambhags.map((sambhag) => (
+                            <MenuItem key={sambhag.id} value={sambhag.id}>
+                              {sambhag.name}
+                            </MenuItem>
+                          ))
+                        ) : (
+                          <MenuItem disabled>
+                            {loadingLocations ? 'लोड हो रहा है...' : 'कोई संभाग उपलब्ध नहीं'}
+                          </MenuItem>
+                        )}
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} md={4}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>जिला *</Typography>
+                    <FormControl 
+                      fullWidth
+                      disabled={!selectedSambhag || loadingLocations}
+                      error={!!locationErrors.district}
+                      sx={{
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}>
+                      <Select
+                        value={selectedDistrict}
+                        onChange={handleDistrictChange}
+                        displayEmpty
+                        MenuProps={{
+                          PaperProps: {
+                            sx: {
+                              maxHeight: 300,
+                              minWidth: '380px',
+                              width: 'auto',
+                              '& .MuiMenuItem-root': {
+                                padding: '12px 16px',
+                                fontSize: '1rem',
+                                whiteSpace: 'nowrap',
+                                minHeight: '48px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                width: '100%'
+                              }
+                            }
+                          }
+                        }}
+                      >
+                        <MenuItem value="">जिला चुनें... (Select District)</MenuItem>
+                        {availableDistricts && availableDistricts.length > 0 ? (
+                          availableDistricts.map((district) => (
+                            <MenuItem key={district.id} value={district.id}>
+                              {district.name}
+                            </MenuItem>
+                          ))
+                        ) : (
+                          <MenuItem disabled>
+                            {!selectedSambhag ? 'पहले संभाग चुनें' : 'कोई जिला उपलब्ध नहीं'}
+                          </MenuItem>
+                        )}
+                      </Select>
+                      <FormHelperText>{locationErrors.district}</FormHelperText>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} md={4}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>ब्लॉक *</Typography>
+                    <FormControl 
+                      fullWidth
+                      disabled={!selectedDistrict || loadingLocations}
+                      error={!!locationErrors.block}
+                      sx={{
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}>
+                      <Select
+                        value={selectedBlock}
+                        onChange={handleBlockChange}
+                        displayEmpty
+                        MenuProps={{
+                          PaperProps: {
+                            sx: {
+                              maxHeight: 300,
+                              minWidth: '380px',
+                              width: 'auto',
+                              '& .MuiMenuItem-root': {
+                                padding: '12px 16px',
+                                fontSize: '1rem',
+                                whiteSpace: 'nowrap',
+                                minHeight: '48px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                width: '100%'
+                              }
+                            }
+                          }
+                        }}
+                      >
+                        <MenuItem value="">ब्लॉक चुनें... (Select Block)</MenuItem>
+                        {availableBlocks && availableBlocks.length > 0 ? (
+                          availableBlocks.map((block) => (
+                            <MenuItem key={block.id} value={block.id}>
+                              {block.name}
+                            </MenuItem>
+                          ))
+                        ) : (
+                          <MenuItem disabled>
+                            {!selectedDistrict ? 'पहले जिला चुनें' : 'कोई ब्लॉक उपलब्ध नहीं'}
+                          </MenuItem>
+                        )}
+                      </Select>
+                      <FormHelperText>{locationErrors.block}</FormHelperText>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} md={8}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पूरा पता *</Typography>
+                    <TextField
+                      fullWidth
+                      placeholder="House No, Street, Landmark..."
+                      {...register('homeAddress', { required: 'Home address is required' })}
+                      error={!!errors.homeAddress}
+                      helperText={errors.homeAddress?.message}
+                      sx={{
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={4}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पिन कोड *</Typography>
+                    <TextField
+                      fullWidth
+                      placeholder="6 अंकों का कोड"
+                      {...register('pinCode', {
+                        required: 'Pin code is required',
+                        pattern: { value: /^[0-9]{6}$/, message: 'Invalid PIN code' }
+                      })}
+                      error={!!errors.pinCode}
+                      helperText={errors.pinCode?.message}
+                      sx={{
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}
+                    />
+                  </Grid>
+                </Grid>
+              </Box>
+
+              {/* Section 3: Professional Details */}
+              <Paper sx={{ mb: 3, p: 2, bgcolor: '#1a237e', color: 'white' }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, fontFamily: 'Poppins' }}>
+                  3. व्यावसायिक विवरण (Professional Details)
+                </Typography>
+              </Paper>
+              
+              <Box sx={{ mb: 4, p: { xs: 2, md: 3 }, border: '1px solid #e0e0e0', borderRadius: 2 }}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={4}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>विभाग का नाम *</Typography>
+                    <FormControl 
+                      fullWidth
+                      error={!!errors.department}
+                      sx={{
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}>
+                      <Select
+                        {...register('department', { required: 'Department is required' })}
+                        displayEmpty
+                        defaultValue=""
+                        MenuProps={{
+                          PaperProps: {
+                            sx: {
+                              maxHeight: 300,
+                              minWidth: '400px',
+                              width: 'auto',
+                              '& .MuiMenuItem-root': {
+                                padding: '12px 16px',
+                                fontSize: '1rem',
+                                whiteSpace: 'nowrap',
+                                minHeight: '48px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                width: '100%'
+                              }
+                            }
+                          }
+                        }}
+                      >
+                        <MenuItem value="शिक्षा विभाग">शिक्षा विभाग</MenuItem>
+                        <MenuItem value="आदिम जाति कल्याण विभाग">आदिम जाति कल्याण विभाग</MenuItem>
+                      </Select>
+                      <FormHelperText>{errors.department?.message}</FormHelperText>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पदस्थ स्कूल/कार्यालय का नाम *</Typography>
+                    <TextField
+                      fullWidth
+                      placeholder="Posted School/Office Name"
+                      {...register('schoolOfficeName', { required: 'School/Office name is required' })}
+                      error={!!errors.schoolOfficeName}
+                      helperText={errors.schoolOfficeName?.message}
+                      sx={{
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>विभाग आईडी (Department Unique ID) *</Typography>
+                    <TextField
+                      fullWidth
+                      placeholder="Unique ID"
+                      {...register('departmentUniqueId', { required: 'Department unique ID is required' })}
+                      error={!!errors.departmentUniqueId}
+                      helperText={errors.departmentUniqueId?.message}
+                      sx={{
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>संकुल का नाम *</Typography>
+                    <TextField
+                      fullWidth
+                      placeholder="Sankul Name"
+                      {...register('sankulName', { required: 'Sankul name is required' })}
+                      error={!!errors.sankulName}
+                      helperText={errors.sankulName?.message}
+                      sx={{
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नियुक्ति वर्ष *</Typography>
+                    <TextField
+                      fullWidth
+                      type="date"
+                      placeholder="Joining Date"
+                      {...register('joiningDate', { required: 'Joining date is required' })}
+                      error={!!errors.joiningDate}
+                      helperText={errors.joiningDate?.message}
+                      sx={{
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>सेवानिवृत्ति की तिथि *</Typography>
+                    <TextField
+                      fullWidth
+                      type="date"
+                      placeholder="Retirement Date"
+                      {...register('retirementDate', { required: 'Retirement date is required' })}
+                      error={!!errors.retirementDate}
+                      helperText={errors.retirementDate?.message}
+                      sx={{
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}
+                    />
+                  </Grid>
+                </Grid>
+              </Box>
+
+              {/* Section 4: Nominee Details */}
+              <Paper sx={{ mb: 3, p: 2, bgcolor: '#1a237e', color: 'white' }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, fontFamily: 'Poppins' }}>
+                  4. नामांकित व्यक्ति का विवरण (Nominee Details)
+                </Typography>
+              </Paper>
+              
+              <Box sx={{ mb: 4, p: { xs: 2, md: 3 }, border: '1px solid #e0e0e0', borderRadius: 2 }}>
+                <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600, color: '#1a237e', fontFamily: 'Poppins' }}>
+                  पहला नामांकित (First Nominee)
+                </Typography>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नामांकित का नाम *</Typography>
+                    <TextField
+                      fullWidth
+                      placeholder="Nominee Name"
+                      {...register('nominee1Name', { required: 'First nominee name is required' })}
+                      error={!!errors.nominee1Name}
+                      helperText={errors.nominee1Name?.message}
+                      sx={{
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नामांकित का संबंध *</Typography>
+                    <FormControl 
+                      fullWidth
+                      error={!!errors.nominee1Relation}
+                      sx={{
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}>
+                      <Select
+                        {...register('nominee1Relation', { required: 'First nominee relation is required' })}
+                        displayEmpty
+                        defaultValue=""
+                      >
+                        <MenuItem value="">संबंध चुनें</MenuItem>
+                        <MenuItem value="पिता">पिता (Father)</MenuItem>
+                        <MenuItem value="माता">माता (Mother)</MenuItem>
+                        <MenuItem value="भाई">भाई (Brother)</MenuItem>
+                        <MenuItem value="बहन">बहन (Sister)</MenuItem>
+                        <MenuItem value="पति">पति (Husband)</MenuItem>
+                        <MenuItem value="पत्नी">पत्नी (Wife)</MenuItem>
+                        <MenuItem value="पुत्र">पुत्र (Son)</MenuItem>
+                        <MenuItem value="पुत्री">पुत्री (Daughter)</MenuItem>
+                        <MenuItem value="दादा">दादा (Grandfather)</MenuItem>
+                        <MenuItem value="दादी">दादी (Grandmother)</MenuItem>
+                        <MenuItem value="अन्य">अन्य (Other)</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                </Grid>
+                
+                <Typography variant="subtitle1" sx={{ mt: 3, mb: 2, fontWeight: 600, color: '#1a237e', fontFamily: 'Poppins' }}>
+                  दूसरा नामांकित (Second Nominee)
+                </Typography>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नामांकित का नाम *</Typography>
+                    <TextField
+                      fullWidth
+                      placeholder="Nominee Name"
+                      {...register('nominee2Name', { required: 'Second nominee name is required' })}
+                      error={!!errors.nominee2Name}
+                      helperText={errors.nominee2Name?.message}
+                      sx={{
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नामांकित का संबंध *</Typography>
+                    <FormControl 
+                      fullWidth
+                      error={!!errors.nominee2Relation}
+                      sx={{
+                        '& .MuiOutlinedInput-notchedOutline': {
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}>
+                      <Select
+                        {...register('nominee2Relation', { required: 'Second nominee relation is required' })}
+                        displayEmpty
+                        defaultValue=""
+                      >
+                        <MenuItem value="">संबंध चुनें</MenuItem>
+                        <MenuItem value="पिता">पिता (Father)</MenuItem>
+                        <MenuItem value="माता">माता (Mother)</MenuItem>
+                        <MenuItem value="भाई">भाई (Brother)</MenuItem>
+                        <MenuItem value="बहन">बहन (Sister)</MenuItem>
+                        <MenuItem value="पति">पति (Husband)</MenuItem>
+                        <MenuItem value="पत्नी">पत्नी (Wife)</MenuItem>
+                        <MenuItem value="पुत्र">पुत्र (Son)</MenuItem>
+                        <MenuItem value="पुत्री">पुत्री (Daughter)</MenuItem>
+                        <MenuItem value="दादा">दादा (Grandfather)</MenuItem>
+                        <MenuItem value="दादी">दादी (Grandmother)</MenuItem>
+                        <MenuItem value="अन्य">अन्य (Other)</MenuItem>
+                      </Select>
+                      <FormHelperText>{errors.nominee2Relation?.message}</FormHelperText>
+                    </FormControl>
+                  </Grid>
+                </Grid>
+              </Box>
+
+              {/* Section 5: Account Verification */}
+              <Paper sx={{ mb: 3, p: 2, bgcolor: '#1a237e', color: 'white' }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, fontFamily: 'Poppins' }}>
+                  5. खाता सत्यापन (Account Verification)
+                </Typography>
+              </Paper>
+              
+              <Box sx={{ mb: 4, p: { xs: 2, md: 3 }, border: '1px solid #e0e0e0', borderRadius: 2 }}>
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पासवर्ड बनाएं *</Typography>
+                    <TextField
+                      fullWidth
+                      type="password"
+                      {...register('password', { 
+                        required: 'Password is required',
+                        minLength: { value: 8, message: 'Password must be at least 8 characters' }
+                      })}
+                      error={!!errors.password}
+                      helperText={errors.password?.message}
+                      sx={{
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पासवर्ड की पुष्टि करें *</Typography>
+                    <TextField
+                      fullWidth
+                      type="password"
+                      {...register('confirmPassword', { 
+                        required: 'Confirm password is required',
+                        validate: (value) => value === watch('password') || 'Passwords do not match'
+                      })}
+                      error={!!errors.confirmPassword}
+                      helperText={errors.confirmPassword?.message}
+                      sx={{
+                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
+                          border: '1px solid #ccc',
+                          borderRadius: '8px'
+                        }
+                      }}
+                    />
+                  </Grid>
+                  {/* <Grid item xs={12}>
+                    <Typography variant="body2" sx={{ mb: 2, fontFamily: 'Poppins' }}>
+                      प्रोफाइल फोटो अपलोड करें
+                    </Typography>
+                    <Box sx={{
+                      border: '2px dashed #ccc',
+                      borderRadius: 2,
+                      p: 4,
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      '&:hover': { bgcolor: '#f9f9f9' }
+                    }}>
+                      <CloudUpload sx={{ fontSize: 48, color: '#ccc', mb: 2 }} />
+                      <Typography variant="body2" color="text.secondary" sx={{ fontFamily: 'Poppins' }}>
+                        फोटो अपलोड करने के लिए क्लिक करें
+                        <br />
+                        JPG, PNG (MAX. 2MB)
+                      </Typography>
+                    </Box>
+                  </Grid> */}
+                </Grid>
+              </Box>
+
+              {/* Terms and Submit */}
+              <Box sx={{ mb: 3, p: { xs: 2, md: 3 }, border: '1px solid #e0e0e0', borderRadius: 2 }}>
+                <FormControlLabel
+                  control={<Checkbox {...register('agreeTerms', { required: 'Please accept terms and conditions' })} />}
+                  label={
+                    <Typography variant="body2" sx={{ fontFamily: 'Poppins' }}>
+                      मैं घोषणा करता/करती हूं कि ऊपर दी गई सभी जानकारी सत्य है और मैं PMUMS के नियमों और शर्तों को स्वीकार करता/करती हूं।
+                    </Typography>
+                  }
+                />
+                {errors.agreeTerms && (
+                  <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+                    {errors.agreeTerms.message}
+                  </Typography>
+                )}
+              </Box>
+
+              <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={loading}
+                  size="large"
+                  startIcon={!loading && <PersonAdd />}
+                  sx={{
+                    bgcolor: '#FF9933',
+                    '&:hover': { bgcolor: '#e6851a' },
+                    px: 4,
+                    py: 1.5,
+                    fontSize: '1.1rem',
+                    fontWeight: 600,
+                    fontFamily: 'Poppins',
+                    minWidth: 250
+                  }}
+                >
+                  {loading ? (
+                    <>
+                      <CircularProgress size={20} sx={{ mr: 1, color: 'white' }} />
+                      पंजीकरण पूरा करें (Submit)
+                    </>
+                  ) : (
+                    'पंजीकरण पूरा करें (Submit)'
+                  )}
+                </Button>
+                <Button
+                  variant="outlined"
+                  sx={{
+                    borderColor: '#1a237e',
+                    color: '#1a237e',
+                    px: 4,
+                    py: 1.5,
+                    fontSize: '1.1rem',
+                    fontFamily: 'Poppins',
+                    minWidth: 200
+                  }}
+                  onClick={() => navigate('/login')}
+                >
+                  लॉगिन पर जाएं
+                </Button>
+              </Box>
+            </form>
+
+            <Box sx={{ textAlign: 'center', mt: 4 }}>
+              <Typography variant="body2" sx={{ color: '#666', fontFamily: 'Poppins' }}>
+                पहले से खाता है?{' '}
+                <Link
+                  component={RouterLink}
+                  to="/login"
+                  sx={{ 
+                    color: '#1a237e',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    '&:hover': { textDecoration: 'underline' }
+                  }}
+                >
+                  यहाँ लॉगिन करें
+                </Link>
+              </Typography>
+            </Box>
+          </Paper>
+        </Container>
+        
+        {/* Success Popup Dialog */}
+        <Dialog 
+          open={showSuccessPopup} 
+          onClose={() => setShowSuccessPopup(false)}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 3,
+              p: 2
+            }
+          }}
+        >
+          <DialogTitle sx={{ 
+            bgcolor: '#4caf50', 
+            color: 'white', 
+            textAlign: 'center',
+            position: 'relative',
+            fontWeight: 'bold',
+            fontSize: '1.2rem'
+          }}>
+            ✅ पंजीकरण सफल
+            <IconButton
+              onClick={() => setShowSuccessPopup(false)}
+              sx={{
+                position: 'absolute',
+                right: 8,
+                top: 8,
+                color: 'white'
+              }}
+            >
+              <Close />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent sx={{ pt: 3, textAlign: 'center' }}>
+            <Typography variant="h6" sx={{ mb: 2, color: '#1976d2', fontWeight: 600 }}>
+              प्रिय {registrationData?.name || 'शिक्षक'} जी,
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 2, lineHeight: 1.6 }}>
+              आपका PMUMS शिक्षक संघ में पंजीकरण सफलतापूर्वक पूर्ण हो गया है।
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 1, fontWeight: 500 }}>
+              पंजीकरण संख्या:
+            </Typography>
+            <Typography variant="h5" sx={{ mb: 2, fontWeight: 700, color: '#1976d2' }}>
+              {registrationData?.registrationNumber}
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 2, color: '#d32f2f', fontWeight: 600 }}>
+              कृपया इस पंजीकरण संख्या को भविष्य हेतु सुरक्षित रखें।
+            </Typography>
+            <Typography variant="body1" sx={{ mb: 2, lineHeight: 1.6 }}>
+              आप अब कर्मचारी कल्याण कोष योजना से जुड़े सदस्य हैं।
+            </Typography>
+            <Typography variant="body1" sx={{ fontWeight: 600, color: '#1976d2' }}>
+              धन्यवाद<br/>PMUMS शिक्षक संघ
+            </Typography>
+          </DialogContent>
+          <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
+            <Button
+              variant="contained"
+              onClick={() => {
+                setShowSuccessPopup(false);
+                navigate('/dashboard');
+              }}
+              sx={{
+                bgcolor: '#1976d2',
+                '&:hover': { bgcolor: '#1565c0' },
+                px: 4,
+                py: 1.5,
+                fontWeight: 600,
+                borderRadius: 2
+              }}
+            >
+              डैशबोर्ड पर जाएं
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Box>
+    </Layout>
+  );
+};
+
+export default Register;
