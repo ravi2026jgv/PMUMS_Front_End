@@ -847,7 +847,7 @@ const handleExportAllUsers = async () => {
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', 'all_users_export.xlsx');
+    link.setAttribute('download', 'all_users_export.csv');
     document.body.appendChild(link);
     link.click();
     link.remove();

@@ -77,7 +77,7 @@ const navigationItems = [
  
   { label: 'NIYAMAWALI', path: '/niyamawali' },
   { label: 'CONTACT US', path: '/contact-us' },
-   ...(showSelfDonationNav ? [{ label: 'Support Us', path: '/self-donation' }] : []),
+   ...(showSelfDonationNav ? [{ label: 'SANSTHA SAHYOG', path: '/self-donation' }] : []),
 ];
 
   return (

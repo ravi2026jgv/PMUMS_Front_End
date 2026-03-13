@@ -121,12 +121,10 @@ const Home = () => {
       <Box sx={{ py: 2, background: "#f8f9fa" }}>
         <Founders />
       </Box>
-       <Box sx={{ py: 4, background: "#FFF8F0" }}>
-    
-       <SbiInsuranceSection />
-    </Box>
-    <Box sx={{ py: 4, background: "#f8f9fa" }}>
-   <SelfDonation />
+      <SelfDonation />
+
+<Box sx={{ py: 4, background: "#f8f9fa" }}>
+  <SbiInsuranceSection />
 </Box>
     </Layout>
   );
