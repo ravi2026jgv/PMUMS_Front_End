@@ -833,6 +833,35 @@ if (!allIdsValid) {
   }
 };
 
+const handleExportAllUsers = async () => {
+  try {
+    setExportLoading(true);
+
+    const response = await adminAPI.exportAllUsers();
+
+    const blob = new Blob(
+      [response.data],
+      { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }
+    );
+
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'all_users_export.xlsx');
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+
+    showSnackbar('All users exported successfully!', 'success');
+  } catch (error) {
+    console.error('Error exporting all users:', error);
+    showSnackbar('Error exporting all users!', 'error');
+  } finally {
+    setExportLoading(false);
+  }
+};
+
   // Export users functionality
 const handleExportUsers = async () => {
   try {
@@ -3535,21 +3564,29 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
           </DialogContent>
           
           <DialogActions sx={{ p: 3, pt: 1 }}>
-            <Button 
-              onClick={() => setExportDialog(false)}
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleExportUsers}
-              variant="contained"
-              disabled={exportLoading || !exportMonth || !exportYear}
-              startIcon={exportLoading ? <CircularProgress size={18} /> : <Download />}
-              sx={{ bgcolor: '#2196f3' }}
-            >
-              {exportLoading ? 'Exporting...' : 'Export'}
-            </Button>
-          </DialogActions>
+  <Button onClick={() => setExportDialog(false)}>
+    Cancel
+  </Button>
+
+  <Button
+    onClick={handleExportAllUsers}
+    variant="outlined"
+    disabled={exportLoading}
+    startIcon={exportLoading ? <CircularProgress size={18} /> : <Download />}
+  >
+    {exportLoading ? 'Exporting...' : 'Export All'}
+  </Button>
+
+  <Button 
+    onClick={handleExportUsers}
+    variant="contained"
+    disabled={exportLoading || !exportMonth || !exportYear}
+    startIcon={exportLoading ? <CircularProgress size={18} /> : <Download />}
+    sx={{ bgcolor: '#2196f3' }}
+  >
+    {exportLoading ? 'Exporting...' : 'Export'}
+  </Button>
+</DialogActions>
         </Dialog>
 
         {/* Death Case Details Dialog */}

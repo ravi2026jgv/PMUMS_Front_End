@@ -234,6 +234,12 @@ exportUsers: (month, year) => {
   });
 },
 
+exportAllUsers: () => {
+  return api.get('/admin/users/export-all', {
+    responseType: 'blob'
+  });
+},
+
   // Get all death cases
   getDeathCases: () => {
     return api.get('/death-cases');
