@@ -316,7 +316,7 @@
 
 // export default Login;
 // src/pages/auth/Login.jsx
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import {
   Container,
   Paper,
@@ -349,6 +349,9 @@ const Login = () => {
     formState: { errors },
   } = useForm();
 
+    useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   // ✅ Supports: state.from as {pathname:'/sahyog'} OR as '/sahyog'
   const redirectTo =
     location.state?.from?.pathname ||
