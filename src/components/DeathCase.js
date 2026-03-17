@@ -136,7 +136,7 @@ if (!isAuthenticated) {
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box textAlign="center" mb={4}>
         <Typography variant="h4" fontWeight="bold" color="#1E3A8A">
-          सहयोग सूचना एवं विनम्र अपील
+         नोमिनी सहयोग हेतु अपील
         </Typography>
         <Typography color="#666">
           सहयोग देखने और भुगतान प्रमाण अपलोड करने के लिए कृपया लॉगिन करें।
@@ -155,16 +155,20 @@ if (!isAuthenticated) {
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box textAlign="center" mb={4}>
         <Typography variant="h4" fontWeight="bold" color="#1E3A8A">
-          सहयोग सूचना एवं विनम्र अपील
+         नोमिनी सहयोग हेतु अपील
         </Typography>
         <Typography color="#666">
-इस दुःखद घड़ी में आपका प्रत्येक सहयोग शोकाकुल परिवार के लिए आशा, संबल एवं विश्वास का आधार बनता है। आइए, हम सब मिलकर मानवीय कर्तव्य निभाएँ और परिवार को इस कठिन समय में सहारा प्रदान करें।
+सभी सम्मानित सदस्यों से निवेदन है कि
+दिवंगत सदस्य के परिवार (नोमिनी) की आर्थिक सहायता हेतु
+₹100 का अनिवार्य सहयोग निर्धारित किया गया है।
         </Typography>
         <Typography variant="h4" fontWeight="bold" color="#1E3A8A">
-सहयोग प्रारंभ दिनांक: 08 फरवरी 2026 — सहयोग समापन दिनांक: 20 फरवरी 2026 तक    
-        </Typography>
-          <Typography variant="h4" fontWeight="bold" color="#1E3A8A">
-सहयोग राशि: ₹60/- प्रत्येक सदस्य को सहयोग करना अनिवार्य
+<br />📅 सहयोग अवधि : 18 मार्च 2026 से 28 मार्च 2026 तक <br />
+
+⚠️ भुगतान के बाद अपना UTR नंबर दर्ज करें।
+UTR दर्ज होने पर ही आपका सहयोग सफल माना जाएगा।<br />
+
+🔶 नोट : निर्धारित अवधि के बाद सहयोग स्वीकार नहीं किया जाएगा।
           </Typography>
       </Box>
 
