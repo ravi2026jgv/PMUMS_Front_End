@@ -82,14 +82,22 @@ const Home = () => {
             >
               <CardContent sx={{ p: { xs: 3, md: 4 }, textAlign: "center" }}>
                 <Typography variant="h5" fontWeight="bold" color="#1E3A8A" sx={{ mb: 1 }}>
-                  संस्था के लिए सहयोग
+                  नोमिनी के लिए सहयोग
                 </Typography>
 
                 <Typography color="#666" sx={{ mb: 2, lineHeight: 1.7 }}>
-                  सहयोग देखने और भुगतान प्रमाण (Receipt/UTR) जमा करने के लिए “सहयोग करें” पर क्लिक करें।
-                  लॉगिन के बाद सिस्टम आपको अपने आप आपके Assigned Pool Case पर ले जाएगा।
+                 सभी सम्मानित सदस्यों से निवेदन है कि
+दिवंगत सदस्य के परिवार (नोमिनी) की आर्थिक सहायता हेतु
+₹100 का अनिवार्य सहयोग निर्धारित किया गया है।
                 </Typography>
+ <Typography variant="h4" fontWeight="bold" color="#1E3A8A">
+<br />📅 सहयोग अवधि : 18 मार्च 2026 से 28 मार्च 2026 तक <br />
 
+⚠️ भुगतान के बाद अपना UTR नंबर दर्ज करें।
+UTR दर्ज होने पर ही आपका सहयोग सफल माना जाएगा।<br />
+
+🔶 नोट : निर्धारित अवधि के बाद सहयोग स्वीकार नहीं किया जाएगा। <br />
+          </Typography>
                 <Box sx={{ display: "flex", justifyContent: "center" }}>
                   <Button
                     variant="contained"
