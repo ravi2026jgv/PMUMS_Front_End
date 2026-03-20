@@ -194,7 +194,19 @@ uploadSelfDonationQr: (file) => {
     },
   });
 },
+  // Get single death case by id
+  getDeathCaseById: (id) => {
+    return api.get(`/death-cases/${id}`);
+  },
 
+  // Update death case
+  updateDeathCase: (id, formData) => {
+    return api.put(`/death-cases/${id}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+  },
 getPublicSelfDonationSettings: () => {
   return publicApi.get('/public/self-donation-settings');
 },

@@ -155,6 +155,8 @@ const [selfDonationQrUploading, setSelfDonationQrUploading] = useState(false);
   const [assignmentsLoading, setAssignmentsLoading] = useState(false);
   
   // Death Cases specific state
+    const [isDeathCaseEditMode, setIsDeathCaseEditMode] = useState(false);
+  const [editingDeathCaseId, setEditingDeathCaseId] = useState(null);
   const [deathCasesLoading, setDeathCasesLoading] = useState(false);
   const [deathCaseDialog, setDeathCaseDialog] = useState(false);
   const [createDeathCaseDialog, setCreateDeathCaseDialog] = useState(false);
@@ -292,6 +294,252 @@ if (response.data && response.data.users) {
     }
   };
 
+    const resetDeathCaseForm = () => {
+    setDeathCaseFormData({
+      deceasedName: '',
+      employeeCode: '',
+      department: '',
+      sambhag: '',
+      district: '',
+      block: '',
+      caseDate: new Date().toISOString().split('T')[0],
+      description: '',
+      nominee1Name: '',
+      nominee2Name: '',
+      account1: {
+        bankName: '',
+        accountNumber: '',
+        ifscCode: '',
+        accountHolderName: ''
+      },
+      account2: {
+        bankName: '',
+        accountNumber: '',
+        ifscCode: '',
+        accountHolderName: ''
+      },
+      account3: {
+        bankName: '',
+        accountNumber: '',
+        ifscCode: '',
+        accountHolderName: ''
+      },
+      status: 'OPEN'
+    });
+
+    setDeathCaseFiles({
+      userImage: null,
+      nominee1QrCode: null,
+      nominee2QrCode: null,
+      certificate1: null
+    });
+
+    setSelectedSambhag('');
+    setSelectedDistrict('');
+    setSelectedBlock('');
+    setAvailableDistricts([]);
+    setAvailableBlocks([]);
+
+    setSectionExpanded({
+      basicInfo: true,
+      locationInfo: true,
+      nomineeInfo: true,
+      account1: true,
+      account2: false,
+      account3: false
+    });
+
+    setIsDeathCaseEditMode(false);
+    setEditingDeathCaseId(null);
+  };
+  const handleEditDeathCase = async (deathCaseRow) => {
+    try {
+      const id = deathCaseRow.id || deathCaseRow.caseId || deathCaseRow.deathCaseId;
+      if (!id) {
+        showSnackbar('Death case ID not found!', 'error');
+        return;
+      }
+
+      setDeathCaseFormLoading(true);
+
+      const response = await adminAPI.getDeathCaseById(id);
+      const deathCase = response.data;
+
+      setIsDeathCaseEditMode(true);
+      setEditingDeathCaseId(id);
+
+      setDeathCaseFormData({
+        deceasedName: deathCase.deceasedName || '',
+        employeeCode: deathCase.employeeCode || '',
+        department: deathCase.department || '',
+        sambhag: deathCase.sambhag || '',
+        district: deathCase.district || '',
+        block: deathCase.block || '',
+        caseDate: deathCase.caseDate ? String(deathCase.caseDate).substring(0, 10) : new Date().toISOString().split('T')[0],
+        description: deathCase.description || '',
+        nominee1Name: deathCase.nominee1Name || '',
+        nominee2Name: deathCase.nominee2Name || '',
+        account1: deathCase.account1 || {
+          bankName: '',
+          accountNumber: '',
+          ifscCode: '',
+          accountHolderName: ''
+        },
+        account2: deathCase.account2 || {
+          bankName: '',
+          accountNumber: '',
+          ifscCode: '',
+          accountHolderName: ''
+        },
+        account3: deathCase.account3 || {
+          bankName: '',
+          accountNumber: '',
+          ifscCode: '',
+          accountHolderName: ''
+        },
+        status: deathCase.status || 'OPEN'
+      });
+
+      setDeathCaseFiles({
+        userImage: null,
+        nominee1QrCode: null,
+        nominee2QrCode: null,
+        certificate1: null
+      });
+
+      if (locationHierarchy?.states?.length) {
+        const allSambhags = locationHierarchy.states.flatMap((state) => state.sambhags || []);
+        const matchedSambhag = allSambhags.find(
+          (s) => s.name === deathCase.sambhag
+        );
+
+        if (matchedSambhag) {
+          setSelectedSambhag(matchedSambhag.id);
+          setAvailableDistricts(matchedSambhag.districts || []);
+
+          const matchedDistrict = (matchedSambhag.districts || []).find(
+            (d) => d.name === deathCase.district
+          );
+
+          if (matchedDistrict) {
+            setSelectedDistrict(matchedDistrict.id);
+            setAvailableBlocks(matchedDistrict.blocks || []);
+
+            const matchedBlock = (matchedDistrict.blocks || []).find(
+              (b) => b.name === deathCase.block
+            );
+
+            if (matchedBlock) {
+              setSelectedBlock(matchedBlock.id);
+            } else {
+              setSelectedBlock('');
+            }
+          } else {
+            setSelectedDistrict('');
+            setAvailableBlocks([]);
+            setSelectedBlock('');
+          }
+        } else {
+          setSelectedSambhag('');
+          setSelectedDistrict('');
+          setSelectedBlock('');
+          setAvailableDistricts([]);
+          setAvailableBlocks([]);
+        }
+      }
+
+      setCreateDeathCaseDialog(true);
+    } catch (error) {
+      console.error('Error loading death case for edit:', error);
+      showSnackbar('Error loading death case details!', 'error');
+    } finally {
+      setDeathCaseFormLoading(false);
+    }
+  };
+    const handleUpdateDeathCase = async () => {
+    try {
+      if (!editingDeathCaseId) {
+        showSnackbar('Editing death case ID not found!', 'error');
+        return;
+      }
+
+      setDeathCaseFormLoading(true);
+
+      if (!deathCaseFormData.deceasedName.trim()) {
+        showSnackbar('Please enter Deceased Name!', 'error');
+        return;
+      }
+
+      if (!deathCaseFormData.employeeCode.trim()) {
+        showSnackbar('Please enter Employee Code!', 'error');
+        return;
+      }
+
+      if (!deathCaseFormData.department) {
+        showSnackbar('Please select Department!', 'error');
+        return;
+      }
+
+      if (!selectedSambhag) {
+        showSnackbar('Please select division!', 'error');
+        return;
+      }
+
+      if (!selectedDistrict) {
+        showSnackbar('Please select district!', 'error');
+        return;
+      }
+
+      if (!deathCaseFormData.nominee1Name.trim()) {
+        showSnackbar('Please enter First Nominee Name!', 'error');
+        return;
+      }
+
+      const formData = new FormData();
+
+      const requestData = {
+        deceasedName: deathCaseFormData.deceasedName,
+        employeeCode: deathCaseFormData.employeeCode,
+        department: deathCaseFormData.department,
+        district: deathCaseFormData.district,
+        description: deathCaseFormData.description,
+        nominee1Name: deathCaseFormData.nominee1Name,
+        nominee2Name: deathCaseFormData.nominee2Name || null,
+        account1: deathCaseFormData.account1,
+        account2: deathCaseFormData.account2,
+        account3: deathCaseFormData.account3,
+        caseDate: deathCaseFormData.caseDate,
+        status: deathCaseFormData.status
+      };
+
+      formData.append('data', new Blob([JSON.stringify(requestData)], { type: 'application/json' }));
+
+      if (deathCaseFiles.userImage) {
+        formData.append('userImage', deathCaseFiles.userImage);
+      }
+      if (deathCaseFiles.nominee1QrCode) {
+        formData.append('nominee1QrCode', deathCaseFiles.nominee1QrCode);
+      }
+      if (deathCaseFiles.nominee2QrCode) {
+        formData.append('nominee2QrCode', deathCaseFiles.nominee2QrCode);
+      }
+      if (deathCaseFiles.certificate1) {
+        formData.append('certificate1', deathCaseFiles.certificate1);
+      }
+
+      await adminAPI.updateDeathCase(editingDeathCaseId, formData);
+
+      showSnackbar('Death assistance case updated successfully!', 'success');
+      setCreateDeathCaseDialog(false);
+      resetDeathCaseForm();
+      fetchDeathCases();
+    } catch (error) {
+      console.error('Error updating death case:', error);
+      showSnackbar('Error updating death assistance case!', 'error');
+    } finally {
+      setDeathCaseFormLoading(false);
+    }
+  };
 const openSettingsDialog = async () => {
   try {
     setSettingsDialogOpen(true);
@@ -1199,7 +1447,7 @@ const handleSendInsuranceInquiryEmail = async () => {
       const formData = new FormData();
       
       // Add JSON data part
-      const requestData = {
+           const requestData = {
         deceasedName: deathCaseFormData.deceasedName,
         employeeCode: deathCaseFormData.employeeCode,
         department: deathCaseFormData.department,
@@ -1210,7 +1458,8 @@ const handleSendInsuranceInquiryEmail = async () => {
         account1: deathCaseFormData.account1,
         account2: deathCaseFormData.account2,
         account3: deathCaseFormData.account3,
-        caseDate: deathCaseFormData.caseDate
+        caseDate: deathCaseFormData.caseDate,
+        status: deathCaseFormData.status
       };
       
       formData.append('data', new Blob([JSON.stringify(requestData)], { type: 'application/json' }));
@@ -2700,7 +2949,20 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
                     >
                       <Visibility fontSize="small" />
                     </IconButton>
-                    
+                                        <IconButton
+                      size="small"
+                      onClick={() => handleEditDeathCase(deathCase)}
+                      title="Edit"
+                      color="warning"
+                      sx={{
+                        bgcolor: '#ff980020',
+                        '&:hover': {
+                          bgcolor: '#ff980040'
+                        }
+                      }}
+                    >
+                      <Edit fontSize="small" />
+                    </IconButton>
                     <IconButton
                       size="small"
                       onClick={() => {
@@ -3839,6 +4101,7 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
           open={createDeathCaseDialog} 
           onClose={() => {
             setCreateDeathCaseDialog(false);
+             resetDeathCaseForm();
             setDeathCaseFormData({
               deceasedName: '',
               employeeCode: '',
@@ -3875,8 +4138,8 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
             sx: { borderRadius: 3 }
           }}
         >
-          <DialogTitle sx={{ bgcolor: '#d32f2f', color: 'white', fontWeight: 'bold' }}>
-            New Death Assistance Case
+                    <DialogTitle sx={{ bgcolor: '#d32f2f', color: 'white', fontWeight: 'bold' }}>
+            {isDeathCaseEditMode ? 'Edit Death Assistance Case' : 'New Death Assistance Case'}
           </DialogTitle>
           
           <DialogContent sx={{ pt: 3 }}>
@@ -4491,6 +4754,7 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
             <Button 
               onClick={() => {
                 setCreateDeathCaseDialog(false);
+                 resetDeathCaseForm();
                 setDeathCaseFormData({
                   deceasedName: '',
                   employeeCode: '',
@@ -4542,7 +4806,7 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
             </Button>
             <Button 
               variant="contained"
-              onClick={handleCreateDeathCase}
+                           onClick={isDeathCaseEditMode ? handleUpdateDeathCase : handleCreateDeathCase}
               disabled={deathCaseFormLoading || 
                 !deathCaseFormData.deceasedName.trim() || 
                 !deathCaseFormData.employeeCode.trim() || 
@@ -4566,7 +4830,7 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
               startIcon={deathCaseFormLoading ? <CircularProgress size={18} /> : <Save />}
               sx={{ bgcolor: '#d32f2f' }}
             >
-              {deathCaseFormLoading ? 'Saving...' : 'Save'}
+                           {deathCaseFormLoading ? (isDeathCaseEditMode ? 'Updating...' : 'Saving...') : (isDeathCaseEditMode ? 'Update' : 'Save')}
             </Button>
           </DialogActions>
         </Dialog>
