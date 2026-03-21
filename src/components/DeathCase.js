@@ -381,7 +381,7 @@ UTR दर्ज होने पर ही आपका सहयोग सफ�
                             >
                               DOWNLOAD QR
                             </Button>
-                          {dc.nominee1UpiLink && (
+                          {/* {dc.nominee1UpiLink && (
   <Button
     variant="contained"
     size="small"
@@ -399,7 +399,7 @@ UTR दर्ज होने पर ही आपका सहयोग सफ�
   >
     {payLoading === 'nominee1' ? 'OPENING...' : 'PAY NOW'}
   </Button>
-)}
+)} */}
                             </Box>
                           </Box>
                         </Grid>
@@ -468,7 +468,7 @@ UTR दर्ज होने पर ही आपका सहयोग सफ�
                             >
                               DOWNLOAD QR
                             </Button>
-                            {dc.nominee2UpiLink && (
+                            {/* {dc.nominee2UpiLink && (
   <Button
     variant="contained"
     size="small"
@@ -486,7 +486,7 @@ UTR दर्ज होने पर ही आपका सहयोग सफ�
   >
     {payLoading === 'nominee2' ? 'OPENING...' : 'PAY NOW'}
   </Button>
-)}
+)} */}
                             </Box>
                           </Box>
                         </Grid>
