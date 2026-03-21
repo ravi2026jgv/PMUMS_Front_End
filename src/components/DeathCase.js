@@ -66,36 +66,59 @@ const isMobileDevice = () => {
   return /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
 };
 
-const loadImage = (src) =>
+const loadImageFromBlobUrl = (blobUrl) =>
   new Promise((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin = 'anonymous';
     img.onload = () => resolve(img);
     img.onerror = () => reject(new Error('QR image load failed'));
-    img.src = src;
+    img.src = blobUrl;
   });
 
 const decodeQrFromImage = async (imageUrl) => {
-  const img = await loadImage(imageUrl);
-
-  const canvas = document.createElement('canvas');
-  const context = canvas.getContext('2d');
-
-  canvas.width = img.naturalWidth || img.width;
-  canvas.height = img.naturalHeight || img.height;
-
-  context.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-  const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-  const qrCode = jsQR(imageData.data, imageData.width, imageData.height);
-
-  if (!qrCode || !qrCode.data) {
-    throw new Error('QR code could not be decoded');
+  if (!imageUrl) {
+    throw new Error('QR image URL not found');
   }
 
-  return qrCode.data.trim();
-};
+  let objectUrl = null;
 
+  try {
+    const response = await fetch(imageUrl, {
+      mode: 'cors',
+      cache: 'no-cache',
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch QR image: ${response.status}`);
+    }
+
+    const blob = await response.blob();
+    objectUrl = URL.createObjectURL(blob);
+
+    const img = await loadImageFromBlobUrl(objectUrl);
+
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+
+    canvas.width = img.naturalWidth || img.width;
+    canvas.height = img.naturalHeight || img.height;
+
+    context.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+    const qrCode = jsQR(imageData.data, imageData.width, imageData.height);
+
+    if (!qrCode || !qrCode.data) {
+      throw new Error('QR code could not be decoded. Please check image clarity.');
+    }
+
+    return qrCode.data.trim();
+  } finally {
+    if (objectUrl) {
+      URL.revokeObjectURL(objectUrl);
+    }
+  }
+};
 const handlePayNow = async (qrImageUrl, nomineeLabel = 'UPI') => {
   if (!qrImageUrl) {
     alert('QR Code not available');
@@ -117,7 +140,9 @@ const handlePayNow = async (qrImageUrl, nomineeLabel = 'UPI') => {
       throw new Error('Uploaded QR is not a valid UPI payment QR');
     }
 
-    window.location.href = decodedValue;
+    setTimeout(() => {
+      window.location.href = decodedValue;
+    }, 100);
   } catch (err) {
     console.error('UPI payment open failed:', err);
     setPayError(err.message || 'Unable to open UPI app.');
