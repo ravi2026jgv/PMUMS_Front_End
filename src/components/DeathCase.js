@@ -35,16 +35,11 @@ const downloadQRCode = async (imageUrl, fileName) => {
   }
 
   try {
-    const response = await fetch(imageUrl, {
-      mode: 'cors',
-      cache: 'no-cache'
-    });
+    const blob = await getQrImageBlob(imageUrl);
 
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
+    if (!blob.type.startsWith('image/')) {
+      throw new Error(`QR file is not an image. Content-Type: ${blob.type || 'unknown'}`);
     }
-
-    const blob = await response.blob();
 
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -53,17 +48,31 @@ const downloadQRCode = async (imageUrl, fileName) => {
 
     document.body.appendChild(link);
     link.click();
-
     document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
 
+    window.URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Download failed:', error);
-    alert('डाउनलोड संभव नहीं है। कृपया इमेज को long-press या right-click करके सेव करें।');
+    showPayErrorDialog(error?.message || 'QR download failed.');
   }
 };
 const isMobileDevice = () => {
   return /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+};
+const getAbsoluteQrUrl = (imageUrl) => {
+  if (!imageUrl) return '';
+
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://') || imageUrl.startsWith('blob:') || imageUrl.startsWith('data:')) {
+    return imageUrl;
+  }
+
+  const base = api.defaults?.baseURL || window.location.origin;
+
+  if (imageUrl.startsWith('/')) {
+    return `${base}${imageUrl}`;
+  }
+
+  return `${base}/${imageUrl}`;
 };
 
 const loadImageFromBlobUrl = (blobUrl) =>
@@ -74,6 +83,62 @@ const loadImageFromBlobUrl = (blobUrl) =>
     img.src = blobUrl;
   });
 
+  const getQrImageBlob = async (imageUrl) => {
+  const finalUrl = getAbsoluteQrUrl(imageUrl);
+
+  const errors = [];
+
+  // 1) Try authenticated axios instance first
+  try {
+    const response = await api.get(finalUrl, {
+      responseType: 'blob'
+    });
+
+    if (response?.data instanceof Blob) {
+      return response.data;
+    }
+  } catch (err) {
+    errors.push(`api.get failed: ${err?.message || 'unknown error'}`);
+  }
+
+  // 2) Try public axios instance
+  try {
+    const response = await publicApi.get(finalUrl, {
+      responseType: 'blob'
+    });
+
+    if (response?.data instanceof Blob) {
+      return response.data;
+    }
+  } catch (err) {
+    errors.push(`publicApi.get failed: ${err?.message || 'unknown error'}`);
+  }
+
+  // 3) Last fallback to browser fetch
+  try {
+    const response = await fetch(finalUrl, {
+      method: 'GET',
+      cache: 'no-cache',
+      credentials: 'same-origin'
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} ${response.statusText}`);
+    }
+
+    const blob = await response.blob();
+    if (blob instanceof Blob) {
+      return blob;
+    }
+  } catch (err) {
+    errors.push(`fetch failed: ${err?.message || 'unknown error'}`);
+  }
+
+  throw new Error(
+    `QR image could not be loaded.\nURL: ${finalUrl}\n\nTried:\n${errors.join('\n')}`
+  );
+};
+
 const decodeQrFromImage = async (imageUrl) => {
   if (!imageUrl) {
     throw new Error('QR image URL not found.');
@@ -82,33 +147,7 @@ const decodeQrFromImage = async (imageUrl) => {
   let objectUrl = null;
 
   try {
-    console.log('QR imageUrl:', imageUrl);
-
-    const response = await fetch(imageUrl, {
-      mode: 'cors',
-      cache: 'no-cache',
-      credentials: 'include'
-    });
-
-    console.log('QR fetch status:', response.status, response.statusText);
-
-    if (!response.ok) {
-      let extraText = '';
-      try {
-        extraText = await response.text();
-      } catch {
-        extraText = '';
-      }
-
-      throw new Error(
-        `QR fetch failed. Status: ${response.status} ${response.statusText}${
-          extraText ? ` | Response: ${extraText.slice(0, 200)}` : ''
-        }`
-      );
-    }
-
-    const blob = await response.blob();
-    console.log('QR blob type:', blob.type, 'size:', blob.size);
+    const blob = await getQrImageBlob(imageUrl);
 
     if (!blob.type.startsWith('image/')) {
       throw new Error(`QR URL did not return an image. Received content type: ${blob.type || 'unknown'}`);
@@ -137,15 +176,7 @@ const decodeQrFromImage = async (imageUrl) => {
       throw new Error('QR code could not be decoded. Please check image clarity.');
     }
 
-    console.log('Decoded QR:', qrCode.data);
     return qrCode.data.trim();
-  } catch (error) {
-    if (error instanceof TypeError) {
-      throw new Error(
-        'Browser could not fetch the QR image. Possible reasons: CORS blocked, login/auth issue, invalid image URL, or network error.'
-      );
-    }
-    throw error;
   } finally {
     if (objectUrl) {
       URL.revokeObjectURL(objectUrl);
