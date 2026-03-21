@@ -76,29 +76,54 @@ const loadImageFromBlobUrl = (blobUrl) =>
 
 const decodeQrFromImage = async (imageUrl) => {
   if (!imageUrl) {
-    throw new Error('QR image URL not found');
+    throw new Error('QR image URL not found.');
   }
 
   let objectUrl = null;
 
   try {
+    console.log('QR imageUrl:', imageUrl);
+
     const response = await fetch(imageUrl, {
       mode: 'cors',
       cache: 'no-cache',
       credentials: 'include'
     });
 
+    console.log('QR fetch status:', response.status, response.statusText);
+
     if (!response.ok) {
-      throw new Error(`Failed to fetch QR image: ${response.status}`);
+      let extraText = '';
+      try {
+        extraText = await response.text();
+      } catch {
+        extraText = '';
+      }
+
+      throw new Error(
+        `QR fetch failed. Status: ${response.status} ${response.statusText}${
+          extraText ? ` | Response: ${extraText.slice(0, 200)}` : ''
+        }`
+      );
     }
 
     const blob = await response.blob();
+    console.log('QR blob type:', blob.type, 'size:', blob.size);
+
+    if (!blob.type.startsWith('image/')) {
+      throw new Error(`QR URL did not return an image. Received content type: ${blob.type || 'unknown'}`);
+    }
+
     objectUrl = URL.createObjectURL(blob);
 
     const img = await loadImageFromBlobUrl(objectUrl);
 
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
+
+    if (!context) {
+      throw new Error('Canvas context could not be created.');
+    }
 
     canvas.width = img.naturalWidth || img.width;
     canvas.height = img.naturalHeight || img.height;
@@ -112,7 +137,15 @@ const decodeQrFromImage = async (imageUrl) => {
       throw new Error('QR code could not be decoded. Please check image clarity.');
     }
 
+    console.log('Decoded QR:', qrCode.data);
     return qrCode.data.trim();
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error(
+        'Browser could not fetch the QR image. Possible reasons: CORS blocked, login/auth issue, invalid image URL, or network error.'
+      );
+    }
+    throw error;
   } finally {
     if (objectUrl) {
       URL.revokeObjectURL(objectUrl);
@@ -121,12 +154,12 @@ const decodeQrFromImage = async (imageUrl) => {
 };
 const handlePayNow = async (qrImageUrl, nomineeLabel = 'UPI') => {
   if (!qrImageUrl) {
-    alert('QR Code not available');
+    showPayErrorDialog('QR Code not available.');
     return;
   }
 
   if (!isMobileDevice()) {
-    alert('UPI payment app can be opened only on mobile devices.');
+    showPayErrorDialog('UPI payment app can be opened only on mobile devices.');
     return;
   }
 
@@ -137,7 +170,7 @@ const handlePayNow = async (qrImageUrl, nomineeLabel = 'UPI') => {
     const decodedValue = await decodeQrFromImage(qrImageUrl);
 
     if (!decodedValue.toLowerCase().startsWith('upi://pay')) {
-      throw new Error('Uploaded QR is not a valid UPI payment QR');
+      throw new Error(`Decoded QR is not a valid UPI payment link. Value: ${decodedValue}`);
     }
 
     setTimeout(() => {
@@ -145,12 +178,15 @@ const handlePayNow = async (qrImageUrl, nomineeLabel = 'UPI') => {
     }, 100);
   } catch (err) {
     console.error('UPI payment open failed:', err);
-    setPayError(err.message || 'Unable to open UPI app.');
-    alert(err.message || 'Unable to open UPI app.');
+    const exactMessage = err?.message || 'Unable to open UPI app.';
+    setPayError(exactMessage);
+    showPayErrorDialog(exactMessage);
   } finally {
     setPayLoading('');
   }
 };
+const [payDialogOpen, setPayDialogOpen] = useState(false);
+const [payDialogMessage, setPayDialogMessage] = useState('');
   const [receiptUploadOpen, setReceiptUploadOpen] = useState(false);
   const [loginAlertOpen, setLoginAlertOpen] = useState(false);
   const [deathCases, setDeathCases] = useState([]);
@@ -160,6 +196,11 @@ const handlePayNow = async (qrImageUrl, nomineeLabel = 'UPI') => {
 const [payLoading, setPayLoading] = useState('');
 const [payError, setPayError] = useState('');
   const abortControllerRef = useRef(null);
+
+  const showPayErrorDialog = (message) => {
+  setPayDialogMessage(message || 'Unable to open UPI app.');
+  setPayDialogOpen(true);
+};
 
 useEffect(() => {
   const fetchAssignedOnly = async () => {
@@ -753,7 +794,21 @@ IFSC: ${dc.account3?.ifscCode || 'IFSC CODE'}`;
           </Button>
         </DialogActions>
       </Dialog>
+      <Dialog open={payDialogOpen} onClose={() => setPayDialogOpen(false)} maxWidth="sm" fullWidth>
+  <DialogTitle>Payment Error</DialogTitle>
+  <DialogContent>
+    <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+      {payDialogMessage}
+    </Typography>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setPayDialogOpen(false)} variant="contained">
+      OK
+    </Button>
+  </DialogActions>
+</Dialog>
     </Container>
+    
   );
 };
 
