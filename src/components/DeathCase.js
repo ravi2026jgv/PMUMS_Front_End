@@ -21,12 +21,19 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ReceiptUpload from './ReceiptUpload';
 import api, { publicApi } from '../services/api';
-import jsQR from 'jsqr';
+import { BrowserQRCodeReader } from '@zxing/browser';
 
 const DeathCase = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
+  const blobToDataUrl = (blob) =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('Failed to convert blob to data URL.'));
+    reader.readAsDataURL(blob);
+  });
   // Download QR code using canvas approach (bypasses CORS properly)
 const downloadQRCode = async (imageUrl, fileName) => {
   if (!imageUrl) {
@@ -164,19 +171,53 @@ const decodeQrFromImage = async (imageUrl) => {
       throw new Error('Canvas context could not be created.');
     }
 
-    canvas.width = img.naturalWidth || img.width;
-    canvas.height = img.naturalHeight || img.height;
+    const fullWidth = img.naturalWidth || img.width;
+    const fullHeight = img.naturalHeight || img.height;
 
-    context.drawImage(img, 0, 0, canvas.width, canvas.height);
+    // Step 1: try full image with ZXing
+    const fullDataUrl = await blobToDataUrl(blob);
+    const reader = new BrowserQRCodeReader();
 
-    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-    const qrCode = jsQR(imageData.data, imageData.width, imageData.height);
-
-    if (!qrCode || !qrCode.data) {
-      throw new Error('QR code could not be decoded. Please check image clarity.');
+    try {
+      const result = await reader.decodeFromImageUrl(fullDataUrl);
+      const text = result?.getText?.() || result?.text || '';
+      if (text) return text.trim();
+    } catch (e) {
+      // continue to cropped attempts
     }
 
-    return qrCode.data.trim();
+    // Step 2: try cropped center area (most payment posters keep QR in center)
+    const cropAttempts = [
+      { x: 0.15, y: 0.18, w: 0.70, h: 0.62 },
+      { x: 0.18, y: 0.22, w: 0.64, h: 0.56 },
+      { x: 0.20, y: 0.24, w: 0.60, h: 0.52 },
+      { x: 0.22, y: 0.26, w: 0.56, h: 0.48 }
+    ];
+
+    for (const crop of cropAttempts) {
+      const sx = Math.floor(fullWidth * crop.x);
+      const sy = Math.floor(fullHeight * crop.y);
+      const sw = Math.floor(fullWidth * crop.w);
+      const sh = Math.floor(fullHeight * crop.h);
+
+      canvas.width = sw;
+      canvas.height = sh;
+
+      context.clearRect(0, 0, sw, sh);
+      context.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+
+      const croppedDataUrl = canvas.toDataURL('image/png');
+
+      try {
+        const result = await reader.decodeFromImageUrl(croppedDataUrl);
+        const text = result?.getText?.() || result?.text || '';
+        if (text) return text.trim();
+      } catch (e) {
+        // continue next crop
+      }
+    }
+
+    throw new Error('QR code could not be decoded from this image.');
   } finally {
     if (objectUrl) {
       URL.revokeObjectURL(objectUrl);
@@ -404,7 +445,7 @@ UTR दर्ज होने पर ही आपका सहयोग सफ�
                           style={{
                             maxWidth: '200px',
                             maxHeight: '300px',
-                            objectFit: 'cover',
+                            objectFit: 'contain',
                             borderRadius: '8px',
                             border: '2px solid #ddd'
                           }}
@@ -444,7 +485,7 @@ UTR दर्ज होने पर ही आपका सहयोग सफ�
                                   style={{
                                     width: '200px',
                                     height: '250px',
-                                    objectFit: 'cover',
+                                    objectFit: 'contain',
                                     borderRadius: '8px',
                                     border: '2px solid #333',
                                     margin: '0 auto'
@@ -531,7 +572,7 @@ UTR दर्ज होने पर ही आपका सहयोग सफ�
                                   style={{
                                     width: '200px',
                                     height: '250px',
-                                    objectFit: 'cover',
+                                    objectFit: 'contain',
                                     borderRadius: '8px',
                                     border: '2px solid #333',
                                     margin: '0 auto'
