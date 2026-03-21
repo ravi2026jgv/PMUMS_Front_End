@@ -699,12 +699,21 @@ const formatDate = (dateString) => {
     return d.toISOString().substring(0, 10);
   };
 
-  const buildUpiLink = (upiId, nomineeName) => {
+const buildUpiLink = (upiId, nomineeName) => {
   const trimmedUpiId = (upiId || '').trim();
   if (!trimmedUpiId) return null;
 
-  return `upi://pay?pa=${encodeURIComponent(trimmedUpiId)}&pn=${encodeURIComponent(nomineeName || '')}&cu=INR`;
+  const cleanName = (nomineeName || '').trim();
+
+  let link = `upi://pay?pa=${trimmedUpiId}&cu=INR`;
+
+  if (cleanName) {
+    link += `&pn=${encodeURIComponent(cleanName)}`;
+  }
+
+  return link;
 };
+
   const openUserDetails = (user) => {
     setUserDetailsUser(user);
     setUserDetailsForm({
