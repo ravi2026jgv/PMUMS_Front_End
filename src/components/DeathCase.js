@@ -90,16 +90,16 @@ const handleDirectUpiPay = (upiLink, nomineeLabel = 'UPI') => {
   try {
     setPayError('');
     setPayLoading(nomineeLabel);
+const trimmedUpiId = upiLink.trim();
+// If it's already a full deeplink (legacy data), use as-is. Otherwise build it.
+const deeplink = trimmedUpiId.toLowerCase().startsWith('upi://pay')
+  ? trimmedUpiId
+  : `upi://pay?pa=${encodeURIComponent(trimmedUpiId)}&cu=INR`;
 
-    const trimmedLink = upiLink.trim();
+setTimeout(() => {
+  window.location.href = deeplink;
+}, 100);
 
-    if (!trimmedLink.toLowerCase().startsWith('upi://pay')) {
-      throw new Error('Invalid UPI payment link.');
-    }
-
-    setTimeout(() => {
-      window.location.href = trimmedLink;
-    }, 100);
   } catch (err) {
     console.error('UPI payment open failed:', err);
     const exactMessage = err?.message || 'Unable to open UPI app.';
