@@ -21,55 +21,22 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ReceiptUpload from './ReceiptUpload';
 import api, { publicApi } from '../services/api';
-import { BrowserQRCodeReader } from '@zxing/browser';
 
 const DeathCase = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-  const blobToDataUrl = (blob) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error('Failed to convert blob to data URL.'));
-    reader.readAsDataURL(blob);
-  });
+
   // Download QR code using canvas approach (bypasses CORS properly)
-const downloadQRCode = async (imageUrl, fileName) => {
-  if (!imageUrl) {
-    alert('QR Code not available');
-    return;
-  }
-
-  try {
-    const blob = await getQrImageBlob(imageUrl);
-
-    if (!blob.type.startsWith('image/')) {
-      throw new Error(`QR file is not an image. Content-Type: ${blob.type || 'unknown'}`);
-    }
-
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    window.URL.revokeObjectURL(url);
-  } catch (error) {
-    console.error('Download failed:', error);
-    showPayErrorDialog(error?.message || 'QR download failed.');
-  }
-};
-const isMobileDevice = () => {
-  return /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
-};
-const getAbsoluteQrUrl = (imageUrl) => {
+const getDownloadUrl = (imageUrl) => {
   if (!imageUrl) return '';
 
-  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://') || imageUrl.startsWith('blob:') || imageUrl.startsWith('data:')) {
+  if (
+    imageUrl.startsWith('http://') ||
+    imageUrl.startsWith('https://') ||
+    imageUrl.startsWith('blob:') ||
+    imageUrl.startsWith('data:')
+  ) {
     return imageUrl;
   }
 
@@ -82,151 +49,36 @@ const getAbsoluteQrUrl = (imageUrl) => {
   return `${base}/${imageUrl}`;
 };
 
-const loadImageFromBlobUrl = (blobUrl) =>
-  new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error('QR image load failed'));
-    img.src = blobUrl;
-  });
-
-  const getQrImageBlob = async (imageUrl) => {
-  const finalUrl = getAbsoluteQrUrl(imageUrl);
-
-  const errors = [];
-
-  // 1) Try authenticated axios instance first
-  try {
-    const response = await api.get(finalUrl, {
-      responseType: 'blob'
-    });
-
-    if (response?.data instanceof Blob) {
-      return response.data;
-    }
-  } catch (err) {
-    errors.push(`api.get failed: ${err?.message || 'unknown error'}`);
-  }
-
-  // 2) Try public axios instance
-  try {
-    const response = await publicApi.get(finalUrl, {
-      responseType: 'blob'
-    });
-
-    if (response?.data instanceof Blob) {
-      return response.data;
-    }
-  } catch (err) {
-    errors.push(`publicApi.get failed: ${err?.message || 'unknown error'}`);
-  }
-
-  // 3) Last fallback to browser fetch
-  try {
-    const response = await fetch(finalUrl, {
-      method: 'GET',
-      cache: 'no-cache',
-      credentials: 'same-origin'
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status} ${response.statusText}`);
-    }
-
-    const blob = await response.blob();
-    if (blob instanceof Blob) {
-      return blob;
-    }
-  } catch (err) {
-    errors.push(`fetch failed: ${err?.message || 'unknown error'}`);
-  }
-
-  throw new Error(
-    `QR image could not be loaded.\nURL: ${finalUrl}\n\nTried:\n${errors.join('\n')}`
-  );
-};
-
-const decodeQrFromImage = async (imageUrl) => {
+const downloadQRCode = (imageUrl, fileName) => {
   if (!imageUrl) {
-    throw new Error('QR image URL not found.');
+    showPayErrorDialog('QR Code not available.');
+    return;
   }
-
-  let objectUrl = null;
 
   try {
-    const blob = await getQrImageBlob(imageUrl);
+    const finalUrl = getDownloadUrl(imageUrl);
 
-    if (!blob.type.startsWith('image/')) {
-      throw new Error(`QR URL did not return an image. Received content type: ${blob.type || 'unknown'}`);
-    }
+    const link = document.createElement('a');
+    link.href = finalUrl;
+    link.download = fileName || 'qr-code.png';
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
 
-    objectUrl = URL.createObjectURL(blob);
-
-    const img = await loadImageFromBlobUrl(objectUrl);
-
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-
-    if (!context) {
-      throw new Error('Canvas context could not be created.');
-    }
-
-    const fullWidth = img.naturalWidth || img.width;
-    const fullHeight = img.naturalHeight || img.height;
-
-    // Step 1: try full image with ZXing
-    const fullDataUrl = await blobToDataUrl(blob);
-    const reader = new BrowserQRCodeReader();
-
-    try {
-      const result = await reader.decodeFromImageUrl(fullDataUrl);
-      const text = result?.getText?.() || result?.text || '';
-      if (text) return text.trim();
-    } catch (e) {
-      // continue to cropped attempts
-    }
-
-    // Step 2: try cropped center area (most payment posters keep QR in center)
-    const cropAttempts = [
-      { x: 0.15, y: 0.18, w: 0.70, h: 0.62 },
-      { x: 0.18, y: 0.22, w: 0.64, h: 0.56 },
-      { x: 0.20, y: 0.24, w: 0.60, h: 0.52 },
-      { x: 0.22, y: 0.26, w: 0.56, h: 0.48 }
-    ];
-
-    for (const crop of cropAttempts) {
-      const sx = Math.floor(fullWidth * crop.x);
-      const sy = Math.floor(fullHeight * crop.y);
-      const sw = Math.floor(fullWidth * crop.w);
-      const sh = Math.floor(fullHeight * crop.h);
-
-      canvas.width = sw;
-      canvas.height = sh;
-
-      context.clearRect(0, 0, sw, sh);
-      context.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
-
-      const croppedDataUrl = canvas.toDataURL('image/png');
-
-      try {
-        const result = await reader.decodeFromImageUrl(croppedDataUrl);
-        const text = result?.getText?.() || result?.text || '';
-        if (text) return text.trim();
-      } catch (e) {
-        // continue next crop
-      }
-    }
-
-    throw new Error('QR code could not be decoded from this image.');
-  } finally {
-    if (objectUrl) {
-      URL.revokeObjectURL(objectUrl);
-    }
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (error) {
+    console.error('Download failed:', error);
+    showPayErrorDialog(error?.message || 'QR download failed.');
   }
 };
-const handlePayNow = async (qrImageUrl, nomineeLabel = 'UPI') => {
-  if (!qrImageUrl) {
-    showPayErrorDialog('QR Code not available.');
+const isMobileDevice = () => {
+  return /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+};
+
+const handleDirectUpiPay = (upiLink, nomineeLabel = 'UPI') => {
+  if (!upiLink) {
+    showPayErrorDialog('UPI payment link not available.');
     return;
   }
 
@@ -239,14 +91,14 @@ const handlePayNow = async (qrImageUrl, nomineeLabel = 'UPI') => {
     setPayError('');
     setPayLoading(nomineeLabel);
 
-    const decodedValue = await decodeQrFromImage(qrImageUrl);
+    const trimmedLink = upiLink.trim();
 
-    if (!decodedValue.toLowerCase().startsWith('upi://pay')) {
-      throw new Error(`Decoded QR is not a valid UPI payment link. Value: ${decodedValue}`);
+    if (!trimmedLink.toLowerCase().startsWith('upi://pay')) {
+      throw new Error('Invalid UPI payment link.');
     }
 
     setTimeout(() => {
-      window.location.href = decodedValue;
+      window.location.href = trimmedLink;
     }, 100);
   } catch (err) {
     console.error('UPI payment open failed:', err);
@@ -257,6 +109,8 @@ const handlePayNow = async (qrImageUrl, nomineeLabel = 'UPI') => {
     setPayLoading('');
   }
 };
+
+
 const [payDialogOpen, setPayDialogOpen] = useState(false);
 const [payDialogMessage, setPayDialogMessage] = useState('');
   const [receiptUploadOpen, setReceiptUploadOpen] = useState(false);
@@ -527,11 +381,11 @@ UTR दर्ज होने पर ही आपका सहयोग सफ�
                             >
                               DOWNLOAD QR
                             </Button>
-                            {dc.nominee1QrCode && (
+                          {dc.nominee1UpiLink && (
   <Button
     variant="contained"
     size="small"
-    onClick={() => handlePayNow(dc.nominee1QrCode, 'nominee1')}
+    onClick={() => handleDirectUpiPay(dc.nominee1UpiLink, 'nominee1')}
     disabled={payLoading === 'nominee1'}
     sx={{
       bgcolor: '#2e7d32',
@@ -614,11 +468,11 @@ UTR दर्ज होने पर ही आपका सहयोग सफ�
                             >
                               DOWNLOAD QR
                             </Button>
-                            {dc.nominee2QrCode && (
+                            {dc.nominee2UpiLink && (
   <Button
     variant="contained"
     size="small"
-    onClick={() => handlePayNow(dc.nominee2QrCode, 'nominee2')}
+    onClick={() => handleDirectUpiPay(dc.nominee2UpiLink, 'nominee2')}
     disabled={payLoading === 'nominee2'}
     sx={{
       bgcolor: '#2e7d32',

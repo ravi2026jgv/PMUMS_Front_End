@@ -171,6 +171,8 @@ const [selfDonationQrUploading, setSelfDonationQrUploading] = useState(false);
     description: '',
     nominee1Name: '',
     nominee2Name: '',
+    nominee1UpiLink: '',
+nominee2UpiLink: '',
     account1: {
       bankName: '',
       accountNumber: '',
@@ -306,6 +308,8 @@ if (response.data && response.data.users) {
       description: '',
       nominee1Name: '',
       nominee2Name: '',
+      nominee1UpiLink: '',
+nominee2UpiLink: '',
       account1: {
         bankName: '',
         accountNumber: '',
@@ -379,6 +383,8 @@ if (response.data && response.data.users) {
         description: deathCase.description || '',
         nominee1Name: deathCase.nominee1Name || '',
         nominee2Name: deathCase.nominee2Name || '',
+        nominee1UpiLink: deathCase.nominee1UpiLink || '',
+nominee2UpiLink: deathCase.nominee2UpiLink || '',
         account1: deathCase.account1 || {
           bankName: '',
           accountNumber: '',
@@ -505,7 +511,8 @@ if (response.data && response.data.users) {
         description: deathCaseFormData.description,
         nominee1Name: deathCaseFormData.nominee1Name,
         nominee2Name: deathCaseFormData.nominee2Name || null,
-        account1: deathCaseFormData.account1,
+nominee1UpiLink: buildUpiLink(deathCaseFormData.nominee1UpiLink, deathCaseFormData.nominee1Name),
+nominee2UpiLink: buildUpiLink(deathCaseFormData.nominee2UpiLink, deathCaseFormData.nominee2Name),        account1: deathCaseFormData.account1,
         account2: deathCaseFormData.account2,
         account3: deathCaseFormData.account3,
         caseDate: deathCaseFormData.caseDate,
@@ -692,6 +699,12 @@ const formatDate = (dateString) => {
     return d.toISOString().substring(0, 10);
   };
 
+  const buildUpiLink = (upiId, nomineeName) => {
+  const trimmedUpiId = (upiId || '').trim();
+  if (!trimmedUpiId) return null;
+
+  return `upi://pay?pa=${encodeURIComponent(trimmedUpiId)}&pn=${encodeURIComponent(nomineeName || '')}&cu=INR`;
+};
   const openUserDetails = (user) => {
     setUserDetailsUser(user);
     setUserDetailsForm({
@@ -1455,7 +1468,8 @@ const handleSendInsuranceInquiryEmail = async () => {
         description: deathCaseFormData.description,
         nominee1Name: deathCaseFormData.nominee1Name,
         nominee2Name: deathCaseFormData.nominee2Name || null,
-        account1: deathCaseFormData.account1,
+nominee1UpiLink: buildUpiLink(deathCaseFormData.nominee1UpiLink, deathCaseFormData.nominee1Name),
+nominee2UpiLink: buildUpiLink(deathCaseFormData.nominee2UpiLink, deathCaseFormData.nominee2Name),        account1: deathCaseFormData.account1,
         account2: deathCaseFormData.account2,
         account3: deathCaseFormData.account3,
         caseDate: deathCaseFormData.caseDate,
@@ -1495,6 +1509,8 @@ const handleSendInsuranceInquiryEmail = async () => {
         description: '',
         nominee1Name: '',
         nominee2Name: '',
+        nominee1UpiLink: '',
+nominee2UpiLink: '',
         account1: { bankName: '', accountNumber: '', ifscCode: '', accountHolderName: '' },
         account2: { bankName: '', accountNumber: '', ifscCode: '', accountHolderName: '' },
         account3: { bankName: '', accountNumber: '', ifscCode: '', accountHolderName: '' },
@@ -4489,6 +4505,16 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
                         />
                       </Button>
                     </Grid>
+                    <Grid item xs={12} md={6}>
+  <TextField
+    fullWidth
+    label="Nominee 1 UPI ID"
+    placeholder="example@upi"
+    value={deathCaseFormData.nominee1UpiLink}
+    onChange={(e) => handleDeathCaseFormChange('nominee1UpiLink', e.target.value)}
+    variant="outlined"
+  />
+</Grid>
                     
                     <Grid item xs={12} md={6} sx={{ mt: 3,mb: 3 }}>
                       <TextField
@@ -4525,6 +4551,16 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
                         />
                       </Button>
                     </Grid>
+                    <Grid item xs={12} md={6}>
+  <TextField
+    fullWidth
+    label="Nominee 2 UPI ID"
+    placeholder="example@upi"
+    value={deathCaseFormData.nominee2UpiLink}
+    onChange={(e) => handleDeathCaseFormChange('nominee2UpiLink', e.target.value)}
+    variant="outlined"
+  />
+</Grid>
                       </Grid>
                     </Box>
                   </Collapse>
