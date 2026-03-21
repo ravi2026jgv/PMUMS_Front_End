@@ -703,7 +703,7 @@ const formatDate = (dateString) => {
   const trimmedUpiId = (upiId || '').trim();
   if (!trimmedUpiId) return null;
 
-  return `upi://pay?pa=${encodeURIComponent(trimmedUpiId)}&pn=${encodeURIComponent(nomineeName || '')}&am=100&cu=INR`;
+  return `upi://pay?pa=${encodeURIComponent(trimmedUpiId)}&pn=${encodeURIComponent(nomineeName || '')}&cu=INR`;
 };
   const openUserDetails = (user) => {
     setUserDetailsUser(user);
