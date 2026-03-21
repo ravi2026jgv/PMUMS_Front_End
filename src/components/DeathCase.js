@@ -90,11 +90,11 @@ const handleDirectUpiPay = (upiLink, nomineeLabel = 'UPI') => {
   try {
     setPayError('');
     setPayLoading(nomineeLabel);
-const trimmedUpiId = upiLink.trim();
-// If it's already a full deeplink (legacy data), use as-is. Otherwise build it.
+const trimmedUpiId = (upiLink || '').trim();
+
 const deeplink = trimmedUpiId.toLowerCase().startsWith('upi://pay')
   ? trimmedUpiId
-  : `upi://pay?pa=${encodeURIComponent(trimmedUpiId)}&cu=INR`;
+  : `upi://pay?pa=${trimmedUpiId}&cu=INR`;
 
 setTimeout(() => {
   window.location.href = deeplink;
