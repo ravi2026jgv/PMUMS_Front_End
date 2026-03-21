@@ -21,6 +21,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ReceiptUpload from './ReceiptUpload';
 import api, { publicApi } from '../services/api';
+import jsQR from 'jsqr';
 
 const DeathCase = () => {
   const { isAuthenticated } = useAuth();
@@ -61,14 +62,78 @@ const downloadQRCode = async (imageUrl, fileName) => {
     alert('डाउनलोड संभव नहीं है। कृपया इमेज को long-press या right-click करके सेव करें।');
   }
 };
+const isMobileDevice = () => {
+  return /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
+};
 
+const loadImage = (src) =>
+  new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('QR image load failed'));
+    img.src = src;
+  });
+
+const decodeQrFromImage = async (imageUrl) => {
+  const img = await loadImage(imageUrl);
+
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+
+  canvas.width = img.naturalWidth || img.width;
+  canvas.height = img.naturalHeight || img.height;
+
+  context.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+  const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+  const qrCode = jsQR(imageData.data, imageData.width, imageData.height);
+
+  if (!qrCode || !qrCode.data) {
+    throw new Error('QR code could not be decoded');
+  }
+
+  return qrCode.data.trim();
+};
+
+const handlePayNow = async (qrImageUrl, nomineeLabel = 'UPI') => {
+  if (!qrImageUrl) {
+    alert('QR Code not available');
+    return;
+  }
+
+  if (!isMobileDevice()) {
+    alert('UPI payment app can be opened only on mobile devices.');
+    return;
+  }
+
+  try {
+    setPayError('');
+    setPayLoading(nomineeLabel);
+
+    const decodedValue = await decodeQrFromImage(qrImageUrl);
+
+    if (!decodedValue.toLowerCase().startsWith('upi://pay')) {
+      throw new Error('Uploaded QR is not a valid UPI payment QR');
+    }
+
+    window.location.href = decodedValue;
+  } catch (err) {
+    console.error('UPI payment open failed:', err);
+    setPayError(err.message || 'Unable to open UPI app.');
+    alert(err.message || 'Unable to open UPI app.');
+  } finally {
+    setPayLoading('');
+  }
+};
   const [receiptUploadOpen, setReceiptUploadOpen] = useState(false);
   const [loginAlertOpen, setLoginAlertOpen] = useState(false);
   const [deathCases, setDeathCases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedCase, setSelectedCase] = useState(null);
-
+const [payLoading, setPayLoading] = useState('');
+const [payError, setPayError] = useState('');
   const abortControllerRef = useRef(null);
 
 useEffect(() => {
@@ -173,7 +238,7 @@ UTR दर्ज होने पर ही आपका सहयोग सफ�
       </Box>
 
       {error && <Alert severity="error">{error}</Alert>}
-
+{payError && <Alert severity="warning" sx={{ mt: 2 }}>{payError}</Alert>}
       {loading && (
         <Grid container spacing={3}>
           {[1,2,3,4,5,6].map(i => (
@@ -324,6 +389,25 @@ UTR दर्ज होने पर ही आपका सहयोग सफ�
                             >
                               DOWNLOAD QR
                             </Button>
+                            {dc.nominee1QrCode && (
+  <Button
+    variant="contained"
+    size="small"
+    onClick={() => handlePayNow(dc.nominee1QrCode, 'nominee1')}
+    disabled={payLoading === 'nominee1'}
+    sx={{
+      bgcolor: '#2e7d32',
+      borderRadius: 3,
+      color: 'white',
+      fontSize: '0.9rem',
+      fontWeight: 'bold',
+      px: 2,
+      '&:hover': { bgcolor: '#1b5e20' }
+    }}
+  >
+    {payLoading === 'nominee1' ? 'OPENING...' : 'PAY NOW'}
+  </Button>
+)}
                             </Box>
                           </Box>
                         </Grid>
@@ -392,6 +476,25 @@ UTR दर्ज होने पर ही आपका सहयोग सफ�
                             >
                               DOWNLOAD QR
                             </Button>
+                            {dc.nominee2QrCode && (
+  <Button
+    variant="contained"
+    size="small"
+    onClick={() => handlePayNow(dc.nominee2QrCode, 'nominee2')}
+    disabled={payLoading === 'nominee2'}
+    sx={{
+      bgcolor: '#2e7d32',
+      borderRadius: 3,
+      color: 'white',
+      fontSize: '0.9rem',
+      fontWeight: 'bold',
+      px: 2,
+      '&:hover': { bgcolor: '#1b5e20' }
+    }}
+  >
+    {payLoading === 'nominee2' ? 'OPENING...' : 'PAY NOW'}
+  </Button>
+)}
                             </Box>
                           </Box>
                         </Grid>
