@@ -381,25 +381,7 @@ UTR दर्ज होने पर ही आपका सहयोग सफ�
                             >
                               DOWNLOAD QR
                             </Button>
-                          {dc.nominee1UpiLink && (
-  <Button
-    variant="contained"
-    size="small"
-    onClick={() => handleDirectUpiPay(dc.nominee1UpiLink, 'nominee1')}
-    disabled={payLoading === 'nominee1'}
-    sx={{
-      bgcolor: '#2e7d32',
-      borderRadius: 3,
-      color: 'white',
-      fontSize: '0.9rem',
-      fontWeight: 'bold',
-      px: 2,
-      '&:hover': { bgcolor: '#1b5e20' }
-    }}
-  >
-    {payLoading === 'nominee1' ? 'OPENING...' : 'PAY NOW'}
-  </Button>
-)}
+                     
                             </Box>
                           </Box>
                         </Grid>
@@ -468,25 +450,7 @@ UTR दर्ज होने पर ही आपका सहयोग सफ�
                             >
                               DOWNLOAD QR
                             </Button>
-                            {dc.nominee2UpiLink && (
-  <Button
-    variant="contained"
-    size="small"
-    onClick={() => handleDirectUpiPay(dc.nominee2UpiLink, 'nominee2')}
-    disabled={payLoading === 'nominee2'}
-    sx={{
-      bgcolor: '#2e7d32',
-      borderRadius: 3,
-      color: 'white',
-      fontSize: '0.9rem',
-      fontWeight: 'bold',
-      px: 2,
-      '&:hover': { bgcolor: '#1b5e20' }
-    }}
-  >
-    {payLoading === 'nominee2' ? 'OPENING...' : 'PAY NOW'}
-  </Button>
-)}
+                           
                             </Box>
                           </Box>
                         </Grid>
