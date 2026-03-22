@@ -4514,7 +4514,7 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
                         />
                       </Button>
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    {/* <Grid item xs={12} md={6}>
   <TextField
     fullWidth
     label="Nominee 1 UPI ID"
@@ -4523,7 +4523,7 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
     onChange={(e) => handleDeathCaseFormChange('nominee1UpiLink', e.target.value)}
     variant="outlined"
   />
-</Grid>
+</Grid> */}
                     
                     <Grid item xs={12} md={6} sx={{ mt: 3,mb: 3 }}>
                       <TextField
@@ -4560,7 +4560,7 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
                         />
                       </Button>
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    {/* <Grid item xs={12} md={6}>
   <TextField
     fullWidth
     label="Nominee 2 UPI ID"
@@ -4569,7 +4569,7 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
     onChange={(e) => handleDeathCaseFormChange('nominee2UpiLink', e.target.value)}
     variant="outlined"
   />
-</Grid>
+</Grid> */}
                       </Grid>
                     </Box>
                   </Collapse>
