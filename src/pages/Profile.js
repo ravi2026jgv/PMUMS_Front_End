@@ -435,7 +435,7 @@ const Profile = () => {
           schoolOfficeName: data.schoolOfficeName,
           sankulName: data.sankulName,
           department: data.department,
-          departmentUniqueId: data.departmentUniqueId,
+         departmentUniqueId: profileData?.departmentUniqueId,
           departmentState: data.departmentState,
           departmentSambhag: data.departmentSambhag,
           departmentDistrict: data.departmentDistrict,
@@ -749,19 +749,39 @@ const Profile = () => {
                 <Grid item xs={12} md={6}>
                   <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>मोबाइल नंबर</Typography>
                   <TextField
-                    fullWidth
-                    defaultValue={profileData?.mobileNumber || ''}
-                    {...register('mobileNumber', { required: 'मोबाइल नंबर आवश्यक है', pattern: { value: /^[0-9]{10}$/, message: 'वैध मोबाइल नंबर दर्ज करें' } })}
-                    disabled={!isEditing}
-                    error={!!errors.mobileNumber}
-                    helperText={errors.mobileNumber?.message}
-                    sx={{
-                      '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                        border: '1px solid #ccc',
-                        borderRadius: '8px'
-                      }
-                    }}
-                  />
+  fullWidth
+  defaultValue={profileData?.mobileNumber || ''}
+  {...register('mobileNumber', {
+    required: 'मोबाइल नंबर आवश्यक है',
+    pattern: {
+      value: /^[0-9]{10}$/,
+      message: 'मोबाइल नंबर 10 अंकों का होना चाहिए'
+    },
+    minLength: {
+      value: 10,
+      message: 'मोबाइल नंबर 10 अंकों का होना चाहिए'
+    },
+    maxLength: {
+      value: 10,
+      message: 'मोबाइल नंबर 10 अंकों का होना चाहिए'
+    }
+  })}
+  disabled={!isEditing}
+  error={!!errors.mobileNumber}
+  helperText={errors.mobileNumber?.message}
+  inputProps={{ maxLength: 10, inputMode: 'numeric' }}
+  onInput={(e) => {
+    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+  }}
+  sx={{
+    '& .MuiOutlinedInput-root': {
+      '& input::placeholder': { color: '#000', opacity: 1 },
+      '& textarea::placeholder': { color: '#000', opacity: 1 },
+      border: '1px solid #ccc',
+      borderRadius: '8px'
+    }
+  }}
+/>
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>ईमेल</Typography>
@@ -941,7 +961,7 @@ const Profile = () => {
                     fullWidth
                     defaultValue={profileData?.departmentUniqueId || ''}
                     {...register('departmentUniqueId', { required: 'विभाग आईडी आवश्यक है' })}
-                    disabled={!isEditing}
+                    disabled={true}
                     error={!!errors.departmentUniqueId}
                     helperText={errors.departmentUniqueId?.message}
                     sx={{
