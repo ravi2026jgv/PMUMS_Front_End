@@ -36,11 +36,14 @@ const AsahyogList = () => {
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   
   // User filters
-  const [filters, setFilters] = useState({
-    userId: '',
-    fullName: '',
-    mobileNumber: ''
-  });
+ const [filters, setFilters] = useState({
+  userId: '',
+  fullName: '',
+  mobileNumber: '',
+  sambhag: '',
+  district: '',
+  block: ''
+});
   
   // Server-side Pagination
   const [page, setPage] = useState(0); // 0-indexed for API
@@ -95,14 +98,17 @@ const AsahyogList = () => {
       
       const response = await api.get('/admin/monthly-sahyog/non-donors/search', {
         params: {
-          month: selectedMonth,
-          year: selectedYear,
-          page: pageNum,
-          size: pageSize,
-          ...(filters.userId && { userId: filters.userId }),
-          ...(filters.fullName && { name: filters.fullName }),
-          ...(filters.mobileNumber && { mobile: filters.mobileNumber })
-        },
+  month: selectedMonth,
+  year: selectedYear,
+  page: pageNum,
+  size: pageSize,
+  ...(filters.userId && { userId: filters.userId }),
+  ...(filters.fullName && { name: filters.fullName }),
+  ...(filters.mobileNumber && { mobile: filters.mobileNumber }),
+  ...(filters.sambhag && { sambhag: filters.sambhag }),
+  ...(filters.district && { district: filters.district }),
+  ...(filters.block && { block: filters.block })
+},
         signal: abortControllerRef.current.signal
       });
       
@@ -139,7 +145,17 @@ const AsahyogList = () => {
         setLoading(false);
       }
     }
-  }, [selectedMonth, selectedYear, pageSize, filters.userId, filters.fullName, filters.mobileNumber]);
+  }, [
+  selectedMonth,
+  selectedYear,
+  pageSize,
+  filters.userId,
+  filters.fullName,
+  filters.mobileNumber,
+  filters.sambhag,
+  filters.district,
+  filters.block
+]);
 
   // Fetch non-donors with debounced filtering when filters change
   useEffect(() => {
@@ -156,7 +172,16 @@ const AsahyogList = () => {
       clearTimeout(debounceTimer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedMonth, selectedYear, filters.userId, filters.fullName, filters.mobileNumber]);
+  }, [
+  selectedMonth,
+  selectedYear,
+  filters.userId,
+  filters.fullName,
+  filters.mobileNumber,
+  filters.sambhag,
+  filters.district,
+  filters.block
+]);
 
   // Initial load on component mount
   useEffect(() => {
@@ -374,6 +399,80 @@ const AsahyogList = () => {
                   }}
                 />
               </Grid>
+              <Grid item xs={12} sm={4} md={2.4}>
+  <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
+    संभाग (Sambhag)
+  </Typography>
+  <TextField
+    fullWidth
+    placeholder="संभाग दर्ज करें"
+    value={filters.sambhag}
+    onChange={(e) => setFilters(prev => ({ ...prev, sambhag: e.target.value }))}
+    size="small"
+    sx={{
+      '& .MuiOutlinedInput-root': {
+        border: '2px solid #d32f2f',
+        borderRadius: '8px',
+        '&:hover': {
+          borderColor: '#c62828',
+        },
+        '&.Mui-focused': {
+          borderColor: '#d32f2f',
+        }
+      }
+    }}
+  />
+</Grid>
+
+<Grid item xs={12} sm={4} md={2.4}>
+  <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
+    जिला (District)
+  </Typography>
+  <TextField
+    fullWidth
+    placeholder="जिला दर्ज करें"
+    value={filters.district}
+    onChange={(e) => setFilters(prev => ({ ...prev, district: e.target.value }))}
+    size="small"
+    sx={{
+      '& .MuiOutlinedInput-root': {
+        border: '2px solid #d32f2f',
+        borderRadius: '8px',
+        '&:hover': {
+          borderColor: '#c62828',
+        },
+        '&.Mui-focused': {
+          borderColor: '#d32f2f',
+        }
+      }
+    }}
+  />
+</Grid>
+
+<Grid item xs={12} sm={4} md={2.4}>
+  <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
+    ब्लॉक (Block)
+  </Typography>
+  <TextField
+    fullWidth
+    placeholder="ब्लॉक दर्ज करें"
+    value={filters.block}
+    onChange={(e) => setFilters(prev => ({ ...prev, block: e.target.value }))}
+    size="small"
+    sx={{
+      '& .MuiOutlinedInput-root': {
+        border: '2px solid #d32f2f',
+        borderRadius: '8px',
+        '&:hover': {
+          borderColor: '#c62828',
+        },
+        '&.Mui-focused': {
+          borderColor: '#d32f2f',
+        }
+      }
+    }}
+  />
+</Grid>
             </Grid>
           </Paper>
 

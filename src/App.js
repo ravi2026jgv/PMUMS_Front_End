@@ -31,6 +31,7 @@ import AsahyogList from './pages/AsahyogList';
 import ContactUs from './pages/ContactUs';
 import DeathCase from './components/DeathCase';
 import SelfDonation from './components/SelfDonation';
+import PendingProfilesList from './pages/PendingProfilesList';
 // Create a client for React Query
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -61,6 +62,7 @@ function App() {
               <Route path="/niyamawali" element={<NiyamawaliPage />} />
               <Route path="/contact-us" element={<ContactUs />} />
               <Route path="/self-donation" element={<SelfDonation />} />
+                <Route path="/pending-profiles" element={<PendingProfilesList />} />
                 <Route
   path="/sahyog"
   element={

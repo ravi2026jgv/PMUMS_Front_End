@@ -71,6 +71,7 @@ const navigationItems = [
   { label: 'HOME', path: '/' },
   { label: 'ABOUT', path: '/about' },
   { label: 'OUR MEMBERS', path: '/teachers-list' },
+   { label: 'PENDING PROFILES', path: '/pending-profiles' },
   { label: 'LATE TEACHERS LIST', path: 'https://pmums.in/death-case/', external: true },
   { label: 'SAHYOG LIST', path: '/sahyog-list' },
   { label: 'ASAHYOG LIST', path: '/asahyog-list' },
