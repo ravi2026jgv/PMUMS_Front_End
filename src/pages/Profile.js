@@ -51,7 +51,7 @@ const Profile = () => {
   const [success, setSuccess] = useState('');
   const [profileData, setProfileData] = useState(null);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
-  const [emailChanged, setEmailChanged] = useState(false);
+  // const [emailChanged, setEmailChanged] = useState(false);
 
   // Location hierarchy state
   const [locationHierarchy, setLocationHierarchy] = useState(null);
@@ -65,19 +65,19 @@ const Profile = () => {
   const [availableSambhags, setAvailableSambhags] = useState([]);
   const [availableDistricts, setAvailableDistricts] = useState([]);
   const [availableBlocks, setAvailableBlocks] = useState([]);
-
+const isDepartmentUniqueIdLocked = !!profileData?.departmentUniqueId?.toString().trim();
   const {
     register,
     handleSubmit,
     reset,
     control,
-    watch,
+   
     setValue,
     formState: { errors },
   } = useForm();
 
   // Watch email field for changes
-  const watchedEmail = watch('email');
+  // const watchedEmail = watch('email');
 
   // Prevent duplicate API calls
   const locationAbortControllerRef = useRef(null);
@@ -358,7 +358,7 @@ const Profile = () => {
     if (isEditing) {
       // If cancelling edit, reset form to original data
       reset(profileData);
-      setEmailChanged(false);
+      // setEmailChanged(false);
     } else {
       // When starting to edit, ensure state value is set
       if (locationHierarchy?.states?.[0]) {
@@ -373,7 +373,15 @@ const Profile = () => {
     setError('');
     setSuccess('');
   };
+const onInvalid = (formErrors) => {
+  const firstError = Object.values(formErrors)?.[0];
 
+  if (firstError?.message) {
+    toast.error(firstError.message);
+  } else {
+    toast.error('कृपया सभी आवश्यक फ़ील्ड सही से भरें');
+  }
+};
   const onSubmit = async (data) => {
     try {
       setLoading(true);
@@ -385,11 +393,13 @@ const Profile = () => {
       if (!selectedDistrict) validationErrors.push('जिला चुनना आवश्यक है');
       if (!selectedBlock) validationErrors.push('ब्लॉक चुनना आवश्यक है');
       
-      if (validationErrors.length > 0) {
-        setError(validationErrors.join(', '));
-        setLoading(false);
-        return;
-      }
+   if (validationErrors.length > 0) {
+  const message = validationErrors.join(', ');
+  setError(message);
+  toast.error(message);
+  setLoading(false);
+  return;
+}
       
       // Get user ID from context or localStorage - should always be available now
       const userId = user?.id || JSON.parse(localStorage.getItem('user') || '{}')?.id;
@@ -435,7 +445,9 @@ const Profile = () => {
           schoolOfficeName: data.schoolOfficeName,
           sankulName: data.sankulName,
           department: data.department,
-         departmentUniqueId: profileData?.departmentUniqueId,
+         departmentUniqueId: isDepartmentUniqueIdLocked
+  ? profileData?.departmentUniqueId
+  : data.departmentUniqueId,
           departmentState: data.departmentState,
           departmentSambhag: data.departmentSambhag,
           departmentDistrict: data.departmentDistrict,
@@ -574,7 +586,7 @@ const Profile = () => {
           )}
 
           {/* Profile Form */}
-          <form onSubmit={handleSubmit(onSubmit)}>
+         <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
             {/* Section 1: Personal Information */}
             <Paper sx={{ mb: 3, p: 2, bgcolor: '#1a237e', color: 'white', borderRadius: 2 }}>
               <Typography variant="h6" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -807,27 +819,7 @@ const Profile = () => {
                     }}
                   />
                 </Grid>
-                {isEditing && (
-                  <Grid item xs={12} md={6}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>ईमेल पुष्टि करें (Confirm Email)</Typography>
-                    <TextField
-                      fullWidth
-                      type="email"
-                      {...register('confirmEmail', { 
-                        required: 'कृपया ईमेल की पुष्टि करें',
-                        validate: value => value === watchedEmail || 'ईमेल मेल नहीं खाता'
-                      })}
-                      error={!!errors.confirmEmail}
-                      helperText={errors.confirmEmail?.message || 'ईमेल की पुष्टि करें'}
-                      sx={{
-                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                          border: '1px solid #ccc',
-                          borderRadius: '8px'
-                        }
-                      }}
-                    />
-                  </Grid>
-                )}
+                
               </Grid>
             </Paper>
 
@@ -957,20 +949,28 @@ const Profile = () => {
                 </Grid>
                 <Grid item xs={12} md={4}>
                   <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>विभाग आईडी (Department Unique ID)</Typography>
-                  <TextField
-                    fullWidth
-                    defaultValue={profileData?.departmentUniqueId || ''}
-                    {...register('departmentUniqueId', { required: 'विभाग आईडी आवश्यक है' })}
-                    disabled={true}
-                    error={!!errors.departmentUniqueId}
-                    helperText={errors.departmentUniqueId?.message}
-                    sx={{
-                      '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                        border: '1px solid #ccc',
-                        borderRadius: '8px'
-                      }
-                    }}
-                  />
+                 <TextField
+  fullWidth
+  defaultValue={profileData?.departmentUniqueId || ''}
+  {...register('departmentUniqueId', { required: 'विभाग आईडी आवश्यक है' })}
+  disabled={!isEditing || isDepartmentUniqueIdLocked}
+  error={!!errors.departmentUniqueId}
+  helperText={
+    errors.departmentUniqueId?.message ||
+    (isDepartmentUniqueIdLocked
+      ? 'विभाग आईडी पहले से मौजूद है, इसे बदला नहीं जा सकता'
+      : '')
+  }
+  sx={{
+    '& .MuiOutlinedInput-root': {
+      '& input::placeholder': { color: '#000', opacity: 1 },
+      '& textarea::placeholder': { color: '#000', opacity: 1 },
+      border: '1px solid #ccc',
+      borderRadius: '8px',
+      backgroundColor: (!isEditing || isDepartmentUniqueIdLocked) ? '#f5f5f5' : '#fff'
+    }
+  }}
+/>
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>राज्य</Typography>
