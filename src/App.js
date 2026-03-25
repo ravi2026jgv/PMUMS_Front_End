@@ -30,7 +30,7 @@ import SahyogList from './pages/SahyogList';
 import AsahyogList from './pages/AsahyogList';
 import ContactUs from './pages/ContactUs';
 import DeathCase from './components/DeathCase';
-import SelfDonation from './components/SelfDonation';
+import SelfDonation from './pages/SelfDonationPage';
 import PendingProfilesList from './pages/PendingProfilesList';
 // Create a client for React Query
 const queryClient = new QueryClient({
