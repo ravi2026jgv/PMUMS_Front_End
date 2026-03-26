@@ -232,15 +232,15 @@ const Footer = () => {
                   fontSize: '0.9rem',
                   fontFamily: 'Arial, sans-serif'
                 }}>
-                  📞 8871787192 ( सुबह 8 से 10 तक और शाम 5 से 9 तक )
+                  📞 6262565803 ( WhatsApp हेल्पलाइन कृपया केवल WhatsApp पर ही संदेश करें, कॉल न करें )
                 </Typography>
-                <Typography variant="body2" sx={{ 
+                {/* <Typography variant="body2" sx={{ 
                   color: 'rgba(255,255,255,0.9)',
                   fontSize: '0.9rem',
                   fontFamily: 'Arial, sans-serif'
                 }}>
                   📞 9713450451 ( सुबह 8 से 10 तक और शाम 5 से 9 तक )
-                </Typography>
+                </Typography> */}
               </Box>
 
               {/* Email */}

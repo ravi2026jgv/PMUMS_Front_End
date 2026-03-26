@@ -60,17 +60,17 @@ const ContactUs = () => {
                   </Typography>
                   <Box sx={{ textAlign: 'left' }}>
                     <Typography variant="h6" sx={{ fontWeight: 600, color: '#2e7d32', mb: 1 }}>
-                      📞 8871787192
+                      📞 6262565803 
                     </Typography>
                     <Typography variant="body2" sx={{ color: '#666', mb: 2 }}>
-                      ( सुबह 8 से 10 तक और शाम 5 से 9 तक )
+                    ( WhatsApp हेल्पलाइन कृपया केवल WhatsApp पर ही संदेश करें, कॉल न करें )
                     </Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 600, color: '#2e7d32', mb: 1 }}>
+                    {/* <Typography variant="h6" sx={{ fontWeight: 600, color: '#2e7d32', mb: 1 }}>
                       📞 9713450451
                     </Typography>
                     <Typography variant="body2" sx={{ color: '#666', mb: 2 }}>
                       ( सुबह 8 से 10 तक और शाम 5 से 9 तक )
-                    </Typography>
+                    </Typography> */}
                     <Typography variant="body2" sx={{ color: '#666', fontStyle: 'italic' }}>
                       सहायता/पंजीकरण के लिए कॉल करें या व्हाट्सऐप आदि व्दारा संपर्क करें
                     </Typography>
