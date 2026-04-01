@@ -65,7 +65,7 @@ const Profile = () => {
   const [availableSambhags, setAvailableSambhags] = useState([]);
   const [availableDistricts, setAvailableDistricts] = useState([]);
   const [availableBlocks, setAvailableBlocks] = useState([]);
-const isDepartmentUniqueIdLocked = !!profileData?.departmentUniqueId?.toString().trim();
+const isDepartmentUniqueIdLocked = false;
   const {
     register,
     handleSubmit,
@@ -445,9 +445,7 @@ const onInvalid = (formErrors) => {
           schoolOfficeName: data.schoolOfficeName,
           sankulName: data.sankulName,
           department: data.department,
-         departmentUniqueId: isDepartmentUniqueIdLocked
-  ? profileData?.departmentUniqueId
-  : data.departmentUniqueId,
+        departmentUniqueId: data.departmentUniqueId,
           departmentState: data.departmentState,
           departmentSambhag: data.departmentSambhag,
           departmentDistrict: data.departmentDistrict,
@@ -731,7 +729,7 @@ const onInvalid = (formErrors) => {
                     fullWidth
                     defaultValue={profileData?.countryCode || '+91'}
                     {...register('countryCode', { required: 'Country Code आवश्यक है' })}
-                    disabled={!isEditing}
+                    disabled={true}
                     placeholder="+91"
                     error={!!errors.countryCode}
                     helperText={errors.countryCode?.message}
