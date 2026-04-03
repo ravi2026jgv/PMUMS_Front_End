@@ -34,7 +34,7 @@ const SahyogList = () => {
   const [donors, setDonors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  
+  const [beneficiaryOptions, setBeneficiaryOptions] = useState([]);
   // Month and Year filters
   const currentDate = new Date();
   const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
@@ -87,6 +87,25 @@ const [filters, setFilters] = useState({
     setSelectedYear(event.target.value);
     setPage(0); // Reset to first page
   };
+const fetchBeneficiaries = useCallback(async () => {
+  try {
+    const response = await api.get('/admin/monthly-sahyog/donors/beneficiaries', {
+      params: {
+        month: selectedMonth,
+        year: selectedYear
+      }
+    });
+
+    setBeneficiaryOptions(response.data || []);
+  } catch (err) {
+    console.error('Error fetching beneficiaries:', err);
+    setBeneficiaryOptions([]);
+  }
+}, [selectedMonth, selectedYear]);
+
+useEffect(() => {
+  fetchBeneficiaries();
+}, [fetchBeneficiaries]);
 
   const fetchDonors = useCallback(async (pageNum = 0) => {
     // Increment request ID to track this request
@@ -422,30 +441,7 @@ const [filters, setFilters] = useState({
                   }}
                 />
               </Grid>
-              <Grid item xs={12} sm={4} md={2.4}>
-  <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
-    लाभार्थी (Beneficiary)
-  </Typography>
-  <TextField
-    fullWidth
-    placeholder="लाभार्थी नाम दर्ज करें"
-    value={filters.beneficiary}
-    onChange={(e) => setFilters(prev => ({ ...prev, beneficiary: e.target.value }))}
-    size="small"
-    sx={{
-      '& .MuiOutlinedInput-root': {
-        border: '2px solid #1976d2',
-        borderRadius: '8px',
-        '&:hover': {
-          borderColor: '#1565c0',
-        },
-        '&.Mui-focused': {
-          borderColor: '#1976d2',
-        }
-      }
-    }}
-  />
-</Grid>
+              
               <Grid item xs={12} sm={4} md={2.4}>
   <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
     संभाग (Sambhag)
@@ -519,6 +515,40 @@ const [filters, setFilters] = useState({
       }
     }}
   />
+</Grid>
+<Grid item xs={12} sm={4} md={2.4}>
+  <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
+    लाभार्थी (Beneficiary)
+  </Typography>
+  <FormControl fullWidth size="small">
+    <Select
+      value={filters.beneficiary}
+      onChange={(e) => setFilters(prev => ({ ...prev, beneficiary: e.target.value }))}
+      displayEmpty
+      sx={{
+        '& .MuiOutlinedInput-root': {
+          border: '2px solid #1976d2',
+          borderRadius: '8px',
+          '&:hover': {
+            borderColor: '#1565c0',
+          },
+          '&.Mui-focused': {
+            borderColor: '#1976d2',
+          }
+        }
+      }}
+    >
+      <MenuItem value="">
+        सभी लाभार्थी
+      </MenuItem>
+
+      {beneficiaryOptions.map((name) => (
+        <MenuItem key={name} value={name}>
+          {name}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
 </Grid>
 
             </Grid>
