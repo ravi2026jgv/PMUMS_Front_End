@@ -53,7 +53,8 @@ const [filters, setFilters] = useState({
   mobileNumber: '',
   sambhag: '',
   district: '',
-  block: ''
+  block: '',
+  beneficiary: ''
 });
   // Prevent duplicate API calls
   const abortControllerRef = useRef(null);
@@ -115,7 +116,8 @@ const [filters, setFilters] = useState({
   ...(filters.mobileNumber && { mobile: filters.mobileNumber }),
   ...(filters.sambhag && { sambhag: filters.sambhag }),
   ...(filters.district && { district: filters.district }),
-  ...(filters.block && { block: filters.block })
+  ...(filters.block && { block: filters.block }),
+  ...(filters.beneficiary && { beneficiary: filters.beneficiary })
 },
         signal: abortControllerRef.current.signal
       });
@@ -155,7 +157,8 @@ const [filters, setFilters] = useState({
   filters.mobileNumber,
   filters.sambhag,
   filters.district,
-  filters.block
+  filters.block,
+  filters.beneficiary
 ]);
 
   // Fetch donors with debounced filtering when filters change
@@ -181,7 +184,8 @@ const [filters, setFilters] = useState({
   filters.mobileNumber,
   filters.sambhag,
   filters.district,
-  filters.block
+  filters.block,
+  filters.beneficiary
 ]);
 
   // Initial load on component mount
@@ -418,6 +422,30 @@ const [filters, setFilters] = useState({
                   }}
                 />
               </Grid>
+              <Grid item xs={12} sm={4} md={2.4}>
+  <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
+    लाभार्थी (Beneficiary)
+  </Typography>
+  <TextField
+    fullWidth
+    placeholder="लाभार्थी नाम दर्ज करें"
+    value={filters.beneficiary}
+    onChange={(e) => setFilters(prev => ({ ...prev, beneficiary: e.target.value }))}
+    size="small"
+    sx={{
+      '& .MuiOutlinedInput-root': {
+        border: '2px solid #1976d2',
+        borderRadius: '8px',
+        '&:hover': {
+          borderColor: '#1565c0',
+        },
+        '&.Mui-focused': {
+          borderColor: '#1976d2',
+        }
+      }
+    }}
+  />
+</Grid>
               <Grid item xs={12} sm={4} md={2.4}>
   <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
     संभाग (Sambhag)
