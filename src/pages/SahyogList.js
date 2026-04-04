@@ -51,7 +51,7 @@ const [filters, setFilters] = useState({
   sambhag: '',
   district: '',
   block: '',
-  beneficiary: ''
+beneficiaryId: ''
 });
   // Prevent duplicate API calls
   const abortControllerRef = useRef(null);
@@ -100,8 +100,7 @@ useEffect(() => {
     ...(filters.sambhag && { sambhag: filters.sambhag }),
     ...(filters.district && { district: filters.district }),
     ...(filters.block && { block: filters.block }),
-    ...(filters.beneficiary && { beneficiary: filters.beneficiary })
-  },
+...(filters.beneficiaryId && { beneficiaryId: filters.beneficiaryId })  },
   signal: abortControllerRef.current.signal
 });
       // Only update state if this is the latest request
@@ -423,9 +422,8 @@ useEffect(() => {
   </Typography>
   <FormControl fullWidth size="small">
     <Select
-      value={filters.beneficiary}
-      onChange={(e) => setFilters(prev => ({ ...prev, beneficiary: e.target.value }))}
-      displayEmpty
+value={filters.beneficiaryId}
+onChange={(e) => setFilters(prev => ({ ...prev, beneficiaryId: e.target.value }))}      displayEmpty
       sx={{
         '& .MuiOutlinedInput-root': {
           border: '2px solid #1976d2',
@@ -443,11 +441,11 @@ useEffect(() => {
         सभी लाभार्थी
       </MenuItem>
 
-      {beneficiaryOptions.map((name) => (
-        <MenuItem key={name} value={name}>
-          {name}
-        </MenuItem>
-      ))}
+      {beneficiaryOptions.map((item) => (
+  <MenuItem key={item.id} value={item.id}>
+    {item.name}
+  </MenuItem>
+))}
     </Select>
   </FormControl>
 </Grid>

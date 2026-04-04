@@ -41,8 +41,7 @@ const [filters, setFilters] = useState({
   sambhag: '',
   district: '',
   block: '',
-  beneficiary: ''
-});
+beneficiaryId: ''});
   const fetchBeneficiaries = useCallback(async () => {
   try {
     const response = await api.get('/admin/monthly-sahyog/non-donors/beneficiaries-all');
@@ -101,8 +100,7 @@ useEffect(() => {
     ...(filters.sambhag && { sambhag: filters.sambhag }),
     ...(filters.district && { district: filters.district }),
     ...(filters.block && { block: filters.block }),
-    ...(filters.beneficiary && { beneficiary: filters.beneficiary })
-  },
+...(filters.beneficiaryId && { beneficiaryId: filters.beneficiaryId })  },
   signal: abortControllerRef.current.signal
 });
       
@@ -148,7 +146,7 @@ useEffect(() => {
   filters.sambhag,
   filters.district,
   filters.block,
-   filters.beneficiary
+   filters.beneficiaryId
 ]);
 
   // Fetch non-donors with debounced filtering when filters change
@@ -173,7 +171,7 @@ useEffect(() => {
   filters.sambhag,
   filters.district,
   filters.block
-, filters.beneficiary
+, filters.beneficiaryId
 ]);
 
   // Initial load on component mount
@@ -405,16 +403,16 @@ useEffect(() => {
   </Typography>
   <FormControl fullWidth size="small">
     <Select
-      value={filters.beneficiary}
+      value={filters.beneficiaryId}
       onChange={(e) => setFilters(prev => ({ ...prev, beneficiary: e.target.value }))}
       displayEmpty
     >
       <MenuItem value="">All Beneficiaries</MenuItem>
-      {beneficiaryOptions.map((name) => (
-        <MenuItem key={name} value={name}>
-          {name}
-        </MenuItem>
-      ))}
+      {beneficiaryOptions.map((item) => (
+  <MenuItem key={item.id} value={item.id}>
+    {item.name}
+  </MenuItem>
+))}
     </Select>
   </FormControl>
 </Grid>
