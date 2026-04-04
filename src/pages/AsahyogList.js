@@ -29,22 +29,32 @@ const AsahyogList = () => {
   const [nonDonors, setNonDonors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [beneficiaryOptions, setBeneficiaryOptions] = useState([]);
   
   // Month and Year filters
-  const currentDate = new Date();
-  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   
   // User filters
- const [filters, setFilters] = useState({
+const [filters, setFilters] = useState({
   userId: '',
   fullName: '',
   mobileNumber: '',
   sambhag: '',
   district: '',
-  block: ''
+  block: '',
+  beneficiary: ''
 });
-  
+  const fetchBeneficiaries = useCallback(async () => {
+  try {
+    const response = await api.get('/admin/monthly-sahyog/non-donors/beneficiaries-all');
+    setBeneficiaryOptions(response.data || []);
+  } catch (err) {
+    console.error('Error fetching beneficiaries:', err);
+    setBeneficiaryOptions([]);
+  }
+}, []);
+useEffect(() => {
+  fetchBeneficiaries();
+}, [fetchBeneficiaries]);
   // Server-side Pagination
   const [page, setPage] = useState(0); // 0-indexed for API
   const [totalPages, setTotalPages] = useState(0);
@@ -61,23 +71,8 @@ const AsahyogList = () => {
     return value && value.trim() !== '' ? value : fallback;
   };
 
-  const months = [
-    { value: 1, label: 'जनवरी (January)' },
-    { value: 2, label: 'फरवरी (February)' },
-    { value: 3, label: 'मार्च (March)' },
-    { value: 4, label: 'अप्रैल (April)' },
-    { value: 5, label: 'मई (May)' },
-    { value: 6, label: 'जून (June)' },
-    { value: 7, label: 'जुलाई (July)' },
-    { value: 8, label: 'अगस्त (August)' },
-    { value: 9, label: 'सितंबर (September)' },
-    { value: 10, label: 'अक्टूबर (October)' },
-    { value: 11, label: 'नवंबर (November)' },
-    { value: 12, label: 'दिसंबर (December)' },
-  ];
 
   // Generate years (last 5 years)
-  const years = Array.from({ length: 5 }, (_, i) => currentDate.getFullYear() - i);
 
   const fetchNonDonors = useCallback(async (pageNum = 0) => {
     // Increment request ID to track this request
@@ -96,21 +91,20 @@ const AsahyogList = () => {
       setLoading(true);
       setError('');
       
-      const response = await api.get('/admin/monthly-sahyog/non-donors/search', {
-        params: {
-  month: selectedMonth,
-  year: selectedYear,
-  page: pageNum,
-  size: pageSize,
-  ...(filters.userId && { userId: filters.userId }),
-  ...(filters.fullName && { name: filters.fullName }),
-  ...(filters.mobileNumber && { mobile: filters.mobileNumber }),
-  ...(filters.sambhag && { sambhag: filters.sambhag }),
-  ...(filters.district && { district: filters.district }),
-  ...(filters.block && { block: filters.block })
-},
-        signal: abortControllerRef.current.signal
-      });
+      const response = await api.get('/admin/monthly-sahyog/non-donors/search-by-beneficiary', {
+  params: {
+    page: pageNum,
+    size: pageSize,
+    ...(filters.userId && { userId: filters.userId }),
+    ...(filters.fullName && { name: filters.fullName }),
+    ...(filters.mobileNumber && { mobile: filters.mobileNumber }),
+    ...(filters.sambhag && { sambhag: filters.sambhag }),
+    ...(filters.district && { district: filters.district }),
+    ...(filters.block && { block: filters.block }),
+    ...(filters.beneficiary && { beneficiary: filters.beneficiary })
+  },
+  signal: abortControllerRef.current.signal
+});
       
       // Only update state if this is the latest request
       if (thisRequestId !== requestIdRef.current) {
@@ -146,15 +140,15 @@ const AsahyogList = () => {
       }
     }
   }, [
-  selectedMonth,
-  selectedYear,
+  
   pageSize,
   filters.userId,
   filters.fullName,
   filters.mobileNumber,
   filters.sambhag,
   filters.district,
-  filters.block
+  filters.block,
+   filters.beneficiary
 ]);
 
   // Fetch non-donors with debounced filtering when filters change
@@ -173,14 +167,13 @@ const AsahyogList = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-  selectedMonth,
-  selectedYear,
   filters.userId,
   filters.fullName,
   filters.mobileNumber,
   filters.sambhag,
   filters.district,
   filters.block
+, filters.beneficiary
 ]);
 
   // Initial load on component mount
@@ -197,15 +190,7 @@ const AsahyogList = () => {
     };
   }, []); // Empty dependency array - runs only once on mount
 
-  const handleMonthChange = (event) => {
-    setSelectedMonth(event.target.value);
-    setPage(0);
-  };
-
-  const handleYearChange = (event) => {
-    setSelectedYear(event.target.value);
-    setPage(0);
-  };
+ 
 
   const handlePageChange = (event, newPage) => {
     const pageNum = parseInt(newPage, 10);
@@ -267,66 +252,7 @@ const AsahyogList = () => {
               फ़िल्टर (Filters)
             </Typography>
             <Grid container spacing={2} alignItems="end">
-              <Grid item xs={12} sm={6} md={2.4}>
-                <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
-                  महीना चुनें (Month)
-                </Typography>
-                <FormControl fullWidth size="small">
-                  <Select
-                    value={selectedMonth}
-                    onChange={handleMonthChange}
-                    displayEmpty
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        border: '2px solid #d32f2f',
-                        borderRadius: '8px',
-                        '&:hover': {
-                          borderColor: '#c62828',
-                        },
-                        '&.Mui-focused': {
-                          borderColor: '#d32f2f',
-                        }
-                      }
-                    }}
-                  >
-                    {months.map((month) => (
-                      <MenuItem key={month.value} value={month.value}>
-                        {month.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={6} md={2.4}>
-                <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
-                  वर्ष चुनें (Year)
-                </Typography>
-                <FormControl fullWidth size="small">
-                  <Select
-                    value={selectedYear}
-                    onChange={handleYearChange}
-                    displayEmpty
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        border: '2px solid #d32f2f',
-                        borderRadius: '8px',
-                        '&:hover': {
-                          borderColor: '#c62828',
-                        },
-                        '&.Mui-focused': {
-                          borderColor: '#d32f2f',
-                        }
-                      }
-                    }}
-                  >
-                    {years.map((year) => (
-                      <MenuItem key={year} value={year}>
-                        {year}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
+              
               <Grid item xs={12} sm={4} md={2.4}>
                 <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
                   यूजर आईडी (User ID)
@@ -472,6 +398,25 @@ const AsahyogList = () => {
       }
     }}
   />
+</Grid>
+<Grid item xs={12} sm={4} md={2.4}>
+  <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
+    Beneficiary
+  </Typography>
+  <FormControl fullWidth size="small">
+    <Select
+      value={filters.beneficiary}
+      onChange={(e) => setFilters(prev => ({ ...prev, beneficiary: e.target.value }))}
+      displayEmpty
+    >
+      <MenuItem value="">All Beneficiaries</MenuItem>
+      {beneficiaryOptions.map((name) => (
+        <MenuItem key={name} value={name}>
+          {name}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
 </Grid>
             </Grid>
           </Paper>
