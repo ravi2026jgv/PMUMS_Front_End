@@ -36,9 +36,6 @@ const SahyogList = () => {
   const [error, setError] = useState('');
   const [beneficiaryOptions, setBeneficiaryOptions] = useState([]);
   // Month and Year filters
-  const currentDate = new Date();
-  const [selectedMonth, setSelectedMonth] = useState(currentDate.getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
   
   // Server-side Pagination
   const [page, setPage] = useState(0); // 0-indexed for API
@@ -61,47 +58,16 @@ const [filters, setFilters] = useState({
   const requestIdRef = useRef(0); // Track request ID to handle race conditions
   const isInitialMount = useRef(true); // Track initial mount
 
-  const months = [
-    { value: 1, label: 'जनवरी (January)' },
-    { value: 2, label: 'फरवरी (February)' },
-    { value: 3, label: 'मार्च (March)' },
-    { value: 4, label: 'अप्रैल (April)' },
-    { value: 5, label: 'मई (May)' },
-    { value: 6, label: 'जून (June)' },
-    { value: 7, label: 'जुलाई (July)' },
-    { value: 8, label: 'अगस्त (August)' },
-    { value: 9, label: 'सितंबर (September)' },
-    { value: 10, label: 'अक्टूबर (October)' },
-    { value: 11, label: 'नवंबर (November)' },
-    { value: 12, label: 'दिसंबर (December)' },
-  ];
 
-  const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);
-
-  const handleMonthChange = (event) => {
-    setSelectedMonth(event.target.value);
-    setPage(0); // Reset to first page
-  };
-
-  const handleYearChange = (event) => {
-    setSelectedYear(event.target.value);
-    setPage(0); // Reset to first page
-  };
 const fetchBeneficiaries = useCallback(async () => {
   try {
-    const response = await api.get('/admin/monthly-sahyog/donors/beneficiaries', {
-      params: {
-        month: selectedMonth,
-        year: selectedYear
-      }
-    });
-
+    const response = await api.get('/admin/monthly-sahyog/donors/beneficiaries-all');
     setBeneficiaryOptions(response.data || []);
   } catch (err) {
     console.error('Error fetching beneficiaries:', err);
     setBeneficiaryOptions([]);
   }
-}, [selectedMonth, selectedYear]);
+}, []);
 
 useEffect(() => {
   fetchBeneficiaries();
@@ -124,23 +90,20 @@ useEffect(() => {
       setLoading(true);
       setError('');
       
-      const response = await api.get('/admin/monthly-sahyog/donors/search', {
-       params: {
-  month: selectedMonth,
-  year: selectedYear,
-  page: pageNum,
-  size: pageSize,
-  ...(filters.userId && { userId: filters.userId }),
-  ...(filters.fullName && { name: filters.fullName }),
-  ...(filters.mobileNumber && { mobile: filters.mobileNumber }),
-  ...(filters.sambhag && { sambhag: filters.sambhag }),
-  ...(filters.district && { district: filters.district }),
-  ...(filters.block && { block: filters.block }),
-  ...(filters.beneficiary && { beneficiary: filters.beneficiary })
-},
-        signal: abortControllerRef.current.signal
-      });
-      
+      const response = await api.get('/admin/monthly-sahyog/donors/search-by-beneficiary', {
+  params: {
+    page: pageNum,
+    size: pageSize,
+    ...(filters.userId && { userId: filters.userId }),
+    ...(filters.fullName && { name: filters.fullName }),
+    ...(filters.mobileNumber && { mobile: filters.mobileNumber }),
+    ...(filters.sambhag && { sambhag: filters.sambhag }),
+    ...(filters.district && { district: filters.district }),
+    ...(filters.block && { block: filters.block }),
+    ...(filters.beneficiary && { beneficiary: filters.beneficiary })
+  },
+  signal: abortControllerRef.current.signal
+});
       // Only update state if this is the latest request
       if (thisRequestId !== requestIdRef.current) {
         return;
@@ -169,8 +132,7 @@ useEffect(() => {
     }
   }, [
   pageSize,
-  selectedMonth,
-  selectedYear,
+  
   filters.userId,
   filters.fullName,
   filters.mobileNumber,
@@ -196,8 +158,7 @@ useEffect(() => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-  selectedMonth,
-  selectedYear,
+  
   filters.userId,
   filters.fullName,
   filters.mobileNumber,
@@ -290,10 +251,10 @@ useEffect(() => {
             }}
           >
             <Typography variant="h4" sx={{ fontWeight: 'bold', textAlign: 'center', fontFamily: 'Poppins' }}>
-              मासिक सहयोग सूची (Monthly Sahyog List)
+               सहयोग सूची ( Sahyog List)
             </Typography>
             <Typography variant="body1" sx={{ textAlign: 'center', mt: 1, opacity: 0.9 }}>
-              सदस्यों के मासिक सहयोग की स्थिति देखें
+              सदस्यों के  सहयोग की स्थिति देखें
             </Typography>
           </Paper>
 
@@ -309,66 +270,6 @@ useEffect(() => {
               फ़िल्टर (Filters)
             </Typography>
             <Grid container spacing={2} alignItems="end">
-              <Grid item xs={12} sm={6} md={2.4}>
-                <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
-                  महीना चुनें (Month)
-                </Typography>
-                <FormControl fullWidth size="small">
-                  <Select
-                    value={selectedMonth}
-                    onChange={handleMonthChange}
-                    displayEmpty
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        border: '2px solid #1976d2',
-                        borderRadius: '8px',
-                        '&:hover': {
-                          borderColor: '#1565c0',
-                        },
-                        '&.Mui-focused': {
-                          borderColor: '#1976d2',
-                        }
-                      }
-                    }}
-                  >
-                    {months.map((month) => (
-                      <MenuItem key={month.value} value={month.value}>
-                        {month.label}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={6} md={2.4}>
-                <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
-                  वर्ष चुनें (Year)
-                </Typography>
-                <FormControl fullWidth size="small">
-                  <Select
-                    value={selectedYear}
-                    onChange={handleYearChange}
-                    displayEmpty
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        border: '2px solid #1976d2',
-                        borderRadius: '8px',
-                        '&:hover': {
-                          borderColor: '#1565c0',
-                        },
-                        '&.Mui-focused': {
-                          borderColor: '#1976d2',
-                        }
-                      }
-                    }}
-                  >
-                    {years.map((year) => (
-                      <MenuItem key={year} value={year}>
-                        {year}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
               <Grid item xs={12} sm={4} md={2.4}>
                 <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
                   यूजर आईडी (User ID)
