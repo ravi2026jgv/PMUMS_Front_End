@@ -74,7 +74,7 @@ const navigationItems = [
    { label: 'PENDING PROFILES', path: '/pending-profiles' },
   { label: 'LATE TEACHERS LIST', path: 'https://pmums.in/death-case/', external: true },
   { label: 'SAHYOG LIST', path: '/sahyog-list' },
-  // { label: 'ASAHYOG LIST', path: '/asahyog-list' },
+  { label: 'ASAHYOG LIST', path: '/asahyog-list' },
  
   { label: 'NIYAMAWALI', path: '/niyamawali' },
   { label: 'CONTACT US', path: '/contact-us' },
