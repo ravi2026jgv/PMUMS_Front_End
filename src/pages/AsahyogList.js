@@ -90,7 +90,14 @@ useEffect(() => {
     try {
       setLoading(true);
       setError('');
-      
+      if (!filters.beneficiary) {
+  setNonDonors([]);
+  setPage(0);
+  setTotalPages(0);
+  setTotalElements(0);
+  setLoading(false);
+  return;
+}
       const response = await api.get('/admin/monthly-sahyog/non-donors/search-by-beneficiary', {
   params: {
     page: pageNum,
