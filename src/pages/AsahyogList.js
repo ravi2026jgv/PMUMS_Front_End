@@ -404,8 +404,7 @@ useEffect(() => {
   <FormControl fullWidth size="small">
     <Select
       value={filters.beneficiaryId}
-      onChange={(e) => setFilters(prev => ({ ...prev, beneficiary: e.target.value }))}
-      displayEmpty
+onChange={(e) => setFilters(prev => ({ ...prev, beneficiaryId: e.target.value }))}      displayEmpty
     >
       <MenuItem value="">All Beneficiaries</MenuItem>
       {beneficiaryOptions.map((item) => (

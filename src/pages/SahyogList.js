@@ -138,7 +138,7 @@ useEffect(() => {
   filters.sambhag,
   filters.district,
   filters.block,
-  filters.beneficiary
+  filters.beneficiaryId
 ]);
 
   // Fetch donors with debounced filtering when filters change
@@ -164,7 +164,7 @@ useEffect(() => {
   filters.sambhag,
   filters.district,
   filters.block,
-  filters.beneficiary
+  filters.beneficiaryId
 ]);
 
   // Initial load on component mount
