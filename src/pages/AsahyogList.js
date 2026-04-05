@@ -434,7 +434,7 @@ onChange={(e) => setFilters(prev => ({ ...prev, beneficiaryId: e.target.value })
             ) : nonDonors.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 8 }}>
                 <Typography variant="h6" sx={{ color: '#2e7d32' }}>
-                  🎉 इस महीने सभी सदस्यों ने सहयोग किया है!
+                🎉 आपका सहयोग हो गया है
                 </Typography>
               </Box>
             ) : (

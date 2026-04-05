@@ -463,7 +463,7 @@ onChange={(e) => setFilters(prev => ({ ...prev, beneficiaryId: e.target.value })
             ) : donors.length === 0 ? (
               <Box sx={{ textAlign: 'center', py: 8 }}>
                 <Typography variant="h6" sx={{ color: '#666' }}>
-                  इस महीने के लिए कोई डेटा नहीं मिला
+                  आपका सहयोग नहीं हुआ
                 </Typography>
               </Box>
             ) : (
