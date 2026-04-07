@@ -240,7 +240,11 @@ nominee2UpiLink: '',
   const [exportDialog, setExportDialog] = useState(false);
   const [exportMonth, setExportMonth] = useState(new Date().getMonth() + 1);
   const [exportYear, setExportYear] = useState(new Date().getFullYear());
-
+const [dashboardExportDialog, setDashboardExportDialog] = useState(false);
+const [dashboardExportType, setDashboardExportType] = useState('');
+const [dashboardExportMonth, setDashboardExportMonth] = useState(new Date().getMonth() + 1);
+const [dashboardExportYear, setDashboardExportYear] = useState(new Date().getFullYear());
+const [dashboardExportBeneficiary, setDashboardExportBeneficiary] = useState('');
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
   const [filters, setFilters] = useState({
@@ -1131,7 +1135,111 @@ const handleExportAllUsers = async () => {
     setExportLoading(false);
   }
 };
+const downloadBlobFile = (data, filename, type = 'text/csv;charset=utf-8') => {
+  const blob = new Blob([data], { type });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
 
+const handleExportSahyog = async () => {
+  try {
+    setExportLoading(true);
+
+    const params = {
+      month: dashboardExportMonth,
+      year: dashboardExportYear,
+    };
+
+    if (dashboardExportBeneficiary) {
+      params.beneficiary = dashboardExportBeneficiary;
+    }
+
+    const response = await adminAPI.exportSahyog(params);
+
+    downloadBlobFile(
+      response.data,
+      `sahyog_${dashboardExportMonth}_${dashboardExportYear}.csv`
+    );
+
+    setDashboardExportDialog(false);
+    showSnackbar('Sahyog exported successfully!', 'success');
+  } catch (error) {
+    console.error('Error exporting sahyog:', error);
+    showSnackbar('Error exporting sahyog!', 'error');
+  } finally {
+    setExportLoading(false);
+  }
+};
+
+const handleExportAsahyog = async () => {
+  try {
+    setExportLoading(true);
+
+    const params = {
+      month: dashboardExportMonth,
+      year: dashboardExportYear,
+    };
+
+    if (dashboardExportBeneficiary) {
+      params.beneficiary = dashboardExportBeneficiary;
+    }
+
+    const response = await adminAPI.exportAsahyog(params);
+
+    downloadBlobFile(
+      response.data,
+      `asahyog_${dashboardExportMonth}_${dashboardExportYear}.csv`
+    );
+
+    setDashboardExportDialog(false);
+    showSnackbar('Asahyog exported successfully!', 'success');
+  } catch (error) {
+    console.error('Error exporting asahyog:', error);
+    showSnackbar('Error exporting asahyog!', 'error');
+  } finally {
+    setExportLoading(false);
+  }
+};
+
+const handleExportPendingProfiles = async () => {
+  try {
+    setExportLoading(true);
+
+    const response = await adminAPI.exportPendingProfiles();
+
+    downloadBlobFile(
+      response.data,
+      'pending_profiles.csv'
+    );
+
+    setDashboardExportDialog(false);
+    showSnackbar('Pending profiles exported successfully!', 'success');
+  } catch (error) {
+    console.error('Error exporting pending profiles:', error);
+    showSnackbar('Error exporting pending profiles!', 'error');
+  } finally {
+    setExportLoading(false);
+  }
+};
+
+const openDashboardExportDialog = async (type) => {
+  setDashboardExportType(type);
+  setDashboardExportBeneficiary('');
+  setDashboardExportMonth(new Date().getMonth() + 1);
+  setDashboardExportYear(new Date().getFullYear());
+
+  if ((type === 'sahyog' || type === 'asahyog') && deathCases.length === 0) {
+    await fetchDeathCases();
+  }
+
+  setDashboardExportDialog(true);
+};
   // Export users functionality
 const handleExportUsers = async () => {
   try {
@@ -3362,6 +3470,51 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
   <Button
     fullWidth
     variant="contained"
+    startIcon={<Download />}
+    onClick={() => openDashboardExportDialog('sahyog')}
+    sx={{
+      bgcolor: '#00695c',
+      py: 2,
+      '&:hover': { bgcolor: '#004d40' }
+    }}
+  >
+    Export Sahyog
+  </Button>
+</Grid>
+<Grid item xs={12} sm={6} md={3}>
+  <Button
+    fullWidth
+    variant="contained"
+    startIcon={<Download />}
+    onClick={() => openDashboardExportDialog('asahyog')}
+    sx={{
+      bgcolor: '#6a1b9a',
+      py: 2,
+      '&:hover': { bgcolor: '#4a148c' }
+    }}
+  >
+    Export Asahyog
+  </Button>
+</Grid>
+<Grid item xs={12} sm={6} md={3}>
+  <Button
+    fullWidth
+    variant="contained"
+    startIcon={<Download />}
+    onClick={() => openDashboardExportDialog('pending-profiles')}
+    sx={{
+      bgcolor: '#ef6c00',
+      py: 2,
+      '&:hover': { bgcolor: '#e65100' }
+    }}
+  >
+    Export Pending Profiles
+  </Button>
+</Grid>
+<Grid item xs={12} sm={6} md={3}>
+  <Button
+    fullWidth
+    variant="contained"
     startIcon={exportLoading ? <CircularProgress size={18} color="inherit" /> : <Download />}
     onClick={handleSendInsuranceInquiryEmail}
     disabled={exportLoading}
@@ -3786,6 +3939,123 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
             </Button>
           </DialogActions>
         </Dialog>
+{/* Dashboard Export Dialog */}
+<Dialog
+  open={dashboardExportDialog}
+  onClose={() => setDashboardExportDialog(false)}
+  maxWidth="sm"
+  fullWidth
+  PaperProps={{
+    sx: { borderRadius: 3 }
+  }}
+>
+  <DialogTitle sx={{ bgcolor: '#00695c', color: 'white', fontWeight: 'bold' }}>
+    {dashboardExportType === 'sahyog'
+      ? 'Export Sahyog'
+      : dashboardExportType === 'asahyog'
+      ? 'Export Asahyog'
+      : 'Export Pending Profiles'}
+  </DialogTitle>
+
+  <DialogContent sx={{ pt: 3 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
+      {(dashboardExportType === 'sahyog' || dashboardExportType === 'asahyog') && (
+        <>
+          <FormControl fullWidth required>
+            <InputLabel>Month</InputLabel>
+            <Select
+              value={dashboardExportMonth}
+              label="Month"
+              onChange={(e) => setDashboardExportMonth(e.target.value)}
+            >
+              <MenuItem value={1}>January</MenuItem>
+              <MenuItem value={2}>February</MenuItem>
+              <MenuItem value={3}>March</MenuItem>
+              <MenuItem value={4}>April</MenuItem>
+              <MenuItem value={5}>May</MenuItem>
+              <MenuItem value={6}>June</MenuItem>
+              <MenuItem value={7}>July</MenuItem>
+              <MenuItem value={8}>August</MenuItem>
+              <MenuItem value={9}>September</MenuItem>
+              <MenuItem value={10}>October</MenuItem>
+              <MenuItem value={11}>November</MenuItem>
+              <MenuItem value={12}>December</MenuItem>
+            </Select>
+          </FormControl>
+
+          <TextField
+            fullWidth
+            label="Year"
+            type="number"
+            value={dashboardExportYear}
+            onChange={(e) => setDashboardExportYear(parseInt(e.target.value, 10))}
+            inputProps={{
+              min: 2020,
+              max: new Date().getFullYear() + 5
+            }}
+          />
+
+          <FormControl fullWidth>
+            <InputLabel>Select Death Case</InputLabel>
+            <Select
+              value={dashboardExportBeneficiary}
+              label="Select Death Case"
+              onChange={(e) => setDashboardExportBeneficiary(e.target.value)}
+            >
+              <MenuItem value="">All Death Cases</MenuItem>
+              {deathCases.map((dc) => (
+                <MenuItem key={dc.id} value={dc.deceasedName}>
+                  {dc.deceasedName}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </>
+      )}
+
+      {dashboardExportType === 'pending-profiles' && (
+        <Typography variant="body2" color="textSecondary">
+          Pending profiles export will download all pending profile users with current backend filters.
+        </Typography>
+      )}
+    </Box>
+  </DialogContent>
+
+  <DialogActions sx={{ p: 3, pt: 1 }}>
+    <Button onClick={() => setDashboardExportDialog(false)}>
+      Cancel
+    </Button>
+
+    <Button
+      variant="contained"
+      disabled={
+        exportLoading ||
+        ((dashboardExportType === 'sahyog' || dashboardExportType === 'asahyog') &&
+          (!dashboardExportMonth || !dashboardExportYear))
+      }
+      startIcon={exportLoading ? <CircularProgress size={18} color="inherit" /> : <Download />}
+      onClick={() => {
+        if (dashboardExportType === 'sahyog') {
+          handleExportSahyog();
+        } else if (dashboardExportType === 'asahyog') {
+          handleExportAsahyog();
+        } else if (dashboardExportType === 'pending-profiles') {
+          handleExportPendingProfiles();
+        }
+      }}
+      sx={{
+        bgcolor:
+          dashboardExportType === 'sahyog'
+            ? '#00695c'
+            : dashboardExportType === 'asahyog'
+            ? '#6a1b9a'
+            : '#ef6c00'
+      }}
+    >
+      {exportLoading ? 'Exporting...' : 'Export'}
+    </Button>
+  </DialogActions>
+</Dialog>
 
         {/* Export Users Dialog */}
         <Dialog 

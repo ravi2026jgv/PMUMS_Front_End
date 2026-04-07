@@ -168,6 +168,25 @@ restoreUser: (id) => {
 updateUser: (id, payload) => {
   return api.put(`/admin/users/${id}`, payload);
 },
+
+exportSahyog: (params = {}) => {
+  return api.get('/admin/export/sahyog', {
+    params,
+    responseType: 'blob'
+  });
+},
+exportAsahyog: (params = {}) => {
+  return api.get('/admin/export/asahyog', {
+    params,
+    responseType: 'blob'
+  });
+},
+exportPendingProfiles: (params = {}) => {
+  return api.get('/admin/export/pending-profiles', {
+    params,
+    responseType: 'blob'
+  });
+},
 getExportMobileNumberSetting: () => {
   return api.get('/admin/settings/export-mobile-number');
 },
