@@ -181,6 +181,31 @@ exportAsahyog: (params = {}) => {
     responseType: 'blob'
   });
 },
+exportSahyogByBeneficiary: (params = {}) => {
+  return api.get('/admin/export/sahyog/by-beneficiary', {
+    params,
+    responseType: 'blob'
+  });
+},
+
+exportAsahyogByBeneficiary: (params = {}) => {
+  return api.get('/admin/export/asahyog/by-beneficiary', {
+    params,
+    responseType: 'blob'
+  });
+},
+
+exportAllSahyog: () => {
+  return api.get('/admin/export/sahyog/all', {
+    responseType: 'blob'
+  });
+},
+
+exportAllAsahyog: () => {
+  return api.get('/admin/export/asahyog/all', {
+    responseType: 'blob'
+  });
+},
 exportPendingProfiles: (params = {}) => {
   return api.get('/admin/export/pending-profiles', {
     params,
