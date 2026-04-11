@@ -65,8 +65,12 @@ const Profile = () => {
   const [availableSambhags, setAvailableSambhags] = useState([]);
   const [availableDistricts, setAvailableDistricts] = useState([]);
   const [availableBlocks, setAvailableBlocks] = useState([]);
-const isDepartmentUniqueIdLocked = false;
-  const {
+// const isDepartmentUniqueIdLocked = false;
+const isDepartmentUniqueIdLocked = Boolean(
+  (profileData?.departmentUniqueId || '').toString().trim()
+);
+
+const {
     register,
     handleSubmit,
     reset,
@@ -445,8 +449,11 @@ const onInvalid = (formErrors) => {
           schoolOfficeName: data.schoolOfficeName,
           sankulName: data.sankulName,
           department: data.department,
-        departmentUniqueId: data.departmentUniqueId,
-          departmentState: data.departmentState,
+        // departmentUniqueId: data.departmentUniqueId,
+departmentUniqueId: isDepartmentUniqueIdLocked
+  ? profileData?.departmentUniqueId
+  : data.departmentUniqueId,
+        departmentState: data.departmentState,
           departmentSambhag: data.departmentSambhag,
           departmentDistrict: data.departmentDistrict,
           departmentBlock: data.departmentBlock,
@@ -947,7 +954,7 @@ const onInvalid = (formErrors) => {
                 </Grid>
                 <Grid item xs={12} md={4}>
                   <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>विभाग आईडी (Department Unique ID)</Typography>
-                 <TextField
+                <TextField
   fullWidth
   defaultValue={profileData?.departmentUniqueId || ''}
   {...register('departmentUniqueId', { required: 'विभाग आईडी आवश्यक है' })}
