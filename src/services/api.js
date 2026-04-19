@@ -266,10 +266,7 @@ updateExportMobileNumberSetting: (enabled) => {
     return api.put('/admin/settings/mobile-otp', { enabled });
   },
 // Admin password reset (no current password required)
-resetUserPassword: (id, payload) => {
-  // payload: { newPassword, confirmPassword }
-  return api.put(`/admin/users/${id}/password-reset`, payload);
-},
+resetUserPassword: (id) => api.put(`/admin/users/${id}/password-reset`),
 
 // Permanent delete user (NEW API)
 permanentDeleteUser: (id) => {

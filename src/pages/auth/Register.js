@@ -58,15 +58,31 @@ const Register = () => {
   const [availableDistricts, setAvailableDistricts] = useState([]);
   const [availableBlocks, setAvailableBlocks] = useState([]);
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm({
-    mode: 'onChange',
-  });
+ const {
+  register,
+  handleSubmit,
+  watch,
+  setValue,
+  formState: { errors },
+} = useForm({
+  mode: 'onChange',
+});
+const watchedDateOfBirth = watch('dateOfBirth');
+useEffect(() => {
+  const autoPassword = formatDobAsPassword(watchedDateOfBirth);
 
+  setValue('password', autoPassword);
+  setValue('confirmPassword', autoPassword);
+}, [watchedDateOfBirth, setValue]);
+const formatDobAsPassword = (dobValue) => {
+  if (!dobValue) return '';
+
+  // dobValue from input type="date" comes as YYYY-MM-DD
+  const [year, month, day] = dobValue.split('-');
+  if (!year || !month || !day) return '';
+
+  return `${day}${month}${year}`;
+};
   // Fetch location hierarchy on component mount
   useEffect(() => {
     const fetchLocationHierarchy = async () => {
@@ -1161,43 +1177,53 @@ const Register = () => {
               <Box sx={{ mb: 4, p: { xs: 2, md: 3 }, border: '1px solid #e0e0e0', borderRadius: 2 }}>
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पासवर्ड बनाएं *</Typography>
-                    <TextField
-                      fullWidth
-                      type="password"
-                      {...register('password', { 
-                        required: 'Password is required',
-                        minLength: { value: 8, message: 'Password must be at least 8 characters' }
-                      })}
-                      error={!!errors.password}
-                      helperText={errors.password?.message}
-                      sx={{
-                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                          border: '1px solid #ccc',
-                          borderRadius: '8px'
-                        }
-                      }}
-                    />
-                  </Grid>
+  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>
+    पासवर्ड *
+  </Typography>
+  <TextField
+    fullWidth
+    type="password"
+    {...register('password', {
+      required: 'Password is required'
+    })}
+    value={formatDobAsPassword(watchedDateOfBirth)}
+    InputProps={{
+      readOnly: true
+    }}
+    helperText="आपकी जन्मतिथि ही आपका पासवर्ड है"
+    sx={{
+      '& .MuiOutlinedInput-root': {
+        border: '1px solid #ccc',
+        borderRadius: '8px',
+        backgroundColor: '#f5f5f5'
+      }
+    }}
+  />
+</Grid>
                   <Grid item xs={12} md={6}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पासवर्ड की पुष्टि करें *</Typography>
-                    <TextField
-                      fullWidth
-                      type="password"
-                      {...register('confirmPassword', { 
-                        required: 'Confirm password is required',
-                        validate: (value) => value === watch('password') || 'Passwords do not match'
-                      })}
-                      error={!!errors.confirmPassword}
-                      helperText={errors.confirmPassword?.message}
-                      sx={{
-                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                          border: '1px solid #ccc',
-                          borderRadius: '8px'
-                        }
-                      }}
-                    />
-                  </Grid>
+  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>
+    पासवर्ड की पुष्टि करें *
+  </Typography>
+  <TextField
+    fullWidth
+    type="password"
+    {...register('confirmPassword', {
+      required: 'Confirm password is required'
+    })}
+    value={formatDobAsPassword(watchedDateOfBirth)}
+    InputProps={{
+      readOnly: true
+    }}
+    helperText="यह जन्मतिथि से स्वतः भरा जाएगा"
+    sx={{
+      '& .MuiOutlinedInput-root': {
+        border: '1px solid #ccc',
+        borderRadius: '8px',
+        backgroundColor: '#f5f5f5'
+      }
+    }}
+  />
+</Grid>
                   {/* <Grid item xs={12}>
                     <Typography variant="body2" sx={{ mb: 2, fontFamily: 'Poppins' }}>
                       प्रोफाइल फोटो अपलोड करें
@@ -1350,6 +1376,13 @@ const Register = () => {
             <Typography variant="h5" sx={{ mb: 2, fontWeight: 700, color: '#1976d2' }}>
               {registrationData?.registrationNumber}
             </Typography>
+            <Typography variant="body1" sx={{ mb: 1, fontWeight: 500 }}>
+  आपका पासवर्ड:  आपकी जन्मतिथि ही आपका पासवर्ड है।
+</Typography>
+
+{/* <Typography variant="body2" sx={{ mb: 2, color: '#d32f2f', fontWeight: 600 }}>
+  आपकी जन्मतिथि ही आपका पासवर्ड है।
+</Typography> */}
             <Typography variant="body2" sx={{ mb: 2, color: '#d32f2f', fontWeight: 600 }}>
               कृपया इस पंजीकरण संख्या को भविष्य हेतु सुरक्षित रखें।
             </Typography>

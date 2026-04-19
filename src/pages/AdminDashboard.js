@@ -137,7 +137,6 @@ const [selfDonationQrUploading, setSelfDonationQrUploading] = useState(false);
   const [passwordResetOpen, setPasswordResetOpen] = useState(false);
   const [passwordResetLoading, setPasswordResetLoading] = useState(false);
   const [passwordResetUser, setPasswordResetUser] = useState(null);
-  const [passwordResetForm, setPasswordResetForm] = useState({ newPassword: '', confirmPassword: '' });
 
   // Admin User Management - Trash (Deleted Users)
   const [trashOpen, setTrashOpen] = useState(false);
@@ -784,44 +783,34 @@ const buildUpiLink = (upiId, nomineeName) => {
     }
   };
 
-  const openPasswordReset = (user) => {
-    setPasswordResetUser(user);
-    setPasswordResetForm({ newPassword: '', confirmPassword: '' });
-    setPasswordResetOpen(true);
-  };
+ const openPasswordReset = (user) => {
+  setPasswordResetUser(user);
+  setPasswordResetOpen(true);
+};
 
-  const closePasswordReset = () => {
-    setPasswordResetOpen(false);
-    setPasswordResetUser(null);
-    setPasswordResetForm({ newPassword: '', confirmPassword: '' });
-  };
+const closePasswordReset = () => {
+  setPasswordResetOpen(false);
+  setPasswordResetUser(null);
+};
 
-  const submitPasswordReset = async () => {
-    if (!passwordResetUser?.id) return;
+const submitPasswordReset = async () => {
+  if (!passwordResetUser?.id) return;
 
-    if (!passwordResetForm.newPassword || !passwordResetForm.confirmPassword) {
-      showSnackbar('Please enter new password and confirm password', 'error');
-      return;
-    }
-
-    if (passwordResetForm.newPassword !== passwordResetForm.confirmPassword) {
-      showSnackbar('New password and confirm password do not match', 'error');
-      return;
-    }
-
-    try {
-      setPasswordResetLoading(true);
-      await adminAPI.resetUserPassword(passwordResetUser.id, passwordResetForm);
-      showSnackbar('Password reset successfully!', 'success');
-      closePasswordReset();
-    } catch (error) {
-      console.error('Error resetting password:', error);
-      showSnackbar('Failed to reset password!', 'error');
-    } finally {
-      setPasswordResetLoading(false);
-    }
-  };
-
+  try {
+    setPasswordResetLoading(true);
+    await adminAPI.resetUserPassword(passwordResetUser.id);
+    showSnackbar('Password reset successfully!', 'success');
+    closePasswordReset();
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    showSnackbar(
+      error?.response?.data?.message || 'Failed to reset password!',
+      'error'
+    );
+  } finally {
+    setPasswordResetLoading(false);
+  }
+};
 
   const handleDeleteUser = async (user) => {
     const userId = typeof user === 'string' ? user : user?.id;
@@ -5774,61 +5763,64 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
 </Dialog>
         {/* Admin - Reset Password Dialog */}
         <Dialog
-          open={passwordResetOpen}
-          onClose={closePasswordReset}
-          maxWidth="sm"
-          fullWidth
-        >
-          <DialogTitle>
-            Reset Password
-            <Typography variant="caption" display="block" color="text.secondary">
-              {passwordResetUser?.id ? `User ID: ${passwordResetUser.id}` : ''}
-            </Typography>
-          </DialogTitle>
-          <DialogContent dividers>
-            <Grid container spacing={2}>
-              <Grid item xs={12}>
-                <Alert severity="warning" sx={{ borderRadius: 2 }}>
-                  This will reset the user's password without requiring the current password.
-                </Alert>
-              </Grid>
+  open={passwordResetOpen}
+  onClose={closePasswordReset}
+  maxWidth="sm"
+  fullWidth
+>
+  <DialogTitle>
+    Reset Password
+    <Typography variant="caption" display="block" color="text.secondary">
+      {passwordResetUser?.id ? `User ID: ${passwordResetUser.id}` : ''}
+    </Typography>
+  </DialogTitle>
 
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  type="password"
-                  label="New Password"
-                  value={passwordResetForm.newPassword}
-                  onChange={(e) => setPasswordResetForm((p) => ({ ...p, newPassword: e.target.value }))}
-                />
-              </Grid>
+  <DialogContent dividers>
+    <Grid container spacing={2}>
+      <Grid item xs={12}>
+        <Alert severity="warning" sx={{ borderRadius: 2 }}>
+          This will reset the user's password to their Date of Birth.
+        </Alert>
+      </Grid>
 
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  type="password"
-                  label="Confirm Password"
-                  value={passwordResetForm.confirmPassword}
-                  onChange={(e) => setPasswordResetForm((p) => ({ ...p, confirmPassword: e.target.value }))}
-                />
-              </Grid>
-            </Grid>
-          </DialogContent>
-          <DialogActions sx={{ p: 2 }}>
-            <Button onClick={closePasswordReset} disabled={passwordResetLoading}>
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              onClick={submitPasswordReset}
-              disabled={passwordResetLoading}
-              startIcon={passwordResetLoading ? <CircularProgress size={16} /> : <LockReset />}
-            >
-              Reset Password
-            </Button>
-          </DialogActions>
-        </Dialog>
+      <Grid item xs={12}>
+        <Typography variant="body2" color="text.secondary">
+          New password format will be:
+          <strong> DDMMYYYY </strong>
+          without slash.
+        </Typography>
+      </Grid>
 
+      <Grid item xs={12}>
+        <Typography variant="body2" color="text.secondary">
+          Example: if DOB is 17 April 2002, password will be <strong>17042002</strong>.
+        </Typography>
+      </Grid>
+
+      {passwordResetUser?.dateOfBirth && (
+        <Grid item xs={12}>
+          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            User DOB: {passwordResetUser.dateOfBirth}
+          </Typography>
+        </Grid>
+      )}
+    </Grid>
+  </DialogContent>
+
+  <DialogActions sx={{ p: 2 }}>
+    <Button onClick={closePasswordReset} disabled={passwordResetLoading}>
+      Cancel
+    </Button>
+    <Button
+      variant="contained"
+      onClick={submitPasswordReset}
+      disabled={passwordResetLoading}
+      startIcon={passwordResetLoading ? <CircularProgress size={16} /> : <LockReset />}
+    >
+      Confirm Reset
+    </Button>
+  </DialogActions>
+</Dialog>
 
         {/* Admin - Trash (Deleted Users) Dialog */}
         <Dialog

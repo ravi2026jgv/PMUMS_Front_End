@@ -1,5 +1,14 @@
 import api, { publicApi } from './api';
 
+const formatDobAsPassword = (dobValue) => {
+  if (!dobValue) return '';
+
+  const [year, month, day] = String(dobValue).split('-');
+  if (!year || !month || !day) return '';
+
+  return `${day}${month}${year}`;
+};
+
 export const authService = {
   // Clear all cached authentication data
   clearAllAuthData: () => {
@@ -26,6 +35,7 @@ export const authService = {
     return response.data;
   },
 
+  
   // Register new user (public endpoint)
   register: async (userData) => {
     // Let backend auto-generate the ID using IdGeneratorService
@@ -42,7 +52,7 @@ export const authService = {
       pincode: userData.pincode ? parseInt(userData.pincode, 10) : null,
       gender: userData.gender || '',
       maritalStatus: userData.maritalStatus || '',
-      password: userData.password,
+      password: formatDobAsPassword(userData.dateOfBirth) || userData.password,
       homeAddress: userData.homeAddress || '',
       dateOfBirth: userData.dateOfBirth || null,
       joiningDate: userData.joiningDate || null, // Professional detail
@@ -70,7 +80,7 @@ export const authService = {
       surname: userData.surname || '',
       fatherName: userData.fatherName || '',
       email: userData.email,
-      password: userData.password,
+      password: formatDobAsPassword(userData.dateOfBirth) || userData.password,
       mobileNumber: userData.mobileNumber || '',
       pincode: userData.pincode ? parseInt(userData.pincode, 10) : null,
       countryCode: userData.countryCode || '+91',

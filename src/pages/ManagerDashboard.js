@@ -37,7 +37,8 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  ListItemSecondary
+  ListItemSecondary,
+  CircularProgress,
 } from '@mui/material';
 import {
   Dashboard,
@@ -62,7 +63,8 @@ import {
   QueryStats,
   TrendingUp,
   Schedule,
-  PriorityHigh
+  PriorityHigh,
+  LockReset,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { managerAPI } from '../services/api';
@@ -86,6 +88,9 @@ const ManagerDashboard = () => {
   const [resolveQueryOpen, setResolveQueryOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   
+  const [passwordResetOpen, setPasswordResetOpen] = useState(false);
+const [passwordResetLoading, setPasswordResetLoading] = useState(false);
+const [passwordResetUser, setPasswordResetUser] = useState(null);
   // Pagination states
   const [usersPage, setUsersPage] = useState(0);
   const [queriesPage, setQueriesPage] = useState(0);
@@ -172,6 +177,34 @@ const canChangeRoles = isSuperAdmin || isAdmin;
       showSnackbar('Error loading assignments!', 'error');
     }
   };
+const openPasswordReset = (targetUser) => {
+  setPasswordResetUser(targetUser);
+  setPasswordResetOpen(true);
+};
+
+const closePasswordReset = () => {
+  setPasswordResetOpen(false);
+  setPasswordResetUser(null);
+};
+
+const submitPasswordReset = async () => {
+  if (!passwordResetUser?.id) return;
+
+  try {
+    setPasswordResetLoading(true);
+    await managerAPI.resetUserPassword(passwordResetUser.id);
+    showSnackbar('Password reset successfully!', 'success');
+    closePasswordReset();
+  } catch (error) {
+    console.error('Error resetting password:', error);
+    showSnackbar(
+      error?.response?.data?.message || 'Failed to reset password!',
+      'error'
+    );
+  } finally {
+    setPasswordResetLoading(false);
+  }
+};
 
   // Action Handlers
   const handleBlockUser = async (userId, reason = 'Administrative action') => {
@@ -493,31 +526,48 @@ const canChangeRoles = isSuperAdmin || isAdmin;
     </Box>
   ) : (
                   <Box sx={{ display: 'flex', gap: 0.5 }}>
-                    {canManageUsers && (
-                      <IconButton
-                        size="small"
-                        onClick={() => handleUpdateUserRole(
-                          user.id, 
-                          user.role === 'ROLE_USER' ? 'ROLE_BLOCK_MANAGER' : 'ROLE_USER'
-                        )}
-                        title={user.role === 'ROLE_USER' ? 'Make Manager' : 'Make User'}
-                        color="primary"
-                      >
-                        <ManageAccounts fontSize="small" />
-                      </IconButton>
-                    )}
-                    <IconButton
-                      size="small"
-                      onClick={() => user.status === 'BLOCKED' ? 
-                        handleUnblockUser(user.id) : 
-                        handleBlockUser(user.id)
-                      }
-                      title={user.status === 'BLOCKED' ? 'Unblock' : 'Block'}
-                      color={user.status === 'BLOCKED' ? 'success' : 'error'}
-                    >
-                      {user.status === 'BLOCKED' ? <LockOpen fontSize="small" /> : <Block fontSize="small" />}
-                    </IconButton>
-                  </Box>
+  {/* {canManageUsers && (
+    <IconButton
+      size="small"
+      onClick={() => handleUpdateUserRole(
+        user.id, 
+        user.role === 'ROLE_USER' ? 'ROLE_BLOCK_MANAGER' : 'ROLE_USER'
+      )}
+      title={user.role === 'ROLE_USER' ? 'Make Manager' : 'Make User'}
+      color="primary"
+    >
+      <ManageAccounts fontSize="small" />
+    </IconButton>
+  )} */}
+
+  <IconButton
+    size="small"
+    onClick={() => user.status === 'BLOCKED'
+      ? handleUnblockUser(user.id)
+      : handleBlockUser(user.id)
+    }
+    title={user.status === 'BLOCKED' ? 'Unblock' : 'Block'}
+    color={user.status === 'BLOCKED' ? 'success' : 'error'}
+  >
+    {user.status === 'BLOCKED'
+      ? <LockOpen fontSize="small" />
+      : <Block fontSize="small" />}
+  </IconButton>
+
+  <IconButton
+    size="small"
+    onClick={() => openPasswordReset(user)}
+    title="Reset Password"
+    sx={{
+      bgcolor: '#9c27b020',
+      '&:hover': {
+        bgcolor: '#9c27b040'
+      }
+    }}
+  >
+    <LockReset fontSize="small" sx={{ color: '#9c27b0' }} />
+  </IconButton>
+</Box>
   )}
                 </TableCell>
               </TableRow>
@@ -841,7 +891,56 @@ const canChangeRoles = isSuperAdmin || isAdmin;
           setSelectedItem(null);
         }}
       />
+<Dialog
+  open={passwordResetOpen}
+  onClose={closePasswordReset}
+  maxWidth="sm"
+  fullWidth
+>
+  <DialogTitle>
+    Reset Password
+    <Typography variant="caption" display="block" color="text.secondary">
+      {passwordResetUser?.id ? `User ID: ${passwordResetUser.id}` : ''}
+    </Typography>
+  </DialogTitle>
 
+  <DialogContent dividers>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Alert severity="warning" sx={{ borderRadius: 2 }}>
+        This will reset the user's password to their Date of Birth.
+      </Alert>
+
+      <Typography variant="body2" color="text.secondary">
+        New password format will be <strong>DDMMYYYY</strong> without separators.
+      </Typography>
+
+      <Typography variant="body2" color="text.secondary">
+        Example: if DOB is 17 April 2002, password will be <strong>17042002</strong>.
+      </Typography>
+
+      {passwordResetUser?.dateOfBirth && (
+        <Typography variant="body2" sx={{ fontWeight: 500 }}>
+          User DOB: {passwordResetUser.dateOfBirth}
+        </Typography>
+      )}
+    </Box>
+  </DialogContent>
+
+  <DialogActions sx={{ p: 2 }}>
+    <Button onClick={closePasswordReset} disabled={passwordResetLoading}>
+      Cancel
+    </Button>
+    <Button
+      variant="contained"
+      onClick={submitPasswordReset}
+      disabled={passwordResetLoading}
+      startIcon={passwordResetLoading ? <CircularProgress size={16} /> : <LockReset />}
+      sx={{ bgcolor: '#9c27b0' }}
+    >
+      {passwordResetLoading ? 'Resetting...' : 'Confirm Reset'}
+    </Button>
+  </DialogActions>
+</Dialog>
       {/* Snackbar */}
       <Snackbar
         open={snackbar.open}
