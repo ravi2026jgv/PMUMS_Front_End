@@ -22,7 +22,11 @@ import {
   CircularProgress,
   Alert,
   Chip,
-  Grid
+  Grid,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
 import {
   Search,
@@ -30,8 +34,7 @@ import {
   Info
 } from '@mui/icons-material';
 import Layout from '../components/Layout/Layout';
-import { publicApi } from '../services/api';
-
+import { publicApi, receiptAPI, FILE_BASE_URL } from '../services/api';
 const TeachersList = () => {
   // Server-side pagination state
   const [teachers, setTeachers] = useState([]);
@@ -48,6 +51,16 @@ const TeachersList = () => {
   const [districtOptions, setDistrictOptions] = useState([]);
   const [blockOptions, setBlockOptions] = useState([]);
   
+  const [utrDialogOpen, setUtrDialogOpen] = useState(false);
+const [selectedTeacher, setSelectedTeacher] = useState(null);
+const [utrForm, setUtrForm] = useState({
+  amount: '',
+  referenceName: '',
+  utrNumber: ''
+});
+const [utrSubmitting, setUtrSubmitting] = useState(false);
+const [utrSuccess, setUtrSuccess] = useState('');
+
   // Filter state - store both ID and name for display
   const [filters, setFilters] = useState({
     sambhagId: '',
@@ -351,7 +364,68 @@ const TeachersList = () => {
       return 'N/A';
     }
   };
+const openUtrDialog = (teacher) => {
+  setSelectedTeacher(teacher);
+  setUtrForm({
+    amount: '',
+    referenceName: '',
+    utrNumber: ''
+  });
+  setUtrSuccess('');
+  setError('');
+  setUtrDialogOpen(true);
+};
 
+const closeUtrDialog = () => {
+  if (utrSubmitting) return;
+  setUtrDialogOpen(false);
+  setSelectedTeacher(null);
+  setUtrForm({
+    amount: '',
+    referenceName: '',
+    utrNumber: ''
+  });
+};
+
+const handleUtrSubmit = async () => {
+  if (!utrForm.amount || !utrForm.referenceName || !utrForm.utrNumber) {
+    setError('कृपया सभी UTR विवरण भरें।');
+    return;
+  }
+
+  try {
+    setUtrSubmitting(true);
+    setError('');
+    setUtrSuccess('');
+
+    await receiptAPI.uploadReceipt({
+      amount: Number(utrForm.amount),
+      referenceName: utrForm.referenceName,
+      utrNumber: utrForm.utrNumber
+    });
+
+    setUtrSuccess('UTR सफलतापूर्वक सबमिट हो गया।');
+    await fetchTeachers(currentPage, filters);
+
+    setTimeout(() => {
+      closeUtrDialog();
+    }, 800);
+  } catch (err) {
+    console.error('UTR upload failed:', err);
+    setError(err?.response?.data?.message || 'UTR सबमिट करने में त्रुटि हुई।');
+  } finally {
+    setUtrSubmitting(false);
+  }
+};
+
+const getQrImageUrl = (qrPath) => {
+  if (!qrPath) return '';
+  if (qrPath.startsWith('http://') || qrPath.startsWith('https://')) {
+    return qrPath;
+  }
+  return `${FILE_BASE_URL}${qrPath.startsWith('/') ? qrPath : `/${qrPath}`}`;
+};
+const showUtrColumns = filters.mobileNumber.length === 10;
   // Calculate display range for current page
   const startRecord = currentPage * pageSize + 1;
   const endRecord = Math.min((currentPage + 1) * pageSize, totalElements);
@@ -517,9 +591,13 @@ const TeachersList = () => {
                   <TextField
                     fullWidth
                     size="small"
+                    inputProps={{ maxLength: 10 }}
                     placeholder="मोबाइल नंबर से खोजें"
                     value={filters.mobileNumber}
-                    onChange={(e) => setFilters(prev => ({ ...prev, mobileNumber: e.target.value }))}
+onChange={(e) => {
+  const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+  setFilters(prev => ({ ...prev, mobileNumber: value }));
+}}
                     sx={{
                       '& .MuiOutlinedInput-root': {
                         border: '2px solid #2e7d32',
@@ -623,23 +701,37 @@ const TeachersList = () => {
                       <TableCell align="center">ब्लॉक</TableCell>
                       <TableCell align="center">स्कूल का नाम</TableCell>
                       <TableCell align="center">पंजीकरण तिथि</TableCell>
+                  {showUtrColumns && <TableCell align="center"> QR कोड</TableCell>}
+{showUtrColumns && <TableCell align="center">UTR अपलोड</TableCell>}
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {teachers.map((teacher, index) => (
                       <TableRow
                         key={teacher.id}
-                        sx={{
-                          '&:nth-of-type(odd)': {
-                            backgroundColor: '#FFFFFF',
-                          },
-                          '&:hover': {
-                            backgroundColor: '#e3f2fd',
-                          },
-                          '& td': {
-                            borderBottom: '1px solid #e0e0e0'
-                          }
-                        }}
+                  sx={{
+  ...(showUtrColumns
+    ? {
+        backgroundColor: teacher.utrUploaded ? '#e8f5e9' : '#ffebee',
+        '&:nth-of-type(odd)': {
+          backgroundColor: teacher.utrUploaded ? '#dff3e3' : '#fde7e7',
+        },
+        '&:hover': {
+          backgroundColor: teacher.utrUploaded ? '#c8e6c9' : '#ffcdd2',
+        },
+      }
+    : {
+        '&:nth-of-type(odd)': {
+          backgroundColor: '#FFFFFF',
+        },
+        '&:hover': {
+          backgroundColor: '#e3f2fd',
+        },
+      }),
+  '& td': {
+    borderBottom: '1px solid #e0e0e0'
+  }
+}}
                       >
                         <TableCell align="center" sx={{ 
                           fontWeight: 600,
@@ -672,7 +764,66 @@ const TeachersList = () => {
                         <TableCell align="center">
                           {formatDate(teacher.createdAt || teacher.createdDate) || 'N/A'}
                         </TableCell>
-                      </TableRow>
+                        {showUtrColumns && (
+  <TableCell align="center">
+    {teacher.utrUploaded ? (
+      <Typography variant="body2" sx={{ color: '#2e7d32', fontWeight: 600 }}>
+        UTR जमा हो चुका है
+      </Typography>
+    ) : teacher.allocatedQrCode ? (
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+        <img
+          src={getQrImageUrl(teacher.allocatedQrCode)}
+          alt="Assigned QR"
+          style={{
+            width: 70,
+            height: 70,
+            objectFit: 'contain',
+            border: '1px solid #ddd',
+            borderRadius: 6,
+            background: '#fff',
+            padding: 4
+          }}
+        />
+        <Typography variant="caption" sx={{ color: '#555' }}>
+          मृत्यु प्रकरण QR
+        </Typography>
+      </Box>
+    ) : (
+      <Typography variant="body2" color="text.secondary">
+        उपलब्ध नहीं
+      </Typography>
+    )}
+  </TableCell>
+)}
+{showUtrColumns && (
+  <TableCell align="center">
+    {teacher.utrUploaded ? (
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+        <Chip label="UTR Uploaded" color="success" size="small" />
+        {teacher.latestUtrNumber && (
+          <Typography variant="caption" sx={{ color: '#2e7d32', fontWeight: 600 }}>
+            {teacher.latestUtrNumber}
+          </Typography>
+        )}
+      </Box>
+    ) : (
+      <Button
+        variant="contained"
+        size="small"
+        onClick={() => openUtrDialog(teacher)}
+        sx={{
+          backgroundColor: '#d32f2f',
+          '&:hover': { backgroundColor: '#b71c1c' },
+          borderRadius: '8px',
+          textTransform: 'none'
+        }}
+      >
+        UTR Upload
+      </Button>
+    )}
+  </TableCell>
+)}                      </TableRow>
                     ))}
                   </TableBody>
                 </Table>
@@ -727,6 +878,72 @@ const TeachersList = () => {
           )}
         </Container>
       </Box>
+      <Dialog open={utrDialogOpen} onClose={closeUtrDialog} fullWidth maxWidth="sm">
+  <DialogTitle sx={{ fontWeight: 700, color: '#1a237e' }}>
+    UTR विवरण जमा करें
+  </DialogTitle>
+
+  <DialogContent>
+    {selectedTeacher && (
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="body2" sx={{ mb: 0.5 }}>
+          <strong>यूजर:</strong> {selectedTeacher.name} {selectedTeacher.surname}
+        </Typography>
+        <Typography variant="body2" sx={{ mb: 0.5 }}>
+          <strong>मोबाइल:</strong> {selectedTeacher.mobileNumber || 'N/A'}
+        </Typography>
+        <Typography variant="body2">
+          <strong>मृत्यु प्रकरण:</strong> {selectedTeacher.assignedDeathCaseName || 'N/A'}
+        </Typography>
+      </Box>
+    )}
+
+    <TextField
+      fullWidth
+      margin="normal"
+      label="राशि"
+      type="number"
+      value={utrForm.amount}
+      onChange={(e) => setUtrForm(prev => ({ ...prev, amount: e.target.value }))}
+    />
+
+    <TextField
+      fullWidth
+      margin="normal"
+      label="Reference Name"
+      value={utrForm.referenceName}
+      onChange={(e) => setUtrForm(prev => ({ ...prev, referenceName: e.target.value }))}
+    />
+
+    <TextField
+      fullWidth
+      margin="normal"
+      label="UTR Number"
+      value={utrForm.utrNumber}
+      onChange={(e) => setUtrForm(prev => ({ ...prev, utrNumber: e.target.value }))}
+    />
+
+    {utrSuccess && (
+      <Alert severity="success" sx={{ mt: 2 }}>
+        {utrSuccess}
+      </Alert>
+    )}
+  </DialogContent>
+
+  <DialogActions sx={{ px: 3, pb: 2 }}>
+    <Button onClick={closeUtrDialog} disabled={utrSubmitting}>
+      Cancel
+    </Button>
+    <Button
+      variant="contained"
+      onClick={handleUtrSubmit}
+      disabled={utrSubmitting}
+      sx={{ textTransform: 'none' }}
+    >
+      {utrSubmitting ? 'Submitting...' : 'Submit UTR'}
+    </Button>
+  </DialogActions>
+</Dialog>
     </Layout>
   );
 };

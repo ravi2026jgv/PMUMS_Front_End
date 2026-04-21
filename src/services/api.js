@@ -127,7 +127,7 @@ publicApi.interceptors.response.use(
 );
 
 export default api;
-export { publicApi };
+export { api, publicApi };
 
 // Admin API functions
 const adminAPI = {
@@ -434,5 +434,11 @@ const publicAPI = {
     return publicApi.post('/public/insurance-inquiries', payload);
   },
 };
+
+const receiptAPI = {
+  uploadReceipt: (payload) => {
+    return api.post('/receipts', payload);
+  },
+};
 // Export all APIs
-export { adminAPI, managerAPI ,publicAPI};
+export { adminAPI, managerAPI, publicAPI, receiptAPI };
