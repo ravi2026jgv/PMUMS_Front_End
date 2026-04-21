@@ -75,7 +75,7 @@ const navigationItems = [
   { label: 'LATE TEACHERS LIST', path: 'https://pmums.in/death-case/', external: true },
   { label: 'SAHYOG LIST', path: '/sahyog-list' },
   { label: 'ASAHYOG LIST', path: '/asahyog-list' },
- 
+ { label: 'NO UTR LIST', path: '/zero-utr-list' },
   { label: 'NIYAMAWALI', path: '/niyamawali' },
   { label: 'CONTACT US', path: '/contact-us' },
   //  ...(showSelfDonationNav ? [{ label: 'SANSTHA SAHYOG', path: '/self-donation' }] : []),

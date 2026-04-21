@@ -721,11 +721,12 @@ onChange={(e) => {
         },
       }
     : {
+       backgroundColor: teacher.utrUploaded ? '#e8f5e9' : '#ffebee',
         '&:nth-of-type(odd)': {
-          backgroundColor: '#FFFFFF',
+          backgroundColor: teacher.utrUploaded ? '#dff3e3' : '#fde7e7',
         },
         '&:hover': {
-          backgroundColor: '#e3f2fd',
+          backgroundColor: teacher.utrUploaded ? '#c8e6c9' : '#ffcdd2',
         },
       }),
   '& td': {
