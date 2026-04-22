@@ -18,6 +18,7 @@ import {
   MenuItem,
   Pagination,
   TextField,
+  Button,
 } from '@mui/material';
 import Layout from '../components/Layout/Layout';
 import api, { publicApi } from '../services/api';
@@ -42,7 +43,16 @@ const PendingProfilesList = () => {
     fullName: '',
     mobileNumber: '',
   });
-
+const hasActiveFilters = () => {
+  return Boolean(
+    filters.sambhagId ||
+    filters.districtId ||
+    filters.blockId ||
+    filters.userId ||
+    filters.fullName ||
+    filters.mobileNumber
+  );
+};
   // Pagination
   const [page, setPage] = useState(0); // 0-based for API
   const [totalPages, setTotalPages] = useState(0);
@@ -59,7 +69,17 @@ const PendingProfilesList = () => {
     const stringValue = String(value).trim();
     return stringValue !== '' ? stringValue : fallback;
   };
-
+const downloadBlobFile = (data, filename, type = 'text/csv;charset=utf-8') => {
+  const blob = new Blob([data], { type });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
  const loadLocationHierarchy = async () => {
   try {
 const response = await api.get('/locations/hierarchy');
@@ -149,8 +169,7 @@ const response = await api.get('/locations/hierarchy');
       setLoading(true);
       setError('');
 
-      const response = await api.get('/users/pending-profiles/filter', {
-        params: {
+const response = await publicApi.get('/users/pending-profiles/filter', {        params: {
           page: pageNum,
           size: pageSize,
           ...(filters.sambhagId && { sambhagId: filters.sambhagId }),
@@ -240,6 +259,25 @@ const response = await api.get('/locations/hierarchy');
     fetchPendingProfiles(pageNum - 1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+  const handleExportPendingProfiles = async () => {
+  try {
+const response = await publicApi.get('/users/pending-profiles/export', {      params: {
+        ...(filters.sambhagId && { sambhagId: filters.sambhagId }),
+        ...(filters.districtId && { districtId: filters.districtId }),
+        ...(filters.blockId && { blockId: filters.blockId }),
+        ...(filters.userId && { userId: filters.userId }),
+        ...(filters.fullName && { name: filters.fullName }),
+        ...(filters.mobileNumber && { mobile: filters.mobileNumber }),
+      },
+      responseType: 'blob',
+    });
+
+    downloadBlobFile(response.data, 'pending_profiles.csv');
+  } catch (err) {
+    console.error('Error exporting pending profiles:', err);
+    setError('पेंडिंग प्रोफाइल एक्सपोर्ट करने में त्रुटि हुई।');
+  }
+};
 
   const startRecord = page * pageSize + 1;
   const endRecord = Math.min((page + 1) * pageSize, totalElements);
@@ -428,6 +466,18 @@ const response = await api.get('/locations/hierarchy');
                   }}
                 />
               </Grid>
+              <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+  <Button
+    variant="contained"
+    onClick={handleExportPendingProfiles}
+    sx={{
+      backgroundColor: '#ef6c00',
+      '&:hover': { backgroundColor: '#e65100' }
+    }}
+  >
+    {hasActiveFilters() ? 'Export With Filter' : 'Export All'}
+  </Button>
+</Box>
             </Grid>
           </Paper>
 

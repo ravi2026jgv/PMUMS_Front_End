@@ -39,6 +39,8 @@ import {
   ListItemText,
   ListItemSecondary,
   CircularProgress,
+  Switch,
+FormControlLabel,
 } from '@mui/material';
 import {
   Dashboard,
@@ -65,9 +67,12 @@ import {
   Schedule,
   PriorityHigh,
   LockReset,
+  Download,
+  Settings,
+  
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
-import { managerAPI } from '../services/api';
+import { managerAPI, adminAPI } from '../services/api';
 import Layout from '../components/Layout/Layout';
 import { CreateQueryDialog, ResolveQueryDialog } from '../components/QueryDialogs';
 
@@ -97,7 +102,19 @@ const [passwordResetUser, setPasswordResetUser] = useState(null);
   const [rowsPerPage, setRowsPerPage] = useState(20);
   const [totalUsers, setTotalUsers] = useState(0);
   const [totalQueries, setTotalQueries] = useState(0);
-  
+  const [exportLoading, setExportLoading] = useState(false);
+const [exportDialogOpen, setExportDialogOpen] = useState(false);
+const [exportType, setExportType] = useState('');
+const [exportMode, setExportMode] = useState('all');
+const [exportMonth, setExportMonth] = useState(new Date().getMonth() + 1);
+const [exportYear, setExportYear] = useState(new Date().getFullYear());
+const [exportBeneficiary, setExportBeneficiary] = useState('');
+const [deathCases, setDeathCases] = useState([]);
+const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
+const [settingsLoading, setSettingsLoading] = useState(false);
+const [settingsSaving, setSettingsSaving] = useState(false);
+const [districtManagerExportMobileEnabled, setDistrictManagerExportMobileEnabled] = useState(false);
+const [blockManagerExportMobileEnabled, setBlockManagerExportMobileEnabled] = useState(false);
   // Filter states
   const [userFilters, setUserFilters] = useState({
     search: '',
@@ -135,7 +152,15 @@ const canChangeRoles = isSuperAdmin || isAdmin;
       setLoading(false);
     }
   };
-
+const fetchDeathCases = async () => {
+  try {
+    const response = await adminAPI.getDeathCases();
+    setDeathCases(response.data || []);
+  } catch (error) {
+    console.error('Error fetching death cases:', error);
+    setDeathCases([]);
+  }
+};
   const fetchAccessibleUsers = async () => {
     try {
       const params = {
@@ -151,7 +176,152 @@ const canChangeRoles = isSuperAdmin || isAdmin;
       showSnackbar('Error loading users!', 'error');
     }
   };
+const downloadBlobFile = (data, filename, type = 'text/csv;charset=utf-8') => {
+  const blob = new Blob([data], { type });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
+const openExportDialog = async (type) => {
+  setExportType(type);
 
+  const defaultMode =
+    type === 'pending-profiles' || type === 'users' || type === 'zero-utr'
+      ? 'all'
+      : 'beneficiary';
+
+  setExportMode(defaultMode);
+  setExportBeneficiary('');
+  setExportMonth(new Date().getMonth() + 1);
+  setExportYear(new Date().getFullYear());
+
+  if ((type === 'sahyog' || type === 'asahyog') && deathCases.length === 0) {
+    await fetchDeathCases();
+  }
+
+  setExportDialogOpen(true);
+};
+
+const handleManagerExport = async () => {
+  try {
+    setExportLoading(true);
+
+    let response;
+
+    if (exportType === 'users') {
+      response = await managerAPI.exportUsers();
+      downloadBlobFile(response.data, 'our_member_list.csv');
+    }
+
+    if (exportType === 'pending-profiles') {
+      response = await managerAPI.exportPendingProfiles();
+      downloadBlobFile(response.data, 'not_profile_updated_list.csv');
+    }
+
+    if (exportType === 'zero-utr') {
+      response = await managerAPI.exportZeroUtrMembers();
+      downloadBlobFile(response.data, 'zero_utr_members_list.csv');
+    }
+
+    if (exportType === 'sahyog') {
+      if (exportMode === 'beneficiary') {
+        response = await managerAPI.exportSahyogByBeneficiary({
+          beneficiaryId: exportBeneficiary || null
+        });
+        downloadBlobFile(response.data, 'sahyog_by_beneficiary.csv');
+      } else if (exportMode === 'month') {
+        response = await managerAPI.exportSahyog({
+          month: exportMonth,
+          year: exportYear
+        });
+        downloadBlobFile(response.data, `sahyog_${exportMonth}_${exportYear}.csv`);
+      } else {
+        response = await managerAPI.exportAllSahyog();
+        downloadBlobFile(response.data, 'sahyog_all.csv');
+      }
+    }
+
+    if (exportType === 'asahyog') {
+      if (exportMode === 'beneficiary') {
+        response = await managerAPI.exportAsahyogByBeneficiary({
+          beneficiaryId: exportBeneficiary || null
+        });
+        downloadBlobFile(response.data, 'asahyog_by_beneficiary.csv');
+      } else if (exportMode === 'month') {
+        response = await managerAPI.exportAsahyog({
+          month: exportMonth,
+          year: exportYear
+        });
+        downloadBlobFile(response.data, `asahyog_${exportMonth}_${exportYear}.csv`);
+      } else {
+        response = await managerAPI.exportAllAsahyog();
+        downloadBlobFile(response.data, 'asahyog_all.csv');
+      }
+    }
+
+    setExportDialogOpen(false);
+    showSnackbar('Export completed successfully!', 'success');
+  } catch (error) {
+    console.error('Error exporting:', error);
+    showSnackbar('Error exporting file!', 'error');
+  } finally {
+    setExportLoading(false);
+  }
+};
+const handleOpenSettings = async () => {
+  try {
+    setSettingsDialogOpen(true);
+    setSettingsLoading(true);
+
+    const [
+      districtManagerMobileResponse,
+      blockManagerMobileResponse,
+    ] = await Promise.all([
+      adminAPI.getDistrictManagerExportMobileSetting(),
+      adminAPI.getBlockManagerExportMobileSetting(),
+    ]);
+
+    setDistrictManagerExportMobileEnabled(
+      districtManagerMobileResponse.data?.districtManagerExportMobileEnabled === true
+    );
+
+    setBlockManagerExportMobileEnabled(
+      blockManagerMobileResponse.data?.blockManagerExportMobileEnabled === true
+    );
+  } catch (error) {
+    console.error('Error loading settings:', error);
+    showSnackbar('Failed to load settings!', 'error');
+    setSettingsDialogOpen(false);
+  } finally {
+    setSettingsLoading(false);
+  }
+};
+const handleSaveSettings = async () => {
+  try {
+    setSettingsSaving(true);
+
+    await Promise.all([
+      adminAPI.updateDistrictManagerExportMobileSetting(districtManagerExportMobileEnabled),
+      adminAPI.updateBlockManagerExportMobileSetting(blockManagerExportMobileEnabled),
+    ]);
+
+    showSnackbar('Settings updated successfully!', 'success');
+    setSettingsDialogOpen(false);
+  } catch (error) {
+    console.error('Error saving settings:', error);
+    showSnackbar(
+      error?.response?.data?.message || 'Failed to save settings!',
+      'error'
+    );
+  } finally {
+    setSettingsSaving(false);
+  }
+};
   const fetchQueries = async () => {
     try {
       const params = {
@@ -815,6 +985,60 @@ const submitPasswordReset = async () => {
               {dashboardData && (
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
+                    <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: 3 }}>
+  {isSambhagManager && (
+  <Button
+    variant="contained"
+    startIcon={<Settings />}
+    onClick={handleOpenSettings}
+    sx={{
+      bgcolor: '#ff9800',
+      '&:hover': { bgcolor: '#f57c00' }
+    }}
+  >
+    Settings
+  </Button>
+)}
+  <Button
+    variant="contained"
+    startIcon={<Download />}
+    onClick={() => openExportDialog('users')}
+  >
+    Export Members
+  </Button>
+
+  <Button
+    variant="contained"
+    startIcon={<Download />}
+    onClick={() => openExportDialog('sahyog')}
+  >
+    Export Sahyog
+  </Button>
+
+  <Button
+    variant="contained"
+    startIcon={<Download />}
+    onClick={() => openExportDialog('asahyog')}
+  >
+    Export Asahyog
+  </Button>
+
+  <Button
+    variant="contained"
+    startIcon={<Download />}
+    onClick={() => openExportDialog('pending-profiles')}
+  >
+    Export Pending Profiles
+  </Button>
+
+  <Button
+    variant="contained"
+    startIcon={<Download />}
+    onClick={() => openExportDialog('zero-utr')}
+  >
+    Export Zero UTR
+  </Button>
+</Box>
                     <Card elevation={3}>
                       <CardContent>
                         <Typography variant="h6" gutterBottom>
@@ -835,8 +1059,11 @@ const submitPasswordReset = async () => {
                           )) || []}
                         </List>
                       </CardContent>
+
+                      
                     </Card>
                   </Grid>
+                  
                   <Grid item xs={12} md={6}>
                     <Card elevation={3}>
                       <CardContent>
@@ -851,6 +1078,7 @@ const submitPasswordReset = async () => {
                   </Grid>
                 </Grid>
               )}
+              
             </Box>
           )}
           {activeTab === 1 && renderUsersTab()}
@@ -891,6 +1119,191 @@ const submitPasswordReset = async () => {
           setSelectedItem(null);
         }}
       />
+      <Dialog
+  open={settingsDialogOpen}
+  onClose={() => setSettingsDialogOpen(false)}
+  maxWidth="sm"
+  fullWidth
+>
+  <DialogTitle>
+    Mobile Export Settings
+  </DialogTitle>
+
+  <DialogContent dividers>
+    {settingsLoading ? (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+        <CircularProgress />
+      </Box>
+    ) : (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Alert severity="info">
+          Control whether District Manager and Block Manager exports can include mobile numbers.
+        </Alert>
+
+        <FormControlLabel
+          control={
+            <Switch
+              checked={districtManagerExportMobileEnabled}
+              onChange={(e) => setDistrictManagerExportMobileEnabled(e.target.checked)}
+            />
+          }
+          label="District Manager can export mobile numbers"
+        />
+
+        <FormControlLabel
+          control={
+            <Switch
+              checked={blockManagerExportMobileEnabled}
+              onChange={(e) => setBlockManagerExportMobileEnabled(e.target.checked)}
+            />
+          }
+          label="Block Manager can export mobile numbers"
+        />
+      </Box>
+    )}
+  </DialogContent>
+
+  <DialogActions>
+    <Button onClick={() => setSettingsDialogOpen(false)} disabled={settingsSaving}>
+      Cancel
+    </Button>
+
+    <Button
+      variant="contained"
+      onClick={handleSaveSettings}
+      disabled={settingsSaving || settingsLoading}
+      startIcon={settingsSaving ? <CircularProgress size={16} color="inherit" /> : <Settings />}
+    >
+      {settingsSaving ? 'Saving...' : 'Save Settings'}
+    </Button>
+  </DialogActions>
+</Dialog>
+      <Dialog
+  open={exportDialogOpen}
+  onClose={() => setExportDialogOpen(false)}
+  maxWidth="sm"
+  fullWidth
+>
+  <DialogTitle>
+    Export Data
+  </DialogTitle>
+
+  <DialogContent dividers>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
+      {(exportType === 'sahyog' || exportType === 'asahyog') && (
+        <>
+          <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+            Select Export Type
+          </Typography>
+
+          <Grid container spacing={2}>
+            <Grid item xs={12} sm={4}>
+              <Button
+                fullWidth
+                variant={exportMode === 'beneficiary' ? 'contained' : 'outlined'}
+                onClick={() => setExportMode('beneficiary')}
+              >
+                Death Case Wise
+              </Button>
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <Button
+                fullWidth
+                variant={exportMode === 'month' ? 'contained' : 'outlined'}
+                onClick={() => setExportMode('month')}
+              >
+                Month Wise
+              </Button>
+            </Grid>
+
+            <Grid item xs={12} sm={4}>
+              <Button
+                fullWidth
+                variant={exportMode === 'all' ? 'contained' : 'outlined'}
+                onClick={() => setExportMode('all')}
+              >
+                All
+              </Button>
+            </Grid>
+          </Grid>
+        </>
+      )}
+
+      {(exportType === 'sahyog' || exportType === 'asahyog') && exportMode === 'beneficiary' && (
+        <FormControl fullWidth required>
+          <InputLabel>Select Death Case</InputLabel>
+          <Select
+            value={exportBeneficiary}
+            label="Select Death Case"
+            onChange={(e) => setExportBeneficiary(e.target.value)}
+          >
+            <MenuItem value="">All Death Cases</MenuItem>
+            {deathCases.map((dc) => (
+              <MenuItem key={dc.id} value={dc.id}>
+                {dc.deceasedName}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      )}
+
+      {(exportType === 'sahyog' || exportType === 'asahyog') && exportMode === 'month' && (
+        <>
+          <FormControl fullWidth required>
+            <InputLabel>Month</InputLabel>
+            <Select
+              value={exportMonth}
+              label="Month"
+              onChange={(e) => setExportMonth(e.target.value)}
+            >
+              <MenuItem value={1}>January</MenuItem>
+              <MenuItem value={2}>February</MenuItem>
+              <MenuItem value={3}>March</MenuItem>
+              <MenuItem value={4}>April</MenuItem>
+              <MenuItem value={5}>May</MenuItem>
+              <MenuItem value={6}>June</MenuItem>
+              <MenuItem value={7}>July</MenuItem>
+              <MenuItem value={8}>August</MenuItem>
+              <MenuItem value={9}>September</MenuItem>
+              <MenuItem value={10}>October</MenuItem>
+              <MenuItem value={11}>November</MenuItem>
+              <MenuItem value={12}>December</MenuItem>
+            </Select>
+          </FormControl>
+
+          <TextField
+            fullWidth
+            label="Year"
+            type="number"
+            value={exportYear}
+            onChange={(e) => setExportYear(parseInt(e.target.value, 10))}
+          />
+        </>
+      )}
+
+      {(exportType === 'users' || exportType === 'pending-profiles' || exportType === 'zero-utr') && (
+        <Typography variant="body2" color="textSecondary">
+          This export will download the full list based on your current role access.
+        </Typography>
+      )}
+    </Box>
+  </DialogContent>
+
+  <DialogActions>
+    <Button onClick={() => setExportDialogOpen(false)}>
+      Cancel
+    </Button>
+    <Button
+      variant="contained"
+      onClick={handleManagerExport}
+      disabled={exportLoading}
+      startIcon={exportLoading ? <CircularProgress size={18} color="inherit" /> : <Download />}
+    >
+      {exportLoading ? 'Exporting...' : 'Export'}
+    </Button>
+  </DialogActions>
+</Dialog>
 <Dialog
   open={passwordResetOpen}
   onClose={closePasswordReset}

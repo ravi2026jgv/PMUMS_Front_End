@@ -194,7 +194,12 @@ exportAsahyogByBeneficiary: (params = {}) => {
     responseType: 'blob'
   });
 },
-
+exportZeroUtrMembers: (params = {}) => {
+  return api.get('/admin/monthly-sahyog/no-utr-ever/export', {
+    params,
+    responseType: 'blob'
+  });
+},
 exportAllSahyog: () => {
   return api.get('/admin/export/sahyog/all', {
     responseType: 'blob'
@@ -207,7 +212,7 @@ exportAllAsahyog: () => {
   });
 },
 exportPendingProfiles: (params = {}) => {
-  return api.get('/admin/export/pending-profiles', {
+  return api.get('/users/pending-profiles/export', {
     params,
     responseType: 'blob'
   });
@@ -217,6 +222,21 @@ getExportMobileNumberSetting: () => {
 },
 getSelfDonationVisibleSetting: () => {
   return api.get('/admin/settings/self-donation-visible');
+},
+getDistrictManagerExportMobileSetting: () => {
+  return api.get('/admin/settings/district-manager-export-mobile');
+},
+
+updateDistrictManagerExportMobileSetting: (enabled) => {
+  return api.put('/admin/settings/district-manager-export-mobile', { enabled });
+},
+
+getBlockManagerExportMobileSetting: () => {
+  return api.get('/admin/settings/block-manager-export-mobile');
+},
+
+updateBlockManagerExportMobileSetting: (enabled) => {
+  return api.put('/admin/settings/block-manager-export-mobile', { enabled });
 },
 
 updateSelfDonationVisibleSetting: (enabled) => {
@@ -280,9 +300,9 @@ permanentDeleteUser: (id) => {
   },
 
   // Export users as CSV
-exportUsers: (month, year) => {
-  return api.get('/admin/users/export', {
-    params: { month, year },
+exportUsers: (params = {}) => {
+  return api.get('/users/export', {
+    params,
     responseType: 'blob'
   });
 },
@@ -420,7 +440,66 @@ const managerAPI = {
   getPendingQueries: (params = {}) => api.get('/manager/queries/pending', { params }),
   getUrgentQueries: (params = {}) => api.get('/manager/queries/urgent', { params }),
   getMyQueries: (params = {}) => api.get('/manager/queries/my-queries', { params }),
+exportUsers: (params = {}) => {
+  return api.get('/users/export', {
+    params,
+    responseType: 'blob'
+  });
+},
 
+exportPendingProfiles: (params = {}) => {
+  return api.get('/users/pending-profiles/export', {
+    params,
+    responseType: 'blob'
+  });
+},
+
+exportZeroUtrMembers: (params = {}) => {
+  return api.get('/admin/monthly-sahyog/no-utr-ever/export', {
+    params,
+    responseType: 'blob'
+  });
+},
+
+exportSahyog: (params = {}) => {
+  return api.get('/admin/export/sahyog', {
+    params,
+    responseType: 'blob'
+  });
+},
+
+exportAsahyog: (params = {}) => {
+  return api.get('/admin/export/asahyog', {
+    params,
+    responseType: 'blob'
+  });
+},
+
+exportSahyogByBeneficiary: (params = {}) => {
+  return api.get('/admin/export/sahyog/by-beneficiary', {
+    params,
+    responseType: 'blob'
+  });
+},
+
+exportAsahyogByBeneficiary: (params = {}) => {
+  return api.get('/admin/export/asahyog/by-beneficiary', {
+    params,
+    responseType: 'blob'
+  });
+},
+
+exportAllSahyog: () => {
+  return api.get('/admin/export/sahyog/all', {
+    responseType: 'blob'
+  });
+},
+
+exportAllAsahyog: () => {
+  return api.get('/admin/export/asahyog/all', {
+    responseType: 'blob'
+  });
+},
   // Manager Dashboard APIs
   getDashboardOverview: () => api.get('/manager/dashboard/overview'),
   getManagerScope: (params = {}) => api.get('/manager/scope', { params }),

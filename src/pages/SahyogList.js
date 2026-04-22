@@ -28,7 +28,7 @@ import {
   Cancel,
 } from '@mui/icons-material';
 import Layout from '../components/Layout/Layout';
-import api from '../services/api';
+import { publicApi } from '../services/api';
 
 const SahyogList = () => {
   const [donors, setDonors] = useState([]);
@@ -61,7 +61,7 @@ beneficiaryId: ''
 
 const fetchBeneficiaries = useCallback(async () => {
   try {
-    const response = await api.get('/admin/monthly-sahyog/donors/beneficiaries-all');
+    const response = await publicApi.get('/admin/monthly-sahyog/donors/beneficiaries-all');
     setBeneficiaryOptions(response.data || []);
   } catch (err) {
     console.error('Error fetching beneficiaries:', err);
@@ -90,7 +90,7 @@ useEffect(() => {
       setLoading(true);
       setError('');
       
-      const response = await api.get('/admin/monthly-sahyog/donors/search-by-beneficiary', {
+      const response = await publicApi.get('/admin/monthly-sahyog/donors/search-by-beneficiary', {
   params: {
     page: pageNum,
     size: pageSize,
@@ -181,7 +181,17 @@ useEffect(() => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array - runs only once on mount
-
+const hasActiveFilters = () => {
+  return Boolean(
+    filters.userId ||
+    filters.fullName ||
+    filters.mobileNumber ||
+    filters.sambhag ||
+    filters.district ||
+    filters.block ||
+    filters.beneficiaryId
+  );
+};
   const handlePageChange = (event, newPage) => {
     const pageNum = parseInt(newPage, 10);
     if (isNaN(pageNum) || pageNum < 1) return;
@@ -229,7 +239,37 @@ useEffect(() => {
   // Calculate display range for current page
   const startRecord = page * pageSize + 1;
   const endRecord = Math.min((page + 1) * pageSize, totalElements);
+const downloadBlobFile = (data, filename, type = 'text/csv;charset=utf-8') => {
+  const blob = new Blob([data], { type });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
+const handleExportSahyog = async () => {
+  try {
+const response = await publicApi.get('/public/export/sahyog/by-beneficiary', {      params: {
+        ...(filters.userId && { userId: filters.userId }),
+        ...(filters.fullName && { name: filters.fullName }),
+        ...(filters.mobileNumber && { mobile: filters.mobileNumber }),
+        ...(filters.sambhag && { sambhag: filters.sambhag }),
+        ...(filters.district && { district: filters.district }),
+        ...(filters.block && { block: filters.block }),
+        ...(filters.beneficiaryId && { beneficiaryId: filters.beneficiaryId }),
+      },
+      responseType: 'blob',
+    });
 
+    downloadBlobFile(response.data, 'sahyog_list.csv');
+  } catch (err) {
+    console.error('Error exporting sahyog list:', err);
+    setError('सहयोग सूची एक्सपोर्ट करने में त्रुटि हुई।');
+  }
+};
   return (
     <Layout>
       <Box sx={{
@@ -449,6 +489,18 @@ onChange={(e) => setFilters(prev => ({ ...prev, beneficiaryId: e.target.value })
     </Select>
   </FormControl>
 </Grid>
+<Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+  <Button
+    variant="contained"
+    onClick={handleExportSahyog}
+    sx={{
+      backgroundColor: '#1a237e',
+      '&:hover': { backgroundColor: '#0d1b60' }
+    }}
+  >
+    {hasActiveFilters() ? 'Export With Filter' : 'Export All'}
+  </Button>
+</Box>
 
             </Grid>
           </Paper>

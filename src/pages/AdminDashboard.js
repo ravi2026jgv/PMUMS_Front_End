@@ -102,7 +102,9 @@ const [selfDonationVisible, setSelfDonationVisible] = useState(false);
 const [selfDonationQrUrl, setSelfDonationQrUrl] = useState('');
 const [selfDonationQrFile, setSelfDonationQrFile] = useState(null);
 const [selfDonationQrUploading, setSelfDonationQrUploading] = useState(false);
-  // Admin User Management - Details/Edit + Password Reset dialogs
+const [districtManagerExportMobileEnabled, setDistrictManagerExportMobileEnabled] = useState(false);
+const [blockManagerExportMobileEnabled, setBlockManagerExportMobileEnabled] = useState(false);  
+// Admin User Management - Details/Edit + Password Reset dialogs
   const [userDetailsOpen, setUserDetailsOpen] = useState(false);
   const [userDetailsSaving, setUserDetailsSaving] = useState(false);
   const [userDetailsUser, setUserDetailsUser] = useState(null);
@@ -562,17 +564,28 @@ const openSettingsDialog = async () => {
       exportMobileResponse,
       selfDonationVisibleResponse,
       selfDonationQrResponse,
+        districtManagerMobileResponse,
+  blockManagerMobileResponse,
     ] = await Promise.all([
       adminAPI.getMobileOtpSetting(),
       adminAPI.getExportMobileNumberSetting(),
       adminAPI.getSelfDonationVisibleSetting(),
       adminAPI.getSelfDonationQr(),
+      adminAPI.getDistrictManagerExportMobileSetting(),
+adminAPI.getBlockManagerExportMobileSetting(),
     ]);
 
     setMobileOtpEnabled(mobileOtpResponse.data?.mobileOtpEnabled === true);
     setExportMobileNumberEnabled(
       exportMobileResponse.data?.exportMobileNumberEnabled === true
     );
+    setDistrictManagerExportMobileEnabled(
+  districtManagerMobileResponse.data?.districtManagerExportMobileEnabled === true
+);
+
+setBlockManagerExportMobileEnabled(
+  blockManagerMobileResponse.data?.blockManagerExportMobileEnabled === true
+);
     setSelfDonationVisible(
       selfDonationVisibleResponse.data?.selfDonationVisible === true
     );
@@ -594,6 +607,8 @@ const handleSaveSettings = async () => {
       adminAPI.updateMobileOtpSetting(mobileOtpEnabled),
       adminAPI.updateExportMobileNumberSetting(exportMobileNumberEnabled),
       adminAPI.updateSelfDonationVisibleSetting(selfDonationVisible),
+      adminAPI.updateDistrictManagerExportMobileSetting(districtManagerExportMobileEnabled),
+adminAPI.updateBlockManagerExportMobileSetting(blockManagerExportMobileEnabled),
     ]);
 
     if (selfDonationQrFile) {
@@ -1398,40 +1413,17 @@ const handleSendInsuranceInquiryEmail = async () => {
         setDeathCases([]);
       }
     } catch (error) {
-      console.error('Error fetching death cases:', error);
-      console.error('Error details:', error.response?.data);
-      
-      // For testing, let's add some mock data if API fails
-      const mockData = [
-        {
-          id: 1,
-          deceasedName: 'Ram Sharma',
-          employeeCode: 'EMP001',
-          department: 'Education Department',
-          district: 'Bhopal',
-          nominee1Name: 'Sita Sharma',
-          nominee2Name: null,
-          status: 'OPEN',
-          caseDate: new Date().toISOString()
-        },
-        {
-          id: 2,
-          deceasedName: 'Shyam Verma',
-          employeeCode: 'EMP002', 
-          department: 'Health Department',
-          district: 'Indore',
-          nominee1Name: 'Geeta Verma',
-          nominee2Name: 'Raj Verma',
-          status: 'CLOSED',
-          caseDate: new Date().toISOString()
-        }
-      ];
-      console.log('Using mock data for testing:', mockData);
-      setDeathCases(mockData);
-      showSnackbar('Could not load data from API, showing test data!', 'warning');
-    } finally {
-      setDeathCasesLoading(false);
-    }
+  console.error('Error fetching death cases:', error);
+  console.error('Error details:', error.response?.data);
+
+  setDeathCases([]);
+  showSnackbar(
+    error?.response?.data?.message || 'Error loading death cases!',
+    'error'
+  );
+} finally {
+  setDeathCasesLoading(false);
+}
   };
 
   // Fetch receipts
@@ -2002,7 +1994,25 @@ const handleRoleAssignmentChange = (field, value) => {
       return [];
     }
   };
+const handleExportZeroUtr = async () => {
+  try {
+    setExportLoading(true);
 
+    const response = await adminAPI.exportZeroUtrMembers();
+
+    downloadBlobFile(
+      response.data,
+      'zero_utr_members.csv'
+    );
+
+    showSnackbar('Zero UTR members exported successfully!', 'success');
+  } catch (error) {
+    console.error('Error exporting zero UTR members:', error);
+    showSnackbar('Error exporting zero UTR members!', 'error');
+  } finally {
+    setExportLoading(false);
+  }
+};
   // Handle viewing manager's users
   const handleViewManagerUsers = async (assignment) => {
     try {
@@ -3444,6 +3454,21 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
                 Quick Actions
               </Typography>
               <Grid container spacing={2}>
+                 <Grid item xs={12} sm={6} md={3}>
+  <Button
+    fullWidth
+    variant="contained"
+    startIcon={<Settings />}
+    onClick={openSettingsDialog}
+    sx={{
+      bgcolor: '#ff9800',
+      py: 2,
+      '&:hover': { bgcolor: '#f57c00' }
+    }}
+  >
+    Settings
+  </Button>
+</Grid>
                 <Grid item xs={12} sm={6} md={3}>
                   <Button
                     fullWidth
@@ -3459,36 +3484,8 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
                     User Export
                   </Button>
                 </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    startIcon={<Assignment />}
-                    onClick={() => setActiveTab(1)}
-                    sx={{ 
-                      bgcolor: '#4caf50',
-                      py: 2,
-                      '&:hover': { bgcolor: '#388e3c' }
-                    }}
-                  >
-                    Death Cases
-                  </Button>
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-  <Button
-    fullWidth
-    variant="contained"
-    startIcon={<Settings />}
-    onClick={openSettingsDialog}
-    sx={{
-      bgcolor: '#ff9800',
-      py: 2,
-      '&:hover': { bgcolor: '#f57c00' }
-    }}
-  >
-    Settings
-  </Button>
-</Grid>
+               
+               
 <Grid item xs={12} sm={6} md={3}>
   <Button
     fullWidth
@@ -3517,6 +3514,21 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
     }}
   >
     Export Asahyog
+  </Button>
+</Grid>
+<Grid item xs={12} sm={6} md={3}>
+  <Button
+    fullWidth
+    variant="contained"
+    startIcon={<Download />}
+    onClick={handleExportZeroUtr}
+    sx={{
+      bgcolor: '#ad1457',
+      py: 2,
+      '&:hover': { bgcolor: '#880e4f' }
+    }}
+  >
+    Export Zero UTR
   </Button>
 </Grid>
 <Grid item xs={12} sm={6} md={3}>
@@ -5689,6 +5701,27 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
     }
     label="Show Sanstha Sahyog Section"
   />
+  <FormControlLabel
+  control={
+    <Switch
+      checked={districtManagerExportMobileEnabled}
+      onChange={(e) => setDistrictManagerExportMobileEnabled(e.target.checked)}
+      color="primary"
+    />
+  }
+  label="District Manager can export mobile numbers"
+/>
+
+<FormControlLabel
+  control={
+    <Switch
+      checked={blockManagerExportMobileEnabled}
+      onChange={(e) => setBlockManagerExportMobileEnabled(e.target.checked)}
+      color="primary"
+    />
+  }
+  label="Block Manager can export mobile numbers"
+/>
 
   <Typography variant="body2" sx={{ mt: 1, color: '#666', mb: 2 }}>
     {selfDonationVisible
