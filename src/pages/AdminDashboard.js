@@ -225,7 +225,9 @@ nominee2UpiLink: '',
   const [availableSambhags, setAvailableSambhags] = useState([]);
   const [availableDistricts, setAvailableDistricts] = useState([]);
   const [availableBlocks, setAvailableBlocks] = useState([]);
-  
+    const [deleteRequestsOpen, setDeleteRequestsOpen] = useState(false);
+  const [deleteRequests, setDeleteRequests] = useState([]);
+  const [deleteRequestsLoading, setDeleteRequestsLoading] = useState(false);
   // Role Assignment Dialog States
   const [roleAssignmentDialog, setRoleAssignmentDialog] = useState(false);
   const [selectedUserForRole, setSelectedUserForRole] = useState(null);
@@ -235,7 +237,11 @@ nominee2UpiLink: '',
   districtIds: [],
   blockIds: []
   });
-  
+  const [logs, setLogs] = useState([]);
+const [logsLoading, setLogsLoading] = useState(false);
+const [logsTotal, setLogsTotal] = useState(0);
+const [logsPage, setLogsPage] = useState(0);
+const [logsRowsPerPage, setLogsRowsPerPage] = useState(20);
   // Export functionality
   const [exportLoading, setExportLoading] = useState(false);
   const [exportDialog, setExportDialog] = useState(false);
@@ -554,6 +560,73 @@ nominee2UpiLink: (deathCaseFormData.nominee2UpiLink || '').trim() || null,      
       setDeathCaseFormLoading(false);
     }
   };
+   const handlePermanentDeleteFromTrash = async (userId) => {
+  const ok = window.confirm('Are you sure you want to permanently delete this user? This cannot be undone.');
+  if (!ok) return;
+
+  try {
+    await adminAPI.permanentlyDeleteUserFromTrash(userId);
+    showSnackbar('User permanently deleted successfully!', 'success');
+    fetchUsers();
+    fetchTrashUsers();
+    fetchPendingDeleteRequests();
+  } catch (error) {
+    console.error('Error permanently deleting user:', error);
+    showSnackbar(
+      error?.response?.data?.message || 'Error permanently deleting user!',
+      'error'
+    );
+  }
+};
+const fetchAuditLogs = async () => {
+  try {
+    setLogsLoading(true);
+
+    const response = await adminAPI.getAuditLogs(logsPage, logsRowsPerPage);
+
+    if (response?.data?.content) {
+      setLogs(response.data.content || []);
+      setLogsTotal(response.data.totalElements || 0);
+    } else if (Array.isArray(response?.data)) {
+      setLogs(response.data);
+      setLogsTotal(response.data.length);
+    } else {
+      setLogs([]);
+      setLogsTotal(0);
+    }
+  } catch (error) {
+    console.error('Error fetching audit logs:', error);
+    showSnackbar('Error loading audit logs!', 'error');
+    setLogs([]);
+    setLogsTotal(0);
+  } finally {
+    setLogsLoading(false);
+  }
+};
+useEffect(() => {
+  if (activeTab === 4) {
+    fetchAuditLogs();
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [activeTab, logsPage, logsRowsPerPage]);
+const handleClearTrash = async () => {
+  const ok = window.confirm('Are you sure you want to permanently delete all users from trash? This cannot be undone.');
+  if (!ok) return;
+
+  try {
+    await adminAPI.clearAllTrashUsers();
+    showSnackbar('Trash cleared successfully!', 'success');
+    fetchUsers();
+    fetchTrashUsers();
+    fetchPendingDeleteRequests();
+  } catch (error) {
+    console.error('Error clearing trash:', error);
+    showSnackbar(
+      error?.response?.data?.message || 'Error clearing trash!',
+      'error'
+    );
+  }
+};
 const openSettingsDialog = async () => {
   try {
     setSettingsDialogOpen(true);
@@ -598,7 +671,26 @@ setBlockManagerExportMobileEnabled(
     setSettingsLoading(false);
   }
 };
+  const fetchPendingDeleteRequests = async () => {
+    if (!deleteRequestsOpen) return;
 
+    try {
+      setDeleteRequestsLoading(true);
+      const response = await adminAPI.getPendingDeleteRequests();
+      setDeleteRequests(response.data || []);
+    } catch (error) {
+      console.error('Error fetching delete requests:', error);
+      showSnackbar('Error loading delete requests!', 'error');
+      setDeleteRequests([]);
+    } finally {
+      setDeleteRequestsLoading(false);
+    }
+  };
+
+    useEffect(() => {
+    fetchPendingDeleteRequests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deleteRequestsOpen]);
 const handleSaveSettings = async () => {
   try {
     setSettingsSaving(true);
@@ -631,30 +723,36 @@ adminAPI.updateBlockManagerExportMobileSetting(blockManagerExportMobileEnabled),
   }
 };
   // Fetch deleted users for Trash (admin)
-  const fetchTrashUsers = async () => {
-    if (!trashOpen) return;
+ const fetchTrashUsers = async () => {
+  if (!trashOpen) return;
 
-    setTrashLoading(true);
-    try {
-      // IMPORTANT: backend filter uses status=DELETED
-      const response = await adminAPI.getUsers(trashPage, trashRowsPerPage, { status: 'DELETED' });
+  setTrashLoading(true);
+  try {
+    const response = await adminAPI.getDeletedUsersFromApprovalFlow();
 
-      if (response.data && response.data.users) {
-        setTrashUsers(response.data.users || []);
-        setTrashTotalUsers(response.data.totalElements || 0);
-      } else {
-        setTrashUsers(response.data || []);
-        setTrashTotalUsers((response.data || []).length);
-      }
-    } catch (error) {
-      console.error('Error fetching trash users:', error);
-      showSnackbar('Error loading deleted users!', 'error');
-      setTrashUsers([]);
-      setTrashTotalUsers(0);
-    } finally {
-      setTrashLoading(false);
+    let data = [];
+
+    if (Array.isArray(response?.data)) {
+      data = response.data;
+    } else if (Array.isArray(response?.data?.content)) {
+      data = response.data.content;
+    } else if (Array.isArray(response?.data?.users)) {
+      data = response.data.users;
+    } else if (Array.isArray(response?.data?.data)) {
+      data = response.data.data;
     }
-  };
+
+    setTrashUsers(data);
+    setTrashTotalUsers(data.length);
+  } catch (error) {
+    console.error('Error fetching trash users:', error);
+    showSnackbar('Error loading deleted users!', 'error');
+    setTrashUsers([]);
+    setTrashTotalUsers(0);
+  } finally {
+    setTrashLoading(false);
+  }
+};
 
   // Trash open/close
   const openTrash = () => {
@@ -665,30 +763,55 @@ adminAPI.updateBlockManagerExportMobileSetting(blockManagerExportMobileEnabled),
     setTrashOpen(false);
   };
 
-  const handleRestoreUser = async (userId) => {
+   const handleRestoreUser = async (userId) => {
     try {
-      await adminAPI.restoreUser(userId);
+      await adminAPI.restoreDeletedUser(userId);
       showSnackbar('User restored successfully!', 'success');
       fetchUsers();
       fetchTrashUsers();
+      fetchPendingDeleteRequests();
     } catch (error) {
       console.error('Error restoring user:', error);
-      showSnackbar('Error restoring user!', 'error');
+      showSnackbar(
+        error?.response?.data?.message || 'Error restoring user!',
+        'error'
+      );
     }
   };
+  const handleRejectDeleteRequest = async (requestId) => {
+    const rejectionReason = window.prompt('Enter rejection reason (optional):', 'Delete request rejected');
+    if (rejectionReason === null) return;
 
-  const handlePermanentDeleteFromTrash = async (userId) => {
-    const ok = window.confirm('Are you sure you want to permanently delete this user? This cannot be undone.');
+    try {
+      await adminAPI.rejectDeleteRequest(requestId, {
+        rejectionReason: rejectionReason || 'Delete request rejected'
+      });
+
+      showSnackbar('Delete request rejected successfully!', 'success');
+      fetchPendingDeleteRequests();
+    } catch (error) {
+      console.error('Error rejecting delete request:', error);
+      showSnackbar(
+        error?.response?.data?.message || 'Error rejecting delete request!',
+        'error'
+      );
+    }
+  };
+  const handleApproveDeleteRequest = async (requestId) => {
+    const ok = window.confirm('Are you sure you want to approve and permanently delete this user? This cannot be undone.');
     if (!ok) return;
 
     try {
-      await adminAPI.permanentDeleteUser(userId);
-      showSnackbar('User permanently deleted successfully!', 'success');
-      fetchUsers();
+      await adminAPI.approveDeleteRequest(requestId);
+showSnackbar('Delete request approved successfully. User is now available in trash for permanent delete or restore.', 'success');      fetchUsers();
       fetchTrashUsers();
+      fetchPendingDeleteRequests();
     } catch (error) {
-      console.error('Error permanently deleting user:', error);
-      showSnackbar('Error permanently deleting user!', 'error');
+      console.error('Error approving delete request:', error);
+      showSnackbar(
+        error?.response?.data?.message || 'Error approving delete request!',
+        'error'
+      );
     }
   };
 
@@ -827,33 +950,33 @@ const submitPasswordReset = async () => {
   }
 };
 
-  const handleDeleteUser = async (user) => {
+   const handleDeleteUser = async (user) => {
     const userId = typeof user === 'string' ? user : user?.id;
-    const status = typeof user === 'string' ? null : (user?.status || '');
-    const isSoftDeleted = (status || '').toLowerCase() === 'deleted';
+    if (!userId) return;
 
-    const message = isSoftDeleted
-      ? 'This user is already soft-deleted. Do you want to PERMANENTLY delete this user? This cannot be undone.'
-      : 'Are you sure you want to delete this user? (Soft delete)';
+    const reason = window.prompt('Enter delete reason (optional):', 'Administrative delete');
 
-    if (!window.confirm(message)) return;
+    if (reason === null) return;
 
     try {
-      if (isSoftDeleted) {
-        // Permanent delete (hard delete)
-        await adminAPI.permanentDeleteUser(userId);
-        showSnackbar('User permanently deleted successfully!', 'success');
-      } else {
-        // Soft delete
-        await adminAPI.deleteUser(userId);
-        showSnackbar('User deleted successfully!', 'success');
-      }
-      fetchUsers(); // Refresh the users list
+      await adminAPI.softDeleteUserWithApproval(userId, {
+        reason: reason || 'Administrative delete',
+        requestedFromDashboard: 'ADMIN_DASHBOARD'
+      });
+
+      showSnackbar('User moved to trash and delete request created successfully!', 'success');
+      fetchUsers();
+      fetchTrashUsers();
+      fetchPendingDeleteRequests();
     } catch (error) {
       console.error('Error deleting user:', error);
-      showSnackbar(isSoftDeleted ? 'Error permanently deleting user!' : 'Error deleting user!', 'error');
+      showSnackbar(
+        error?.response?.data?.message || 'Error deleting user!',
+        'error'
+      );
     }
   };
+
 const handleSelectAllUsers = (event) => {
   if (event.target.checked) {
     const selectableUserIds = users
@@ -889,10 +1012,20 @@ const handleBulkSoftDelete = async () => {
   if (!ok) return;
 
   try {
-    await Promise.all(selectedUserIds.map((id) => adminAPI.deleteUser(id)));
-    showSnackbar('Selected users deleted successfully!', 'success');
+    await Promise.all(
+      selectedUserIds.map((id) =>
+        adminAPI.softDeleteUserWithApproval(id, {
+          reason: 'Bulk delete from admin dashboard',
+          requestedFromDashboard: 'ADMIN_DASHBOARD'
+        })
+      )
+    );
+
+    showSnackbar('Selected users moved to trash successfully!', 'success');
     setSelectedUserIds([]);
     fetchUsers();
+    fetchTrashUsers();
+    fetchPendingDeleteRequests();
   } catch (error) {
     console.error('Error bulk deleting users:', error);
     showSnackbar('Error deleting selected users!', 'error');
@@ -1241,6 +1374,24 @@ const handleExportAsahyog = async () => {
   }
 };
 
+const handleRestoreAllTrash = async () => {
+  const ok = window.confirm('Are you sure you want to restore all users from trash?');
+  if (!ok) return;
+
+  try {
+    await adminAPI.restoreAllDeletedUsers();
+    showSnackbar('All deleted users restored successfully!', 'success');
+    fetchUsers();
+    fetchTrashUsers();
+    fetchPendingDeleteRequests();
+  } catch (error) {
+    console.error('Error restoring all users:', error);
+    showSnackbar(
+      error?.response?.data?.message || 'Error restoring all users!',
+      'error'
+    );
+  }
+};
 const handleExportPendingProfiles = async () => {
   try {
     setExportLoading(true);
@@ -2400,6 +2551,104 @@ const allowedRoles = ['ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_SAM
     </Paper>
   );
 };
+const renderLogsTab = () => (
+  <Paper elevation={6} sx={{ borderRadius: 3, overflow: 'hidden' }}>
+    <Box
+      sx={{
+        p: 3,
+        bgcolor: '#f5f5f5',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}
+    >
+      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+        Audit Logs ({logsTotal})
+      </Typography>
+    </Box>
+
+    {logsLoading ? (
+      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+        <CircularProgress />
+      </Box>
+    ) : logs.length === 0 ? (
+      <Box sx={{ textAlign: 'center', p: 4 }}>
+        <Typography variant="body2" color="text.secondary">
+          No audit logs found.
+        </Typography>
+      </Box>
+    ) : (
+      <>
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow sx={{ bgcolor: '#ede7f6' }}>
+                <TableCell><strong>ID</strong></TableCell>
+                <TableCell><strong>Action</strong></TableCell>
+                <TableCell><strong>Entity Type</strong></TableCell>
+                <TableCell><strong>Entity ID</strong></TableCell>
+                <TableCell><strong>Performed By</strong></TableCell>
+                <TableCell><strong>Role</strong></TableCell>
+                <TableCell><strong>Remarks</strong></TableCell>
+                <TableCell><strong>Time</strong></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {logs.map((log) => (
+                <TableRow key={log.id} hover>
+                  <TableCell>{log.id}</TableCell>
+                  <TableCell>
+                    <Chip
+                      label={log.actionType || '-'}
+                      size="small"
+                      color="primary"
+                      variant="outlined"
+                    />
+                  </TableCell>
+                  <TableCell>{log.entityType || '-'}</TableCell>
+                  <TableCell>{log.entityId || '-'}</TableCell>
+                 <TableCell>
+  {log.performedByName ? (
+    <>
+      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+        {log.performedByName}
+      </Typography>
+      <Typography variant="caption" color="text.secondary">
+        {log.performedById || '-'}
+      </Typography>
+    </>
+  ) : (
+    log.performedById || '-'
+  )}
+</TableCell>
+<TableCell>{log.performedByRole || '-'}</TableCell>
+                  <TableCell>{log.performedByRole || '-'}</TableCell>
+                  <TableCell>{log.remarks || '-'}</TableCell>
+                  <TableCell>
+                    {log.performedAt ? new Date(log.performedAt).toLocaleString('en-IN') : '-'}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        <TablePagination
+          component="div"
+          count={logsTotal}
+          page={logsPage}
+          onPageChange={(_, newPage) => setLogsPage(newPage)}
+          rowsPerPage={logsRowsPerPage}
+          onRowsPerPageChange={(e) => {
+            setLogsRowsPerPage(parseInt(e.target.value, 10));
+            setLogsPage(0);
+          }}
+          rowsPerPageOptions={[10, 20, 50]}
+        />
+      </>
+    )}
+  </Paper>
+);
   // Check if any filter is active
   const hasActiveFilters = filters.userId || filters.name || filters.mobileNumber || filters.email;
 const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
@@ -3562,6 +3811,21 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
     {exportLoading ? 'Sending...' : 'Mail Insurance Excel'}
   </Button>
 </Grid>
+<Grid item xs={12} sm={6} md={3}>
+  <Button
+    fullWidth
+    variant="contained"
+    startIcon={<DeleteForever />}
+    onClick={() => setDeleteRequestsOpen(true)}
+    sx={{
+      bgcolor: '#c62828',
+      py: 2,
+      '&:hover': { bgcolor: '#b71c1c' }
+    }}
+  >
+    Delete Requests
+  </Button>
+</Grid>
               </Grid>
             </Box>
           </Paper>
@@ -3595,7 +3859,11 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
               />
                 <Tab label="Pool"iconPosition="start"  icon={<Assignment />} />
             <Tab icon={<Payment />} iconPosition="start" label="Receipts" />
-          
+          <Tab
+  icon={<Assignment />}
+  iconPosition="start"
+  label="Audit Logs"
+/>
             </Tabs>
 
             <Box sx={{ p: 3 }}>
@@ -3603,8 +3871,8 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
               {activeTab === 1 && renderDeathCasesTab()}
                {activeTab === 2 && renderPoolTab()}
               {activeTab === 3 && renderPaymentsTab()}
-             
-              {/* {activeTab === 3 && renderQueriesTab()} */}
+             {activeTab === 4 && renderLogsTab()}
+              {/* {activeTab === 3 && renderQueriesTab()}
               {activeTab === 4 && renderAssignmentsTab()}
               {activeTab === 5 && (
                 <Alert severity="info" sx={{ borderRadius: 2 }}>
@@ -3614,7 +3882,7 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
                     Each role has its own rights and responsibilities.
                   </Typography>
                 </Alert>
-              )}
+              )} */}
             </Box>
           </Paper>
         </Container>
@@ -3634,7 +3902,92 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
             {snackbar.message}
           </Alert>
         </Snackbar>
+<Dialog
+  open={deleteRequestsOpen}
+  onClose={() => setDeleteRequestsOpen(false)}
+  maxWidth="lg"
+  fullWidth
+  PaperProps={{
+    sx: { borderRadius: 3 }
+  }}
+>
+  <DialogTitle sx={{ bgcolor: '#c62828', color: 'white', fontWeight: 'bold' }}>
+    Pending Delete Requests
+  </DialogTitle>
 
+  <DialogContent dividers>
+    {deleteRequestsLoading ? (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+        <CircularProgress />
+      </Box>
+    ) : deleteRequests.length === 0 ? (
+      <Typography variant="body1" color="textSecondary">
+        No pending delete requests found.
+      </Typography>
+    ) : (
+      <TableContainer>
+        <Table>
+          <TableHead>
+            <TableRow sx={{ bgcolor: '#ffebee' }}>
+              <TableCell><strong>ID</strong></TableCell>
+              <TableCell><strong>Entity</strong></TableCell>
+              <TableCell><strong>Entity ID</strong></TableCell>
+              <TableCell><strong>Requested By</strong></TableCell>
+              <TableCell><strong>Role</strong></TableCell>
+              <TableCell><strong>Reason</strong></TableCell>
+              <TableCell><strong>Created At</strong></TableCell>
+              <TableCell><strong>Actions</strong></TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {deleteRequests.map((request) => (
+              <TableRow key={request.id} hover>
+                <TableCell>{request.id}</TableCell>
+                <TableCell>{request.entityType}</TableCell>
+                <TableCell>{request.entityId}</TableCell>
+                <TableCell>
+                  {request.requestedByName || request.requestedBy}
+                </TableCell>
+                <TableCell>{request.requestedByRole}</TableCell>
+                <TableCell>{request.reason || '-'}</TableCell>
+                <TableCell>
+                  {request.createdAt ? new Date(request.createdAt).toLocaleString('en-IN') : '-'}
+                </TableCell>
+                <TableCell>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="success"
+                      onClick={() => handleApproveDeleteRequest(request.id)}
+                    >
+                      Approve
+                    </Button>
+
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="error"
+                      onClick={() => handleRejectDeleteRequest(request.id)}
+                    >
+                      Reject
+                    </Button>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    )}
+  </DialogContent>
+
+  <DialogActions>
+    <Button onClick={() => setDeleteRequestsOpen(false)}>
+      Close
+    </Button>
+  </DialogActions>
+</Dialog>
         {/* User Management Dialog */}
         <Dialog 
           open={dialogOpen} 
@@ -5869,6 +6222,58 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
                 Deleted users (soft-deleted). You can restore or permanently delete.
               </Typography>
             </Box>
+            <Box
+  sx={{
+    display: 'flex',
+    gap: 1,
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end',
+   
+  }}
+>
+  <Button
+    variant="outlined"
+    color="success"
+    size="small"
+    startIcon={<RestoreFromTrash sx={{ fontSize: 18 }} />}
+    onClick={handleRestoreAllTrash}
+    disabled={!Array.isArray(trashUsers) || trashUsers.length === 0}
+    sx={{
+      textTransform: 'none',
+      borderRadius: 2,
+      px: 1.5,
+      py: 0.75,
+      minWidth: 'auto',
+      fontSize: '0.85rem',
+      fontWeight: 600,
+      boxShadow: 'none',
+    }}
+  >
+    Restore All
+  </Button>
+
+  <Button
+    variant="contained"
+    color="error"
+    size="small"
+    startIcon={<DeleteSweep sx={{ fontSize: 18 }} />}
+    onClick={handleClearTrash}
+    disabled={!Array.isArray(trashUsers) || trashUsers.length === 0}
+    sx={{
+      textTransform: 'none',
+      borderRadius: 2,
+      px: 1.5,
+      py: 0.75,
+      minWidth: 'auto',
+      fontSize: '0.85rem',
+      fontWeight: 600,
+      boxShadow: 'none',
+    }}
+  >
+    Clear Trash
+  </Button>
+</Box>
             {/* <Button onClick={closeTrash} variant="outlined" size="small" sx={{ borderRadius: 2 }}>
               Close
             </Button> */}
@@ -5886,6 +6291,7 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
                 </Typography>
               </Box>
             ) : (
+              
               <TableContainer component={Paper} elevation={0}>
                 <Table size="small">
                   <TableHead>
@@ -5899,7 +6305,7 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {trashUsers.map((u) => (
+                    {(Array.isArray(trashUsers) ? trashUsers : []).map((u) => (
                       <TableRow key={u.id} hover>
                         <TableCell>
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>
@@ -5921,8 +6327,7 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
                             size="small"
                           />
                         </TableCell>
-                        <TableCell>{formatDate(u.updatedAt) || '-'}</TableCell>
-                        <TableCell align="right">
+<TableCell>{formatDate(u.deletedAt) || '-'}</TableCell>                        <TableCell align="right">
                           <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
                             <Button
                               size="small"

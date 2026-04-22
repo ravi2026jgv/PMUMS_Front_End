@@ -69,7 +69,7 @@ import {
   LockReset,
   Download,
   Settings,
-  
+    DeleteForever,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { managerAPI, adminAPI } from '../services/api';
@@ -92,7 +92,9 @@ const ManagerDashboard = () => {
   const [createQueryOpen, setCreateQueryOpen] = useState(false);
   const [resolveQueryOpen, setResolveQueryOpen] = useState(false);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-  
+  const [deleteRequestsOpen, setDeleteRequestsOpen] = useState(false);
+const [deleteRequests, setDeleteRequests] = useState([]);
+const [deleteRequestsLoading, setDeleteRequestsLoading] = useState(false);
   const [passwordResetOpen, setPasswordResetOpen] = useState(false);
 const [passwordResetLoading, setPasswordResetLoading] = useState(false);
 const [passwordResetUser, setPasswordResetUser] = useState(null);
@@ -133,7 +135,7 @@ const isAdmin = user?.role === 'ROLE_ADMIN';
 const isSambhagManager = user?.role === 'ROLE_SAMBHAG_MANAGER';
 const isDistrictManager = user?.role === 'ROLE_DISTRICT_MANAGER';
 const isBlockManager = user?.role === 'ROLE_BLOCK_MANAGER';
-  
+const canDeleteUsers = isSambhagManager;
 const canManageUsers = isSuperAdmin || isAdmin || isSambhagManager || isDistrictManager;
 const canAssignQueries = isSuperAdmin || isAdmin || isSambhagManager || isDistrictManager;
 const canEscalateQueries = isSuperAdmin || isSambhagManager || isDistrictManager || isBlockManager;
@@ -176,6 +178,26 @@ const fetchDeathCases = async () => {
       showSnackbar('Error loading users!', 'error');
     }
   };
+  const fetchMyDeleteRequests = async () => {
+  if (!deleteRequestsOpen) return;
+
+  try {
+    setDeleteRequestsLoading(true);
+    const response = await managerAPI.getMyDeleteRequests();
+    setDeleteRequests(response.data || []);
+  } catch (error) {
+    console.error('Error fetching my delete requests:', error);
+    showSnackbar('Error loading delete requests!', 'error');
+    setDeleteRequests([]);
+  } finally {
+    setDeleteRequestsLoading(false);
+  }
+};
+useEffect(() => {
+  fetchMyDeleteRequests();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [deleteRequestsOpen]);
+
 const downloadBlobFile = (data, filename, type = 'text/csv;charset=utf-8') => {
   const blob = new Blob([data], { type });
   const url = window.URL.createObjectURL(blob);
@@ -206,7 +228,39 @@ const openExportDialog = async (type) => {
 
   setExportDialogOpen(true);
 };
+const handleDeleteUser = async (targetUser) => {
+  const userId = typeof targetUser === 'string' ? targetUser : targetUser?.id;
+  if (!userId) return;
 
+  if (!canDeleteUsers) {
+    showSnackbar('You do not have permission to delete users!', 'error');
+    return;
+  }
+
+  if (targetUser?.role === 'ROLE_ADMIN' || targetUser?.role === 'ROLE_SUPERADMIN') {
+    showSnackbar('Admin/Super Admin cannot be deleted from this dashboard!', 'error');
+    return;
+  }
+
+  const reason = window.prompt('Enter delete reason (optional):', 'Manager requested delete');
+  if (reason === null) return;
+
+  try {
+    await managerAPI.softDeleteUserWithApproval(userId, {
+      reason: reason || 'Manager requested delete',
+      requestedFromDashboard: 'MANAGER_DASHBOARD'
+    });
+
+showSnackbar('Delete request sent to admin successfully!', 'success');    fetchAccessibleUsers();
+    fetchMyDeleteRequests();
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    showSnackbar(
+      error?.response?.data?.message || 'Error deleting user!',
+      'error'
+    );
+  }
+};
 const handleManagerExport = async () => {
   try {
     setExportLoading(true);
@@ -737,6 +791,21 @@ const submitPasswordReset = async () => {
   >
     <LockReset fontSize="small" sx={{ color: '#9c27b0' }} />
   </IconButton>
+  {canDeleteUsers && (
+  <IconButton
+    size="small"
+    onClick={() => handleDeleteUser(user)}
+    title="Delete User"
+    sx={{
+      bgcolor: '#f4433620',
+      '&:hover': {
+        bgcolor: '#f4433640'
+      }
+    }}
+  >
+    <Delete fontSize="small" sx={{ color: '#f44336' }} />
+  </IconButton>
+)}
 </Box>
   )}
                 </TableCell>
@@ -974,6 +1043,7 @@ const submitPasswordReset = async () => {
             label="Assignments" 
             iconPosition="start"
           />
+         
         </Tabs>
 
         <Box sx={{ p: 3 }}>
@@ -1038,6 +1108,7 @@ const submitPasswordReset = async () => {
   >
     Export Zero UTR
   </Button>
+ 
 </Box>
                     <Card elevation={3}>
                       <CardContent>
@@ -1093,6 +1164,7 @@ const submitPasswordReset = async () => {
               </Alert>
             </Box>
           )}
+        
         </Box>
       </Paper>
 
@@ -1119,6 +1191,7 @@ const submitPasswordReset = async () => {
           setSelectedItem(null);
         }}
       />
+    
       <Dialog
   open={settingsDialogOpen}
   onClose={() => setSettingsDialogOpen(false)}

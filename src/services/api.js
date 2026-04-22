@@ -205,7 +205,26 @@ exportAllSahyog: () => {
     responseType: 'blob'
   });
 },
+  softDeleteUserWithApproval: (userId, payload = {}) =>
+    api.post(`/delete-approval/users/${userId}/soft-delete`, payload),
 
+  restoreDeletedUser: (userId) =>
+    api.post(`/delete-approval/users/${userId}/restore`),
+
+  getPendingDeleteRequests: () =>
+    api.get(`/delete-approval/requests/pending`),
+
+  getMyDeleteRequests: () =>
+    api.get(`/delete-approval/requests/my`),
+
+  approveDeleteRequest: (requestId) =>
+    api.post(`/delete-approval/requests/${requestId}/approve`),
+
+  rejectDeleteRequest: (requestId, payload = {}) =>
+    api.post(`/delete-approval/requests/${requestId}/reject`, payload),
+
+  getDeletedUsersFromApprovalFlow: () =>
+    api.get(`/delete-approval/trash/users`),
 exportAllAsahyog: () => {
   return api.get('/admin/export/asahyog/all', {
     responseType: 'blob'
@@ -406,11 +425,28 @@ exportAllUsers: () => {
   getManagerScope: (managerId) => {
     return api.get('/manager/scope', { params: { managerId } });
   },
+  permanentlyDeleteUserFromTrash: (userId) =>
+  api.post(`/delete-approval/users/${userId}/permanent-delete`),
 
   // Location APIs - Using same pattern as registration
   getLocationHierarchy: () => {
     return api.get('/locations/hierarchy');
-  }
+  },
+  getAuditLogsByUser: (userId) =>
+  api.get(`/audit-logs/user/${userId}`),
+
+getAuditLogsByEntity: (entityType, entityId) =>
+  api.get(`/audit-logs/entity`, {
+    params: { entityType, entityId }
+  }),
+  restoreAllDeletedUsers: () =>
+  api.post(`/delete-approval/trash/users/restore-all`),
+
+clearAllTrashUsers: () =>
+  api.post(`/delete-approval/trash/users/clear-all`),
+getAuditLogs: (page = 0, size = 20) =>
+  api.get(`/audit-logs`, { params: { page, size } }),
+  
 };
 
 // Manager API endpoints
@@ -428,7 +464,11 @@ const managerAPI = {
   blockUser: (userId, reason) => api.put(`/manager/users/${userId}/block`, { reason }),
   unblockUser: (userId) => api.put(`/manager/users/${userId}/unblock`),
   updateUserRole: (userId, role) => api.put(`/manager/users/${userId}/role`, { role }),
+  softDeleteUserWithApproval: (userId, payload = {}) =>
+    api.post(`/delete-approval/users/${userId}/soft-delete`, payload),
 
+  getMyDeleteRequests: () =>
+    api.get(`/delete-approval/requests/my`),
   // Manager Query System APIs
   createQuery: (queryData) => api.post('/manager/queries', queryData),
   getQueries: (params = {}) => api.get('/manager/queries', { params }),
