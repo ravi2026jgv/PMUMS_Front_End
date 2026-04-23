@@ -49,9 +49,15 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [profileData, setProfileData] = useState(null);
-  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
-  // const [emailChanged, setEmailChanged] = useState(false);
+const [profileData, setProfileData] = useState(null);
+const [profileFieldLocks, setProfileFieldLocks] = useState({
+  fullName: false,
+  dateOfBirth: false,
+  mobileNumber: false,
+  email: false,
+  departmentUniqueId: false,
+});
+const [showPasswordDialog, setShowPasswordDialog] = useState(false);  // const [emailChanged, setEmailChanged] = useState(false);
 
   // Location hierarchy state
   const [locationHierarchy, setLocationHierarchy] = useState(null);
@@ -66,7 +72,13 @@ const Profile = () => {
   const [availableDistricts, setAvailableDistricts] = useState([]);
   const [availableBlocks, setAvailableBlocks] = useState([]);
 // const isDepartmentUniqueIdLocked = false;
+const isFullNameLocked = Boolean(profileFieldLocks?.fullName);
+const isDateOfBirthLocked = Boolean(profileFieldLocks?.dateOfBirth);
+const isMobileNumberLocked = Boolean(profileFieldLocks?.mobileNumber);
+const isEmailLocked = Boolean(profileFieldLocks?.email);
+
 const isDepartmentUniqueIdLocked = Boolean(
+  profileFieldLocks?.departmentUniqueId ||
   (profileData?.departmentUniqueId || '').toString().trim()
 );
 
@@ -198,30 +210,79 @@ const {
   }, []);
 
   // Initialize location dropdowns when profile data loads
-  useEffect(() => {
-    if (profileData && locationHierarchy && availableSambhags.length > 0) {
-      // Find and set sambhag
-      const sambhag = availableSambhags.find(s => s.name === profileData.departmentSambhag);
-      if (sambhag) {
-        setSelectedSambhag(sambhag.id);
-        setAvailableDistricts(sambhag.districts || []);
-        
-        // Find and set district
-        const district = sambhag.districts?.find(d => d.name === profileData.departmentDistrict);
-        if (district) {
-          setSelectedDistrict(district.id);
-          setAvailableBlocks(district.blocks || []);
-          
-          // Find and set block
-          const block = district.blocks?.find(b => b.name === profileData.departmentBlock);
-          if (block) {
-            setSelectedBlock(block.id);
-          }
-        }
-      }
-    }
-  }, [profileData, locationHierarchy, availableSambhags]);
+useEffect(() => {
+  if (profileData && locationHierarchy) {
+    syncLocationSelectionsFromProfile(profileData, locationHierarchy);
+  }
+}, [profileData, locationHierarchy]);
 
+  const syncLocationSelectionsFromProfile = (profile, hierarchyArg = locationHierarchy) => {
+  if (!profile || !hierarchyArg?.states?.length) {
+    setSelectedSambhag('');
+    setSelectedDistrict('');
+    setSelectedBlock('');
+    setAvailableSambhags(hierarchyArg?.states?.[0]?.sambhags || []);
+    setAvailableDistricts([]);
+    setAvailableBlocks([]);
+    return;
+  }
+
+  const mpState = hierarchyArg.states[0];
+  const sambhags = mpState.sambhags || [];
+  setSelectedState(mpState.id);
+  setAvailableSambhags(sambhags);
+  setValue('departmentState', mpState.name);
+
+  const matchedSambhag = sambhags.find(
+    (s) => s.name === (profile.departmentSambhag || '')
+  );
+
+  if (!matchedSambhag) {
+    setSelectedSambhag('');
+    setSelectedDistrict('');
+    setSelectedBlock('');
+    setAvailableDistricts([]);
+    setAvailableBlocks([]);
+    setValue('departmentSambhag', '');
+    setValue('departmentDistrict', '');
+    setValue('departmentBlock', '');
+    return;
+  }
+
+  setSelectedSambhag(matchedSambhag.id);
+  setAvailableDistricts(matchedSambhag.districts || []);
+  setValue('departmentSambhag', matchedSambhag.name);
+
+  const matchedDistrict = (matchedSambhag.districts || []).find(
+    (d) => d.name === (profile.departmentDistrict || '')
+  );
+
+  if (!matchedDistrict) {
+    setSelectedDistrict('');
+    setSelectedBlock('');
+    setAvailableBlocks([]);
+    setValue('departmentDistrict', '');
+    setValue('departmentBlock', '');
+    return;
+  }
+
+  setSelectedDistrict(matchedDistrict.id);
+  setAvailableBlocks(matchedDistrict.blocks || []);
+  setValue('departmentDistrict', matchedDistrict.name);
+
+  const matchedBlock = (matchedDistrict.blocks || []).find(
+    (b) => b.name === (profile.departmentBlock || '')
+  );
+
+  if (!matchedBlock) {
+    setSelectedBlock('');
+    setValue('departmentBlock', '');
+    return;
+  }
+
+  setSelectedBlock(matchedBlock.id);
+  setValue('departmentBlock', matchedBlock.name);
+};
   // Handle Sambhag selection
   const handleSambhagChange = (sambhagId) => {
     setSelectedSambhag(sambhagId);
@@ -260,60 +321,52 @@ const {
     setValue('departmentBlock', block?.name || '');
   };
 
-  useEffect(() => {
-    // Use user data from AuthContext if profileData is not loaded
-    if (user && user.id && !profileData) {
-      setProfileData(user);
-      reset(user);
+useEffect(() => {
+  if (user && user.id && !profileData) {
+    setProfileData(user);
+    reset(user);
+  }
+
+  loadProfileFieldLocks();
+  loadProfileData();
+
+  return () => {
+    if (profileAbortControllerRef.current) {
+      profileAbortControllerRef.current.abort();
     }
-    loadProfileData();
-    
-    // Cleanup function to abort any ongoing requests
-    return () => {
-      if (profileAbortControllerRef.current) {
-        profileAbortControllerRef.current.abort();
-      }
-    };
-  }, [user]);
+  };
+}, [user]);
 
   // Reset form when profileData changes
-  useEffect(() => {
-    if (profileData) {
-      reset(profileData);
-      // Ensure state value is set after reset
-      if (locationHierarchy?.states?.[0]) {
-        setValue('departmentState', locationHierarchy.states[0].name);
-      }
-      // Ensure sambhag value is set after reset
-      if (profileData.departmentSambhag) {
-        setValue('departmentSambhag', profileData.departmentSambhag);
-      } else {
-        // Force set from the district info if available
-        if (profileData.departmentDistrict && locationHierarchy) {
-          // Find sambhag from district
-          const mpState = locationHierarchy.states?.[0];
-          if (mpState) {
-            for (const sambhag of mpState.sambhags || []) {
-              const foundDistrict = sambhag.districts?.find(d => d.name === profileData.departmentDistrict);
-              if (foundDistrict) {
-                setValue('departmentSambhag', sambhag.name);
-                break;
-              }
-            }
-          }
-        }
-      }
-      // Ensure district value is set after reset
-      if (profileData.departmentDistrict) {
-        setValue('departmentDistrict', profileData.departmentDistrict);
-      }
-      // Ensure block value is set after reset
-      if (profileData.departmentBlock) {
-        setValue('departmentBlock', profileData.departmentBlock);
-      }
-    }
-  }, [profileData, reset, locationHierarchy, setValue]);
-
+useEffect(() => {
+  if (profileData) {
+   reset({
+  ...profileData,
+  fullName: combineFullName(profileData?.name, profileData?.surname),
+});
+  }
+}, [profileData, reset]);
+const loadProfileFieldLocks = async () => {
+  try {
+    const response = await api.getProfileFieldLocks();
+    setProfileFieldLocks({
+      fullName: !!response?.data?.fullName,
+      dateOfBirth: !!response?.data?.dateOfBirth,
+      mobileNumber: !!response?.data?.mobileNumber,
+      email: !!response?.data?.email,
+      departmentUniqueId: !!response?.data?.departmentUniqueId,
+    });
+  } catch (error) {
+    console.error('Failed to load profile field locks:', error);
+    setProfileFieldLocks({
+      fullName: false,
+      dateOfBirth: false,
+      mobileNumber: false,
+      email: false,
+      departmentUniqueId: false,
+    });
+  }
+};
   const loadProfileData = async () => {
     // Cancel any ongoing request
     if (profileAbortControllerRef.current) {
@@ -331,11 +384,11 @@ const {
       
       if (userId) {
         // Fetch latest user data by ID
-        const response = await api.get(`/users/${userId}`, {
-          signal: profileAbortControllerRef.current.signal
-        });
-        setProfileData(response.data);
-        reset(response.data);
+      const response = await api.getProfileById(userId, {
+  signal: profileAbortControllerRef.current.signal
+});
+setProfileData(response.data);
+reset(response.data);
       } else {
         // Should not happen with new login flow, but keep as fallback
         throw new Error('User ID not found. Please login again.');
@@ -357,26 +410,41 @@ const {
       setLoading(false);
     }
   };
+const splitFullName = (fullName) => {
+  const cleaned = (fullName || '').trim().replace(/\s+/g, ' ');
+  if (!cleaned) return { name: '', surname: '' };
 
-  const handleEditToggle = () => {
-    if (isEditing) {
-      // If cancelling edit, reset form to original data
-      reset(profileData);
-      // setEmailChanged(false);
-    } else {
-      // When starting to edit, ensure state value is set
-      if (locationHierarchy?.states?.[0]) {
-        setValue('departmentState', locationHierarchy.states[0].name);
-      }
-      // Also set sambhag if it exists in profile data
-      if (profileData?.departmentSambhag) {
-        setValue('departmentSambhag', profileData.departmentSambhag);
-      }
-    }
-    setIsEditing(!isEditing);
-    setError('');
-    setSuccess('');
+  const parts = cleaned.split(' ');
+  if (parts.length === 1) {
+    return { name: parts[0], surname: '' };
+  }
+
+  return {
+    name: parts[0],
+    surname: parts.slice(1).join(' '),
   };
+};
+
+const combineFullName = (name, surname) =>
+  [name, surname].filter(Boolean).join(' ').trim();
+const handleEditToggle = () => {
+  if (isEditing) {
+    reset({
+  ...profileData,
+  fullName: combineFullName(profileData?.name, profileData?.surname),
+});
+    syncLocationSelectionsFromProfile(profileData);
+  } else {
+    if (locationHierarchy?.states?.[0]) {
+      setValue('departmentState', locationHierarchy.states[0].name);
+    }
+    syncLocationSelectionsFromProfile(profileData);
+  }
+
+  setIsEditing(!isEditing);
+  setError('');
+  setSuccess('');
+};
 const onInvalid = (formErrors) => {
   const firstError = Object.values(formErrors)?.[0];
 
@@ -387,101 +455,87 @@ const onInvalid = (formErrors) => {
   }
 };
   const onSubmit = async (data) => {
-    try {
-      setLoading(true);
-      setError('');
-      
-      // Custom validation for location dropdowns
-      const validationErrors = [];
-      if (!selectedSambhag) validationErrors.push('संभाग चुनना आवश्यक है');
-      if (!selectedDistrict) validationErrors.push('जिला चुनना आवश्यक है');
-      if (!selectedBlock) validationErrors.push('ब्लॉक चुनना आवश्यक है');
-      
-   if (validationErrors.length > 0) {
-  const message = validationErrors.join(', ');
-  setError(message);
-  toast.error(message);
-  setLoading(false);
-  return;
-}
-      
-      // Get user ID from context or localStorage - should always be available now
-      const userId = user?.id || JSON.parse(localStorage.getItem('user') || '{}')?.id;
-      
-      if (userId) {
-        // Ensure state value is set if missing
-        if (!data.departmentState && locationHierarchy?.states?.[0]) {
-          data.departmentState = locationHierarchy.states[0].name;
-          setValue('departmentState', locationHierarchy.states[0].name);
-        }
-        
-        // Ensure sambhag value is set if missing but district exists
-        if (!data.departmentSambhag && data.departmentDistrict && locationHierarchy) {
-          const mpState = locationHierarchy.states?.[0];
-          if (mpState) {
-            for (const sambhag of mpState.sambhags || []) {
-              const foundDistrict = sambhag.districts?.find(d => d.name === data.departmentDistrict);
-              if (foundDistrict) {
-                data.departmentSambhag = sambhag.name;
-                setValue('departmentSambhag', sambhag.name);
-                break;
-              }
-            }
-          }
-        }
-        
-        // Filter data to match UpdateUserRequest fields only
-        const updatePayload = {
-          name: data.name,
-          surname: data.surname,
-          fatherName: data.fatherName,
-          email: data.email,
-          countryCode: data.countryCode,
-          phoneNumber: data.phoneNumber,
-          mobileNumber: data.mobileNumber,
-          gender: data.gender,
-          maritalStatus: data.maritalStatus,
-          homeAddress: data.homeAddress,
-          pincode: data.pincode ? parseInt(data.pincode) : null,
-          dateOfBirth: data.dateOfBirth,
-          joiningDate: data.joiningDate,
-          retirementDate: data.retirementDate,
-          schoolOfficeName: data.schoolOfficeName,
-          sankulName: data.sankulName,
-          department: data.department,
-        // departmentUniqueId: data.departmentUniqueId,
-departmentUniqueId: isDepartmentUniqueIdLocked
-  ? profileData?.departmentUniqueId
-  : data.departmentUniqueId,
-        departmentState: data.departmentState,
-          departmentSambhag: data.departmentSambhag,
-          departmentDistrict: data.departmentDistrict,
-          departmentBlock: data.departmentBlock,
-          nominee1Name: data.nominee1Name,
-          nominee1Relation: data.nominee1Relation,
-          nominee2Name: data.nominee2Name,
-          nominee2Relation: data.nominee2Relation,
-        };
+  try {
+    setLoading(true);
+    setError('');
 
-        const response = await api.put(`/users/${userId}`, updatePayload);
-        setProfileData(response.data);
-        // Update localStorage with new user data
-        localStorage.setItem('user', JSON.stringify(response.data));
-        setIsEditing(false);
-        setSuccess('प्रोफाइल सफलतापूर्वक अपडेट हो गया');
-        toast.success('प्रोफाइल सफलतापूर्वक अपडेट हो गया');
-      } else {
-        throw new Error('User ID not found. Please login again.');
-      }
-    } catch (error) {
-      console.error('Profile update error:', error);
-      const errorMessage = error.response?.data?.message || 'प्रोफाइल अपडेट करने में त्रुटि हुई है';
-      setError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
+    const validationErrors = [];
+    if (!selectedSambhag) validationErrors.push('संभाग चुनना आवश्यक है');
+    if (!selectedDistrict) validationErrors.push('जिला चुनना आवश्यक है');
+    if (!selectedBlock) validationErrors.push('ब्लॉक चुनना आवश्यक है');
+
+    if (validationErrors.length > 0) {
+      const message = validationErrors.join(', ');
+      setError(message);
+      toast.error(message);
       setLoading(false);
+      return;
     }
-  };
+
+    const userId = user?.id || JSON.parse(localStorage.getItem('user') || '{}')?.id;
+
+    if (!userId) {
+      throw new Error('User ID not found. Please login again.');
+    }
+
+    const stateName = locationHierarchy?.states?.[0]?.name || 'मध्य प्रदेश';
+    const sambhagName =
+      availableSambhags.find((s) => s.id === selectedSambhag)?.name || '';
+    const districtName =
+      availableDistricts.find((d) => d.id === selectedDistrict)?.name || '';
+    const blockName =
+      availableBlocks.find((b) => b.id === selectedBlock)?.name || '';
+const { name, surname } = splitFullName(data.fullName);
+   const updatePayload = {
+  name: isFullNameLocked ? profileData?.name : name,
+  surname: isFullNameLocked ? profileData?.surname : surname,
+  fatherName: data.fatherName,
+  email: isEmailLocked ? profileData?.email : data.email,
+  countryCode: data.countryCode,
+  mobileNumber: isMobileNumberLocked ? profileData?.mobileNumber : data.mobileNumber,
+  gender: data.gender,
+  maritalStatus: data.maritalStatus,
+  homeAddress: data.homeAddress,
+  pincode: data.pincode ? parseInt(data.pincode, 10) : null,
+  dateOfBirth: isDateOfBirthLocked
+    ? profileData?.dateOfBirth || null
+    : data.dateOfBirth || null,
+  joiningDate: data.joiningDate || null,
+  retirementDate: data.retirementDate || null,
+  schoolOfficeName: data.schoolOfficeName,
+  sankulName: data.sankulName,
+  department: data.department,
+  departmentUniqueId: isDepartmentUniqueIdLocked
+    ? profileData?.departmentUniqueId
+    : data.departmentUniqueId,
+  departmentState: stateName,
+  departmentSambhag: sambhagName,
+  departmentDistrict: districtName,
+  departmentBlock: blockName,
+  nominee1Name: data.nominee1Name,
+  nominee1Relation: data.nominee1Relation,
+  nominee2Name: data.nominee2Name,
+  nominee2Relation: data.nominee2Relation,
+};
+
+const response = await api.updateProfileById(userId, updatePayload);
+    setProfileData(response.data);
+    localStorage.setItem('user', JSON.stringify(response.data));
+    reset(response.data);
+    syncLocationSelectionsFromProfile(response.data);
+    setIsEditing(false);
+    setSuccess('प्रोफाइल सफलतापूर्वक अपडेट हो गया');
+    toast.success('प्रोफाइल सफलतापूर्वक अपडेट हो गया');
+  } catch (error) {
+    console.error('Profile update error:', error);
+    const errorMessage =
+      error.response?.data?.message || 'प्रोफाइल अपडेट करने में त्रुटि हुई है';
+    setError(errorMessage);
+    toast.error(errorMessage);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handlePasswordChangeSuccess = (message) => {
     setSuccess(message);
@@ -601,41 +655,30 @@ departmentUniqueId: isDepartmentUniqueIdLocked
             
             <Paper sx={{ mb: 4, p: 3, borderRadius: 2, border: '1px solid #e0e0e0' }}>
               <Grid container spacing={3}>
-                <Grid item xs={12} md={4}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नाम</Typography>
-                  <TextField
-                    fullWidth
-                    defaultValue={profileData?.name || ''}
-                    {...register('name', { required: 'नाम आवश्यक है' })}
-                    disabled={true}
-                    error={!!errors.name}
-                    // helperText="नाम फ़ील्ड लॉक है (Name field is locked)"
-                    sx={{
-                      '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                        border: '1px solid #ccc',
-                        borderRadius: '8px',
-                        backgroundColor: '#f5f5f5'
-                      }
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>उपनाम</Typography>
-                  <TextField
-                    fullWidth
-                    defaultValue={profileData?.surname || ''}
-                    {...register('surname', { required: 'उपनाम आवश्यक है' })}
-                    disabled={!isEditing}
-                    error={!!errors.surname}
-                    helperText={errors.surname?.message}
-                    sx={{
-                      '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                        border: '1px solid #ccc',
-                        borderRadius: '8px'
-                      }
-                    }}
-                  />
-                </Grid>
+                <Grid item xs={12} md={8}>
+  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>
+    पूरा नाम
+  </Typography>
+  <TextField
+    fullWidth
+    defaultValue={combineFullName(profileData?.name, profileData?.surname)}
+    {...register('fullName', { required: 'पूरा नाम आवश्यक है' })}
+      disabled={!isEditing || isFullNameLocked}
+  error={!!errors.fullName}
+  helperText={
+    errors.fullName?.message ||
+    (isFullNameLocked ? 'पूरा नाम एडमिन द्वारा लॉक किया गया है' : '')
+  }
+    sx={{
+      '& .MuiOutlinedInput-root': {
+        '& input::placeholder': { color: '#000', opacity: 1 },
+        '& textarea::placeholder': { color: '#000', opacity: 1 },
+        border: '1px solid #ccc',
+        borderRadius: '8px'
+      }
+    }}
+  />
+</Grid>
                 <Grid item xs={12} md={4}>
                   <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पिता/पति का नाम (Father/Husband Name)</Typography>
                   <TextField
@@ -719,9 +762,12 @@ departmentUniqueId: isDepartmentUniqueIdLocked
                     type="date"
                     defaultValue={profileData?.dateOfBirth || ''}
                     {...register('dateOfBirth', { required: 'जन्मतिथि आवश्यक है' })}
-                    disabled={!isEditing}
-                    error={!!errors.dateOfBirth}
-                    helperText={errors.dateOfBirth?.message}
+  disabled={!isEditing || isDateOfBirthLocked}
+  error={!!errors.dateOfBirth}
+  helperText={
+    errors.dateOfBirth?.message ||
+    (isDateOfBirthLocked ? 'जन्मतिथि एडमिन द्वारा लॉक की गई है' : '')
+  }
                     sx={{
                       '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                         border: '1px solid #ccc',
@@ -748,21 +794,7 @@ departmentUniqueId: isDepartmentUniqueIdLocked
                     }}
                   />
                 </Grid>
-                <Grid item xs={12} md={4}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>फोन नंबर</Typography>
-                  <TextField
-                    fullWidth
-                    defaultValue={profileData?.phoneNumber || ''}
-                    {...register('phoneNumber')}
-                    disabled={!isEditing}
-                    sx={{
-                      '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                        border: '1px solid #ccc',
-                        borderRadius: '8px'
-                      }
-                    }}
-                  />
-                </Grid>
+                
                 <Grid item xs={12} md={6}>
                   <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>मोबाइल नंबर</Typography>
                   <TextField
@@ -783,10 +815,12 @@ departmentUniqueId: isDepartmentUniqueIdLocked
       message: 'मोबाइल नंबर 10 अंकों का होना चाहिए'
     }
   })}
-  disabled={!isEditing}
+ disabled={!isEditing || isMobileNumberLocked}
   error={!!errors.mobileNumber}
-  helperText={errors.mobileNumber?.message}
-  inputProps={{ maxLength: 10, inputMode: 'numeric' }}
+helperText={
+  errors.mobileNumber?.message ||
+  (isMobileNumberLocked ? 'मोबाइल नंबर एडमिन द्वारा लॉक किया गया है' : '')
+}  inputProps={{ maxLength: 10, inputMode: 'numeric' }}
   onInput={(e) => {
     e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
   }}
@@ -813,9 +847,12 @@ departmentUniqueId: isDepartmentUniqueIdLocked
                         message: 'कृपया सही ईमेल दर्ज करें'
                       }
                     })}
-                    disabled={!isEditing}
+                   disabled={!isEditing || isEmailLocked}
                     error={!!errors.email}
-                    helperText={errors.email?.message}
+                   helperText={
+  errors.email?.message ||
+  (isEmailLocked ? 'ईमेल एडमिन द्वारा लॉक किया गया है' : '')
+}
                     sx={{
                       '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                         border: '1px solid #ccc',
@@ -960,19 +997,18 @@ departmentUniqueId: isDepartmentUniqueIdLocked
   {...register('departmentUniqueId', { required: 'विभाग आईडी आवश्यक है' })}
   disabled={!isEditing || isDepartmentUniqueIdLocked}
   error={!!errors.departmentUniqueId}
-  helperText={
-    errors.departmentUniqueId?.message ||
-    (isDepartmentUniqueIdLocked
-      ? 'विभाग आईडी पहले से मौजूद है, इसे बदला नहीं जा सकता'
-      : '')
-  }
+ helperText={
+  errors.departmentUniqueId?.message ||
+  (isDepartmentUniqueIdLocked
+    ? 'विभाग आईडी लॉक है, इसे बदला नहीं जा सकता'
+    : '')
+}
   sx={{
     '& .MuiOutlinedInput-root': {
       '& input::placeholder': { color: '#000', opacity: 1 },
       '& textarea::placeholder': { color: '#000', opacity: 1 },
       border: '1px solid #ccc',
       borderRadius: '8px',
-      backgroundColor: (!isEditing || isDepartmentUniqueIdLocked) ? '#f5f5f5' : '#fff'
     }
   }}
 />

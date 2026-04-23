@@ -67,6 +67,7 @@ import {
   RestoreFromTrash,
   DeleteForever,
   Settings,
+  Close,
 } from '@mui/icons-material';
 import Layout from '../components/Layout/Layout';
 import { useAuth } from '../context/AuthContext';
@@ -99,6 +100,14 @@ const [mobileOtpEnabled, setMobileOtpEnabled] = useState(false);
 const [settingsLoading, setSettingsLoading] = useState(false);
 const [settingsSaving, setSettingsSaving] = useState(false);
 const [selfDonationVisible, setSelfDonationVisible] = useState(false);
+
+const [profileFieldLocks, setProfileFieldLocks] = useState({
+  fullName: false,
+  dateOfBirth: false,
+  mobileNumber: false,
+  email: false,
+  departmentUniqueId: false,
+});
 const [selfDonationQrUrl, setSelfDonationQrUrl] = useState('');
 const [selfDonationQrFile, setSelfDonationQrFile] = useState(null);
 const [selfDonationQrUploading, setSelfDonationQrUploading] = useState(false);
@@ -109,8 +118,7 @@ const [blockManagerExportMobileEnabled, setBlockManagerExportMobileEnabled] = us
   const [userDetailsSaving, setUserDetailsSaving] = useState(false);
   const [userDetailsUser, setUserDetailsUser] = useState(null);
   const [userDetailsForm, setUserDetailsForm] = useState({
-    name: '',
-    surname: '',
+   fullName: '',
     fatherName: '',
     email: '',
     countryCode: '',
@@ -139,7 +147,8 @@ const [blockManagerExportMobileEnabled, setBlockManagerExportMobileEnabled] = us
   const [passwordResetOpen, setPasswordResetOpen] = useState(false);
   const [passwordResetLoading, setPasswordResetLoading] = useState(false);
   const [passwordResetUser, setPasswordResetUser] = useState(null);
-
+const [showManualCreateSuccessPopup, setShowManualCreateSuccessPopup] = useState(false);
+const [manualCreateSuccessData, setManualCreateSuccessData] = useState(null);
   // Admin User Management - Trash (Deleted Users)
   const [trashOpen, setTrashOpen] = useState(false);
   const [trashUsers, setTrashUsers] = useState([]);
@@ -308,7 +317,51 @@ if (response.data && response.data.users) {
       setUsersLoading(false);
     }
   };
+  const [manualCreateOpen, setManualCreateOpen] = useState(false);
+const [manualCreateLoading, setManualCreateLoading] = useState(false);
+const [manualCheckLoading, setManualCheckLoading] = useState(false);
+const [manualCreateMatch, setManualCreateMatch] = useState(null);
 
+const [manualCreateForm, setManualCreateForm] = useState({
+fullName: '',
+  fatherName: '',
+  email: '',
+  confirmEmail: '',
+  countryCode: '+91',
+  mobileNumber: '',
+  confirmMobileNumber: '',
+  pincode: '',
+  gender: '',
+  maritalStatus: '',
+  homeAddress: '',
+  dateOfBirth: '',
+  joiningDate: '',
+  retirementDate: '',
+  schoolOfficeName: '',
+  sankulName: '',
+  department: '',
+  departmentUniqueId: '',
+  departmentState: '',
+  departmentSambhag: '',
+  departmentDistrict: '',
+  departmentBlock: '',
+  nominee1Name: '',
+  nominee1Relation: '',
+  nominee2Name: '',
+  nominee2Relation: '',
+  password: '',
+  registrationDateOverride: '',
+  createIfMatchFound: false,
+  matchedExistingUserId: '',
+  supportEntryReference: '',
+});
+const [manualSelectedState, setManualSelectedState] = useState('');
+const [manualSelectedSambhag, setManualSelectedSambhag] = useState('');
+const [manualSelectedDistrict, setManualSelectedDistrict] = useState('');
+const [manualSelectedBlock, setManualSelectedBlock] = useState('');
+const [manualAvailableSambhags, setManualAvailableSambhags] = useState([]);
+const [manualAvailableDistricts, setManualAvailableDistricts] = useState([]);
+const [manualAvailableBlocks, setManualAvailableBlocks] = useState([]);
     const resetDeathCaseForm = () => {
     setDeathCaseFormData({
       deceasedName: '',
@@ -369,6 +422,268 @@ nominee2UpiLink: '',
     setIsDeathCaseEditMode(false);
     setEditingDeathCaseId(null);
   };
+  const resetManualCreateForm = () => {
+  setManualCreateForm({
+    name: '',
+    surname: '',
+    fatherName: '',
+    email: '',
+    confirmEmail: '',
+    countryCode: '+91',
+    mobileNumber: '',
+    confirmMobileNumber: '',
+    pincode: '',
+    gender: '',
+    maritalStatus: '',
+    homeAddress: '',
+    dateOfBirth: '',
+    joiningDate: '',
+    retirementDate: '',
+    schoolOfficeName: '',
+    sankulName: '',
+    department: '',
+    departmentUniqueId: '',
+    departmentState: locationHierarchy?.states?.[0]?.name || '',
+    departmentSambhag: '',
+    departmentDistrict: '',
+    departmentBlock: '',
+    nominee1Name: '',
+    nominee1Relation: '',
+    nominee2Name: '',
+    nominee2Relation: '',
+    password: '',
+    registrationDateOverride: '',
+    createIfMatchFound: false,
+    matchedExistingUserId: '',
+    supportEntryReference: '',
+  });
+
+  setManualCreateMatch(null);
+  setManualSelectedState(locationHierarchy?.states?.[0]?.id || '');
+  setManualSelectedSambhag('');
+  setManualSelectedDistrict('');
+  setManualSelectedBlock('');
+  setManualAvailableSambhags(locationHierarchy?.states?.[0]?.sambhags || []);
+  setManualAvailableDistricts([]);
+  setManualAvailableBlocks([]);
+};
+const formatDobAsPassword = (dobValue) => {
+  if (!dobValue) return '';
+  const [year, month, day] = String(dobValue).split('-');
+  if (!year || !month || !day) return '';
+  return `${day}${month}${year}`;
+};
+
+useEffect(() => {
+  const autoPassword = formatDobAsPassword(manualCreateForm.dateOfBirth);
+  const autoRetirementDate = formatRetirementDateFromDob(manualCreateForm.dateOfBirth);
+
+  setManualCreateForm((prev) => {
+    if (
+      prev.password === autoPassword &&
+      prev.retirementDate === autoRetirementDate
+    ) {
+      return prev;
+    }
+
+    return {
+      ...prev,
+      password: autoPassword,
+      retirementDate: autoRetirementDate,
+    };
+  });
+}, [manualCreateForm.dateOfBirth]);
+
+const formatRetirementDateFromDob = (dobValue) => {
+  if (!dobValue) return '';
+
+  const date = new Date(`${dobValue}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return '';
+
+  date.setFullYear(date.getFullYear() + 62);
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+};
+const openManualCreateDialog = () => {
+  resetManualCreateForm();
+  setManualCreateOpen(true);
+};
+
+const closeManualCreateDialog = () => {
+  setManualCreateOpen(false);
+  resetManualCreateForm();
+};
+const handleFillMatchedUserData = async () => {
+  try {
+    const existingUserId =
+      manualCreateMatch?.existingUserId || manualCreateForm.matchedExistingUserId;
+
+    if (!existingUserId) {
+      showSnackbar('Existing user ID not found!', 'error');
+      return;
+    }
+
+    const response = await adminAPI.getUser(existingUserId);
+    const u = response.data;
+
+    const stateName = u?.departmentState || locationHierarchy?.states?.[0]?.name || '';
+    const sambhagName = u?.departmentSambhag || '';
+    const districtName = u?.departmentDistrict || '';
+    const blockName = u?.departmentBlock || '';
+
+    const stateObj =
+      locationHierarchy?.states?.find((s) => s.name === stateName) ||
+      locationHierarchy?.states?.[0] ||
+      null;
+
+    const sambhags = stateObj?.sambhags || [];
+    const sambhagObj = sambhags.find((s) => s.name === sambhagName) || null;
+    const districts = sambhagObj?.districts || [];
+    const districtObj = districts.find((d) => d.name === districtName) || null;
+    const blocks = districtObj?.blocks || [];
+    const blockObj = blocks.find((b) => b.name === blockName) || null;
+
+    const dobValue = u?.dateOfBirth ? String(u.dateOfBirth).substring(0, 10) : '';
+    const autoPassword = formatDobAsPassword(dobValue);
+
+    setManualSelectedState(stateObj?.id || '');
+    setManualAvailableSambhags(sambhags);
+    setManualSelectedSambhag(sambhagObj?.id || '');
+    setManualAvailableDistricts(districts);
+    setManualSelectedDistrict(districtObj?.id || '');
+    setManualAvailableBlocks(blocks);
+    setManualSelectedBlock(blockObj?.id || '');
+
+    setManualCreateForm((prev) => ({
+      ...prev,
+      fullName: combineFullName(u?.name, u?.surname),
+      fatherName: u?.fatherName || '',
+      email: u?.email || '',
+      confirmEmail: u?.email || '',
+      countryCode: u?.countryCode || '+91',
+      mobileNumber: u?.mobileNumber || '',
+      confirmMobileNumber: u?.mobileNumber || '',
+      pincode: u?.pincode ?? '',
+      gender: u?.gender ? String(u.gender).toLowerCase() : '',
+      maritalStatus:
+        u?.maritalStatus === 'UNMARRIED' ? 'single' :
+        u?.maritalStatus === 'MARRIED' ? 'married' :
+        u?.maritalStatus === 'DIVORCED' ? 'divorced' :
+        u?.maritalStatus === 'WIDOWED' ? 'widowed' : '',
+      homeAddress: u?.homeAddress || '',
+      dateOfBirth: dobValue,
+      joiningDate: u?.joiningDate ? String(u.joiningDate).substring(0, 10) : '',
+      retirementDate: u?.retirementDate ? String(u.retirementDate).substring(0, 10) : '',
+      schoolOfficeName: u?.schoolOfficeName || '',
+      sankulName: u?.sankulName || '',
+      department: u?.department || '',
+      departmentUniqueId: u?.departmentUniqueId || '',
+      departmentState: stateName,
+      departmentSambhag: sambhagName,
+      departmentDistrict: districtName,
+      departmentBlock: blockName,
+      nominee1Name: u?.nominee1Name || '',
+      nominee1Relation: u?.nominee1Relation || '',
+      nominee2Name: u?.nominee2Name || '',
+      nominee2Relation: u?.nominee2Relation || '',
+      password: autoPassword,
+      matchedExistingUserId: existingUserId,
+    }));
+
+    showSnackbar('Existing user data filled into form successfully!', 'success');
+  } catch (error) {
+    console.error('Error filling matched user data:', error);
+    showSnackbar(
+      error?.response?.data?.message || 'Failed to load existing user data!',
+      'error'
+    );
+  }
+};
+const handleManualSambhagChange = (event) => {
+  const sambhagId = event.target.value;
+  setManualSelectedSambhag(sambhagId);
+  setManualSelectedDistrict('');
+  setManualSelectedBlock('');
+
+  const sambhag = manualAvailableSambhags.find((s) => s.id === sambhagId);
+  const districts = sambhag?.districts || [];
+
+  setManualAvailableDistricts(districts);
+  setManualAvailableBlocks([]);
+
+  setManualCreateForm((prev) => ({
+    ...prev,
+    departmentSambhag: sambhag?.name || '',
+    departmentDistrict: '',
+    departmentBlock: '',
+  }));
+};
+
+const handleManualDistrictChange = (event) => {
+  const districtId = event.target.value;
+  setManualSelectedDistrict(districtId);
+  setManualSelectedBlock('');
+
+  const district = manualAvailableDistricts.find((d) => d.id === districtId);
+  const blocks = district?.blocks || [];
+
+  setManualAvailableBlocks(blocks);
+
+  setManualCreateForm((prev) => ({
+    ...prev,
+    departmentDistrict: district?.name || '',
+    departmentBlock: '',
+  }));
+};
+
+const handleManualBlockChange = (event) => {
+  const blockId = event.target.value;
+  setManualSelectedBlock(blockId);
+
+  const block = manualAvailableBlocks.find((b) => b.id === blockId);
+
+  setManualCreateForm((prev) => ({
+    ...prev,
+    departmentBlock: block?.name || '',
+  }));
+};
+const handleCheckManualCreateMatch = async () => {
+  try {
+    setManualCheckLoading(true);
+    setManualCreateMatch(null);
+
+    const payload = {
+      departmentUniqueId: manualCreateForm.departmentUniqueId,
+      mobileNumber: manualCreateForm.mobileNumber,
+      email: manualCreateForm.email,
+    };
+
+    const response = await adminAPI.checkManualCreateUserMatch(payload);
+    setManualCreateMatch(response.data);
+
+    if (response.data?.matchFound) {
+      setManualCreateForm((prev) => ({
+        ...prev,
+        matchedExistingUserId: response.data.existingUserId || '',
+      }));
+      showSnackbar(response.data.message || 'Existing user match found.', 'warning');
+    } else {
+      showSnackbar('No existing user match found.', 'success');
+    }
+  } catch (error) {
+    console.error('Error checking existing user match:', error);
+    showSnackbar(
+      error?.response?.data?.message || 'Failed to check old entry!',
+      'error'
+    );
+  } finally {
+    setManualCheckLoading(false);
+  }
+};
   const handleEditDeathCase = async (deathCaseRow) => {
     try {
       const id = deathCaseRow.id || deathCaseRow.caseId || deathCaseRow.deathCaseId;
@@ -475,6 +790,185 @@ nominee2UpiLink: deathCase.nominee2UpiLink || '',
       setDeathCaseFormLoading(false);
     }
   };
+const handleManualCreateUser = async () => {
+  try {
+    setManualCreateLoading(true);
+
+  if (!manualCreateForm.fullName.trim()) {
+  showSnackbar('Full name is required!', 'error');
+  return;
+}
+    if (!manualCreateForm.fatherName.trim()) {
+      showSnackbar('Father name is required!', 'error');
+      return;
+    }
+    if (!manualCreateForm.gender) {
+      showSnackbar('Gender is required!', 'error');
+      return;
+    }
+    if (!manualCreateForm.maritalStatus) {
+      showSnackbar('Marital status is required!', 'error');
+      return;
+    }
+    if (!manualCreateForm.dateOfBirth) {
+      showSnackbar('Date of birth is required!', 'error');
+      return;
+    }
+    if (!manualCreateForm.mobileNumber.trim()) {
+      showSnackbar('Mobile number is required!', 'error');
+      return;
+    }
+    if (!/^\d{10}$/.test(manualCreateForm.mobileNumber.trim())) {
+      showSnackbar('Mobile number must be exactly 10 digits!', 'error');
+      return;
+    }
+    if (manualCreateForm.mobileNumber !== manualCreateForm.confirmMobileNumber) {
+      showSnackbar('Mobile numbers do not match!', 'error');
+      return;
+    }
+    if (!manualCreateForm.email.trim()) {
+      showSnackbar('Email is required!', 'error');
+      return;
+    }
+    if (manualCreateForm.email !== manualCreateForm.confirmEmail) {
+      showSnackbar('Emails do not match!', 'error');
+      return;
+    }
+    if (!manualCreateForm.homeAddress.trim()) {
+      showSnackbar('Home address is required!', 'error');
+      return;
+    }
+    if (!manualCreateForm.pincode || !/^\d{6}$/.test(String(manualCreateForm.pincode))) {
+      showSnackbar('Pincode must be exactly 6 digits!', 'error');
+      return;
+    }
+    if (!manualCreateForm.department.trim()) {
+      showSnackbar('Department is required!', 'error');
+      return;
+    }
+    if (!manualCreateForm.schoolOfficeName.trim()) {
+      showSnackbar('School/Office name is required!', 'error');
+      return;
+    }
+    if (!manualCreateForm.departmentUniqueId.trim()) {
+      showSnackbar('Department Unique ID is required!', 'error');
+      return;
+    }
+    if (!manualCreateForm.sankulName.trim()) {
+      showSnackbar('Sankul name is required!', 'error');
+      return;
+    }
+    if (!manualCreateForm.joiningDate) {
+      showSnackbar('Joining date is required!', 'error');
+      return;
+    }
+    if (!manualCreateForm.retirementDate) {
+      showSnackbar('Retirement date is required!', 'error');
+      return;
+    }
+    if (!manualCreateForm.nominee1Name.trim()) {
+      showSnackbar('First nominee name is required!', 'error');
+      return;
+    }
+    if (!manualCreateForm.nominee1Relation.trim()) {
+      showSnackbar('First nominee relation is required!', 'error');
+      return;
+    }
+    if (!manualCreateForm.nominee2Name.trim()) {
+      showSnackbar('Second nominee name is required!', 'error');
+      return;
+    }
+    if (!manualCreateForm.nominee2Relation.trim()) {
+      showSnackbar('Second nominee relation is required!', 'error');
+      return;
+    }
+    if (!manualCreateForm.password.trim()) {
+      showSnackbar('Password is required!', 'error');
+      return;
+    }
+    if (!manualCreateForm.departmentSambhag || !manualCreateForm.departmentDistrict || !manualCreateForm.departmentBlock) {
+      showSnackbar('Please select Sambhag, District and Block!', 'error');
+      return;
+    }
+
+    const genderMap = {
+      male: 'MALE',
+      female: 'FEMALE',
+      other: 'OTHER',
+    };
+
+    const maritalStatusMap = {
+      single: 'UNMARRIED',
+      married: 'MARRIED',
+      divorced: 'DIVORCED',
+      widowed: 'WIDOWED',
+    };
+const { name, surname } = splitFullName(manualCreateForm.fullName);
+    const payload = {
+      name: name,
+      surname: surname,
+      fatherName: manualCreateForm.fatherName,
+      email: manualCreateForm.email,
+      countryCode: manualCreateForm.countryCode || '+91',
+      mobileNumber: manualCreateForm.mobileNumber,
+      pincode: manualCreateForm.pincode ? parseInt(manualCreateForm.pincode, 10) : null,
+      gender: genderMap[manualCreateForm.gender] || manualCreateForm.gender,
+      maritalStatus: maritalStatusMap[manualCreateForm.maritalStatus] || manualCreateForm.maritalStatus,
+      homeAddress: manualCreateForm.homeAddress,
+      dateOfBirth: manualCreateForm.dateOfBirth,
+      joiningDate: manualCreateForm.joiningDate || null,
+      retirementDate: manualCreateForm.retirementDate || null,
+      schoolOfficeName: manualCreateForm.schoolOfficeName,
+      sankulName: manualCreateForm.sankulName,
+      department: manualCreateForm.department,
+      departmentUniqueId: manualCreateForm.departmentUniqueId,
+      departmentState: manualCreateForm.departmentState || locationHierarchy?.states?.[0]?.name || 'मध्य प्रदेश',
+      departmentSambhag: manualCreateForm.departmentSambhag,
+      departmentDistrict: manualCreateForm.departmentDistrict,
+      departmentBlock: manualCreateForm.departmentBlock,
+      nominee1Name: manualCreateForm.nominee1Name,
+      nominee1Relation: manualCreateForm.nominee1Relation,
+      nominee2Name: manualCreateForm.nominee2Name,
+      nominee2Relation: manualCreateForm.nominee2Relation,
+      password: manualCreateForm.password,
+      registrationDateOverride: manualCreateForm.registrationDateOverride || null,
+      createIfMatchFound: Boolean(manualCreateForm.createIfMatchFound),
+      matchedExistingUserId: manualCreateForm.matchedExistingUserId || '',
+      supportEntryReference: manualCreateForm.supportEntryReference || '',
+    };
+
+    const response = await adminAPI.manualCreateUser(payload);
+
+const createdUser = response?.data || {};
+const registrationNumber =
+  createdUser?.id ||
+  createdUser?.registrationNumber ||
+  createdUser?.employeeId ||
+  'PMUMS' + Date.now();
+
+setManualCreateSuccessData({
+  name: manualCreateForm.fullName || createdUser?.name || 'शिक्षक',
+  registrationNumber,
+  mobileNumber: manualCreateForm.mobileNumber,
+  email: manualCreateForm.email,
+  dateOfBirth: manualCreateForm.dateOfBirth,
+  department: manualCreateForm.department,
+  schoolOfficeName: manualCreateForm.schoolOfficeName,
+});
+
+setShowManualCreateSuccessPopup(true);
+closeManualCreateDialog();
+fetchUsers();
+  } catch (error) {
+    console.error('Error creating user manually:', error);
+    showSnackbar(
+      error?.response?.data?.message || error?.message || 'Failed to create user!',
+      'error'
+    );
+  } finally {
+    setManualCreateLoading(false);
+  }
+};
     const handleUpdateDeathCase = async () => {
     try {
       if (!editingDeathCaseId) {
@@ -627,26 +1121,34 @@ const handleClearTrash = async () => {
     );
   }
 };
+const handleProfileFieldLockChange = (field, checked) => {
+  setProfileFieldLocks((prev) => ({
+    ...prev,
+    [field]: checked,
+  }));
+};
 const openSettingsDialog = async () => {
   try {
     setSettingsDialogOpen(true);
     setSettingsLoading(true);
 
-    const [
-      mobileOtpResponse,
-      exportMobileResponse,
-      selfDonationVisibleResponse,
-      selfDonationQrResponse,
-        districtManagerMobileResponse,
+   const [
+  mobileOtpResponse,
+  exportMobileResponse,
+  selfDonationVisibleResponse,
+  selfDonationQrResponse,
+  districtManagerMobileResponse,
   blockManagerMobileResponse,
-    ] = await Promise.all([
-      adminAPI.getMobileOtpSetting(),
-      adminAPI.getExportMobileNumberSetting(),
-      adminAPI.getSelfDonationVisibleSetting(),
-      adminAPI.getSelfDonationQr(),
-      adminAPI.getDistrictManagerExportMobileSetting(),
-adminAPI.getBlockManagerExportMobileSetting(),
-    ]);
+  profileFieldLocksResponse,
+] = await Promise.all([
+  adminAPI.getMobileOtpSetting(),
+  adminAPI.getExportMobileNumberSetting(),
+  adminAPI.getSelfDonationVisibleSetting(),
+  adminAPI.getSelfDonationQr(),
+  adminAPI.getDistrictManagerExportMobileSetting(),
+  adminAPI.getBlockManagerExportMobileSetting(),
+  adminAPI.getProfileFieldLocks(),
+]);
 
     setMobileOtpEnabled(mobileOtpResponse.data?.mobileOtpEnabled === true);
     setExportMobileNumberEnabled(
@@ -664,6 +1166,13 @@ setBlockManagerExportMobileEnabled(
     );
     setSelfDonationQrUrl(selfDonationQrResponse.data?.qrUrl || '');
     setSelfDonationQrFile(null);
+    setProfileFieldLocks({
+  fullName: !!profileFieldLocksResponse.data?.fullName,
+  dateOfBirth: !!profileFieldLocksResponse.data?.dateOfBirth,
+  mobileNumber: !!profileFieldLocksResponse.data?.mobileNumber,
+  email: !!profileFieldLocksResponse.data?.email,
+  departmentUniqueId: !!profileFieldLocksResponse.data?.departmentUniqueId,
+});
   } catch (error) {
     console.error('Error loading settings:', error);
     showSnackbar('Failed to load settings!', 'error');
@@ -695,13 +1204,14 @@ const handleSaveSettings = async () => {
   try {
     setSettingsSaving(true);
 
-    await Promise.all([
-      adminAPI.updateMobileOtpSetting(mobileOtpEnabled),
-      adminAPI.updateExportMobileNumberSetting(exportMobileNumberEnabled),
-      adminAPI.updateSelfDonationVisibleSetting(selfDonationVisible),
-      adminAPI.updateDistrictManagerExportMobileSetting(districtManagerExportMobileEnabled),
-adminAPI.updateBlockManagerExportMobileSetting(blockManagerExportMobileEnabled),
-    ]);
+   await Promise.all([
+  adminAPI.updateMobileOtpSetting(mobileOtpEnabled),
+  adminAPI.updateExportMobileNumberSetting(exportMobileNumberEnabled),
+  adminAPI.updateSelfDonationVisibleSetting(selfDonationVisible),
+  adminAPI.updateDistrictManagerExportMobileSetting(districtManagerExportMobileEnabled),
+  adminAPI.updateBlockManagerExportMobileSetting(blockManagerExportMobileEnabled),
+  adminAPI.updateProfileFieldLocks(profileFieldLocks),
+]);
 
     if (selfDonationQrFile) {
       setSelfDonationQrUploading(true);
@@ -797,6 +1307,24 @@ adminAPI.updateBlockManagerExportMobileSetting(blockManagerExportMobileEnabled),
       );
     }
   };
+  const splitFullName = (fullName) => {
+  const cleaned = (fullName || '').trim().replace(/\s+/g, ' ');
+  if (!cleaned) return { name: '', surname: '' };
+
+  const parts = cleaned.split(' ');
+  if (parts.length === 1) {
+    return { name: parts[0], surname: '' };
+  }
+
+  return {
+    name: parts[0],
+    surname: parts.slice(1).join(' '),
+  };
+};
+
+const combineFullName = (name, surname) =>
+  [name, surname].filter(Boolean).join(' ').trim();
+
   const handleApproveDeleteRequest = async (requestId) => {
     const ok = window.confirm('Are you sure you want to approve and permanently delete this user? This cannot be undone.');
     if (!ok) return;
@@ -860,8 +1388,7 @@ const buildUpiLink = (upiId, nomineeName) => {
   const openUserDetails = (user) => {
     setUserDetailsUser(user);
     setUserDetailsForm({
-      name: user?.name || '',
-      surname: user?.surname || '',
+      fullName: combineFullName(user?.name, user?.surname),
       fatherName: user?.fatherName || '',
       email: user?.email || '',
       countryCode: user?.countryCode || '+91',
@@ -899,10 +1426,12 @@ const buildUpiLink = (upiId, nomineeName) => {
 
     try {
       setUserDetailsSaving(true);
-
+const { name, surname } = splitFullName(userDetailsForm.fullName);
       // Build payload (UpdateUserRequest shape)
       const payload = {
         ...userDetailsForm,
+        name,
+  surname,
         // Ensure numeric fields
         pincode: userDetailsForm.pincode === '' ? null : Number(userDetailsForm.pincode),
       };
@@ -2663,6 +3192,15 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
           <Button
   variant="contained"
+  size="small"
+  startIcon={<PersonAdd />}
+  onClick={openManualCreateDialog}
+  sx={{ borderRadius: 2, bgcolor: '#2e7d32', '&:hover': { bgcolor: '#1b5e20' } }}
+>
+  Add User
+</Button>
+          <Button
+  variant="contained"
   color="error"
   size="small"
   onClick={handleBulkSoftDelete}
@@ -3902,6 +4440,718 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
             {snackbar.message}
           </Alert>
         </Snackbar>
+        <Dialog
+  open={showManualCreateSuccessPopup}
+  onClose={() => setShowManualCreateSuccessPopup(false)}
+  maxWidth="sm"
+  fullWidth
+  PaperProps={{
+    sx: {
+      borderRadius: 3,
+      p: 2,
+    },
+  }}
+>
+  <DialogTitle
+    sx={{
+      bgcolor: '#4caf50',
+      color: 'white',
+      textAlign: 'center',
+      position: 'relative',
+      fontWeight: 'bold',
+      fontSize: '1.2rem',
+    }}
+  >
+    ✅ यूज़र सफलतापूर्वक बनाया गया
+    <IconButton
+      onClick={() => setShowManualCreateSuccessPopup(false)}
+      sx={{
+        position: 'absolute',
+        right: 8,
+        top: 8,
+        color: 'white',
+      }}
+    >
+      <Close />
+    </IconButton>
+  </DialogTitle>
+
+  <DialogContent sx={{ pt: 3, textAlign: 'center' }}>
+    <Typography variant="h6" sx={{ mb: 2, color: '#1976d2', fontWeight: 600 }}>
+      प्रिय {manualCreateSuccessData?.name || 'शिक्षक'} जी,
+    </Typography>
+
+    <Typography variant="body1" sx={{ mb: 2, lineHeight: 1.6 }}>
+      आपका यूज़र अकाउंट सफलतापूर्वक बना दिया गया है।
+    </Typography>
+
+    <Typography variant="body1" sx={{ mb: 1, fontWeight: 500 }}>
+      पंजीकरण संख्या:
+    </Typography>
+
+    <Typography variant="h5" sx={{ mb: 2, fontWeight: 700, color: '#1976d2' }}>
+      {manualCreateSuccessData?.registrationNumber}
+    </Typography>
+
+    <Typography variant="body1" sx={{ mb: 1, fontWeight: 500 }}>
+      आपका पासवर्ड: आपकी जन्मतिथि ही आपका पासवर्ड है।
+    </Typography>
+
+    <Typography variant="body2" sx={{ mb: 2, color: '#666' }}>
+      कृपया लॉगिन करते समय अपनी जन्मतिथि का उपयोग करें।
+    </Typography>
+
+    <Box
+      sx={{
+        mt: 2,
+        p: 2,
+        bgcolor: '#f5f5f5',
+        borderRadius: 2,
+        textAlign: 'left',
+      }}
+    >
+      <Typography variant="body2" sx={{ mb: 0.5 }}>
+        <strong>मोबाइल नंबर:</strong> {manualCreateSuccessData?.mobileNumber || '-'}
+      </Typography>
+      <Typography variant="body2" sx={{ mb: 0.5 }}>
+        <strong>ईमेल:</strong> {manualCreateSuccessData?.email || '-'}
+      </Typography>
+      <Typography variant="body2" sx={{ mb: 0.5 }}>
+        <strong>विभाग:</strong> {manualCreateSuccessData?.department || '-'}
+      </Typography>
+      <Typography variant="body2">
+        <strong>स्कूल/ऑफिस:</strong> {manualCreateSuccessData?.schoolOfficeName || '-'}
+      </Typography>
+    </Box>
+  </DialogContent>
+
+  <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
+    <Button
+      variant="contained"
+      onClick={() => setShowManualCreateSuccessPopup(false)}
+      sx={{
+        bgcolor: '#1976d2',
+        '&:hover': { bgcolor: '#1565c0' },
+        minWidth: 140,
+      }}
+    >
+      ठीक है
+    </Button>
+  </DialogActions>
+</Dialog>
+        <Dialog
+  open={manualCreateOpen}
+  onClose={closeManualCreateDialog}
+  maxWidth="md"
+  fullWidth
+  PaperProps={{
+    sx: {
+      borderRadius: 3,
+      width: '95vw',
+      maxWidth: '1200px',
+      height: '90vh',
+      display: 'flex',
+      overflow: 'hidden',
+    },
+  }}
+>
+  <DialogTitle sx={{ bgcolor: '#2e7d32', color: 'white', fontWeight: 'bold' }}>
+    Manual User Creation
+  </DialogTitle>
+<DialogContent
+  dividers
+  sx={{
+    p: 0,
+    flex: 1,
+    overflowY: 'auto',
+    bgcolor: '#fafafa',
+  }}
+>
+  <Box sx={{ p: 3 }}>
+    {/* 1. Basic Information */}
+    <Paper sx={{ p: 1.75, mb: 2.5, bgcolor: '#1a237e', color: 'white', borderRadius: 2 }}>
+      <Typography variant="h6" sx={{ fontWeight: 700 }}>
+        1. मूल जानकारी (Basic Information)
+      </Typography>
+    </Paper>
+
+    <Grid container spacing={2.5} sx={{ mb: 4 }}>
+     <Grid item xs={12} md={6}>
+  <TextField
+    fullWidth
+    label="पूरा नाम *"
+    value={manualCreateForm.fullName}
+    onChange={(e) => setManualCreateForm((p) => ({ ...p, fullName: e.target.value }))}
+  />
+</Grid>
+
+      <Grid item xs={12} md={4}>
+        <TextField
+          fullWidth
+          label="पिता का नाम *"
+          value={manualCreateForm.fatherName}
+          onChange={(e) => setManualCreateForm((p) => ({ ...p, fatherName: e.target.value }))}
+        />
+      </Grid>
+
+      <Grid item xs={12} md={6}>
+  <FormControl fullWidth size="medium">
+    <InputLabel shrink>लिंग *</InputLabel>
+    <Select
+      value={manualCreateForm.gender || ''}
+      label="लिंग *"
+      displayEmpty
+      onChange={(e) =>
+        setManualCreateForm((p) => ({ ...p, gender: e.target.value }))
+      }
+      sx={{
+        minHeight: 56,
+        '& .MuiSelect-select': {
+          display: 'flex',
+          alignItems: 'center',
+          whiteSpace: 'nowrap',
+        },
+      }}
+      MenuProps={{
+        PaperProps: {
+          sx: {
+            maxHeight: 320,
+            minWidth: 260,
+          },
+        },
+      }}
+    >
+      <MenuItem value="">लिंग चुनें...</MenuItem>
+      <MenuItem value="male">पुरुष (Male)</MenuItem>
+      <MenuItem value="female">महिला (Female)</MenuItem>
+      <MenuItem value="other">अन्य (Other)</MenuItem>
+    </Select>
+  </FormControl>
+</Grid>
+
+<Grid item xs={12} md={6}>
+  <FormControl fullWidth size="medium">
+    <InputLabel shrink>वैवाहिक स्थिति *</InputLabel>
+    <Select
+      value={manualCreateForm.maritalStatus || ''}
+      label="वैवाहिक स्थिति *"
+      displayEmpty
+      onChange={(e) =>
+        setManualCreateForm((p) => ({ ...p, maritalStatus: e.target.value }))
+      }
+      sx={{
+        minHeight: 56,
+        '& .MuiSelect-select': {
+          display: 'flex',
+          alignItems: 'center',
+          whiteSpace: 'nowrap',
+        },
+      }}
+      MenuProps={{
+        PaperProps: {
+          sx: {
+            maxHeight: 320,
+            minWidth: 320,
+          },
+        },
+      }}
+    >
+      <MenuItem value="">वैवाहिक स्थिति चुनें...</MenuItem>
+      <MenuItem value="single">अविवाहित (Single)</MenuItem>
+      <MenuItem value="married">विवाहित (Married)</MenuItem>
+      <MenuItem value="divorced">तलाकशुदा (Divorced)</MenuItem>
+      <MenuItem value="widowed">विधवा/विधुर (Widowed)</MenuItem>
+    </Select>
+  </FormControl>
+</Grid>
+
+      <Grid item xs={12} md={3}>
+        <TextField
+          fullWidth
+          type="date"
+          label="जन्मतिथि *"
+          InputLabelProps={{ shrink: true }}
+          value={manualCreateForm.dateOfBirth}
+          onChange={(e) => setManualCreateForm((p) => ({ ...p, dateOfBirth: e.target.value }))}
+        />
+      </Grid>
+
+      <Grid item xs={12} md={3}>
+        <TextField fullWidth label="Country Code" value="+91" disabled />
+      </Grid>
+
+      <Grid item xs={12} md={4}>
+  <TextField
+    fullWidth
+    label="मोबाइल नंबर *"
+    value={manualCreateForm.mobileNumber}
+    onChange={(e) =>
+      setManualCreateForm((p) => ({
+        ...p,
+        mobileNumber: e.target.value.replace(/\D/g, '').slice(0, 10),
+      }))
+    }
+    error={
+      manualCreateForm.mobileNumber.length > 0 &&
+      manualCreateForm.mobileNumber.length !== 10
+    }
+    helperText={
+      manualCreateForm.mobileNumber.length > 0 &&
+      manualCreateForm.mobileNumber.length !== 10
+        ? 'मोबाइल नंबर 10 अंकों का होना चाहिए'
+        : ''
+    }
+    inputProps={{
+      maxLength: 10,
+      inputMode: 'numeric',
+      pattern: '[0-9]*',
+    }}
+  />
+</Grid>
+
+<Grid item xs={12} md={4}>
+  <TextField
+    fullWidth
+    label="मोबाइल नंबर की पुष्टि *"
+    value={manualCreateForm.confirmMobileNumber}
+    onChange={(e) =>
+      setManualCreateForm((p) => ({
+        ...p,
+        confirmMobileNumber: e.target.value.replace(/\D/g, '').slice(0, 10),
+      }))
+    }
+    error={
+      (manualCreateForm.confirmMobileNumber.length > 0 &&
+        manualCreateForm.confirmMobileNumber.length !== 10) ||
+      (manualCreateForm.confirmMobileNumber.length === 10 &&
+        manualCreateForm.mobileNumber !== manualCreateForm.confirmMobileNumber)
+    }
+    helperText={
+      manualCreateForm.confirmMobileNumber.length > 0 &&
+      manualCreateForm.confirmMobileNumber.length !== 10
+        ? 'मोबाइल नंबर 10 अंकों का होना चाहिए'
+        : manualCreateForm.confirmMobileNumber.length === 10 &&
+          manualCreateForm.mobileNumber !== manualCreateForm.confirmMobileNumber
+        ? 'मोबाइल नंबर मेल नहीं खाता'
+        : ''
+    }
+    inputProps={{
+      maxLength: 10,
+      inputMode: 'numeric',
+      pattern: '[0-9]*',
+    }}
+  />
+</Grid>
+
+      <Grid item xs={12} md={4}>
+        <TextField
+          fullWidth
+          label="ईमेल आईडी *"
+          value={manualCreateForm.email}
+          onChange={(e) => setManualCreateForm((p) => ({ ...p, email: e.target.value }))}
+        />
+      </Grid>
+
+      <Grid item xs={12} md={4}>
+        <TextField
+          fullWidth
+          label="ईमेल की पुष्टि करें *"
+          value={manualCreateForm.confirmEmail}
+          onChange={(e) => setManualCreateForm((p) => ({ ...p, confirmEmail: e.target.value }))}
+        />
+      </Grid>
+    </Grid>
+
+    {/* 2. Address Details */}
+    <Paper sx={{ p: 1.75, mb: 2.5, bgcolor: '#1a237e', color: 'white', borderRadius: 2 }}>
+      <Typography variant="h6" sx={{ fontWeight: 700 }}>
+        2. पता विवरण (Address Details)
+      </Typography>
+    </Paper>
+
+    <Grid container spacing={2.5} sx={{ mb: 4 }}>
+      <Grid item xs={12} md={4}>
+        <TextField
+          fullWidth
+          label="राज्य *"
+          value={manualCreateForm.departmentState || locationHierarchy?.states?.[0]?.name || ''}
+          disabled
+        />
+      </Grid>
+
+      <Grid item xs={12} md={4}>
+        <FormControl fullWidth>
+          <InputLabel shrink>संभाग *</InputLabel>
+          <Select value={manualSelectedSambhag} onChange={handleManualSambhagChange} displayEmpty>
+            <MenuItem value="">संभाग चुनें...</MenuItem>
+            {manualAvailableSambhags.map((s) => (
+              <MenuItem key={s.id} value={s.id}>
+                {s.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Grid>
+
+      <Grid item xs={12} md={4}>
+        <FormControl fullWidth>
+          <InputLabel shrink>जिला *</InputLabel>
+          <Select
+            value={manualSelectedDistrict}
+            onChange={handleManualDistrictChange}
+            displayEmpty
+            disabled={!manualSelectedSambhag}
+          >
+            <MenuItem value="">जिला चुनें...</MenuItem>
+            {manualAvailableDistricts.map((d) => (
+              <MenuItem key={d.id} value={d.id}>
+                {d.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Grid>
+
+      <Grid item xs={12} md={4}>
+        <FormControl fullWidth>
+          <InputLabel shrink>ब्लॉक *</InputLabel>
+          <Select
+            value={manualSelectedBlock}
+            onChange={handleManualBlockChange}
+            displayEmpty
+            disabled={!manualSelectedDistrict}
+          >
+            <MenuItem value="">ब्लॉक चुनें...</MenuItem>
+            {manualAvailableBlocks.map((b) => (
+              <MenuItem key={b.id} value={b.id}>
+                {b.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Grid>
+
+      <Grid item xs={12} md={5}>
+        <TextField
+          fullWidth
+          label="पूरा पता *"
+          value={manualCreateForm.homeAddress}
+          onChange={(e) => setManualCreateForm((p) => ({ ...p, homeAddress: e.target.value }))}
+        />
+      </Grid>
+
+      <Grid item xs={12} md={3}>
+  <TextField
+    fullWidth
+    label="पिन कोड *"
+    value={manualCreateForm.pincode}
+    onChange={(e) =>
+      setManualCreateForm((p) => ({
+        ...p,
+        pincode: e.target.value.replace(/\D/g, '').slice(0, 6),
+      }))
+    }
+    error={
+      manualCreateForm.pincode.length > 0 &&
+      manualCreateForm.pincode.length !== 6
+    }
+    helperText={
+      manualCreateForm.pincode.length > 0 &&
+      manualCreateForm.pincode.length !== 6
+        ? 'पिन कोड 6 अंकों का होना चाहिए'
+        : ''
+    }
+    inputProps={{
+      maxLength: 6,
+      inputMode: 'numeric',
+      pattern: '[0-9]*',
+    }}
+  />
+</Grid>
+    </Grid>
+
+    {/* 3. Professional Details */}
+    <Paper sx={{ p: 1.75, mb: 2.5, bgcolor: '#1a237e', color: 'white', borderRadius: 2 }}>
+      <Typography variant="h6" sx={{ fontWeight: 700 }}>
+        3. व्यावसायिक विवरण (Professional Details)
+      </Typography>
+    </Paper>
+
+    <Grid container spacing={2.5} sx={{ mb: 4 }}>
+     <Grid item xs={12} md={6}>
+  <FormControl fullWidth size="medium">
+    <InputLabel shrink>विभाग का नाम *</InputLabel>
+    <Select
+      value={manualCreateForm.department || ''}
+      label="विभाग का नाम *"
+      displayEmpty
+      onChange={(e) =>
+        setManualCreateForm((p) => ({ ...p, department: e.target.value }))
+      }
+      sx={{
+        minHeight: 56,
+        '& .MuiSelect-select': {
+          display: 'flex',
+          alignItems: 'center',
+          whiteSpace: 'nowrap',
+        },
+      }}
+      MenuProps={{
+        PaperProps: {
+          sx: {
+            maxHeight: 320,
+            minWidth: 320,
+          },
+        },
+      }}
+    >
+      <MenuItem value="">विभाग चुनें...</MenuItem>
+      <MenuItem value="शिक्षा विभाग">शिक्षा विभाग</MenuItem>
+      <MenuItem value="आदिम जाति कल्याण विभाग">आदिम जाति कल्याण विभाग</MenuItem>
+    </Select>
+  </FormControl>
+</Grid>
+
+      <Grid item xs={12} md={8}>
+        <TextField
+          fullWidth
+          label="पदस्थ स्कूल/कार्यालय का नाम *"
+          value={manualCreateForm.schoolOfficeName}
+          onChange={(e) => setManualCreateForm((p) => ({ ...p, schoolOfficeName: e.target.value }))}
+        />
+      </Grid>
+
+      <Grid item xs={12} md={4}>
+        <TextField
+          fullWidth
+          label="विभाग आईडी (Department Unique ID) *"
+          value={manualCreateForm.departmentUniqueId}
+          onChange={(e) => setManualCreateForm((p) => ({ ...p, departmentUniqueId: e.target.value }))}
+        />
+      </Grid>
+
+      <Grid item xs={12} md={4}>
+        <TextField
+          fullWidth
+          label="संकुल का नाम *"
+          value={manualCreateForm.sankulName}
+          onChange={(e) => setManualCreateForm((p) => ({ ...p, sankulName: e.target.value }))}
+        />
+      </Grid>
+
+      <Grid item xs={12} md={2}>
+        <TextField
+          fullWidth
+          type="date"
+          label="नियुक्ति वर्ष *"
+          InputLabelProps={{ shrink: true }}
+          value={manualCreateForm.joiningDate}
+          onChange={(e) => setManualCreateForm((p) => ({ ...p, joiningDate: e.target.value }))}
+        />
+      </Grid>
+
+      <Grid item xs={12} md={2}>
+        <TextField
+          fullWidth
+          type="date"
+          label="सेवानिवृत्ति की तिथि *"
+          InputLabelProps={{ shrink: true }}
+          helperText={ 'जन्मतिथि + 62 वर्ष से स्वतः भरा जाएगा'}
+          value={manualCreateForm.retirementDate}
+          onChange={(e) => setManualCreateForm((p) => ({ ...p, retirementDate: e.target.value }))}
+        />
+      </Grid>
+    </Grid>
+
+    {/* 4. Nominee Details */}
+    <Paper sx={{ p: 1.75, mb: 2.5, bgcolor: '#1a237e', color: 'white', borderRadius: 2 }}>
+      <Typography variant="h6" sx={{ fontWeight: 700 }}>
+        4. नामांकित व्यक्ति का विवरण (Nominee Details)
+      </Typography>
+    </Paper>
+
+    <Grid container spacing={2.5} sx={{ mb: 4 }}>
+      <Grid item xs={12}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1a237e' }}>
+          पहला नामांकित (First Nominee)
+        </Typography>
+      </Grid>
+
+      <Grid item xs={12} md={6}>
+        <TextField
+          fullWidth
+          label="नामांकित का नाम *"
+          value={manualCreateForm.nominee1Name}
+          onChange={(e) => setManualCreateForm((p) => ({ ...p, nominee1Name: e.target.value }))}
+        />
+      </Grid>
+
+      <Grid item xs={12} md={6}>
+        <TextField
+          fullWidth
+          label="नामांकित का संबंध *"
+          value={manualCreateForm.nominee1Relation}
+          onChange={(e) => setManualCreateForm((p) => ({ ...p, nominee1Relation: e.target.value }))}
+        />
+      </Grid>
+
+      <Grid item xs={12} sx={{ pt: 2 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1a237e' }}>
+          दूसरा नामांकित (Second Nominee)
+        </Typography>
+      </Grid>
+
+      <Grid item xs={12} md={6}>
+        <TextField
+          fullWidth
+          label="नामांकित का नाम *"
+          value={manualCreateForm.nominee2Name}
+          onChange={(e) => setManualCreateForm((p) => ({ ...p, nominee2Name: e.target.value }))}
+        />
+      </Grid>
+
+      <Grid item xs={12} md={6}>
+        <TextField
+          fullWidth
+          label="नामांकित का संबंध *"
+          value={manualCreateForm.nominee2Relation}
+          onChange={(e) => setManualCreateForm((p) => ({ ...p, nominee2Relation: e.target.value }))}
+        />
+      </Grid>
+    </Grid>
+
+    {/* 5. Manual Entry Details */}
+    <Paper sx={{ p: 1.75, mb: 2.5, bgcolor: '#1a237e', color: 'white', borderRadius: 2 }}>
+      <Typography variant="h6" sx={{ fontWeight: 700 }}>
+        5. Manual Entry Details
+      </Typography>
+    </Paper>
+
+    <Grid container spacing={2.5} sx={{ mb: 4 }}>
+      <Grid item xs={12} md={4}>
+        <TextField
+          fullWidth
+          type="date"
+          label="Old Registration Date"
+          InputLabelProps={{ shrink: true }}
+          value={manualCreateForm.registrationDateOverride}
+          onChange={(e) => setManualCreateForm((p) => ({ ...p, registrationDateOverride: e.target.value }))}
+        />
+      </Grid>
+
+      <Grid item xs={12} md={5}>
+        <TextField
+          fullWidth
+          label="Support Entry Reference"
+          value={manualCreateForm.supportEntryReference}
+          onChange={(e) => setManualCreateForm((p) => ({ ...p, supportEntryReference: e.target.value }))}
+        />
+      </Grid>
+
+      <Grid item xs={12} md={3} sx={{ display: 'flex', alignItems: 'center' }}>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={manualCreateForm.createIfMatchFound}
+              onChange={(e) =>
+                setManualCreateForm((p) => ({ ...p, createIfMatchFound: e.target.checked }))
+              }
+            />
+          }
+          label="Create anyway"
+        />
+      </Grid>
+
+      {manualCreateMatch?.matchFound && (
+        <Grid item xs={12}>
+          <Alert
+            severity="warning"
+            action={
+              <Button
+                color="warning"
+                variant="contained"
+                size="small"
+                onClick={handleFillMatchedUserData}
+                sx={{ whiteSpace: 'nowrap' }}
+              >
+                Fill Existing Data
+              </Button>
+            }
+            sx={{ alignItems: 'center' }}
+          >
+            <Typography variant="body2" sx={{ fontWeight: 700 }}>
+              Existing user match found
+            </Typography>
+            <Typography variant="body2">{manualCreateMatch.message}</Typography>
+            <Typography variant="caption" display="block">
+              Existing User ID: {manualCreateMatch.existingUserId}
+            </Typography>
+            <Typography variant="caption" display="block">
+              Matched By: {manualCreateMatch.matchedBy}
+            </Typography>
+          </Alert>
+        </Grid>
+      )}
+    </Grid>
+
+    {/* 6. Password */}
+    <Paper sx={{ p: 1.75, mb: 2.5, bgcolor: '#1a237e', color: 'white', borderRadius: 2 }}>
+      <Typography variant="h6" sx={{ fontWeight: 700 }}>
+        6. Password
+      </Typography>
+    </Paper>
+
+    <Grid container spacing={2.5}>
+      <Grid item xs={12} md={6}>
+        <TextField
+          fullWidth
+          label="Password *"
+          disabled
+          type="password"
+          value={manualCreateForm.password}
+          InputProps={{ readOnly: true }}
+          helperText="आपकी जन्मतिथि ही आपका पासवर्ड है"
+        />
+      </Grid>
+    </Grid>
+  </Box>
+</DialogContent>
+
+ <DialogActions
+  sx={{
+    px: 3,
+    py: 2,
+    borderTop: '1px solid #e0e0e0',
+    bgcolor: 'white',
+    flexShrink: 0,
+    justifyContent: 'space-between',
+  }}
+>
+  <Button onClick={closeManualCreateDialog} sx={{ minWidth: 110 }}>
+    Cancel
+  </Button>
+
+  <Box sx={{ display: 'flex', gap: 1.5 }}>
+    <Button
+      variant="outlined"
+      onClick={handleCheckManualCreateMatch}
+      disabled={manualCheckLoading}
+      sx={{ minWidth: 170 }}
+    >
+      {manualCheckLoading ? 'Checking...' : 'Check Old Entry'}
+    </Button>
+
+    <Button
+      variant="contained"
+      onClick={handleManualCreateUser}
+      disabled={manualCreateLoading}
+      sx={{ bgcolor: '#2e7d32', minWidth: 160 }}
+    >
+      {manualCreateLoading ? 'Creating...' : 'Create User'}
+    </Button>
+  </Box>
+</DialogActions>
+</Dialog>
 <Dialog
   open={deleteRequestsOpen}
   onClose={() => setDeleteRequestsOpen(false)}
@@ -6081,6 +7331,102 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
       ? 'Sanstha Sahyog section will be visible on website.'
       : 'Sanstha Sahyog section will be hidden from website.'}
   </Typography>
+  <Box sx={{ mt: 3 }}>
+  <Paper
+    elevation={0}
+    sx={{
+      p: 2,
+      borderRadius: 2,
+      border: '1px solid #e0e0e0',
+      bgcolor: '#fafafa',
+    }}
+  >
+    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1a237e' }}>
+      Profile Field Lock Settings
+    </Typography>
+
+    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+      Admin can lock specific profile fields so users cannot edit them on their profile screen.
+    </Typography>
+
+    <Grid container spacing={2}>
+      <Grid item xs={12} md={6}>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={profileFieldLocks.fullName}
+              onChange={(e) =>
+                handleProfileFieldLockChange('fullName', e.target.checked)
+              }
+              color="primary"
+            />
+          }
+          label="Lock Full Name"
+        />
+      </Grid>
+
+      <Grid item xs={12} md={6}>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={profileFieldLocks.dateOfBirth}
+              onChange={(e) =>
+                handleProfileFieldLockChange('dateOfBirth', e.target.checked)
+              }
+              color="primary"
+            />
+          }
+          label="Lock जन्मतिथि"
+        />
+      </Grid>
+
+      <Grid item xs={12} md={6}>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={profileFieldLocks.mobileNumber}
+              onChange={(e) =>
+                handleProfileFieldLockChange('mobileNumber', e.target.checked)
+              }
+              color="primary"
+            />
+          }
+          label="Lock Mobile Number"
+        />
+      </Grid>
+
+      <Grid item xs={12} md={6}>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={profileFieldLocks.email}
+              onChange={(e) =>
+                handleProfileFieldLockChange('email', e.target.checked)
+              }
+              color="primary"
+            />
+          }
+          label="Lock Email"
+        />
+      </Grid>
+
+      <Grid item xs={12} md={6}>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={profileFieldLocks.departmentUniqueId}
+              onChange={(e) =>
+                handleProfileFieldLockChange('departmentUniqueId', e.target.checked)
+              }
+              color="primary"
+            />
+          }
+          label="Lock विभाग आईडी (Department Unique ID)"
+        />
+      </Grid>
+    </Grid>
+  </Paper>
+</Box>
 
   <Box sx={{ mt: 2 }}>
     <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>

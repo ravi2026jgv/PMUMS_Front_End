@@ -70,10 +70,26 @@ const Register = () => {
 const watchedDateOfBirth = watch('dateOfBirth');
 useEffect(() => {
   const autoPassword = formatDobAsPassword(watchedDateOfBirth);
+  const autoRetirementDate = formatRetirementDateFromDob(watchedDateOfBirth);
 
   setValue('password', autoPassword);
   setValue('confirmPassword', autoPassword);
+  setValue('retirementDate', autoRetirementDate);
 }, [watchedDateOfBirth, setValue]);
+const formatRetirementDateFromDob = (dobValue) => {
+  if (!dobValue) return '';
+
+  const date = new Date(`${dobValue}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return '';
+
+  date.setFullYear(date.getFullYear() + 62);
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+};
 const formatDobAsPassword = (dobValue) => {
   if (!dobValue) return '';
 
@@ -231,6 +247,23 @@ const formatDobAsPassword = (dobValue) => {
   const handleBlockChange = (event) => {
     setSelectedBlock(event.target.value);
   };
+  const splitFullName = (fullName) => {
+  const cleaned = (fullName || '').trim().replace(/\s+/g, ' ');
+  if (!cleaned) return { name: '', surname: '' };
+
+  const parts = cleaned.split(' ');
+  if (parts.length === 1) {
+    return { name: parts[0], surname: '' };
+  }
+
+  return {
+    name: parts[0],
+    surname: parts.slice(1).join(' '),
+  };
+};
+
+const combineFullName = (name, surname) =>
+  [name, surname].filter(Boolean).join(' ').trim();
 
   const onSubmit = async (data) => {
     // Clear previous location errors
@@ -274,11 +307,12 @@ const formatDobAsPassword = (dobValue) => {
         'divorced': 'DIVORCED',
         'widowed': 'WIDOWED'
       };
+      const { name, surname } = splitFullName(formData.fullName);
       
       // Construct request matching RegisterRequest DTO exactly
       const registrationData = {
-        name: formData.name,
-        surname: formData.surname,
+        name: name,
+        surname: surname,
         fatherName: formData.fatherName,
         countryCode: '+91', // Fixed country code
         mobileNumber: formData.mobileNumber,
@@ -324,11 +358,11 @@ const formatDobAsPassword = (dobValue) => {
       console.log('Extracted registration number:', registrationNumber);
       
       // Store registration data for popup
-      setRegistrationData({
-        name: formData.name,
-        registrationNumber: registrationNumber,
-        ...registrationData
-      });
+   setRegistrationData({
+  name: formData.fullName,
+  registrationNumber: registrationNumber,
+  ...registrationData
+});
       
       // Show success popup
       setShowSuccessPopup(true);
@@ -397,55 +431,48 @@ const formatDobAsPassword = (dobValue) => {
               
               <Box sx={{ mb: 4, p: { xs: 2, md: 3 }, border: '1px solid #e0e0e0', borderRadius: 2 }}>
                 <Grid container spacing={3}>
-                  <Grid item xs={12} md={4}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नाम *</Typography>
-                    <TextField
-                      fullWidth
-                      placeholder="Name"
-                      {...register('name', { required: 'Name is required' })}
-                      error={!!errors.name}
-                      helperText={errors.name?.message}
-                      sx={{ 
-                        fontFamily: 'Poppins',
-                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                          border: '1px solid #ccc',
-                          borderRadius: '8px'
-                        }
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} md={4}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>उपनाम *</Typography>
-                    <TextField
-                      fullWidth
-                      placeholder="Surname"
-                      {...register('surname', { required: 'Surname is required' })}
-                      error={!!errors.surname}
-                      helperText={errors.surname?.message}
-                      sx={{
-                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                          border: '1px solid #ccc',
-                          borderRadius: '8px'
-                        }
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} md={4}>
-                    <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पिता का नाम *</Typography>
-                    <TextField
-                      fullWidth
-                      placeholder="Father Name"
-                      {...register('fatherName', { required: 'Father name is required' })}
-                      error={!!errors.fatherName}
-                      helperText={errors.fatherName?.message}
-                      sx={{
-                        '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                          border: '1px solid #ccc',
-                          borderRadius: '8px'
-                        }
-                      }}
-                    />
-                  </Grid>
+                 <Grid item xs={12} md={6}>
+  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>
+    पूरा नाम *
+  </Typography>
+  <TextField
+    fullWidth
+    placeholder="Full Name"
+    {...register('fullName', { required: 'Full name is required' })}
+    error={!!errors.fullName}
+    helperText={errors.fullName?.message}
+    sx={{
+      fontFamily: 'Poppins',
+      '& .MuiOutlinedInput-root': {
+        '& input::placeholder': { color: '#000', opacity: 1 },
+        '& textarea::placeholder': { color: '#000', opacity: 1 },
+        border: '1px solid #ccc',
+        borderRadius: '8px'
+      }
+    }}
+  />
+</Grid>
+
+<Grid item xs={12} md={6}>
+  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>
+    पिता का नाम *
+  </Typography>
+  <TextField
+    fullWidth
+    placeholder="Father Name"
+    {...register('fatherName', { required: 'Father name is required' })}
+    error={!!errors.fatherName}
+    helperText={errors.fatherName?.message}
+    sx={{
+      '& .MuiOutlinedInput-root': {
+        '& input::placeholder': { color: '#000', opacity: 1 },
+        '& textarea::placeholder': { color: '#000', opacity: 1 },
+        border: '1px solid #ccc',
+        borderRadius: '8px'
+      }
+    }}
+  />
+</Grid>
                   <Grid item xs={12} md={4}>
                     <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>लिंग *</Typography>
                     <FormControl 
@@ -1039,7 +1066,7 @@ const formatDobAsPassword = (dobValue) => {
                       placeholder="Retirement Date"
                       {...register('retirementDate', { required: 'Retirement date is required' })}
                       error={!!errors.retirementDate}
-                      helperText={errors.retirementDate?.message}
+                     helperText={errors.retirementDate?.message || 'जन्मतिथि + 62 वर्ष से स्वतः भरा जाएगा'}
                       sx={{
                         '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
                           border: '1px solid #ccc',

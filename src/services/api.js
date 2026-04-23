@@ -129,6 +129,18 @@ publicApi.interceptors.response.use(
 export default api;
 export { api, publicApi };
 
+// User profile field lock APIs
+api.getProfileFieldLocks = () => {
+  return api.get('/users/profile-field-locks');
+};
+
+api.getProfileById = (userId) => {
+  return api.get(`/users/${userId}`);
+};
+
+api.updateProfileById = (userId, payload) => {
+  return api.put(`/users/${userId}`, payload);
+};
 // Admin API functions
 const adminAPI = {
   // Get all users with pagination and filters
@@ -140,6 +152,10 @@ const adminAPI = {
     });
     return api.get(`/admin/users?${params}`);
   },
+  getProfileFieldLocks: () => api.get('/admin/settings/profile-field-locks'),
+
+updateProfileFieldLocks: (payload) =>
+  api.put('/admin/settings/profile-field-locks', payload),
 
   // Get specific user by ID
   getUser: (id) => {
@@ -446,7 +462,13 @@ clearAllTrashUsers: () =>
   api.post(`/delete-approval/trash/users/clear-all`),
 getAuditLogs: (page = 0, size = 20) =>
   api.get(`/audit-logs`, { params: { page, size } }),
-  
+checkManualCreateUserMatch: (payload) => {
+  return api.post('/admin/users/manual-create/check', payload);
+},
+
+manualCreateUser: (payload) => {
+  return api.post('/admin/users/manual-create', payload);
+},
 };
 
 // Manager API endpoints
