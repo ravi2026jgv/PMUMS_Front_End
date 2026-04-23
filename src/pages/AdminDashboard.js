@@ -68,6 +68,7 @@ import {
   DeleteForever,
   Settings,
   Close,
+   Article,
 } from '@mui/icons-material';
 import Layout from '../components/Layout/Layout';
 import { useAuth } from '../context/AuthContext';
@@ -100,6 +101,13 @@ const [mobileOtpEnabled, setMobileOtpEnabled] = useState(false);
 const [settingsLoading, setSettingsLoading] = useState(false);
 const [settingsSaving, setSettingsSaving] = useState(false);
 const [selfDonationVisible, setSelfDonationVisible] = useState(false);
+const [contentDialogOpen, setContentDialogOpen] = useState(false);
+const [contentLoading, setContentLoading] = useState(false);
+const [contentSaving, setContentSaving] = useState(false);
+const [homeDisplayContent, setHomeDisplayContent] = useState({
+  homeNoticeHtml: '',
+  statisticsContentHtml: '',
+});
 
 const [profileFieldLocks, setProfileFieldLocks] = useState({
   fullName: false,
@@ -1125,6 +1133,48 @@ const handleProfileFieldLockChange = (field, checked) => {
   setProfileFieldLocks((prev) => ({
     ...prev,
     [field]: checked,
+  }));
+};
+const openContentDialog = async () => {
+  try {
+    setContentDialogOpen(true);
+    setContentLoading(true);
+
+    const response = await adminAPI.getHomeDisplayContentSettings();
+
+    setHomeDisplayContent({
+      homeNoticeHtml: response?.data?.homeNoticeHtml || '',
+      statisticsContentHtml: response?.data?.statisticsContentHtml || '',
+    });
+  } catch (error) {
+    console.error('Error loading content settings:', error);
+    showSnackbar('Failed to load content settings!', 'error');
+  } finally {
+    setContentLoading(false);
+  }
+};
+const handleSaveContentSettings = async () => {
+  try {
+    setContentSaving(true);
+
+    await adminAPI.updateHomeDisplayContentSettings(homeDisplayContent);
+
+    showSnackbar('Content updated successfully!', 'success');
+    setContentDialogOpen(false);
+  } catch (error) {
+    console.error('Error saving content settings:', error);
+    showSnackbar(
+      error?.response?.data?.message || 'Failed to save content settings!',
+      'error'
+    );
+  } finally {
+    setContentSaving(false);
+  }
+};
+const handleContentFieldChange = (field, value) => {
+  setHomeDisplayContent((prev) => ({
+    ...prev,
+    [field]: value,
   }));
 };
 const openSettingsDialog = async () => {
@@ -4256,6 +4306,21 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
     Settings
   </Button>
 </Grid>
+<Grid item xs={12} sm={6} md={3}>
+  <Button
+    fullWidth
+    variant="contained"
+    startIcon={<Article />}
+    onClick={openContentDialog}
+    sx={{
+      bgcolor: '#6a1b9a',
+      py: 2,
+      '&:hover': { bgcolor: '#4a148c' }
+    }}
+  >
+    Content
+  </Button>
+</Grid>
                 <Grid item xs={12} sm={6} md={3}>
                   <Button
                     fullWidth
@@ -4440,6 +4505,112 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
             {snackbar.message}
           </Alert>
         </Snackbar>
+        <Dialog
+  open={contentDialogOpen}
+  onClose={() => setContentDialogOpen(false)}
+  maxWidth="md"
+  fullWidth
+  PaperProps={{
+    sx: { borderRadius: 3 }
+  }}
+>
+  <DialogTitle
+    sx={{
+      bgcolor: '#6a1b9a',
+      color: 'white',
+      fontWeight: 'bold',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    }}
+  >
+    Home Content Settings
+    <IconButton
+      onClick={() => setContentDialogOpen(false)}
+      sx={{ color: 'white' }}
+    >
+      <Close />
+    </IconButton>
+  </DialogTitle>
+
+  <DialogContent dividers sx={{ pt: 3 }}>
+    {contentLoading ? (
+      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+        <CircularProgress />
+      </Box>
+    ) : (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 2,
+            borderRadius: 2,
+            border: '1px solid #e0e0e0',
+            bgcolor: '#fafafa',
+          }}
+        >
+          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1, color: '#1a237e' }}>
+            Home / Death Case Notice Content
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            This content will be shown on Home page and Death Case page.
+          </Typography>
+
+          <TextField
+            fullWidth
+            multiline
+            minRows={8}
+            label="Home Notice HTML"
+            value={homeDisplayContent.homeNoticeHtml}
+            onChange={(e) => handleContentFieldChange('homeNoticeHtml', e.target.value)}
+            placeholder="Enter HTML content for home/death case notice"
+          />
+        </Paper>
+
+        <Paper
+          elevation={0}
+          sx={{
+            p: 2,
+            borderRadius: 2,
+            border: '1px solid #e0e0e0',
+            bgcolor: '#fafafa',
+          }}
+        >
+          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1, color: '#1a237e' }}>
+            Statistics Content
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            This content will be shown on the left side of the Statistics section.
+          </Typography>
+
+          <TextField
+            fullWidth
+            multiline
+            minRows={14}
+            label="Statistics HTML"
+            value={homeDisplayContent.statisticsContentHtml}
+            onChange={(e) => handleContentFieldChange('statisticsContentHtml', e.target.value)}
+            placeholder="Enter HTML content for statistics section"
+          />
+        </Paper>
+      </Box>
+    )}
+  </DialogContent>
+
+  <DialogActions sx={{ p: 2 }}>
+    <Button onClick={() => setContentDialogOpen(false)}>
+      Cancel
+    </Button>
+    <Button
+      variant="contained"
+      onClick={handleSaveContentSettings}
+      disabled={contentSaving || contentLoading}
+      sx={{ bgcolor: '#6a1b9a', '&:hover': { bgcolor: '#4a148c' } }}
+    >
+      {contentSaving ? 'Saving...' : 'Save Content'}
+    </Button>
+  </DialogActions>
+</Dialog>
         <Dialog
   open={showManualCreateSuccessPopup}
   onClose={() => setShowManualCreateSuccessPopup(false)}

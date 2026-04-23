@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Container,
@@ -6,8 +6,22 @@ import {
   Grid,
   Paper
 } from '@mui/material';
+import { publicApi } from '../services/api';
 
 const Statistics = () => {
+  const [statisticsContentHtml, setStatisticsContentHtml] = useState('');
+  useEffect(() => {
+  const loadStatisticsContent = async () => {
+    try {
+      const response = await publicApi.getHomeDisplayContent();
+      setStatisticsContentHtml(response?.data?.statisticsContentHtml || '');
+    } catch (error) {
+      console.error('Failed to load statistics content:', error);
+    }
+  };
+
+  loadStatisticsContent();
+}, []);
   return (
     <Box
       sx={{
@@ -57,27 +71,24 @@ const Statistics = () => {
                 आज का सहयोग — कल का संबल
               </Typography>
               
-              <Typography
-                variant="body1"
-                sx={{
-                  color: '#555',
-                  fontSize: { xs: '1rem', md: '1.1rem' },
-                  lineHeight: 1.8,
-                  fontFamily: 'Poppins, Arial, sans-serif',
-                  mb: 3
-                }}
-              >
-                दिवंगत साथी<br />
-स्व. श्री रेवाराम अलोने जी (जिला धार)<br />
-सदस्यता क्रमांक: PMUMS 202411574<br />
-सदस्यता दिनांक: 18/09/2025<br />
-मृत्यु दिनांक: 20/12/2025<br />
-स्व. श्री महेंद्र सिंह मुवेल जी (जिला धार)<br />
-सदस्यता क्रमांक: PMUMS 20248814<br />
-सदस्यता दिनांक: 12/09/2025<br />
-मृत्यु दिनांक: 25/12/2025<br /><br />
-              <b>  ⚠️ सहयोग हेतु महत्वपूर्ण निर्देश</b>
-              </Typography>
+              <Box
+  sx={{
+    color: '#555',
+    fontSize: { xs: '1rem', md: '1.1rem' },
+    lineHeight: 1.8,
+    fontFamily: 'Poppins, Arial, sans-serif',
+    '& b': {
+      fontWeight: 700,
+    },
+    '& a': {
+      color: '#1976d2',
+      textDecoration: 'underline',
+    },
+  }}
+  dangerouslySetInnerHTML={{
+    __html: statisticsContentHtml || '',
+  }}
+/>
               
               <Typography
                 variant="body1"

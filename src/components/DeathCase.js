@@ -122,12 +122,23 @@ const [payDialogMessage, setPayDialogMessage] = useState('');
 const [payLoading, setPayLoading] = useState('');
 const [payError, setPayError] = useState('');
   const abortControllerRef = useRef(null);
-
+const [homeNoticeHtml, setHomeNoticeHtml] = useState('');
   const showPayErrorDialog = (message) => {
   setPayDialogMessage(message || 'Unable to open UPI app.');
   setPayDialogOpen(true);
 };
+useEffect(() => {
+  const loadHomeNotice = async () => {
+    try {
+      const response = await publicApi.getHomeDisplayContent();
+      setHomeNoticeHtml(response?.data?.homeNoticeHtml || '');
+    } catch (error) {
+      console.error('Failed to load home notice content:', error);
+    }
+  };
 
+  loadHomeNotice();
+}, []);
 useEffect(() => {
   const fetchAssignedOnly = async () => {
     if (abortControllerRef.current) abortControllerRef.current.abort();
@@ -219,22 +230,21 @@ if (!isAuthenticated) {
 दिवंगत सदस्य के परिवार (नोमिनी) की आर्थिक सहायता हेतु
 ₹100 का अनिवार्य सहयोग निर्धारित किया गया है।
         </Typography> */}
-        <Typography variant="h5" fontWeight="bold" color="#666" lineHeight={1.8}>
-  👉 वर्तमान सहयोग प्रक्रिया समाप्त हो चुकी है।
-  <br /><br />
-
-  आगामी सहयोग से संबंधित सभी अपडेट एवं जानकारी के लिए कृपया WhatsApp चैनल/ग्रुप को अवश्य फॉलो करें।
-  <br /><br />
-
-  <a 
-    href="https://www.whatsapp.com/channel/0029Vaw20ci5K3zZkmv3jV1g" 
-    target="_blank" 
-    rel="noopener noreferrer"
-    style={{ color: "#1976d2", textDecoration: "underline" }}
-  >
-    WhatsApp चैनल देखें
-  </a>
-</Typography>
+      <Box
+  sx={{
+    color: '#666',
+    lineHeight: 1.8,
+    fontWeight: 'bold',
+    fontSize: '1.1rem',
+    '& a': {
+      color: '#1976d2',
+      textDecoration: 'underline',
+    },
+  }}
+  dangerouslySetInnerHTML={{
+    __html: homeNoticeHtml || '',
+  }}
+/>
       </Box>
 
       {error && <Alert severity="error">{error}</Alert>}

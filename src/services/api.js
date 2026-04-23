@@ -191,6 +191,13 @@ exportSahyog: (params = {}) => {
     responseType: 'blob'
   });
 },
+getHomeDisplayContentSettings: () => {
+  return api.get('/admin/settings/home-display-content');
+},
+
+updateHomeDisplayContentSettings: (payload) => {
+  return api.put('/admin/settings/home-display-content', payload);
+},
 exportAsahyog: (params = {}) => {
   return api.get('/admin/export/asahyog', {
     params,
@@ -574,8 +581,12 @@ const publicAPI = {
   submitInsuranceInquiry: (payload) => {
     return publicApi.post('/public/insurance-inquiries', payload);
   },
+  
 };
 
+publicApi.getHomeDisplayContent = () => {
+  return publicApi.get('/public/home-display-content');
+};
 const receiptAPI = {
   uploadReceipt: (payload) => {
     return api.post('/receipts', payload);

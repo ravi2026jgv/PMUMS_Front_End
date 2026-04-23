@@ -37,7 +37,7 @@
 
 // export default Home;
 // src/pages/Home.jsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Container, Card, CardContent, Typography, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout/Layout";
@@ -48,10 +48,15 @@ import DeathCase from "../components/DeathCase";
 import { useAuth } from "../context/AuthContext";
 import SelfDonation from "../components/SelfDonation";
 import SbiInsuranceSection from "../components/SbiInsuranceSection";
+import { publicApi } from "../services/api";
 
 const Home = () => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
+const [homeDisplayContent, setHomeDisplayContent] = useState({
+  homeNoticeHtml: '',
+  statisticsContentHtml: '',
+});
 
   const handleSahyogClick = () => {
     // ✅ if not logged in → go login and come back to /sahyog after login
@@ -62,7 +67,21 @@ const Home = () => {
     // ✅ logged in → go directly
     navigate("/sahyog");
   };
+useEffect(() => {
+  const loadHomeDisplayContent = async () => {
+    try {
+      const response = await publicApi.getHomeDisplayContent();
+      setHomeDisplayContent({
+        homeNoticeHtml: response?.data?.homeNoticeHtml || '',
+        statisticsContentHtml: response?.data?.statisticsContentHtml || '',
+      });
+    } catch (error) {
+      console.error('Failed to load home display content:', error);
+    }
+  };
 
+  loadHomeDisplayContent();
+}, []);
   return (
     <Layout>
       <HeroBanner />
@@ -101,22 +120,21 @@ UTR दर्ज होने पर ही आपका सहयोग सफ�
           <Typography variant="h4" fontWeight="bold" color="#1E3A8A">
             
           </Typography>
-                <Typography variant="h5" fontWeight="bold" color="#666" lineHeight={1.8}>
-  👉 वर्तमान सहयोग प्रक्रिया समाप्त हो चुकी है।
-  <br /><br />
-
-  आगामी सहयोग से संबंधित सभी अपडेट एवं जानकारी के लिए कृपया WhatsApp चैनल/ग्रुप को अवश्य फॉलो करें।
-  <br /><br />
-
-  <a 
-    href="https://www.whatsapp.com/channel/0029Vaw20ci5K3zZkmv3jV1g" 
-    target="_blank" 
-    rel="noopener noreferrer"
-    style={{ color: "#1976d2", textDecoration: "underline" }}
-  >
-    WhatsApp चैनल देखें
-  </a>
-</Typography>
+              <Box
+  sx={{
+    color: '#666',
+    lineHeight: 1.8,
+    fontWeight: 'bold',
+    fontSize: '1.1rem',
+    '& a': {
+      color: '#1976d2',
+      textDecoration: 'underline',
+    },
+  }}
+  dangerouslySetInnerHTML={{
+    __html: homeDisplayContent.homeNoticeHtml || '',
+  }}
+/>
                 <Box sx={{ display: "flex", justifyContent: "center" }}>
                   <Button
                     variant="contained"
