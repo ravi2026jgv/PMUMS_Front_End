@@ -88,7 +88,9 @@ publicApi.interceptors.request.use(
 );
 
 // DO NOT add any request interceptors to publicApi to keep it completely clean
-
+api.reAuthenticate = (password) => {
+  return api.post('/security/reauth', { password });
+};
 // Response interceptor for error handling (apply to both instances)
 const authErrorHandler = (error) => {
   if (error.response?.status === 401) {

@@ -77,10 +77,12 @@ import { managerAPI, adminAPI, api } from '../services/api';
 import Layout from '../components/Layout/Layout';
 import { CreateQueryDialog, ResolveQueryDialog } from '../components/QueryDialogs';
 import TicketSystemTab from '../components/TicketSystemTab';
+import ManagerSecurityLock from '../components/ManagerSecurityLock';
 
 const ManagerDashboard = () => {
   const { user } = useAuth();
-  
+  const [managerUnlocked, setManagerUnlocked] = useState(false);
+const [securityDialogOpen, setSecurityDialogOpen] = useState(false);
   // State Management
   const [activeTab, setActiveTab] = useState(0);
   const [dashboardData, setDashboardData] = useState(null);
@@ -167,7 +169,21 @@ const getAny = (obj, keys) => {
   }
   return undefined;
 };
+const isManagerReAuthValid = () => {
+  const unlocked = sessionStorage.getItem('managerDashboardReAuth') === 'true';
+  const expiresAt = Number(sessionStorage.getItem('managerDashboardReAuthExpiresAt') || 0);
 
+  return unlocked && expiresAt > Date.now();
+};
+useEffect(() => {
+  if (isManagerReAuthValid()) {
+    setManagerUnlocked(true);
+    setSecurityDialogOpen(false);
+  } else {
+    setManagerUnlocked(false);
+    setSecurityDialogOpen(true);
+  }
+}, []);
 const normalizeHierarchy = (data) => {
   const states = Array.isArray(data?.states)
     ? data.states
@@ -1497,7 +1513,23 @@ onChange={(e) => {
       />
     </Paper>
   );
-
+if (!managerUnlocked) {
+  return (
+    <Layout>
+      <ManagerSecurityLock
+        open={securityDialogOpen}
+        onSuccess={() => {
+          setManagerUnlocked(true);
+          setSecurityDialogOpen(false);
+        }}
+        onCancel={() => {
+          setSecurityDialogOpen(false);
+          window.history.back();
+        }}
+      />
+    </Layout>
+  );
+}
   return (
     <Layout>
       <Container maxWidth="xl" sx={{ py: 4 }}>
