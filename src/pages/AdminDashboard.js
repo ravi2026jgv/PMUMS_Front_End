@@ -69,11 +69,14 @@ import {
   Settings,
   Close,
    Article,
+   Badge,
+   Chat,
 } from '@mui/icons-material';
 import Layout from '../components/Layout/Layout';
 import { useAuth } from '../context/AuthContext';
-
+import MembershipCardPopup from '../components/MembershipCardPopup';
 import { adminAPI, managerAPI, FILE_BASE_URL } from '../services/api';
+import TicketSystemTab from '../components/TicketSystemTab';
 
 const AdminDashboard = () => {
  const { user: currentUser } = useAuth();
@@ -158,6 +161,7 @@ const [blockManagerExportMobileEnabled, setBlockManagerExportMobileEnabled] = us
 const [showManualCreateSuccessPopup, setShowManualCreateSuccessPopup] = useState(false);
 const [manualCreateSuccessData, setManualCreateSuccessData] = useState(null);
   // Admin User Management - Trash (Deleted Users)
+  const [manualMembershipCardOpen, setManualMembershipCardOpen] = useState(false);
   const [trashOpen, setTrashOpen] = useState(false);
   const [trashUsers, setTrashUsers] = useState([]);
   const [trashTotalUsers, setTrashTotalUsers] = useState(0);
@@ -955,17 +959,24 @@ const registrationNumber =
   'PMUMS' + Date.now();
 
 setManualCreateSuccessData({
-  name: manualCreateForm.fullName || createdUser?.name || 'शिक्षक',
+  fullName: manualCreateForm.fullName || combineFullName(createdUser?.name, createdUser?.surname) || 'शिक्षक',
+  name: manualCreateForm.fullName || combineFullName(createdUser?.name, createdUser?.surname) || 'शिक्षक',
   registrationNumber,
-  mobileNumber: manualCreateForm.mobileNumber,
-  email: manualCreateForm.email,
+  id: registrationNumber,
+  mobileNumber: manualCreateForm.mobileNumber || createdUser?.mobileNumber || '-',
+  email: manualCreateForm.email || createdUser?.email || '-',
   dateOfBirth: manualCreateForm.dateOfBirth,
-  department: manualCreateForm.department,
-  schoolOfficeName: manualCreateForm.schoolOfficeName,
+  department: manualCreateForm.department || createdUser?.department || '-',
+  schoolOfficeName: manualCreateForm.schoolOfficeName || '-',
+  registrationDate:
+    manualCreateForm.registrationDateOverride ||
+    createdUser?.createdAt ||
+    createdUser?.registrationDate ||
+    new Date().toISOString(),
 });
 
-setShowManualCreateSuccessPopup(true);
 closeManualCreateDialog();
+setShowManualCreateSuccessPopup(true);
 fetchUsers();
   } catch (error) {
     console.error('Error creating user manually:', error);
@@ -3200,7 +3211,7 @@ const renderLogsTab = () => (
     log.performedById || '-'
   )}
 </TableCell>
-<TableCell>{log.performedByRole || '-'}</TableCell>
+
                   <TableCell>{log.performedByRole || '-'}</TableCell>
                   <TableCell>{log.remarks || '-'}</TableCell>
                   <TableCell>
@@ -4467,6 +4478,11 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
   iconPosition="start"
   label="Audit Logs"
 />
+<Tab
+  icon={<Chat />}
+  iconPosition="start"
+  label="Ticket System"
+/>
             </Tabs>
 
             <Box sx={{ p: 3 }}>
@@ -4475,6 +4491,12 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
                {activeTab === 2 && renderPoolTab()}
               {activeTab === 3 && renderPaymentsTab()}
              {activeTab === 4 && renderLogsTab()}
+             {activeTab === 5 && (
+  <TicketSystemTab
+    mode="admin"
+    currentUser={currentUser}
+  />
+)}
               {/* {activeTab === 3 && renderQueriesTab()}
               {activeTab === 4 && renderAssignmentsTab()}
               {activeTab === 5 && (
@@ -4697,6 +4719,25 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
   </DialogContent>
 
   <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
+   <Button
+  variant="contained"
+  startIcon={<Badge />}
+  onClick={() => {
+    setShowManualCreateSuccessPopup(false);
+    setTimeout(() => {
+      setManualMembershipCardOpen(true);
+    }, 200);
+  }}
+  sx={{
+    bgcolor: '#1E3A8A',
+    '&:hover': { bgcolor: '#0d2c6b' },
+    minWidth: 220,
+    fontWeight: 700,
+    borderRadius: 2,
+  }}
+>
+  ID Card देखें / डाउनलोड करें
+</Button>
     <Button
       variant="contained"
       onClick={() => setShowManualCreateSuccessPopup(false)}
@@ -4710,6 +4751,11 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
     </Button>
   </DialogActions>
 </Dialog>
+<MembershipCardPopup
+  open={manualMembershipCardOpen}
+  onClose={() => setManualMembershipCardOpen(false)}
+  memberData={manualCreateSuccessData}
+/>
         <Dialog
   open={manualCreateOpen}
   onClose={closeManualCreateDialog}

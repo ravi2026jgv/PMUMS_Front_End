@@ -29,6 +29,7 @@ import { PersonAdd, CloudUpload, Close } from '@mui/icons-material';
 import Layout from '../../components/Layout/Layout';
 import { useAuth } from '../../context/AuthContext';
 import axios from 'axios';
+import MembershipCardPopup from '../../components/MembershipCardPopup';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'https://backend.pmums.com/api';
 
@@ -52,7 +53,7 @@ const Register = () => {
   const [selectedSambhag, setSelectedSambhag] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [selectedBlock, setSelectedBlock] = useState('');
-
+const [membershipCardOpen, setMembershipCardOpen] = useState(false);
   // Filtered options for cascading dropdowns
   const [availableSambhags, setAvailableSambhags] = useState([]);
   const [availableDistricts, setAvailableDistricts] = useState([]);
@@ -358,9 +359,13 @@ const combineFullName = (name, surname) =>
       console.log('Extracted registration number:', registrationNumber);
       
       // Store registration data for popup
-   setRegistrationData({
+  setRegistrationData({
+  fullName: formData.fullName,
   name: formData.fullName,
-  registrationNumber: registrationNumber,
+  registrationNumber,
+  mobileNumber: formData.mobileNumber,
+  department: formData.department,
+  registrationDate: new Date().toISOString(),
   ...registrationData
 });
       
@@ -1422,6 +1427,20 @@ const combineFullName = (name, surname) =>
           </DialogContent>
           <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
             <Button
+  variant="outlined"
+  onClick={() => setMembershipCardOpen(true)}
+  sx={{
+    borderColor: '#1E3A8A',
+    color: '#1E3A8A',
+    px: 3,
+    py: 1.5,
+    fontWeight: 600,
+    borderRadius: 2
+  }}
+>
+  ID Card देखें / डाउनलोड करें
+</Button>
+            <Button
               variant="contained"
               onClick={() => {
                 setShowSuccessPopup(false);
@@ -1440,6 +1459,11 @@ const combineFullName = (name, surname) =>
             </Button>
           </DialogActions>
         </Dialog>
+        <MembershipCardPopup
+  open={membershipCardOpen}
+  onClose={() => setMembershipCardOpen(false)}
+  memberData={registrationData}
+/>
       </Box>
     </Layout>
   );

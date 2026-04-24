@@ -32,6 +32,7 @@ import {
   CalendarToday,
   Security,
   PersonAdd,
+  Badge,
 } from '@mui/icons-material';
 import { useForm, Controller } from 'react-hook-form';
 import { useAuth } from '../context/AuthContext';
@@ -40,7 +41,7 @@ import ChangePasswordDialog from '../components/ChangePasswordDialog';
 import api from '../services/api';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-
+import MembershipCardPopup from '../components/MembershipCardPopup';
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
 
 const Profile = () => {
@@ -49,6 +50,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [membershipCardOpen, setMembershipCardOpen] = useState(false);
 const [profileData, setProfileData] = useState(null);
 const [profileFieldLocks, setProfileFieldLocks] = useState({
   fullName: false,
@@ -427,6 +429,15 @@ const splitFullName = (fullName) => {
 
 const combineFullName = (name, surname) =>
   [name, surname].filter(Boolean).join(' ').trim();
+
+const membershipCardData = {
+  fullName: combineFullName(profileData?.name, profileData?.surname) || user?.name || 'शिक्षक',
+  name: combineFullName(profileData?.name, profileData?.surname) || user?.name || 'शिक्षक',
+  registrationNumber: profileData?.id || user?.id || '-',
+  mobileNumber: profileData?.mobileNumber || user?.mobileNumber || '-',
+  department: profileData?.department || user?.department || '-',
+  registrationDate: profileData?.createdAt || profileData?.registrationDate || user?.createdAt || new Date().toISOString(),
+};
 const handleEditToggle = () => {
   if (isEditing) {
     reset({
@@ -611,25 +622,69 @@ const response = await api.updateProfileById(userId, updatePayload);
                 />
               )}
             </Box>
-            <Button
-              variant={isEditing ? "outlined" : "contained"}
-              onClick={handleEditToggle}
-              startIcon={isEditing ? <Cancel /> : <Edit />}
-              sx={{
-                background: isEditing ? 'transparent' : 'linear-gradient(135deg, #1E3A8A 0%, #5c6bc0 100%)',
-                color: isEditing ? '#1E3A8A' : 'white',
-                borderColor: isEditing ? '#1E3A8A' : 'transparent',
-                '&:hover': {
-                  background: isEditing ? 'rgba(26, 35, 126, 0.05)' : 'linear-gradient(135deg, #000051 0%, #3949ab 100%)',
-                },
-                borderRadius: 3,
-                px: 4,
-                py: 1.5,
-                fontWeight: 600
-              }}
-            >
-              {isEditing ? 'रद्द करें' : 'प्रोफाइल संपादित करें'}
-            </Button>
+            <Box
+  sx={{
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 2,
+    flexWrap: 'wrap',
+    mt: 2,
+  }}
+>
+  <Button
+    variant="contained"
+    onClick={() => setMembershipCardOpen(true)}
+    startIcon={<Badge sx={{ fontSize: 22 }} />}
+    sx={{
+      background: 'linear-gradient(135deg, #FF9933 0%, #f57c00 100%)',
+      color: 'white',
+      borderRadius: 3,
+      px: 4,
+      py: 1.5,
+      fontWeight: 700,
+      minWidth: 180,
+      boxShadow: '0 6px 16px rgba(255,153,51,0.35)',
+      '&:hover': {
+        background: 'linear-gradient(135deg, #e6851a 0%, #ef6c00 100%)',
+        transform: 'translateY(-2px)',
+        boxShadow: '0 8px 20px rgba(255,153,51,0.45)',
+      },
+      transition: 'all 0.25s ease',
+    }}
+  >
+    ID Card देखें
+  </Button>
+
+  <Button
+    variant={isEditing ? 'outlined' : 'contained'}
+    onClick={handleEditToggle}
+    startIcon={isEditing ? <Cancel /> : <Edit />}
+    sx={{
+      background: isEditing
+        ? 'transparent'
+        : 'linear-gradient(135deg, #1E3A8A 0%, #5c6bc0 100%)',
+      color: isEditing ? '#1E3A8A' : 'white',
+      borderColor: '#1E3A8A',
+      borderRadius: 3,
+      px: 4,
+      py: 1.5,
+      fontWeight: 700,
+      minWidth: 200,
+      boxShadow: isEditing ? 'none' : '0 6px 16px rgba(30,58,138,0.3)',
+      '&:hover': {
+        background: isEditing
+          ? 'rgba(30,58,138,0.08)'
+          : 'linear-gradient(135deg, #000051 0%, #3949ab 100%)',
+        transform: 'translateY(-2px)',
+        boxShadow: isEditing ? 'none' : '0 8px 20px rgba(30,58,138,0.4)',
+      },
+      transition: 'all 0.25s ease',
+    }}
+  >
+    {isEditing ? 'रद्द करें' : 'प्रोफाइल संपादित करें'}
+  </Button>
+</Box>
           </Paper>
 
           {/* Alerts */}
@@ -1383,6 +1438,11 @@ helperText={
           />
         </Container>
       </Box>
+      <MembershipCardPopup
+  open={membershipCardOpen}
+  onClose={() => setMembershipCardOpen(false)}
+  memberData={membershipCardData}
+/>
     </Layout>
   );
 };

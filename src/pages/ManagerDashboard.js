@@ -70,11 +70,13 @@ import {
   Download,
   Settings,
     DeleteForever,
+    Chat,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import { managerAPI, adminAPI } from '../services/api';
 import Layout from '../components/Layout/Layout';
 import { CreateQueryDialog, ResolveQueryDialog } from '../components/QueryDialogs';
+import TicketSystemTab from '../components/TicketSystemTab';
 
 const ManagerDashboard = () => {
   const { user } = useAuth();
@@ -525,10 +527,9 @@ const submitPasswordReset = async () => {
       case 'blocked': return '#f44336';
       case 'deleted': return '#9e9e9e';
       case 'pending': return '#ff9800';
-      case 'in_progress': return '#2196f3';
+     case 'need_clarification': return '#2196f3';
       case 'resolved': return '#4caf50';
-      case 'rejected': return '#f44336';
-      case 'escalated': return '#9c27b0';
+     case 'cancel': return '#f44336';
       default: return '#757575';
     }
   };
@@ -641,7 +642,9 @@ const submitPasswordReset = async () => {
                   </Box>
                 </Box>
               </CardContent>
+             
             </Card>
+           
           </Grid>
         ))}
       </Grid>
@@ -789,8 +792,25 @@ const submitPasswordReset = async () => {
       }
     }}
   >
+    
     <LockReset fontSize="small" sx={{ color: '#9c27b0' }} />
   </IconButton>
+  <IconButton
+  size="small"
+  onClick={() => {
+    setSelectedItem(user);
+    setCreateQueryOpen(true);
+  }}
+  title="Create Ticket for this User"
+  sx={{
+    bgcolor: '#1E3A8A20',
+    '&:hover': {
+      bgcolor: '#1E3A8A40'
+    }
+  }}
+>
+  <Support fontSize="small" sx={{ color: '#1E3A8A' }} />
+</IconButton>
   {canDeleteUsers && (
   <IconButton
     size="small"
@@ -1034,10 +1054,10 @@ const submitPasswordReset = async () => {
             iconPosition="start"
           />
           <Tab 
-            icon={<Assignment />} 
-            label="Query Management" 
-            iconPosition="start"
-          />
+  icon={<Chat />} 
+  label="Ticket System" 
+  iconPosition="start"
+/>
           <Tab 
             icon={<AssignmentInd />} 
             label="Assignments" 
@@ -1153,7 +1173,12 @@ const submitPasswordReset = async () => {
             </Box>
           )}
           {activeTab === 1 && renderUsersTab()}
-          {activeTab === 2 && renderQueriesTab()}
+         {activeTab === 2 && (
+  <TicketSystemTab
+    mode="manager"
+    currentUser={user}
+  />
+)}
           {activeTab === 3 && (
             <Box>
               <Typography variant="h6" sx={{ mb: 3 }}>
@@ -1169,14 +1194,20 @@ const submitPasswordReset = async () => {
       </Paper>
 
       {/* Query Dialogs */}
-      <CreateQueryDialog
-        open={createQueryOpen}
-        onClose={() => setCreateQueryOpen(false)}
-        onSuccess={() => {
-          showSnackbar('New query created successfully!', 'success');
-          fetchQueries();
-        }}
-      />
+     <CreateQueryDialog
+  open={createQueryOpen}
+  onClose={() => {
+    setCreateQueryOpen(false);
+    setSelectedItem(null);
+  }}
+  relatedUser={selectedItem}
+  onSuccess={() => {
+    showSnackbar('Ticket admin को successfully भेज दी गई है!', 'success');
+    fetchQueries();
+    setCreateQueryOpen(false);
+    setSelectedItem(null);
+  }}
+/>
       
       <ResolveQueryDialog
         open={resolveQueryOpen}

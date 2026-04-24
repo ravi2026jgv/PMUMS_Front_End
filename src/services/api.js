@@ -516,6 +516,30 @@ exportUsers: (params = {}) => {
   });
 },
 
+// Ticket / Query System
+getQueries: (params = {}) =>
+  api.get('/manager/queries', { params }),
+
+getQueryById: (queryId) =>
+  api.get(`/manager/queries/${queryId}`),
+
+getQueryMessages: (queryId) =>
+  api.get(`/manager/queries/${queryId}/messages`),
+
+addQueryMessage: (queryId, message) =>
+  api.post(`/manager/queries/${queryId}/messages`, { message }),
+
+createQuery: (queryData) =>
+  api.post('/manager/queries', queryData),
+
+updateQueryStatus: (queryId, status) =>
+  api.put(`/manager/queries/${queryId}/status`, { status }),
+
+resolveQuery: (queryId, resolution) =>
+  api.put(`/manager/queries/${queryId}/resolve`, { resolution }),
+
+escalateQuery: (queryId) =>
+  api.put(`/manager/queries/${queryId}/escalate`),
 exportPendingProfiles: (params = {}) => {
   return api.get('/users/pending-profiles/export', {
     params,
