@@ -149,7 +149,10 @@ const [blockManagerExportMobileEnabled, setBlockManagerExportMobileEnabled] = us
     priority: '',
     type: 'assigned'
   });
-
+const [dateExportDialogOpen, setDateExportDialogOpen] = useState(false);
+const [dateExportType, setDateExportType] = useState('');
+const [dateExportFromDate, setDateExportFromDate] = useState('');
+const [dateExportToDate, setDateExportToDate] = useState('');
   // Manager role levels and permissions
 const isSuperAdmin = user?.role === 'ROLE_SUPERADMIN';
 const isAdmin = user?.role === 'ROLE_ADMIN';
@@ -300,6 +303,12 @@ const buildAssignedHierarchyFromScope = (fullHierarchy, scope) => {
     })
     .filter(Boolean);
 };
+const openDateExportDialog = (type) => {
+  setDateExportType(type);
+  setDateExportFromDate('');
+  setDateExportToDate('');
+  setDateExportDialogOpen(true);
+};
 const getAssignedLocationIds = () => {
   const locations = managerScope?.managedLocations || [];
 
@@ -317,7 +326,42 @@ const getAssignedLocationIds = () => {
       .map((x) => String(x.locationId)),
   };
 };
+const handleManagerDateRelatedExport = async () => {
+  try {
+    setExportLoading(true);
 
+const areaParams = getCurrentExportAreaParams();
+    const params = {
+      ...areaParams,
+      fromDate: dateExportFromDate || null,
+      toDate: dateExportToDate || null,
+    };
+
+    let response;
+    let fileName;
+
+    if (dateExportType === 'joining') {
+      response = await managerAPI.exportUsersByJoiningDate(params);
+      fileName = 'joining_date_users.csv';
+    } else {
+      response = await managerAPI.exportUsersByRetirementDate(params);
+      fileName = 'retirement_date_users.csv';
+    }
+
+    downloadBlobFile(response.data, fileName);
+
+    showSnackbar('Date related export downloaded successfully!', 'success');
+    setDateExportDialogOpen(false);
+  } catch (error) {
+    console.error('Manager date export error:', error);
+    showSnackbar(
+      error?.response?.data?.message || 'Date related export failed!',
+      'error'
+    );
+  } finally {
+    setExportLoading(false);
+  }
+};
 const filterHierarchyByManagerScope = (hierarchy, scope) => {
   if (!Array.isArray(hierarchy)) return [];
 
@@ -1695,6 +1739,21 @@ if (!managerUnlocked) {
 >
   2 महीने से Sahyog नहीं
 </Button>
+<Button
+  variant="contained"
+  startIcon={<Download />}
+  onClick={() => openDateExportDialog('joining')}
+>
+  नियुक्ति तिथि Export
+</Button>
+
+<Button
+  variant="contained"
+  startIcon={<Download />}
+  onClick={() => openDateExportDialog('retirement')}
+>
+  सेवानिवृत्ति तिथि Export
+</Button>
  
 </Box>
                     <Card elevation={3}>
@@ -1788,7 +1847,65 @@ if (!managerUnlocked) {
           setSelectedItem(null);
         }}
       />
-    
+    <Dialog
+  open={dateExportDialogOpen}
+  onClose={() => setDateExportDialogOpen(false)}
+  maxWidth="sm"
+  fullWidth
+>
+  <DialogTitle sx={{ fontWeight: 'bold' }}>
+    {dateExportType === 'joining'
+      ? 'नियुक्ति तिथि Export'
+      : 'सेवानिवृत्ति तिथि Export'}
+  </DialogTitle>
+
+  <DialogContent dividers>
+    <Grid container spacing={2} sx={{ mt: 0.5 }}>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          type="date"
+          label="From Date"
+          InputLabelProps={{ shrink: true }}
+          value={dateExportFromDate}
+          onChange={(e) => setDateExportFromDate(e.target.value)}
+        />
+      </Grid>
+
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          type="date"
+          label="To Date"
+          InputLabelProps={{ shrink: true }}
+          value={dateExportToDate}
+          onChange={(e) => setDateExportToDate(e.target.value)}
+        />
+      </Grid>
+
+      <Grid item xs={12}>
+        <Alert severity="info">
+          Date blank रखने पर आपके assigned area के सभी records export होंगे.
+        </Alert>
+      </Grid>
+    </Grid>
+  </DialogContent>
+
+  <DialogActions>
+    <Button onClick={() => setDateExportDialogOpen(false)}>
+      Cancel
+    </Button>
+
+    <Button
+      variant="contained"
+      onClick={handleManagerDateRelatedExport}
+      disabled={exportLoading}
+      startIcon={exportLoading ? <CircularProgress size={18} color="inherit" /> : <Download />}
+    >
+      {exportLoading ? 'Exporting...' : 'Export'}
+    </Button>
+  </DialogActions>
+</Dialog>
       <Dialog
   open={settingsDialogOpen}
   onClose={() => setSettingsDialogOpen(false)}

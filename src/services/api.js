@@ -178,6 +178,19 @@ updateProfileFieldLocks: (payload) =>
 restoreUser: (id) => {
   return api.put(`/admin/users/${id}/restore`);
 },
+exportUsersByJoiningDate: (params = {}) => {
+  return api.get('/admin/export/users/joining-date', {
+    params,
+    responseType: 'blob',
+  });
+},
+
+exportUsersByRetirementDate: (params = {}) => {
+  return api.get('/admin/export/users/retirement-date', {
+    params,
+    responseType: 'blob',
+  });
+},
   // Soft delete user
   deleteUser: (id) => {
     return api.delete(`/admin/users/${id}`);
@@ -532,6 +545,19 @@ exportUsers: (params = {}) => {
   return api.get('/users/export', {
     params,
     responseType: 'blob'
+  });
+},
+exportUsersByJoiningDate: (params = {}) => {
+  return api.get('/admin/export/users/joining-date', {
+    params,
+    responseType: 'blob',
+  });
+},
+
+exportUsersByRetirementDate: (params = {}) => {
+  return api.get('/admin/export/users/retirement-date', {
+    params,
+    responseType: 'blob',
   });
 },
 exportNoLoginThreeMonths: (params = {}) => {

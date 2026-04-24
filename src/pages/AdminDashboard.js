@@ -177,7 +177,10 @@ const [userMembershipCardData, setUserMembershipCardData] = useState(null);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [usersLoading, setUsersLoading] = useState(false);
   const [assignmentsLoading, setAssignmentsLoading] = useState(false);
-  
+  const [dateExportDialogOpen, setDateExportDialogOpen] = useState(false);
+const [dateExportType, setDateExportType] = useState('');
+const [dateExportFromDate, setDateExportFromDate] = useState('');
+const [dateExportToDate, setDateExportToDate] = useState('');
   // Death Cases specific state
     const [isDeathCaseEditMode, setIsDeathCaseEditMode] = useState(false);
   const [editingDeathCaseId, setEditingDeathCaseId] = useState(null);
@@ -519,6 +522,46 @@ useEffect(() => {
   });
 }, [manualCreateForm.dateOfBirth]);
 
+const openDateExportDialog = (type) => {
+  setDateExportType(type);
+  setDateExportFromDate('');
+  setDateExportToDate('');
+  setDateExportDialogOpen(true);
+};
+const handleDateRelatedExport = async () => {
+  try {
+    setExportLoading(true);
+
+    const params = {
+      fromDate: dateExportFromDate || null,
+      toDate: dateExportToDate || null,
+    };
+
+    let response;
+    let fileName;
+
+    if (dateExportType === 'joining') {
+      response = await adminAPI.exportUsersByJoiningDate(params);
+      fileName = 'joining_date_users.csv';
+    } else {
+      response = await adminAPI.exportUsersByRetirementDate(params);
+      fileName = 'retirement_date_users.csv';
+    }
+
+    downloadBlobFile(response.data, fileName);
+
+    showSnackbar('Date related export downloaded successfully!', 'success');
+    setDateExportDialogOpen(false);
+  } catch (error) {
+    console.error('Date export error:', error);
+    showSnackbar(
+      error?.response?.data?.message || 'Date related export failed!',
+      'error'
+    );
+  } finally {
+    setExportLoading(false);
+  }
+};
 const handleExportNoLoginThreeMonths = async () => {
   try {
     setExportLoading(true);
@@ -4613,6 +4656,38 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
   >
     Delete Requests
   </Button>
+
+</Grid>
+  <Grid item xs={12} sm={6} md={3}>
+  <Button
+    fullWidth
+    variant="contained"
+    startIcon={<Download />}
+    onClick={() => openDateExportDialog('joining')}
+    sx={{
+      bgcolor: '#1565c0',
+      py: 2,
+      '&:hover': { bgcolor: '#0d47a1' },
+    }}
+  >
+    नियुक्ति तिथि Export
+  </Button>
+</Grid>
+
+<Grid item xs={12} sm={6} md={3}>
+  <Button
+    fullWidth
+    variant="contained"
+    startIcon={<Download />}
+    onClick={() => openDateExportDialog('retirement')}
+    sx={{
+      bgcolor: '#5d4037',
+      py: 2,
+      '&:hover': { bgcolor: '#3e2723' },
+    }}
+  >
+    सेवानिवृत्ति तिथि Export
+  </Button>
 </Grid><Grid item xs={12} sm={6} md={3}>
 <Button
   variant="contained"
@@ -4726,6 +4801,65 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
             </Box>
           </Paper>
         </Container>
+        <Dialog
+  open={dateExportDialogOpen}
+  onClose={() => setDateExportDialogOpen(false)}
+  maxWidth="sm"
+  fullWidth
+>
+  <DialogTitle sx={{ fontWeight: 'bold' }}>
+    {dateExportType === 'joining'
+      ? 'नियुक्ति तिथि Export'
+      : 'सेवानिवृत्ति तिथि Export'}
+  </DialogTitle>
+
+  <DialogContent dividers>
+    <Grid container spacing={2} sx={{ mt: 0.5 }}>
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          type="date"
+          label="From Date"
+          InputLabelProps={{ shrink: true }}
+          value={dateExportFromDate}
+          onChange={(e) => setDateExportFromDate(e.target.value)}
+        />
+      </Grid>
+
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          type="date"
+          label="To Date"
+          InputLabelProps={{ shrink: true }}
+          value={dateExportToDate}
+          onChange={(e) => setDateExportToDate(e.target.value)}
+        />
+      </Grid>
+
+      <Grid item xs={12}>
+        <Typography variant="body2" color="text.secondary">
+          Date blank रखने पर सभी records export होंगे. Date range देने पर केवल उसी range के users export होंगे.
+        </Typography>
+      </Grid>
+    </Grid>
+  </DialogContent>
+
+  <DialogActions>
+    <Button onClick={() => setDateExportDialogOpen(false)}>
+      Cancel
+    </Button>
+
+    <Button
+      variant="contained"
+      onClick={handleDateRelatedExport}
+      disabled={exportLoading}
+      startIcon={exportLoading ? <CircularProgress size={18} color="inherit" /> : <Download />}
+    >
+      {exportLoading ? 'Exporting...' : 'Export'}
+    </Button>
+  </DialogActions>
+</Dialog>
 <Dialog
   open={manualSahyogMoveOpen}
   onClose={() => setManualSahyogMoveOpen(false)}
