@@ -276,7 +276,18 @@ const [dashboardExportMonth, setDashboardExportMonth] = useState(new Date().getM
 const [dashboardExportYear, setDashboardExportYear] = useState(new Date().getFullYear());
 const [dashboardExportBeneficiary, setDashboardExportBeneficiary] = useState('');
 const [dashboardExportMode, setDashboardExportMode] = useState('');
+const [manualSahyogMoveOpen, setManualSahyogMoveOpen] = useState(false);
+const [manualSahyogMoveLoading, setManualSahyogMoveLoading] = useState(false);
 
+const [manualSahyogMoveForm, setManualSahyogMoveForm] = useState({
+  userId: '',
+  deathCaseId: '',
+  amount: '',
+  paymentDate: new Date().toISOString().split('T')[0],
+  referenceName: '',
+  utrNumber: '',
+  remarks: '',
+});
 const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
   const [filters, setFilters] = useState({
@@ -508,6 +519,45 @@ useEffect(() => {
   });
 }, [manualCreateForm.dateOfBirth]);
 
+const handleExportNoLoginThreeMonths = async () => {
+  try {
+    setExportLoading(true);
+
+    const response = await adminAPI.exportNoLoginThreeMonths();
+
+    downloadBlobFile(
+      response.data,
+      'no_login_3_months_users.csv'
+    );
+
+    showSnackbar('No-login users exported successfully!', 'success');
+  } catch (error) {
+    console.error('Error exporting no-login users:', error);
+    showSnackbar('Error exporting no-login users!', 'error');
+  } finally {
+    setExportLoading(false);
+  }
+};
+
+const handleExportNoSahyogTwoMonths = async () => {
+  try {
+    setExportLoading(true);
+
+    const response = await adminAPI.exportNoSahyogTwoMonths();
+
+    downloadBlobFile(
+      response.data,
+      'no_sahyog_2_months_users.csv'
+    );
+
+    showSnackbar('No-sahyog users exported successfully!', 'success');
+  } catch (error) {
+    console.error('Error exporting no-sahyog users:', error);
+    showSnackbar('Error exporting no-sahyog users!', 'error');
+  } finally {
+    setExportLoading(false);
+  }
+};
 const formatRetirementDateFromDob = (dobValue) => {
   if (!dobValue) return '';
 
@@ -530,6 +580,74 @@ const openManualCreateDialog = () => {
 const closeManualCreateDialog = () => {
   setManualCreateOpen(false);
   resetManualCreateForm();
+};
+const openManualSahyogMoveDialog = async () => {
+  setManualSahyogMoveForm({
+    userId: '',
+    deathCaseId: '',
+    amount: '',
+    paymentDate: new Date().toISOString().split('T')[0],
+    referenceName: '',
+    utrNumber: '',
+    remarks: '',
+  });
+
+  if (!deathCases || deathCases.length === 0) {
+    await fetchDeathCases();
+  }
+
+  setManualSahyogMoveOpen(true);
+};
+const handleManualSahyogMove = async () => {
+  try {
+    if (!manualSahyogMoveForm.userId.trim()) {
+      showSnackbar('User ID is required!', 'error');
+      return;
+    }
+
+    if (!manualSahyogMoveForm.deathCaseId) {
+      showSnackbar('Please select death case!', 'error');
+      return;
+    }
+
+    if (!manualSahyogMoveForm.amount || Number(manualSahyogMoveForm.amount) <= 0) {
+      showSnackbar('Valid amount is required!', 'error');
+      return;
+    }
+
+    if (!manualSahyogMoveForm.paymentDate) {
+      showSnackbar('Payment date is required!', 'error');
+      return;
+    }
+
+    setManualSahyogMoveLoading(true);
+
+    const payload = {
+      userId: manualSahyogMoveForm.userId.trim(),
+      deathCaseId: Number(manualSahyogMoveForm.deathCaseId),
+      amount: Number(manualSahyogMoveForm.amount),
+      paymentDate: manualSahyogMoveForm.paymentDate,
+      referenceName: manualSahyogMoveForm.referenceName || 'Manual Admin Entry',
+      utrNumber: manualSahyogMoveForm.utrNumber || '',
+      remarks: manualSahyogMoveForm.remarks || 'Manual move from Asahyog to Sahyog',
+    };
+
+    await adminAPI.manualMoveAsahyogToSahyog(payload);
+
+    showSnackbar('User manually moved from Asahyog to Sahyog successfully!', 'success');
+    setManualSahyogMoveOpen(false);
+    fetchReceipts();
+  } catch (error) {
+    console.error('Manual Sahyog move error:', error);
+    showSnackbar(
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      'Failed to manually move user to Sahyog!',
+      'error'
+    );
+  } finally {
+    setManualSahyogMoveLoading(false);
+  }
 };
 const handleFillMatchedUserData = async () => {
   try {
@@ -4495,7 +4613,48 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
   >
     Delete Requests
   </Button>
-</Grid>
+</Grid><Grid item xs={12} sm={6} md={3}>
+<Button
+  variant="contained"
+  startIcon={<Download />}
+  onClick={handleExportNoLoginThreeMonths}
+  disabled={exportLoading}
+   sx={{
+      bgcolor: '#c62828',
+      py: 2,
+      '&:hover': { bgcolor: '#b71c1c' }
+    }}
+>
+  3 महीने से Login नहीं
+</Button>
+</Grid><Grid item xs={12} sm={6} md={3}>
+<Button
+  variant="contained"
+  startIcon={<Download />}
+  onClick={handleExportNoSahyogTwoMonths}
+  disabled={exportLoading}
+   sx={{
+      bgcolor: '#c62828',
+      py: 2,
+      '&:hover': { bgcolor: '#b71c1c' }
+    }}
+>
+  2 महीने से Sahyog नहीं
+</Button></Grid><Grid item xs={12} sm={6} md={3}>
+{['ROLE_ADMIN', 'ROLE_SUPERADMIN'].includes(currentUser?.role) && (
+  <Button
+    variant="contained"
+    startIcon={<Payment />}
+    onClick={openManualSahyogMoveDialog}
+    sx={{
+      borderRadius: 2,
+      bgcolor: '#2e7d32',
+      '&:hover': { bgcolor: '#1b5e20' },
+    }}
+  >
+    Manual Asahyog → Sahyog
+  </Button>
+)}</Grid>
               </Grid>
             </Box>
           </Paper>
@@ -4567,7 +4726,150 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
             </Box>
           </Paper>
         </Container>
+<Dialog
+  open={manualSahyogMoveOpen}
+  onClose={() => setManualSahyogMoveOpen(false)}
+  maxWidth="sm"
+  fullWidth
+>
+  <DialogTitle sx={{ fontWeight: 'bold' }}>
+    Manual Move: Asahyog → Sahyog
+  </DialogTitle>
 
+  <DialogContent dividers>
+    <Grid container spacing={2} sx={{ mt: 0.5 }}>
+      <Grid item xs={12}>
+        <TextField
+          fullWidth
+          label="User ID / Registration Number"
+          value={manualSahyogMoveForm.userId}
+          onChange={(e) =>
+            setManualSahyogMoveForm((prev) => ({
+              ...prev,
+              userId: e.target.value,
+            }))
+          }
+          placeholder="Example: PMUMS203001"
+        />
+      </Grid>
+
+      <Grid item xs={12}>
+        <FormControl fullWidth>
+          <InputLabel>Death Case / Beneficiary</InputLabel>
+          <Select
+            value={manualSahyogMoveForm.deathCaseId}
+            label="Death Case / Beneficiary"
+            onChange={(e) =>
+              setManualSahyogMoveForm((prev) => ({
+                ...prev,
+                deathCaseId: e.target.value,
+              }))
+            }
+          >
+            {(deathCases || []).map((deathCase) => (
+              <MenuItem key={deathCase.id} value={deathCase.id}>
+                {deathCase.deceasedName} - {deathCase.employeeCode || 'N/A'}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Grid>
+
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          type="number"
+          label="Amount"
+          value={manualSahyogMoveForm.amount}
+          onChange={(e) =>
+            setManualSahyogMoveForm((prev) => ({
+              ...prev,
+              amount: e.target.value,
+            }))
+          }
+        />
+      </Grid>
+
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          type="date"
+          label="Payment Date"
+          InputLabelProps={{ shrink: true }}
+          value={manualSahyogMoveForm.paymentDate}
+          onChange={(e) =>
+            setManualSahyogMoveForm((prev) => ({
+              ...prev,
+              paymentDate: e.target.value,
+            }))
+          }
+        />
+      </Grid>
+
+      <Grid item xs={12}>
+        <TextField
+          fullWidth
+          label="Reference Name"
+          value={manualSahyogMoveForm.referenceName}
+          onChange={(e) =>
+            setManualSahyogMoveForm((prev) => ({
+              ...prev,
+              referenceName: e.target.value,
+            }))
+          }
+          placeholder="Manual Admin Entry"
+        />
+      </Grid>
+
+      <Grid item xs={12}>
+        <TextField
+          fullWidth
+          label="UTR Number"
+          value={manualSahyogMoveForm.utrNumber}
+          onChange={(e) =>
+            setManualSahyogMoveForm((prev) => ({
+              ...prev,
+              utrNumber: e.target.value,
+            }))
+          }
+          placeholder="Optional. Auto-generated if blank."
+        />
+      </Grid>
+
+      <Grid item xs={12}>
+        <TextField
+          fullWidth
+          multiline
+          minRows={3}
+          label="Remarks"
+          value={manualSahyogMoveForm.remarks}
+          onChange={(e) =>
+            setManualSahyogMoveForm((prev) => ({
+              ...prev,
+              remarks: e.target.value,
+            }))
+          }
+          placeholder="Reason for manual migration"
+        />
+      </Grid>
+    </Grid>
+  </DialogContent>
+
+  <DialogActions>
+    <Button onClick={() => setManualSahyogMoveOpen(false)}>
+      Cancel
+    </Button>
+
+    <Button
+      variant="contained"
+      color="success"
+      onClick={handleManualSahyogMove}
+      disabled={manualSahyogMoveLoading}
+    >
+      {manualSahyogMoveLoading ? 'Saving...' : 'Move to Sahyog'}
+    </Button>
+  </DialogActions>
+</Dialog>
         {/* Snackbar for notifications */}
         <Snackbar
           open={snackbar.open}

@@ -118,9 +118,11 @@ const [deathCases, setDeathCases] = useState([]);
 const [managerScope, setManagerScope] = useState(null);
 const [locationHierarchy, setLocationHierarchy] = useState([]);
 const [sambhagOptions, setSambhagOptions] = useState([]);
-const [districtOptions, setDistrictOptions] = useState([]);
-const [blockOptions, setBlockOptions] = useState([]);
+const [userDistrictOptions, setUserDistrictOptions] = useState([]);
+const [userBlockOptions, setUserBlockOptions] = useState([]);
 
+const [exportDistrictOptions, setExportDistrictOptions] = useState([]);
+const [exportBlockOptions, setExportBlockOptions] = useState([]);
 const [exportLocationFilters, setExportLocationFilters] = useState({
   sambhagId: '',
   districtId: '',
@@ -134,7 +136,7 @@ const [blockManagerExportMobileEnabled, setBlockManagerExportMobileEnabled] = us
   // Filter states
   const [userFilters, setUserFilters] = useState({
   search: '',
-  role: '',
+  role: 'ROLE_USER',
   status: 'ACTIVE',
   sambhagId: '',
   districtId: '',
@@ -157,13 +159,131 @@ const canManageUsers = isSuperAdmin || isAdmin || isSambhagManager || isDistrict
 const canAssignQueries = isSuperAdmin || isAdmin || isSambhagManager || isDistrictManager;
 const canEscalateQueries = isSuperAdmin || isSambhagManager || isDistrictManager || isBlockManager;
 const canChangeRoles = isSuperAdmin || isAdmin;
-const normalizeHierarchy = (data) => {
-  if (Array.isArray(data)) return data;
-  if (Array.isArray(data?.data)) return data.data;
-  if (Array.isArray(data?.content)) return data.content;
-  return [];
+const getAny = (obj, keys) => {
+  for (const key of keys) {
+    if (obj?.[key] !== undefined && obj?.[key] !== null) {
+      return obj[key];
+    }
+  }
+  return undefined;
 };
 
+const normalizeHierarchy = (data) => {
+  const states = Array.isArray(data?.states)
+    ? data.states
+    : Array.isArray(data)
+      ? data
+      : Array.isArray(data?.data)
+        ? data.data
+        : [];
+
+  const sambhags = [];
+
+  states.forEach((state) => {
+    const sambhagList =
+      state?.sambhags ||
+      state?.sambhagList ||
+      state?.divisions ||
+      [];
+
+    sambhagList.forEach((sambhag) => {
+      const districtsRaw =
+        sambhag?.districts ||
+        sambhag?.districtList ||
+        sambhag?.districtResponses ||
+        [];
+
+      sambhags.push({
+        id: String(sambhag.id || sambhag.sambhagId || sambhag.locationId || ''),
+        name: sambhag.name || sambhag.sambhagName || sambhag.locationName || 'Unnamed Sambhag',
+        stateId: String(state.id || ''),
+        stateName: state.name || '',
+        original: sambhag,
+
+        districts: districtsRaw
+          .map((district) => {
+            const blocksRaw =
+              district?.blocks ||
+              district?.blockList ||
+              district?.blockResponses ||
+              [];
+
+            return {
+              id: String(district.id || district.districtId || district.locationId || ''),
+              name: district.name || district.districtName || district.locationName || 'Unnamed District',
+              sambhagId: String(sambhag.id || ''),
+              original: district,
+
+              blocks: blocksRaw
+                .map((block) => ({
+                  id: String(block.id || block.blockId || block.locationId || ''),
+                  name: block.name || block.blockName || block.locationName || 'Unnamed Block',
+                  districtId: String(district.id || ''),
+                  original: block,
+                }))
+                .filter((block) => block.id),
+            };
+          })
+          .filter((district) => district.id),
+      });
+    });
+  });
+
+  return sambhags.filter((sambhag) => sambhag.id);
+};
+const buildAssignedHierarchyFromScope = (fullHierarchy, scope) => {
+  if (isAdmin || isSuperAdmin) {
+    return fullHierarchy;
+  }
+
+  const managedLocations = scope?.managedLocations || [];
+
+  const assignedSambhagIds = managedLocations
+    .filter((x) => x.locationType === 'SAMBHAG')
+    .map((x) => String(x.locationId));
+
+  const assignedDistrictIds = managedLocations
+    .filter((x) => x.locationType === 'DISTRICT')
+    .map((x) => String(x.locationId));
+
+  const assignedBlockIds = managedLocations
+    .filter((x) => x.locationType === 'BLOCK')
+    .map((x) => String(x.locationId));
+
+  return fullHierarchy
+    .map((sambhag) => {
+      const sambhagExplicitlyAssigned = assignedSambhagIds.includes(String(sambhag.id));
+
+      const districts = (sambhag.districts || [])
+        .map((district) => {
+          const districtExplicitlyAssigned = assignedDistrictIds.includes(String(district.id));
+
+          const blocks = (district.blocks || []).filter((block) =>
+            assignedBlockIds.includes(String(block.id))
+          );
+
+          if (districtExplicitlyAssigned || blocks.length > 0) {
+            return {
+              ...district,
+              blocks,
+            };
+          }
+
+          return null;
+        })
+        .filter(Boolean);
+
+      if (sambhagExplicitlyAssigned || districts.length > 0) {
+        return {
+          ...sambhag,
+          districts,
+        };
+      }
+
+      return null;
+    })
+    .filter(Boolean);
+};
 const getAssignedLocationIds = () => {
   const locations = managerScope?.managedLocations || [];
 
@@ -213,10 +333,7 @@ const filterHierarchyByManagerScope = (hierarchy, scope) => {
             sambhagAllowed || allowedDistrictIds.includes(String(district.id));
 
           const blocks = (district.blocks || []).filter((block) => {
-            return (
-              districtAllowed ||
-              allowedBlockIds.includes(String(block.id))
-            );
+            return districtAllowed || allowedBlockIds.includes(String(block.id));
           });
 
           if (districtAllowed || blocks.length > 0) {
@@ -252,7 +369,11 @@ const loadManagerScopeAndLocations = async () => {
     const scope = scopeResponse.data;
     const hierarchy = normalizeHierarchy(hierarchyResponse.data);
 
-    const filteredHierarchy = filterHierarchyByManagerScope(hierarchy, scope);
+    console.log('Manager Scope:', scope);
+    console.log('Normalized Hierarchy:', hierarchy);
+
+const filteredHierarchy = buildAssignedHierarchyFromScope(hierarchy, scope);
+    console.log('Filtered Hierarchy:', filteredHierarchy);
 
     setManagerScope(scope);
     setLocationHierarchy(filteredHierarchy);
@@ -262,11 +383,12 @@ const loadManagerScopeAndLocations = async () => {
     const firstDistrict = firstSambhag?.districts?.[0] || null;
     const firstBlock = firstDistrict?.blocks?.[0] || null;
 
-    // Important: initialize district/block options also
-    setDistrictOptions(firstSambhag?.districts || []);
-    setBlockOptions(firstDistrict?.blocks || []);
+    setUserDistrictOptions(firstSambhag?.districts || []);
+    setUserBlockOptions(firstDistrict?.blocks || []);
 
-    // District manager: preselect district if only one effective district is available
+    setExportDistrictOptions(firstSambhag?.districts || []);
+    setExportBlockOptions(firstDistrict?.blocks || []);
+
     if (user?.role === 'ROLE_DISTRICT_MANAGER') {
       const districtFilters = {
         sambhagId: firstSambhag?.id || '',
@@ -282,7 +404,6 @@ const loadManagerScopeAndLocations = async () => {
       setExportLocationFilters(districtFilters);
     }
 
-    // Block manager: fixed to assigned block
     if (user?.role === 'ROLE_BLOCK_MANAGER') {
       const blockFilters = {
         sambhagId: firstSambhag?.id || '',
@@ -356,23 +477,30 @@ const fetchDeathCases = async () => {
     setDeathCases([]);
   }
 };
-  const fetchAccessibleUsers = async () => {
-    try {
-      const params = {
-        page: usersPage,
-        size: rowsPerPage,
-        ...userFilters
-      };
-      const response = await managerAPI.getAccessibleUsers(params);
-      setUsers(response.data.content || []);
-      setTotalUsers(response.data.totalElements || 0);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      showSnackbar('Error loading users!', 'error');
-    }
-  };
-  const handleUserSambhagChange = (event) => {
+const fetchAccessibleUsers = async () => {
+  try {
+    const params = {
+      page: usersPage,
+      size: rowsPerPage,
+      status: userFilters.status,
+      role: userFilters.role,
+      name: userFilters.search || '',
+      sambhagId: userFilters.sambhagId,
+      districtId: userFilters.districtId,
+      blockId: userFilters.blockId,
+    };
+
+    const response = await managerAPI.getAccessibleUsers(params);
+    setUsers(response.data.content || []);
+    setTotalUsers(response.data.totalElements || 0);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    showSnackbar('Error loading users!', 'error');
+  }
+};
+const handleUserSambhagChange = (event) => {
   const sambhagId = event.target.value;
+
   const selectedSambhag = locationHierarchy.find(
     (item) => String(item.id) === String(sambhagId)
   );
@@ -384,8 +512,8 @@ const fetchDeathCases = async () => {
     blockId: '',
   }));
 
-  setDistrictOptions(selectedSambhag?.districts || []);
-  setBlockOptions([]);
+  setUserDistrictOptions(selectedSambhag?.districts || []);
+  setUserBlockOptions([]);
   setUsersPage(0);
 };
 
@@ -406,7 +534,7 @@ const handleUserDistrictChange = (event) => {
     blockId: '',
   }));
 
-  setBlockOptions(selectedDistrict?.blocks || []);
+  setUserBlockOptions(selectedDistrict?.blocks || []);
   setUsersPage(0);
 };
 
@@ -423,6 +551,7 @@ const handleUserBlockChange = (event) => {
 
 const handleExportSambhagChange = (event) => {
   const sambhagId = event.target.value;
+
   const selectedSambhag = locationHierarchy.find(
     (item) => String(item.id) === String(sambhagId)
   );
@@ -433,8 +562,8 @@ const handleExportSambhagChange = (event) => {
     blockId: '',
   });
 
-  setDistrictOptions(selectedSambhag?.districts || []);
-  setBlockOptions([]);
+  setExportDistrictOptions(selectedSambhag?.districts || []);
+  setExportBlockOptions([]);
 };
 
 const handleExportDistrictChange = (event) => {
@@ -454,7 +583,7 @@ const handleExportDistrictChange = (event) => {
     blockId: '',
   }));
 
-  setBlockOptions(selectedDistrict?.blocks || []);
+  setExportBlockOptions(selectedDistrict?.blocks || []);
 };
 
 const handleExportBlockChange = (event) => {
@@ -497,10 +626,14 @@ const downloadBlobFile = (data, filename, type = 'text/csv;charset=utf-8') => {
 const openExportDialog = async (type) => {
   setExportType(type);
 
-  const defaultMode =
-    type === 'pending-profiles' || type === 'users' || type === 'zero-utr'
-      ? 'all'
-      : 'beneficiary';
+const defaultMode =
+  type === 'pending-profiles' ||
+  type === 'users' ||
+  type === 'zero-utr' ||
+  type === 'no-login-3-months' ||
+  type === 'no-sahyog-2-months'
+    ? 'all'
+    : 'beneficiary';
 
   setExportMode(defaultMode);
   setExportBeneficiary('');
@@ -517,14 +650,17 @@ const openExportDialog = async (type) => {
     blockId: firstBlock?.id || '',
   });
 
-  setDistrictOptions(firstSambhag?.districts || []);
-  setBlockOptions(firstDistrict?.blocks || []);
+setExportDistrictOptions(firstSambhag?.districts || []);
+setExportBlockOptions(firstDistrict?.blocks || []);
 } else {
   setExportLocationFilters({
     sambhagId: '',
     districtId: '',
     blockId: '',
   });
+
+  setExportDistrictOptions([]);
+  setExportBlockOptions([]);
 }
 
   if ((type === 'sahyog' || type === 'asahyog') && deathCases.length === 0) {
@@ -577,7 +713,15 @@ const handleManagerExport = async () => {
       response = await managerAPI.exportUsers(areaParams);
       downloadBlobFile(response.data, 'our_member_list.csv');
     }
+if (exportType === 'no-login-3-months') {
+  response = await managerAPI.exportNoLoginThreeMonths(areaParams);
+  downloadBlobFile(response.data, 'no_login_3_months_users.csv');
+}
 
+if (exportType === 'no-sahyog-2-months') {
+  response = await managerAPI.exportNoSahyogTwoMonths(areaParams);
+  downloadBlobFile(response.data, 'no_sahyog_2_months_users.csv');
+}
     if (exportType === 'pending-profiles') {
       response = await managerAPI.exportPendingProfiles(areaParams);
       downloadBlobFile(response.data, 'not_profile_updated_list.csv');
@@ -974,19 +1118,24 @@ value: managerScope?.managedLocations?.length
           User Management ({totalUsers})
         </Typography>
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <TextField
-            size="small"
-            placeholder="Search..."
-            value={userFilters.search}
-            onChange={(e) => setUserFilters(prev => ({ ...prev, search: e.target.value }))}
-          />
+         <TextField
+  size="small"
+  placeholder="Search..."
+  value={userFilters.search}
+  onChange={(e) => {
+    setUsersPage(0);
+    setUserFilters(prev => ({ ...prev, search: e.target.value }));
+  }}
+/>
           <FormControl size="small" sx={{ minWidth: 120 }}>
             <InputLabel>Status</InputLabel>
             <Select
               value={userFilters.status}
               label="Status"
-              onChange={(e) => setUserFilters(prev => ({ ...prev, status: e.target.value }))}
-            >
+onChange={(e) => {
+  setUsersPage(0);
+  setUserFilters(prev => ({ ...prev, status: e.target.value }));
+}}            >
               <MenuItem value="">All</MenuItem>
               <MenuItem value="ACTIVE">Active</MenuItem>
               <MenuItem value="BLOCKED">Blocked</MenuItem>
@@ -1000,7 +1149,7 @@ value: managerScope?.managedLocations?.length
       label="Sambhag"
       onChange={handleUserSambhagChange}
     >
-      <MenuItem value="">All Sambhag</MenuItem>
+     <MenuItem value="">All Assigned Sambhag</MenuItem>
       {sambhagOptions.map((item) => (
         <MenuItem key={item.id} value={item.id}>
           {item.name}
@@ -1019,14 +1168,15 @@ value: managerScope?.managedLocations?.length
       onChange={handleUserDistrictChange}
     >
       <MenuItem value="">All District</MenuItem>
-      {districtOptions.map((item) => (
-        <MenuItem key={item.id} value={item.id}>
-          {item.name}
-        </MenuItem>
-      ))}
+   {userDistrictOptions.map((item) => (
+  <MenuItem key={item.id} value={item.id}>
+    {item.name}
+  </MenuItem>
+))}
     </Select>
   </FormControl>
 )}
+
 
 <FormControl
   size="small"
@@ -1040,12 +1190,11 @@ value: managerScope?.managedLocations?.length
     onChange={handleUserBlockChange}
   >
     <MenuItem value="">All Block</MenuItem>
-    {blockOptions.map((item) => (
-      <MenuItem key={item.id} value={item.id}>
-        {item.name}
-      </MenuItem>
-    ))}
-  </Select>
+{userBlockOptions.map((item) => (
+  <MenuItem key={item.id} value={item.id}>
+    {item.name}
+  </MenuItem>
+))}  </Select>
 </FormControl>
         </Box>
       </Box>
@@ -1499,6 +1648,21 @@ value: managerScope?.managedLocations?.length
   >
     Export Zero UTR
   </Button>
+  <Button
+  variant="contained"
+  startIcon={<Download />}
+  onClick={() => openExportDialog('no-login-3-months')}
+>
+  3 महीने से Login नहीं
+</Button>
+
+<Button
+  variant="contained"
+  startIcon={<Download />}
+  onClick={() => openExportDialog('no-sahyog-2-months')}
+>
+  2 महीने से Sahyog नहीं
+</Button>
  
 </Box>
                     <Card elevation={3}>
@@ -1705,7 +1869,7 @@ value: managerScope?.managedLocations?.length
           onChange={handleExportDistrictChange}
         >
           <MenuItem value="">All Assigned District</MenuItem>
-          {districtOptions.map((item) => (
+          {exportDistrictOptions.map((item) => (
             <MenuItem key={item.id} value={item.id}>
               {item.name}
             </MenuItem>
@@ -1728,7 +1892,7 @@ value: managerScope?.managedLocations?.length
         onChange={handleExportBlockChange}
       >
         <MenuItem value="">All Assigned Block</MenuItem>
-        {blockOptions.map((item) => (
+        {exportBlockOptions.map((item) => (
           <MenuItem key={item.id} value={item.id}>
             {item.name}
           </MenuItem>

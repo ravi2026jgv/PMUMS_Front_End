@@ -204,6 +204,9 @@ exportAsahyog: (params = {}) => {
     responseType: 'blob'
   });
 },
+manualMoveAsahyogToSahyog: (payload) => {
+  return api.post('/admin/manual-sahyog/move', payload);
+},
 exportSahyogByBeneficiary: (params = {}) => {
   return api.get('/admin/export/sahyog/by-beneficiary', {
     params,
@@ -221,6 +224,19 @@ exportZeroUtrMembers: (params = {}) => {
   return api.get('/admin/monthly-sahyog/no-utr-ever/export', {
     params,
     responseType: 'blob'
+  });
+},
+exportNoLoginThreeMonths: (params = {}) => {
+  return api.get('/admin/export/retention/no-login-3-months', {
+    params,
+    responseType: 'blob',
+  });
+},
+
+exportNoSahyogTwoMonths: (params = {}) => {
+  return api.get('/admin/export/retention/no-sahyog-2-months', {
+    params,
+    responseType: 'blob',
   });
 },
 exportAllSahyog: (params = {}) => {
@@ -514,6 +530,19 @@ exportUsers: (params = {}) => {
   return api.get('/users/export', {
     params,
     responseType: 'blob'
+  });
+},
+exportNoLoginThreeMonths: (params = {}) => {
+  return api.get('/admin/export/retention/no-login-3-months', {
+    params,
+    responseType: 'blob',
+  });
+},
+
+exportNoSahyogTwoMonths: (params = {}) => {
+  return api.get('/admin/export/retention/no-sahyog-2-months', {
+    params,
+    responseType: 'blob',
   });
 },
 
