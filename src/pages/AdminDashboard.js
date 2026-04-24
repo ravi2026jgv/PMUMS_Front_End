@@ -161,6 +161,8 @@ const [blockManagerExportMobileEnabled, setBlockManagerExportMobileEnabled] = us
 const [showManualCreateSuccessPopup, setShowManualCreateSuccessPopup] = useState(false);
 const [manualCreateSuccessData, setManualCreateSuccessData] = useState(null);
   // Admin User Management - Trash (Deleted Users)
+  const [userMembershipCardOpen, setUserMembershipCardOpen] = useState(false);
+const [userMembershipCardData, setUserMembershipCardData] = useState(null);
   const [manualMembershipCardOpen, setManualMembershipCardOpen] = useState(false);
   const [trashOpen, setTrashOpen] = useState(false);
   const [trashUsers, setTrashUsers] = useState([]);
@@ -3243,6 +3245,46 @@ const renderLogsTab = () => (
   const hasActiveFilters = filters.userId || filters.name || filters.mobileNumber || filters.email;
 const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
   // Render functions for different tabs
+  const openUserMembershipCard = (targetUser) => {
+  if (!targetUser) return;
+
+  setUserMembershipCardData({
+    id: targetUser.id,
+    registrationNumber: targetUser.id,
+
+    fullName: combineFullName(targetUser.name, targetUser.surname) || targetUser.name || 'शिक्षक',
+    name: combineFullName(targetUser.name, targetUser.surname) || targetUser.name || 'शिक्षक',
+
+    fatherName: targetUser.fatherName || '-',
+    mobileNumber: targetUser.mobileNumber || targetUser.phone || '-',
+    email: targetUser.email || '-',
+    dateOfBirth: targetUser.dateOfBirth || '-',
+
+    department: targetUser.department || '-',
+    schoolOfficeName: targetUser.schoolOfficeName || '-',
+    departmentUniqueId: targetUser.departmentUniqueId || '-',
+
+    departmentState: targetUser.departmentState || targetUser.state || 'मध्य प्रदेश',
+    departmentSambhag: targetUser.departmentSambhag || targetUser.sambhag || '-',
+    departmentDistrict: targetUser.departmentDistrict || targetUser.district || '-',
+    departmentBlock: targetUser.departmentBlock || targetUser.block || '-',
+
+    registrationDate:
+      targetUser.registrationDate ||
+      targetUser.createdAt ||
+      targetUser.joiningDate ||
+      new Date().toISOString(),
+
+    photoUrl:
+      targetUser.profileImageUrl ||
+      targetUser.profilePhotoUrl ||
+      targetUser.photoUrl ||
+      targetUser.imageUrl ||
+      '',
+  });
+
+  setUserMembershipCardOpen(true);
+};
   const renderUsersTab = () => (
     <Paper elevation={6} sx={{ borderRadius: 3, overflow: 'hidden' }}>
       <Box sx={{ p: 3, bgcolor: '#f5f5f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
@@ -3570,7 +3612,21 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
                     >
                       <InfoOutlined fontSize="small" sx={{ color: '#2196f3' }} />
                     </IconButton>
-
+<IconButton
+  size="small"
+  onClick={() => openUserMembershipCard(user)}
+  title="View / Download ID Card"
+  sx={{
+    bgcolor: '#1E3A8A20',
+    '&:hover': {
+      bgcolor: '#1E3A8A40',
+      transform: 'translateY(-1px)',
+    },
+    transition: 'all 0.2s ease',
+  }}
+>
+  <Badge fontSize="small" sx={{ color: '#1E3A8A' }} />
+</IconButton>
                     <IconButton
                       size="small"
                       onClick={() => openPasswordReset(user)}
@@ -4755,6 +4811,14 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
   open={manualMembershipCardOpen}
   onClose={() => setManualMembershipCardOpen(false)}
   memberData={manualCreateSuccessData}
+/>
+<MembershipCardPopup
+  open={userMembershipCardOpen}
+  onClose={() => {
+    setUserMembershipCardOpen(false);
+    setUserMembershipCardData(null);
+  }}
+  memberData={userMembershipCardData}
 />
         <Dialog
   open={manualCreateOpen}

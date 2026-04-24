@@ -73,7 +73,7 @@ import {
     Chat,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
-import { managerAPI, adminAPI } from '../services/api';
+import { managerAPI, adminAPI, api } from '../services/api';
 import Layout from '../components/Layout/Layout';
 import { CreateQueryDialog, ResolveQueryDialog } from '../components/QueryDialogs';
 import TicketSystemTab from '../components/TicketSystemTab';
@@ -105,6 +105,7 @@ const [passwordResetUser, setPasswordResetUser] = useState(null);
   const [queriesPage, setQueriesPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
   const [totalUsers, setTotalUsers] = useState(0);
+  const [overviewManagedUsers, setOverviewManagedUsers] = useState(0);
   const [totalQueries, setTotalQueries] = useState(0);
   const [exportLoading, setExportLoading] = useState(false);
 const [exportDialogOpen, setExportDialogOpen] = useState(false);
@@ -114,6 +115,17 @@ const [exportMonth, setExportMonth] = useState(new Date().getMonth() + 1);
 const [exportYear, setExportYear] = useState(new Date().getFullYear());
 const [exportBeneficiary, setExportBeneficiary] = useState('');
 const [deathCases, setDeathCases] = useState([]);
+const [managerScope, setManagerScope] = useState(null);
+const [locationHierarchy, setLocationHierarchy] = useState([]);
+const [sambhagOptions, setSambhagOptions] = useState([]);
+const [districtOptions, setDistrictOptions] = useState([]);
+const [blockOptions, setBlockOptions] = useState([]);
+
+const [exportLocationFilters, setExportLocationFilters] = useState({
+  sambhagId: '',
+  districtId: '',
+  blockId: '',
+});
 const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
 const [settingsLoading, setSettingsLoading] = useState(false);
 const [settingsSaving, setSettingsSaving] = useState(false);
@@ -121,10 +133,13 @@ const [districtManagerExportMobileEnabled, setDistrictManagerExportMobileEnabled
 const [blockManagerExportMobileEnabled, setBlockManagerExportMobileEnabled] = useState(false);
   // Filter states
   const [userFilters, setUserFilters] = useState({
-    search: '',
-    role: '',
-    status: 'ACTIVE'
-  });
+  search: '',
+  role: '',
+  status: 'ACTIVE',
+  sambhagId: '',
+  districtId: '',
+  blockId: '',
+});
   const [queryFilters, setQueryFilters] = useState({
     status: '',
     priority: '',
@@ -142,7 +157,183 @@ const canManageUsers = isSuperAdmin || isAdmin || isSambhagManager || isDistrict
 const canAssignQueries = isSuperAdmin || isAdmin || isSambhagManager || isDistrictManager;
 const canEscalateQueries = isSuperAdmin || isSambhagManager || isDistrictManager || isBlockManager;
 const canChangeRoles = isSuperAdmin || isAdmin;
+const normalizeHierarchy = (data) => {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.data)) return data.data;
+  if (Array.isArray(data?.content)) return data.content;
+  return [];
+};
 
+const getAssignedLocationIds = () => {
+  const locations = managerScope?.managedLocations || [];
+
+  return {
+    sambhagIds: locations
+      .filter((x) => x.locationType === 'SAMBHAG')
+      .map((x) => String(x.locationId)),
+
+    districtIds: locations
+      .filter((x) => x.locationType === 'DISTRICT')
+      .map((x) => String(x.locationId)),
+
+    blockIds: locations
+      .filter((x) => x.locationType === 'BLOCK')
+      .map((x) => String(x.locationId)),
+  };
+};
+
+const filterHierarchyByManagerScope = (hierarchy, scope) => {
+  if (!Array.isArray(hierarchy)) return [];
+
+  if (isAdmin || isSuperAdmin) {
+    return hierarchy;
+  }
+
+  const locations = scope?.managedLocations || [];
+
+  const allowedSambhagIds = locations
+    .filter((x) => x.locationType === 'SAMBHAG')
+    .map((x) => String(x.locationId));
+
+  const allowedDistrictIds = locations
+    .filter((x) => x.locationType === 'DISTRICT')
+    .map((x) => String(x.locationId));
+
+  const allowedBlockIds = locations
+    .filter((x) => x.locationType === 'BLOCK')
+    .map((x) => String(x.locationId));
+
+  return hierarchy
+    .map((sambhag) => {
+      const sambhagAllowed = allowedSambhagIds.includes(String(sambhag.id));
+
+      const districts = (sambhag.districts || [])
+        .map((district) => {
+          const districtAllowed =
+            sambhagAllowed || allowedDistrictIds.includes(String(district.id));
+
+          const blocks = (district.blocks || []).filter((block) => {
+            return (
+              districtAllowed ||
+              allowedBlockIds.includes(String(block.id))
+            );
+          });
+
+          if (districtAllowed || blocks.length > 0) {
+            return {
+              ...district,
+              blocks,
+            };
+          }
+
+          return null;
+        })
+        .filter(Boolean);
+
+      if (sambhagAllowed || districts.length > 0) {
+        return {
+          ...sambhag,
+          districts,
+        };
+      }
+
+      return null;
+    })
+    .filter(Boolean);
+};
+
+const loadManagerScopeAndLocations = async () => {
+  try {
+    const [scopeResponse, hierarchyResponse] = await Promise.all([
+      managerAPI.getManagerScope(),
+      api.get('/locations/hierarchy'),
+    ]);
+
+    const scope = scopeResponse.data;
+    const hierarchy = normalizeHierarchy(hierarchyResponse.data);
+
+    const filteredHierarchy = filterHierarchyByManagerScope(hierarchy, scope);
+
+    setManagerScope(scope);
+    setLocationHierarchy(filteredHierarchy);
+    setSambhagOptions(filteredHierarchy);
+
+    const firstSambhag = filteredHierarchy[0] || null;
+    const firstDistrict = firstSambhag?.districts?.[0] || null;
+    const firstBlock = firstDistrict?.blocks?.[0] || null;
+
+    // Important: initialize district/block options also
+    setDistrictOptions(firstSambhag?.districts || []);
+    setBlockOptions(firstDistrict?.blocks || []);
+
+    // District manager: preselect district if only one effective district is available
+    if (user?.role === 'ROLE_DISTRICT_MANAGER') {
+      const districtFilters = {
+        sambhagId: firstSambhag?.id || '',
+        districtId: firstDistrict?.id || '',
+        blockId: '',
+      };
+
+      setUserFilters((prev) => ({
+        ...prev,
+        ...districtFilters,
+      }));
+
+      setExportLocationFilters(districtFilters);
+    }
+
+    // Block manager: fixed to assigned block
+    if (user?.role === 'ROLE_BLOCK_MANAGER') {
+      const blockFilters = {
+        sambhagId: firstSambhag?.id || '',
+        districtId: firstDistrict?.id || '',
+        blockId: firstBlock?.id || '',
+      };
+
+      setUserFilters((prev) => ({
+        ...prev,
+        ...blockFilters,
+      }));
+
+      setExportLocationFilters(blockFilters);
+    }
+  } catch (error) {
+    console.error('Error loading manager scope/location hierarchy:', error);
+    showSnackbar('Error loading area filters!', 'error');
+  }
+};
+
+const getCurrentExportAreaParams = () => {
+  const params = {};
+
+  if (exportLocationFilters.sambhagId) {
+    params.sambhagId = exportLocationFilters.sambhagId;
+  }
+
+  if (exportLocationFilters.districtId) {
+    params.districtId = exportLocationFilters.districtId;
+  }
+
+  if (exportLocationFilters.blockId) {
+    params.blockId = exportLocationFilters.blockId;
+  }
+
+  return params;
+};
+const fetchOverviewManagedUsersCount = async () => {
+  try {
+    const response = await managerAPI.getAccessibleUsers({
+      page: 0,
+      size: 1,
+      status: 'ACTIVE',
+    });
+
+    setOverviewManagedUsers(response.data?.totalElements || 0);
+  } catch (error) {
+    console.error('Error fetching managed users count:', error);
+    setOverviewManagedUsers(0);
+  }
+};
   // API Functions
   const fetchDashboardOverview = async () => {
     try {
@@ -180,6 +371,98 @@ const fetchDeathCases = async () => {
       showSnackbar('Error loading users!', 'error');
     }
   };
+  const handleUserSambhagChange = (event) => {
+  const sambhagId = event.target.value;
+  const selectedSambhag = locationHierarchy.find(
+    (item) => String(item.id) === String(sambhagId)
+  );
+
+  setUserFilters((prev) => ({
+    ...prev,
+    sambhagId,
+    districtId: '',
+    blockId: '',
+  }));
+
+  setDistrictOptions(selectedSambhag?.districts || []);
+  setBlockOptions([]);
+  setUsersPage(0);
+};
+
+const handleUserDistrictChange = (event) => {
+  const districtId = event.target.value;
+
+  const selectedSambhag = locationHierarchy.find(
+    (item) => String(item.id) === String(userFilters.sambhagId)
+  );
+
+  const selectedDistrict = selectedSambhag?.districts?.find(
+    (item) => String(item.id) === String(districtId)
+  );
+
+  setUserFilters((prev) => ({
+    ...prev,
+    districtId,
+    blockId: '',
+  }));
+
+  setBlockOptions(selectedDistrict?.blocks || []);
+  setUsersPage(0);
+};
+
+const handleUserBlockChange = (event) => {
+  const blockId = event.target.value;
+
+  setUserFilters((prev) => ({
+    ...prev,
+    blockId,
+  }));
+
+  setUsersPage(0);
+};
+
+const handleExportSambhagChange = (event) => {
+  const sambhagId = event.target.value;
+  const selectedSambhag = locationHierarchy.find(
+    (item) => String(item.id) === String(sambhagId)
+  );
+
+  setExportLocationFilters({
+    sambhagId,
+    districtId: '',
+    blockId: '',
+  });
+
+  setDistrictOptions(selectedSambhag?.districts || []);
+  setBlockOptions([]);
+};
+
+const handleExportDistrictChange = (event) => {
+  const districtId = event.target.value;
+
+  const selectedSambhag = locationHierarchy.find(
+    (item) => String(item.id) === String(exportLocationFilters.sambhagId)
+  );
+
+  const selectedDistrict = selectedSambhag?.districts?.find(
+    (item) => String(item.id) === String(districtId)
+  );
+
+  setExportLocationFilters((prev) => ({
+    ...prev,
+    districtId,
+    blockId: '',
+  }));
+
+  setBlockOptions(selectedDistrict?.blocks || []);
+};
+
+const handleExportBlockChange = (event) => {
+  setExportLocationFilters((prev) => ({
+    ...prev,
+    blockId: event.target.value,
+  }));
+};
   const fetchMyDeleteRequests = async () => {
   if (!deleteRequestsOpen) return;
 
@@ -223,6 +506,26 @@ const openExportDialog = async (type) => {
   setExportBeneficiary('');
   setExportMonth(new Date().getMonth() + 1);
   setExportYear(new Date().getFullYear());
+  if (isBlockManager) {
+  const firstSambhag = locationHierarchy[0];
+  const firstDistrict = firstSambhag?.districts?.[0];
+  const firstBlock = firstDistrict?.blocks?.[0];
+
+  setExportLocationFilters({
+    sambhagId: firstSambhag?.id || '',
+    districtId: firstDistrict?.id || '',
+    blockId: firstBlock?.id || '',
+  });
+
+  setDistrictOptions(firstSambhag?.districts || []);
+  setBlockOptions(firstDistrict?.blocks || []);
+} else {
+  setExportLocationFilters({
+    sambhagId: '',
+    districtId: '',
+    blockId: '',
+  });
+}
 
   if ((type === 'sahyog' || type === 'asahyog') && deathCases.length === 0) {
     await fetchDeathCases();
@@ -268,36 +571,39 @@ const handleManagerExport = async () => {
     setExportLoading(true);
 
     let response;
+    const areaParams = getCurrentExportAreaParams();
 
     if (exportType === 'users') {
-      response = await managerAPI.exportUsers();
+      response = await managerAPI.exportUsers(areaParams);
       downloadBlobFile(response.data, 'our_member_list.csv');
     }
 
     if (exportType === 'pending-profiles') {
-      response = await managerAPI.exportPendingProfiles();
+      response = await managerAPI.exportPendingProfiles(areaParams);
       downloadBlobFile(response.data, 'not_profile_updated_list.csv');
     }
 
     if (exportType === 'zero-utr') {
-      response = await managerAPI.exportZeroUtrMembers();
+      response = await managerAPI.exportZeroUtrMembers(areaParams);
       downloadBlobFile(response.data, 'zero_utr_members_list.csv');
     }
 
     if (exportType === 'sahyog') {
       if (exportMode === 'beneficiary') {
         response = await managerAPI.exportSahyogByBeneficiary({
-          beneficiaryId: exportBeneficiary || null
+          beneficiaryId: exportBeneficiary || null,
+          ...areaParams,
         });
         downloadBlobFile(response.data, 'sahyog_by_beneficiary.csv');
       } else if (exportMode === 'month') {
         response = await managerAPI.exportSahyog({
           month: exportMonth,
-          year: exportYear
+          year: exportYear,
+          ...areaParams,
         });
         downloadBlobFile(response.data, `sahyog_${exportMonth}_${exportYear}.csv`);
       } else {
-        response = await managerAPI.exportAllSahyog();
+        response = await managerAPI.exportAllSahyog(areaParams);
         downloadBlobFile(response.data, 'sahyog_all.csv');
       }
     }
@@ -305,17 +611,19 @@ const handleManagerExport = async () => {
     if (exportType === 'asahyog') {
       if (exportMode === 'beneficiary') {
         response = await managerAPI.exportAsahyogByBeneficiary({
-          beneficiaryId: exportBeneficiary || null
+          beneficiaryId: exportBeneficiary || null,
+          ...areaParams,
         });
         downloadBlobFile(response.data, 'asahyog_by_beneficiary.csv');
       } else if (exportMode === 'month') {
         response = await managerAPI.exportAsahyog({
           month: exportMonth,
-          year: exportYear
+          year: exportYear,
+          ...areaParams,
         });
         downloadBlobFile(response.data, `asahyog_${exportMonth}_${exportYear}.csv`);
       } else {
-        response = await managerAPI.exportAllAsahyog();
+        response = await managerAPI.exportAllAsahyog(areaParams);
         downloadBlobFile(response.data, 'asahyog_all.csv');
       }
     }
@@ -324,7 +632,10 @@ const handleManagerExport = async () => {
     showSnackbar('Export completed successfully!', 'success');
   } catch (error) {
     console.error('Error exporting:', error);
-    showSnackbar('Error exporting file!', 'error');
+    showSnackbar(
+      error?.response?.data?.message || 'Error exporting file!',
+      'error'
+    );
   } finally {
     setExportLoading(false);
   }
@@ -556,10 +867,13 @@ const submitPasswordReset = async () => {
   };
 
   // Effects
-  useEffect(() => {
-    fetchDashboardOverview();
-    fetchAssignments();
-  }, []);
+ useEffect(() => {
+  fetchDashboardOverview();
+  fetchAssignments();
+  loadManagerScopeAndLocations();
+  fetchOverviewManagedUsersCount();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
 
   useEffect(() => {
     if (activeTab === 1) {
@@ -578,13 +892,13 @@ const submitPasswordReset = async () => {
     if (!dashboardData) return null;
 
     const stats = [
-      {
-        title: 'Total Users',
-        value: dashboardData.userStats?.totalUsers || 0,
-        icon: <People sx={{ fontSize: 40 }} />,
-        color: '#1E3A8A',
-        subtitle: 'Managed Users'
-      },
+     {
+  title: 'Total Users',
+  value: overviewManagedUsers || dashboardData.userStats?.totalUsers || dashboardData.scope?.totalUsers || 0,
+  icon: <People sx={{ fontSize: 40 }} />,
+  color: '#1E3A8A',
+  subtitle: 'Managed Users'
+},
       {
         title: 'Pending Queries',
         value: dashboardData.queryStats?.pendingCount || 0,
@@ -601,10 +915,11 @@ const submitPasswordReset = async () => {
       },
       {
         title: 'Managed Areas',
-        value: Array.isArray(dashboardData.scope?.managedLocations) ? 
-               dashboardData.scope.managedLocations.length : 
-               (dashboardData.scope?.totalLocations || 0),
-        icon: <LocationOn sx={{ fontSize: 40 }} />,
+value: managerScope?.managedLocations?.length
+  || dashboardData.scope?.managedLocations?.length
+  || dashboardData.scope?.totalLocations
+  || 0,
+          icon: <LocationOn sx={{ fontSize: 40 }} />,
         color: '#9c27b0',
         subtitle: 'Assigned Areas'
       }
@@ -677,6 +992,61 @@ const submitPasswordReset = async () => {
               <MenuItem value="BLOCKED">Blocked</MenuItem>
             </Select>
           </FormControl>
+          {!isBlockManager && (
+  <FormControl size="small" sx={{ minWidth: 160 }}>
+    <InputLabel>Sambhag</InputLabel>
+    <Select
+      value={userFilters.sambhagId}
+      label="Sambhag"
+      onChange={handleUserSambhagChange}
+    >
+      <MenuItem value="">All Sambhag</MenuItem>
+      {sambhagOptions.map((item) => (
+        <MenuItem key={item.id} value={item.id}>
+          {item.name}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+)}
+
+{!isBlockManager && (
+  <FormControl size="small" sx={{ minWidth: 160 }} disabled={!userFilters.sambhagId}>
+    <InputLabel>District</InputLabel>
+    <Select
+      value={userFilters.districtId}
+      label="District"
+      onChange={handleUserDistrictChange}
+    >
+      <MenuItem value="">All District</MenuItem>
+      {districtOptions.map((item) => (
+        <MenuItem key={item.id} value={item.id}>
+          {item.name}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+)}
+
+<FormControl
+  size="small"
+  sx={{ minWidth: 160 }}
+  disabled={!userFilters.districtId || isBlockManager}
+>
+  <InputLabel>Block</InputLabel>
+  <Select
+    value={userFilters.blockId}
+    label="Block"
+    onChange={handleUserBlockChange}
+  >
+    <MenuItem value="">All Block</MenuItem>
+    {blockOptions.map((item) => (
+      <MenuItem key={item.id} value={item.id}>
+        {item.name}
+      </MenuItem>
+    ))}
+  </Select>
+</FormControl>
         </Box>
       </Box>
       <TableContainer>
@@ -707,7 +1077,7 @@ const submitPasswordReset = async () => {
                       </Typography>
                       <br />
                       <Typography variant="caption" color="textSecondary">
-                        📱 {user.phoneNumber}
+                        📱 {user.mobileNumber || '-'}
                       </Typography>
                     </Box>
                   </Box>
@@ -725,13 +1095,12 @@ const submitPasswordReset = async () => {
                 <TableCell>
                   <Typography variant="caption">
                     <LocationOn sx={{ fontSize: 12, mr: 0.5 }} />
-                    {user.sambhagName || 'N/A'}/{user.districtName || 'N/A'}
-                  </Typography>
-                  {user.blockName && (
-                    <Typography variant="caption" display="block">
-                      Block: {user.blockName}
-                    </Typography>
-                  )}
+{user.departmentSambhag || 'N/A'} / {user.departmentDistrict || 'N/A'}                  </Typography>
+                  {user.departmentBlock && (
+  <Typography variant="caption" display="block">
+    Block: {user.departmentBlock}
+  </Typography>
+)}
                 </TableCell>
                 <TableCell>
                   <Chip
@@ -992,11 +1361,13 @@ const submitPasswordReset = async () => {
         <Typography variant="body1" color="textSecondary">
           Welcome, {user?.name}! Your Role: {getRoleLabel(user?.role)}
         </Typography>
-        {dashboardData?.scope && (
-          <Typography variant="body2" color="textSecondary">
-            Managed Areas: {dashboardData.scope.totalSambhags || 0} Divisions, {dashboardData.scope.totalDistricts || 0} Districts, {dashboardData.scope.totalBlocks || 0} Blocks
-          </Typography>
-        )}
+       {(managerScope || dashboardData?.scope) && (
+  <Typography variant="body2" color="textSecondary">
+    Managed Areas: {managerScope?.totalSambhags ?? dashboardData?.scope?.totalSambhags ?? 0} Divisions,{' '}
+    {managerScope?.totalDistricts ?? dashboardData?.scope?.totalDistricts ?? 0} Districts,{' '}
+    {managerScope?.totalBlocks ?? dashboardData?.scope?.totalBlocks ?? 0} Blocks
+  </Typography>
+)}
       </Box>
 
       {/* Dashboard Stats */}
@@ -1136,8 +1507,7 @@ const submitPasswordReset = async () => {
                           My Area
                         </Typography>
                         <List dense>
-                          {dashboardData.scope?.managedLocations?.map((location, index) => (
-                            <ListItem key={location.locationId || index}>
+{(managerScope?.managedLocations || dashboardData.scope?.managedLocations || []).map((location, index) => (                            <ListItem key={location.locationId || index}>
                               <ListItemIcon>
                                 <LocationOn color="primary" />
                               </ListItemIcon>
@@ -1296,6 +1666,83 @@ const submitPasswordReset = async () => {
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
       {(exportType === 'sahyog' || exportType === 'asahyog') && (
         <>
+        <Alert severity="info">
+  Export will be restricted to your assigned area only.
+</Alert>
+
+<Grid container spacing={2}>
+  {!isBlockManager && (
+    <Grid item xs={12} sm={4}>
+      <FormControl fullWidth size="small">
+        <InputLabel>Sambhag</InputLabel>
+        <Select
+          value={exportLocationFilters.sambhagId}
+          label="Sambhag"
+          onChange={handleExportSambhagChange}
+        >
+          <MenuItem value="">All Assigned Sambhag</MenuItem>
+          {sambhagOptions.map((item) => (
+            <MenuItem key={item.id} value={item.id}>
+              {item.name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    </Grid>
+  )}
+
+  {!isBlockManager && (
+    <Grid item xs={12} sm={4}>
+      <FormControl
+        fullWidth
+        size="small"
+        disabled={!exportLocationFilters.sambhagId}
+      >
+        <InputLabel>District</InputLabel>
+        <Select
+          value={exportLocationFilters.districtId}
+          label="District"
+          onChange={handleExportDistrictChange}
+        >
+          <MenuItem value="">All Assigned District</MenuItem>
+          {districtOptions.map((item) => (
+            <MenuItem key={item.id} value={item.id}>
+              {item.name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    </Grid>
+  )}
+
+  <Grid item xs={12} sm={4}>
+    <FormControl
+      fullWidth
+      size="small"
+      disabled={!exportLocationFilters.districtId || isBlockManager}
+    >
+      <InputLabel>Block</InputLabel>
+      <Select
+        value={exportLocationFilters.blockId}
+        label="Block"
+        onChange={handleExportBlockChange}
+      >
+        <MenuItem value="">All Assigned Block</MenuItem>
+        {blockOptions.map((item) => (
+          <MenuItem key={item.id} value={item.id}>
+            {item.name}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+  </Grid>
+</Grid>
+
+{isBlockManager && (
+  <Typography variant="body2" color="text.secondary">
+    Block Manager export is fixed to your assigned block only.
+  </Typography>
+)}
           <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
             Select Export Type
           </Typography>

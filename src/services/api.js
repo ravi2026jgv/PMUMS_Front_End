@@ -223,8 +223,9 @@ exportZeroUtrMembers: (params = {}) => {
     responseType: 'blob'
   });
 },
-exportAllSahyog: () => {
+exportAllSahyog: (params = {}) => {
   return api.get('/admin/export/sahyog/all', {
+    params,
     responseType: 'blob'
   });
 },
@@ -582,14 +583,16 @@ exportAsahyogByBeneficiary: (params = {}) => {
   });
 },
 
-exportAllSahyog: () => {
+exportAllSahyog: (params = {}) => {
   return api.get('/admin/export/sahyog/all', {
+    params,
     responseType: 'blob'
   });
 },
 
-exportAllAsahyog: () => {
+exportAllAsahyog: (params = {}) => {
   return api.get('/admin/export/asahyog/all', {
+    params,
     responseType: 'blob'
   });
 },
