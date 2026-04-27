@@ -15,7 +15,12 @@ const Footer = () => {
     <Box 
       component="footer" 
       sx={{ 
-        bgcolor: '#1E3A8A',
+        borderTop: '1px solid rgba(255,255,255,0.1)',
+       background: `
+  radial-gradient(circle at 20% 30%, rgba(255,255,255,0.12), transparent 40%),
+  radial-gradient(circle at 80% 70%, rgba(255,255,255,0.08), transparent 40%),
+  linear-gradient(135deg, #3b0764 0%, #6d28d9 40%, #9333ea 70%, #c084fc 100%)
+`,
         color: 'white',
         mt: 'auto',
         width: '100%',
@@ -37,6 +42,7 @@ const Footer = () => {
                   alignItems: 'center',
                   justifyContent: 'center',
                   mr: 2,
+                  boxShadow: '0 4px 12px rgba(255,255,255,0.3)',
                   p: 1
                 }}
               >
@@ -54,7 +60,7 @@ const Footer = () => {
                 <Typography variant="h6" sx={{ 
                   fontWeight: 600,
                   fontFamily: 'Noto Sans Devanagari, Arial, sans-serif',
-                  color: '#FF9933',
+                  color: '#facc15',
                   fontSize: '1.1rem',
                   lineHeight: 1.2
                 }}>
@@ -71,7 +77,7 @@ const Footer = () => {
             </Box>
             <Box>
               <Typography variant="body2" sx={{ 
-                color: 'rgba(255,255,255,0.9)',
+                color: 'rgba(255,255,255,0.85)',
                 fontSize: '0.9rem',
                 fontFamily: 'Noto Sans Devanagari, Arial, sans-serif',
                 lineHeight: 1.6,
@@ -81,7 +87,7 @@ const Footer = () => {
                 हमारा उद्देश्य मध्यप्रदेश के शिक्षकों के लिए एक सहयोगी तंत्र विकसित करना है, जिससे किसी भी संकट के समय कोई भी शिक्षक परिवार स्वयं को अकेला महसूस न करे।
               </Typography>
               <Typography variant="body2" sx={{ 
-                color: 'rgba(255,255,255,0.9)',
+                color: 'rgba(255,255,255,0.85)',
                 fontSize: '0.9rem',
                 fontFamily: 'Noto Sans Devanagari, Arial, sans-serif',
                 lineHeight: 1.6,
@@ -97,7 +103,7 @@ const Footer = () => {
             <Typography variant="h6" sx={{ 
               mb: 2,
               fontWeight: 600,
-              color: '#FF9933',
+              color: '#facc15',
               fontSize: '1.1rem',
               fontFamily: 'Noto Sans Devanagari, Arial, sans-serif'
             }}>
@@ -109,28 +115,28 @@ const Footer = () => {
               gap: 1
             }}>
               <Link href="#" sx={{ 
-                color: 'rgba(255,255,255,0.9)',
+                color: 'rgba(255,255,255,0.85)',
                 textDecoration: 'none',
                 fontSize: '0.9rem',
                 fontFamily: 'Noto Sans Devanagari, Arial, sans-serif',
                 transition: 'all 0.3s ease',
-                '&:hover': { 
-                  color: '#FFA500',
-                  textDecoration: 'underline'
-                }
+               '&:hover': {
+  color: '#ffffff',
+  transform: 'translateX(4px)',
+}
               }}>
                 • सहयोग सहायता
               </Link>
               <Link href="#" sx={{ 
-                color: 'rgba(255,255,255,0.9)',
+                color: 'rgba(255,255,255,0.85)',
                 textDecoration: 'none',
                 fontSize: '0.9rem',
                 fontFamily: 'Arial, sans-serif',
                 transition: 'all 0.3s ease',
-                '&:hover': { 
-                  color: '#FFA500',
-                  textDecoration: 'underline'
-                }
+                '&:hover': {
+  color: '#ffffff',
+  transform: 'translateX(4px)',
+}
               }}>
                 • Sahyog List
               </Link>
@@ -142,7 +148,7 @@ const Footer = () => {
             <Typography variant="h6" sx={{ 
               mb: 2,
               fontWeight: 600,
-              color: '#FF9933',
+              color: '#facc15',
               fontSize: '1.1rem',
               fontFamily: 'Noto Sans Devanagari, Arial, sans-serif'
             }}>
@@ -163,16 +169,19 @@ const Footer = () => {
                 <Link 
                   key={index}
                   href={link.href}
+                  
                   sx={{ 
-                    color: 'rgba(255,255,255,0.9)',
+                    color: 'rgba(255,255,255,0.85)',
                     textDecoration: 'none',
                     fontSize: '0.9rem',
+                    transition: 'all 0.25s ease',
                     fontFamily: 'Noto Sans Devanagari, Arial, sans-serif',
                     transition: 'all 0.3s ease',
-                    '&:hover': { 
-                      color: '#FFA500',
-                      textDecoration: 'underline'
-                    }
+                    '&:hover': {
+  color: '#ffffff',
+  transform: 'translateX(4px)',
+}
+
                   }}
                 >
                   {link.text}
@@ -186,7 +195,7 @@ const Footer = () => {
             <Typography variant="h6" sx={{ 
               mb: 2,
               fontWeight: 600,
-              color: '#FF9933',
+              color: '#facc15',
               fontSize: '1.1rem',
               fontFamily: 'Noto Sans Devanagari, Arial, sans-serif'
             }}>
@@ -200,13 +209,13 @@ const Footer = () => {
               {/* Office Address */}
               <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
                 <LocationOn sx={{ 
-                  color: '#FF9933',
+                  color: '#facc15',
                   fontSize: '1.2rem',
                   mt: 0.2
                 }} />
                 <Box>
                   <Typography variant="body2" sx={{ 
-                    color: 'rgba(255,255,255,0.9)',
+                    color: 'rgba(255,255,255,0.85)',
                     fontSize: '0.9rem',
                     fontFamily: 'Noto Sans Devanagari, Arial, sans-serif',
                     fontWeight: 600,
@@ -215,7 +224,7 @@ const Footer = () => {
                     पंजीकृत कार्यालय : 06/13/01/14617/23
                   </Typography>
                   <Typography variant="body2" sx={{ 
-                    color: 'rgba(255,255,255,0.9)',
+                    color: 'rgba(255,255,255,0.85)',
                     fontSize: '0.85rem',
                     fontFamily: 'Noto Sans Devanagari, Arial, sans-serif',
                     lineHeight: 1.4
@@ -228,14 +237,14 @@ const Footer = () => {
               {/* Phone */}
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                 <Typography variant="body2" sx={{ 
-                  color: 'rgba(255,255,255,0.9)',
+                  color: 'rgba(255,255,255,0.85)',
                   fontSize: '0.9rem',
                   fontFamily: 'Arial, sans-serif'
                 }}>
                   📞 6262565803 ( WhatsApp हेल्पलाइन कृपया केवल WhatsApp पर ही संदेश करें, कॉल न करें )
                 </Typography>
                 {/* <Typography variant="body2" sx={{ 
-                  color: 'rgba(255,255,255,0.9)',
+                  color: 'rgba(255,255,255,0.85)',
                   fontSize: '0.9rem',
                   fontFamily: 'Arial, sans-serif'
                 }}>
@@ -246,7 +255,7 @@ const Footer = () => {
               {/* Email */}
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Typography variant="body2" sx={{ 
-                  color: 'rgba(255,255,255,0.9)',
+                  color: 'rgba(255,255,255,0.85)',
                   fontSize: '0.9rem',
                   fontFamily: 'Arial, sans-serif'
                 }}>
@@ -259,7 +268,7 @@ const Footer = () => {
 
         {/* Copyright Section */}
         <Box sx={{ 
-          borderTop: '1px solid rgba(255,255,255,0.2)',
+          borderTop: '1px solid rgba(255,255,255,0.1)',
           mt: 3,
           pt: 2,
           textAlign: 'center'

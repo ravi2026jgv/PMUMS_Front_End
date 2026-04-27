@@ -87,9 +87,8 @@ const navigationItems = [
       {/* Top Header - Organization Info */}
       <Box
         sx={{
-          background: '#ffffff',
-          borderBottom: '2px solid #1E3A8A',
-          py: 1
+background: 'linear-gradient(90deg, #f5f3ff, #fdf4ff)',
+color: '#4c1d95',borderBottom: '1px solid rgba(0,0,0,0.08)',
         }}
       >
         <Container maxWidth="lg">
@@ -110,20 +109,24 @@ const navigationItems = [
 
       {/* Main Navigation Header */}
       <AppBar 
-        position="static" 
-        elevation={0} 
-        sx={{ 
-          background: 'linear-gradient(135deg, #1E3A8A 0%, #1E3A8A 100%)',
-          boxShadow: '0 4px 8px rgba(0,0,0,0.1)'
-        }}
-      >
-        <Container maxWidth="lg">
+  position="sticky"
+  elevation={0} 
+  sx={{ 
+background: `
+  radial-gradient(circle at 20% 30%, rgba(255,255,255,0.15), transparent 40%),
+  radial-gradient(circle at 80% 70%, rgba(255,255,255,0.1), transparent 40%),
+  linear-gradient(135deg, #3b0764 0%, #6d28d9 40%, #9333ea 70%, #c084fc 100%)
+`,    backdropFilter: 'blur(10px)',
+    boxShadow: '0 8px 20px rgba(0,0,0,0.2)'
+  }}
+>
+  <Box sx={{ width: '100%', px: { xs: 2, md: 4 } }}>
           <Toolbar sx={{ 
             px: 0, 
             py: 1, 
             minHeight: { xs: '60px', md: '70px' },
-            justifyContent: 'space-evenly'
-          }}>
+justifyContent: 'space-between',
+px: { xs: 2, md: 3 },          }}>
             {/* Logo */}
             <Box
               component={Link}
@@ -141,7 +144,7 @@ const navigationItems = [
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                bgcolor: '#FFFFFF',
+               bgcolor: 'rgba(255,255,255,0.9)',
                 borderRadius: '50%',
                 p: 1,
                 boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
@@ -162,7 +165,8 @@ const navigationItems = [
             <Box sx={{ 
               display: { xs: 'none', lg: 'flex' },
               alignItems: 'center',
-              gap: 0.5
+gap: 1.5,
+ml: 3,
             }}>
               {navigationItems.map((item) => (
                 item.external ? (
@@ -171,17 +175,22 @@ const navigationItems = [
                     href={item.path}
                     target="_blank"
                     rel="noopener noreferrer"
-                    sx={{ 
-                      color: 'white',
-                      fontWeight: 600,
-                      fontSize: '0.9rem',
-                      px: 2,
-                      py: 1,
-                      textTransform: 'uppercase',
-                      '&:hover': {
-                        bgcolor: 'rgba(255,255,255,0.1)'
-                      }
-                    }}
+                   sx={{
+  color: 'white',
+  fontWeight: 500,
+  fontSize: '0.8rem',
+  px: 2,
+  py: 0.8,
+  borderRadius: '8px',
+  letterSpacing: '0.5px',
+  textTransform: 'uppercase',
+  transition: 'all 0.25s ease',
+
+  '&:hover': {
+    background: 'rgba(255,255,255,0.15)',
+    transform: 'translateY(-1px)',
+  }
+}}
                   >
                     {item.label}
                   </Button>
@@ -190,17 +199,22 @@ const navigationItems = [
                     key={item.path}
                     component={Link}
                     to={item.path}
-                    sx={{ 
-                      color: 'white',
-                      fontWeight: 600,
-                      fontSize: '0.9rem',
-                      px: 2,
-                      py: 1,
-                      textTransform: 'uppercase',
-                      '&:hover': {
-                        bgcolor: 'rgba(255,255,255,0.1)'
-                      }
-                    }}
+                    sx={{
+  color: 'white',
+  fontWeight: 500,
+  fontSize: '0.8rem',
+  px: 2,
+  py: 0.8,
+  borderRadius: '8px',
+  letterSpacing: '0.5px',
+  textTransform: 'uppercase',
+  transition: 'all 0.25s ease',
+
+  '&:hover': {
+    background: 'rgba(255,255,255,0.15)',
+    transform: 'translateY(-1px)',
+  }
+}}
                   >
                     {item.label}
                   </Button>
@@ -216,19 +230,61 @@ const navigationItems = [
   <Button
     component={Link}
     to="/admin/dashboard"
-    sx={{
-      bgcolor: user?.role === 'ROLE_SUPERADMIN' || user?.role === 'SUPERADMIN' ? '#7c3aed' : '#dc2626',
-      color: 'white',
-      fontWeight: 600,
-      fontSize: '0.9rem',
-      px: 2,
-      py: 1,
-      textTransform: 'uppercase',
-      '&:hover': {
-        bgcolor: user?.role === 'ROLE_SUPERADMIN' || user?.role === 'SUPERADMIN' ? '#6d28d9' : '#b91c1c'
-      }
-    }}
-  >
+sx={{
+  position: 'relative',
+  overflow: 'hidden',
+
+  background: user?.role === '' || user?.role === ''
+    ? 'linear-gradient(135deg, #7c3aed, #a855f7)'
+    : 'linear-gradient(135deg, #ef4444, #f87171)',
+
+  color: '#fff',
+  fontWeight: 600,
+  fontSize: '0.8rem',
+
+  px: 3,
+  py: 1.1,
+  ml: 2,
+
+  borderRadius: '14px',
+  letterSpacing: '0.6px',
+  textTransform: 'uppercase',
+
+  backdropFilter: 'blur(6px)',
+  border: '1px solid rgba(255,255,255,0.15)',
+  boxShadow: user?.role === '' || user?.role === ''
+    ? '0 6px 20px rgba(124, 58, 237, 0.5)'
+    : '0 6px 20px rgba(239, 68, 68, 0.5)',
+
+  transition: 'all 0.35s ease',
+
+  '&:hover': {
+    transform: 'translateY(-3px) scale(1.02)',
+    boxShadow: user?.role === '' || user?.role === ''
+      ? '0 10px 30px rgba(124, 58, 237, 0.7)'
+      : '0 10px 30px rgba(239, 68, 68, 0.7)',
+  },
+
+  '&:active': {
+    transform: 'scale(0.96)',
+  },
+
+  // ✨ Shine animation
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '-100%',
+    width: '100%',
+    height: '100%',
+    background: 'linear-gradient(120deg, transparent, rgba(255,255,255,0.5), transparent)',
+    transition: 'all 0.6s ease',
+  },
+
+  '&:hover::before': {
+    left: '100%',
+  },
+}}  >
     {user?.role === 'ROLE_SUPERADMIN' || user?.role === 'SUPERADMIN'
       ? 'SUPER ADMIN DASHBOARD'
       : 'ADMIN DASHBOARD'}
@@ -241,18 +297,62 @@ const navigationItems = [
                     <Button
                       component={Link}
                       to="/manager/dashboard"
-                      sx={{ 
-                        bgcolor: '#1976d2',
-                        color: 'white',
-                        fontWeight: 600,
-                        fontSize: '0.9rem',
-                        px: 2,
-                        py: 1,
-                        textTransform: 'uppercase',
-                        '&:hover': {
-                          bgcolor: '#1565c0'
-                        }
-                      }}
+                     sx={{
+  position: 'relative',
+  overflow: 'hidden',
+
+  background: user?.role === 'ROLE_SUPERADMIN' || user?.role === 'SUPERADMIN'
+    ? 'linear-gradient(135deg, #7c3aed, #a855f7)'
+    : 'linear-gradient(135deg, #ef4444, #f87171)',
+
+  color: '#fff',
+  fontWeight: 600,
+  fontSize: '0.8rem',
+
+  px: 3,
+  py: 1.1,
+  ml: 2,
+
+  borderRadius: '14px',
+  letterSpacing: '0.6px',
+  textTransform: 'uppercase',
+
+  backdropFilter: 'blur(6px)',
+  border: '1px solid rgba(255,255,255,0.15)',
+
+  boxShadow: user?.role === 'ROLE_SUPERADMIN' || user?.role === 'SUPERADMIN'
+    ? '0 6px 20px rgba(124, 58, 237, 0.5)'
+    : '0 6px 20px rgba(239, 68, 68, 0.5)',
+
+  transition: 'all 0.35s ease',
+
+  '&:hover': {
+    transform: 'translateY(-3px) scale(1.02)',
+    boxShadow: user?.role === 'ROLE_SUPERADMIN' || user?.role === 'SUPERADMIN'
+      ? '0 10px 30px rgba(124, 58, 237, 0.7)'
+      : '0 10px 30px rgba(239, 68, 68, 0.7)',
+  },
+
+  '&:active': {
+    transform: 'scale(0.96)',
+  },
+
+  // ✨ Shine animation
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '-100%',
+    width: '100%',
+    height: '100%',
+    background: 'linear-gradient(120deg, transparent, rgba(255,255,255,0.5), transparent)',
+    transition: 'all 0.6s ease',
+  },
+
+  '&:hover::before': {
+    left: '100%',
+  },
+}}
                     >
                       MANAGER DASHBOARD
                     </Button>
@@ -272,7 +372,7 @@ const navigationItems = [
                         ml: 1
                       }}
                     >
-                      <Avatar sx={{ width: 32, height: 32, bgcolor: 'rgba(255,255,255,0.2)' }}>
+                      <Avatar sx={{ width: 32, height: 32, bgcolor: 'rgba(255,255,255,0.25)' }}>
                         {user?.name?.charAt(0)?.toUpperCase()}
                       </Avatar>
                     </IconButton>
@@ -400,10 +500,10 @@ const navigationItems = [
                         to="/manager/dashboard" 
                         onClick={handleMobileMenuClose}
                         sx={{ 
-                          bgcolor: '#1976d2', 
+                          bgcolor: '#7c3aed', 
                           color: 'white',
                           '&:hover': {
-                            bgcolor: '#1565c0'
+                            bgcolor: '#6d28d9'
                           }
                         }}
                       >
@@ -422,7 +522,7 @@ const navigationItems = [
               </Menu>
             </Box>
           </Toolbar>
-        </Container>
+        </Box>
       </AppBar>
     </>
   );
