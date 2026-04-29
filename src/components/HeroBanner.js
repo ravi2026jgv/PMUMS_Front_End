@@ -17,8 +17,12 @@ const HeroBanner = () => {
   return (
     <Box
       sx={{
-        background: 'linear-gradient(135deg, #f8f6f0 0%, #f5f3ed 100%)',
-        py: { xs: 6, md: 8 },
+background: `
+  radial-gradient(circle at 20% 30%, rgba(255,255,255,0.12), transparent 40%),
+  radial-gradient(circle at 80% 70%, rgba(255,255,255,0.08), transparent 40%),
+  linear-gradient(135deg, #3b0764 0%, #6d28d9 40%, #9333ea 70%, #c084fc 100%)
+`,
+color: 'white',        py: { xs: 6, md: 8 },
         position: 'relative',
         overflow: 'hidden'
       }}
@@ -37,7 +41,7 @@ const HeroBanner = () => {
               width: 60,
               height: 60,
               borderRadius: '50%',
-              background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+              background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -58,7 +62,7 @@ const HeroBanner = () => {
           variant="h3"
           sx={{
             fontWeight: 'bold',
-            color: '#1976d2',
+            color: '#ffffff',
             mb: 1,
             fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
             lineHeight: 1.2,
@@ -74,7 +78,7 @@ const HeroBanner = () => {
           variant="h5"
           sx={{
             fontWeight: 600,
-            color: '#ff9800',
+            color: '#facc15', // soft gold
             mb: 3,
             fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
             fontFamily: 'Noto Sans Devanagari, Arial, sans-serif',
@@ -89,7 +93,8 @@ const HeroBanner = () => {
           variant="h6"
           sx={{
             fontStyle: 'italic',
-            color: '#555',
+           color: 'rgba(255,255,255,0.85)',
+
             mb: 4,
             fontSize: { xs: '1rem', md: '1.2rem' },
             fontWeight: 500,
@@ -102,7 +107,8 @@ const HeroBanner = () => {
               top: '50%',
               width: 40,
               height: 1,
-              backgroundColor: '#ddd',
+                backgroundColor: 'rgba(255,255,255,0.3)',
+
               transform: 'translateY(-50%)'
             },
             '&::before': {
@@ -120,18 +126,19 @@ const HeroBanner = () => {
         <Paper
           elevation={0}
           sx={{
-            background: 'rgba(255, 255, 255, 0.9)',
-            borderRadius: 4,
+background: 'rgba(255, 255, 255, 0.1)',
+border: '1px solid rgba(255,255,255,0.2)',
+backdropFilter: 'blur(12px)',            borderRadius: 4,
             p: { xs: 3, md: 4 },
             mb: 4,
-            border: '1px solid rgba(25, 118, 210, 0.1)',
-            backdropFilter: 'blur(10px)'
+            backdropFilter: 'blur(10px)',
+            color: 'rgba(255,255,255,0.9)',
           }}
         >
           <Typography
             variant="body1"
             sx={{
-              color: '#666',
+              color: '#ffff',
               fontSize: { xs: '0.95rem', md: '1.1rem' },
               lineHeight: 1.8,
               fontFamily: 'Noto Sans Devanagari, Arial, sans-serif',
@@ -160,8 +167,7 @@ const HeroBanner = () => {
                 variant="contained"
                 size="large"
                 sx={{
-                  background: 'linear-gradient(135deg, #1976d2 0%, #1565c0 100%)',
-                  color: 'white',
+background: 'linear-gradient(135deg, #7c3aed, #a855f7)',                  color: 'white',
                   fontWeight: 'bold',
                   fontSize: '1.1rem',
                   px: 4,
@@ -186,7 +192,7 @@ const HeroBanner = () => {
                 variant="contained"
                 size="large"
                 sx={{
-                  background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                  background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
                   color: 'white',
                   fontWeight: 'bold',
                   fontSize: '1.1rem',
@@ -218,8 +224,7 @@ const HeroBanner = () => {
           width: 200,
           height: 200,
           borderRadius: '50%',
-          background: 'rgba(25, 118, 210, 0.05)',
-          zIndex: 0
+background: 'rgba(255,255,255,0.08)'    ,      zIndex: 0
         }}
       />
       <Box

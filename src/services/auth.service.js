@@ -102,11 +102,33 @@ export const authService = {
         console.log('Registration successful with basic payload:', response.data);
         return response.data;
       } catch (basicError) {
-        console.error('Both registration attempts failed');
-        console.error('Full payload error:', error.response?.data);
-        console.error('Basic payload error:', basicError.response?.data);
-        throw basicError;
-      }
+  console.error('Both registration attempts failed');
+  console.error('Full payload error:', error.response?.data);
+  console.error('Basic payload error:', basicError.response?.data);
+
+  const fullPayloadMessage =
+    typeof error.response?.data === "string"
+      ? error.response.data
+      : error.response?.data?.message ||
+        error.response?.data?.error ||
+        error.message;
+
+  const basicPayloadMessage =
+    typeof basicError.response?.data === "string"
+      ? basicError.response.data
+      : basicError.response?.data?.message ||
+        basicError.response?.data?.error ||
+        basicError.message;
+
+  const finalMessage =
+    fullPayloadMessage ||
+    basicPayloadMessage ||
+    "Registration failed. Please try again.";
+
+  basicError.apiMessage = finalMessage;
+
+  throw basicError;
+}
     }
   },
 

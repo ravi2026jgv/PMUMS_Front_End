@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Container,
-  Paper,
   Typography,
   Box,
   Grid,
@@ -11,124 +10,169 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Chip,
   CircularProgress,
   Alert,
   FormControl,
   Select,
   MenuItem,
-  InputLabel,
   Pagination,
   TextField,
   Button,
+  Card,
+  CardContent,
+  Chip,
+  InputAdornment,
 } from '@mui/material';
+import {
+  Search,
+  FileDownloadRounded,
+  ReportProblemRounded,
+  InfoRounded,
+  CheckCircleRounded,
+} from '@mui/icons-material';
 import Layout from '../components/Layout/Layout';
 import { publicApi } from '../services/api';
+
+const theme = {
+  dark: '#3b0764',
+  main: '#6d28d9',
+  light: '#a855f7',
+  gold: '#facc15',
+  soft: '#f5f3ff',
+  softGold: '#fffbeb',
+  text: '#4c1d95',
+  muted: '#5b5b6b',
+  green: '#16a34a',
+  red: '#dc2626',
+};
+
+const inputSx = {
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '14px',
+    background: 'rgba(255,255,255,0.92)',
+    transition: 'all 0.25s ease',
+    '& fieldset': {
+      borderColor: 'rgba(124, 58, 237, 0.18)',
+    },
+    '&:hover fieldset': {
+      borderColor: 'rgba(124, 58, 237, 0.40)',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: theme.main,
+      borderWidth: '2px',
+    },
+  },
+  '& .MuiInputBase-input': {
+    fontWeight: 650,
+    color: theme.text,
+  },
+};
 
 const AsahyogList = () => {
   const [nonDonors, setNonDonors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [beneficiaryOptions, setBeneficiaryOptions] = useState([]);
-  
-  // Month and Year filters
-  
-  // User filters
-const [filters, setFilters] = useState({
-  userId: '',
-  fullName: '',
-  mobileNumber: '',
-  sambhag: '',
-  district: '',
-  block: '',
-beneficiaryId: ''});
-  const fetchBeneficiaries = useCallback(async () => {
-  try {
-    const response = await publicApi.get('/admin/monthly-sahyog/non-donors/beneficiaries-all');
-    setBeneficiaryOptions(response.data || []);
-  } catch (err) {
-    console.error('Error fetching beneficiaries:', err);
-    setBeneficiaryOptions([]);
-  }
-}, []);
-useEffect(() => {
-  fetchBeneficiaries();
-}, [fetchBeneficiaries]);
-  // Server-side Pagination
-  const [page, setPage] = useState(0); // 0-indexed for API
+
+  const [filters, setFilters] = useState({
+    userId: '',
+    fullName: '',
+    mobileNumber: '',
+    sambhag: '',
+    district: '',
+    block: '',
+    beneficiaryId: '',
+  });
+
+  const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const [pageSize] = useState(20);
-  
-  // Prevent duplicate API calls
-  const abortControllerRef = useRef(null);
-  const requestIdRef = useRef(0); // Track request ID to handle race conditions
-  const isInitialMount = useRef(true); // Track initial mount
 
-  // Helper function to handle empty strings and null values
+  const abortControllerRef = useRef(null);
+  const requestIdRef = useRef(0);
+  const isInitialMount = useRef(true);
+
+  const fetchBeneficiaries = useCallback(async () => {
+    try {
+      const response = await publicApi.get('/admin/monthly-sahyog/non-donors/beneficiaries-all');
+      setBeneficiaryOptions(response.data || []);
+    } catch (err) {
+      console.error('Error fetching beneficiaries:', err);
+      setBeneficiaryOptions([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBeneficiaries();
+  }, [fetchBeneficiaries]);
+
   const getDisplayValue = (value, fallback = 'N/A') => {
-    return value && value.trim() !== '' ? value : fallback;
+    if (value === null || value === undefined) return fallback;
+    const stringValue = String(value).trim();
+    return stringValue !== '' ? stringValue : fallback;
   };
 
-
-  // Generate years (last 5 years)
-
   const fetchNonDonors = useCallback(async (pageNum = 0) => {
-    // Increment request ID to track this request
     requestIdRef.current += 1;
     const thisRequestId = requestIdRef.current;
-    
-    // Cancel any ongoing request
+
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    
-    // Create new AbortController
+
     abortControllerRef.current = new AbortController();
-    
+
     try {
       setLoading(true);
       setError('');
-      
+
       const response = await publicApi.get('/admin/monthly-sahyog/non-donors/search-by-beneficiary', {
-  params: {
-    page: pageNum,
-    size: pageSize,
-    ...(filters.userId && { userId: filters.userId }),
-    ...(filters.fullName && { name: filters.fullName }),
-    ...(filters.mobileNumber && { mobile: filters.mobileNumber }),
-    ...(filters.sambhag && { sambhag: filters.sambhag }),
-    ...(filters.district && { district: filters.district }),
-    ...(filters.block && { block: filters.block }),
-...(filters.beneficiaryId && { beneficiaryId: filters.beneficiaryId })  },
-  signal: abortControllerRef.current.signal
-});
-      
-      // Only update state if this is the latest request
+        params: {
+          page: pageNum,
+          size: pageSize,
+          ...(filters.userId && { userId: filters.userId }),
+          ...(filters.fullName && { name: filters.fullName }),
+          ...(filters.mobileNumber && { mobile: filters.mobileNumber }),
+          ...(filters.sambhag && { sambhag: filters.sambhag }),
+          ...(filters.district && { district: filters.district }),
+          ...(filters.block && { block: filters.block }),
+          ...(filters.beneficiaryId && { beneficiaryId: filters.beneficiaryId }),
+        },
+        signal: abortControllerRef.current.signal,
+      });
+
       if (thisRequestId !== requestIdRef.current) {
         return;
       }
-      
-      // Handle both array response and paginated response
+
       if (Array.isArray(response.data)) {
         setNonDonors(response.data);
         setTotalPages(1);
         setTotalElements(response.data.length);
         setPage(0);
       } else {
-        // Spring Boot uses 'number' not 'pageNumber'
-        const { content, number, pageNumber, totalPages: pages, totalElements: total } = response.data;
-        const actualPageNumber = number !== undefined ? number : (pageNumber !== undefined ? pageNumber : pageNum);
+        const {
+          content,
+          number,
+          pageNumber,
+          totalPages: pages,
+          totalElements: total,
+        } = response.data;
+
+        const actualPageNumber =
+          number !== undefined ? number : pageNumber !== undefined ? pageNumber : pageNum;
+
         setNonDonors(content || []);
         setPage(actualPageNumber);
         setTotalPages(pages || 1);
         setTotalElements(total || 0);
       }
     } catch (err) {
-      // Ignore abortion errors
       if (err.name === 'AbortError' || err.code === 'ERR_CANCELED') {
         return;
       }
+
       console.error('Error fetching non-donors:', err);
       setError('असहयोग सूची लोड करने में त्रुटि हुई। कृपया पुनः प्रयास करें।');
       setNonDonors([]);
@@ -138,462 +182,771 @@ useEffect(() => {
       }
     }
   }, [
-  
-  pageSize,
-  filters.userId,
-  filters.fullName,
-  filters.mobileNumber,
-  filters.sambhag,
-  filters.district,
-  filters.block,
-   filters.beneficiaryId
-]);
+    pageSize,
+    filters.userId,
+    filters.fullName,
+    filters.mobileNumber,
+    filters.sambhag,
+    filters.district,
+    filters.block,
+    filters.beneficiaryId,
+  ]);
 
-  // Fetch non-donors with debounced filtering when filters change
   useEffect(() => {
-    // Skip on initial mount
     if (isInitialMount.current) {
       return;
     }
-    
+
     const debounceTimer = setTimeout(() => {
       fetchNonDonors(0);
-    }, 300); // 300ms debounce for text inputs
-    
+    }, 300);
+
     return () => {
       clearTimeout(debounceTimer);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-  filters.userId,
-  filters.fullName,
-  filters.mobileNumber,
-  filters.sambhag,
-  filters.district,
-  filters.block
-, filters.beneficiaryId
-]);
+    fetchNonDonors,
+    filters.userId,
+    filters.fullName,
+    filters.mobileNumber,
+    filters.sambhag,
+    filters.district,
+    filters.block,
+    filters.beneficiaryId,
+  ]);
 
-  // Initial load on component mount
   useEffect(() => {
     fetchNonDonors(0).then(() => {
       isInitialMount.current = false;
     });
-    
-    // Cleanup function to abort any ongoing requests
+
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, []); // Empty dependency array - runs only once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
- const hasActiveFilters = () => {
-  return Boolean(
-    filters.userId ||
-    filters.fullName ||
-    filters.mobileNumber ||
-    filters.sambhag ||
-    filters.district ||
-    filters.block ||
-    filters.beneficiaryId
-  );
-};
-const downloadBlobFile = (data, filename, type = 'text/csv;charset=utf-8') => {
-  const blob = new Blob([data], { type });
-  const url = window.URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.setAttribute('download', filename);
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  window.URL.revokeObjectURL(url);
-};
-const handleExportAsahyog = async () => {
-  try {
-const response = await publicApi.get('/public/export/asahyog/by-beneficiary', {      params: {
-        ...(filters.userId && { userId: filters.userId }),
-        ...(filters.fullName && { name: filters.fullName }),
-        ...(filters.mobileNumber && { mobile: filters.mobileNumber }),
-        ...(filters.sambhag && { sambhag: filters.sambhag }),
-        ...(filters.district && { district: filters.district }),
-        ...(filters.block && { block: filters.block }),
-        ...(filters.beneficiaryId && { beneficiaryId: filters.beneficiaryId }),
-      },
-      responseType: 'blob',
-    });
+  const hasActiveFilters = () => {
+    return Boolean(
+      filters.userId ||
+      filters.fullName ||
+      filters.mobileNumber ||
+      filters.sambhag ||
+      filters.district ||
+      filters.block ||
+      filters.beneficiaryId
+    );
+  };
 
-    downloadBlobFile(response.data, 'asahyog_list.csv');
-  } catch (err) {
-    console.error('Error exporting asahyog list:', err);
-    setError('असहयोग सूची एक्सपोर्ट करने में त्रुटि हुई।');
-  }
-};
+  const downloadBlobFile = (data, filename, type = 'text/csv;charset=utf-8') => {
+    const blob = new Blob([data], { type });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', filename);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handleExportAsahyog = async () => {
+    try {
+      const response = await publicApi.get('/public/export/asahyog/by-beneficiary', {
+        params: {
+          ...(filters.userId && { userId: filters.userId }),
+          ...(filters.fullName && { name: filters.fullName }),
+          ...(filters.mobileNumber && { mobile: filters.mobileNumber }),
+          ...(filters.sambhag && { sambhag: filters.sambhag }),
+          ...(filters.district && { district: filters.district }),
+          ...(filters.block && { block: filters.block }),
+          ...(filters.beneficiaryId && { beneficiaryId: filters.beneficiaryId }),
+        },
+        responseType: 'blob',
+      });
+
+      downloadBlobFile(response.data, 'asahyog_list.csv');
+    } catch (err) {
+      console.error('Error exporting asahyog list:', err);
+      setError('असहयोग सूची एक्सपोर्ट करने में त्रुटि हुई।');
+    }
+  };
+
   const handlePageChange = (event, newPage) => {
     const pageNum = parseInt(newPage, 10);
     if (isNaN(pageNum) || pageNum < 1) return;
-    // MUI Pagination is 1-indexed, API is 0-indexed
+
     fetchNonDonors(pageNum - 1);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Calculate display range for current page
-  const startRecord = page * pageSize + 1;
+  const startRecord = totalElements === 0 ? 0 : page * pageSize + 1;
   const endRecord = Math.min((page + 1) * pageSize, totalElements);
-
-  // Format date helper
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-IN', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric'
-      });
-    } catch (error) {
-      return 'N/A';
-    }
-  };
 
   return (
     <Layout>
-      <Box sx={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%)',
-        py: 4
-      }}>
-        <Container maxWidth="xl">
-          {/* Header */}
-          <Paper
-            elevation={10}
+      <Box
+        sx={{
+          minHeight: '100vh',
+          py: { xs: 6, md: 8 },
+          background: `
+            radial-gradient(circle at top left, rgba(124, 58, 237, 0.13), transparent 30%),
+            radial-gradient(circle at bottom right, rgba(250, 204, 21, 0.16), transparent 32%),
+            linear-gradient(180deg, #ffffff 0%, #fbfaff 45%, #f5f3ff 100%)
+          `,
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            width: 360,
+            height: 360,
+            borderRadius: '50%',
+            top: -170,
+            left: -130,
+            background: 'rgba(124, 58, 237, 0.10)',
+            filter: 'blur(8px)',
+          }}
+        />
+
+        <Box
+          sx={{
+            position: 'absolute',
+            width: 310,
+            height: 310,
+            borderRadius: '50%',
+            right: -120,
+            bottom: -140,
+            background: 'rgba(250, 204, 21, 0.16)',
+            filter: 'blur(10px)',
+          }}
+        />
+
+        <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1 }}>
+          <Card
+            elevation={0}
             sx={{
-              p: 3,
               mb: 4,
-              borderRadius: 3,
-              background: 'linear-gradient(135deg, #d32f2f 0%, #f44336 100%)',
-              color: 'white'
+              borderRadius: { xs: '28px', md: '38px' },
+              background:
+                'linear-gradient(135deg, rgba(76,29,149,0.96), rgba(124,58,237,0.92))',
+              color: '#fff',
+              border: '1px solid rgba(255,255,255,0.18)',
+              boxShadow: '0 30px 90px rgba(76, 29, 149, 0.22)',
+              overflow: 'hidden',
+              position: 'relative',
+
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 7,
+                background: `linear-gradient(90deg, ${theme.gold}, #ffffff, ${theme.gold})`,
+              },
+
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                width: 260,
+                height: 260,
+                borderRadius: '50%',
+                right: -110,
+                bottom: -130,
+                background: 'rgba(250, 204, 21, 0.14)',
+              },
             }}
           >
-            <Typography variant="h4" sx={{ fontWeight: 'bold', textAlign: 'center', fontFamily: 'Poppins' }}>
-              असहयोग सूची (Asahyog List)
-            </Typography>
-            <Typography variant="body1" sx={{ textAlign: 'center', mt: 1, opacity: 0.9 }}>
-              जिन सदस्यों ने अभी तक सहयोग नहीं किया है
-            </Typography>
-          </Paper>
+            <CardContent
+              sx={{
+                p: { xs: 3, md: 5 },
+                textAlign: 'center',
+                position: 'relative',
+                zIndex: 1,
+              }}
+            >
+              <Box
+                sx={{
+                  width: 70,
+                  height: 70,
+                  borderRadius: '22px',
+                  mx: 'auto',
+                  mb: 2,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'rgba(255,255,255,0.16)',
+                  border: '1px solid rgba(255,255,255,0.25)',
+                }}
+              >
+                <ReportProblemRounded sx={{ fontSize: 38, color: theme.gold }} />
+              </Box>
 
-          {/* Filters */}
-          <Paper elevation={6} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
-            <Typography variant="h6" sx={{ mb: 2, color: '#d32f2f', fontWeight: 'bold' }}>
-              फ़िल्टर (Filters)
-            </Typography>
-            <Grid container spacing={2} alignItems="end">
-              
-              <Grid item xs={12} sm={4} md={2.4}>
-                <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
-                  यूजर आईडी (User ID)
-                </Typography>
-                <TextField
-                  fullWidth
-                  placeholder="यूजर आईडी दर्ज करें"
-                  value={filters.userId}
-                  onChange={(e) => setFilters(prev => ({ ...prev, userId: e.target.value }))}
-                  size="small"
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      border: '2px solid #d32f2f',
-                      borderRadius: '8px',
-                      '&:hover': {
-                        borderColor: '#c62828',
-                      },
-                      '&.Mui-focused': {
-                        borderColor: '#d32f2f',
-                      }
-                    }
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={4} md={2.4}>
-                <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
-                  पूरा नाम (Full Name)
-                </Typography>
-                <TextField
-                  fullWidth
-                  placeholder="पूरा नाम दर्ज करें"
-                  value={filters.fullName}
-                  onChange={(e) => setFilters(prev => ({ ...prev, fullName: e.target.value }))}
-                  size="small"
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      border: '2px solid #d32f2f',
-                      borderRadius: '8px',
-                      '&:hover': {
-                        borderColor: '#c62828',
-                      },
-                      '&.Mui-focused': {
-                        borderColor: '#d32f2f',
-                      }
-                    }
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={4} md={2.4}>
-                <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
-                  मोबाइल (Mobile)
-                </Typography>
-                <TextField
-                  fullWidth
-                  placeholder="मोबाइल नंबर दर्ज करें"
-                  value={filters.mobileNumber}
-                  onChange={(e) => setFilters(prev => ({ ...prev, mobileNumber: e.target.value }))}
-                  size="small"
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      border: '2px solid #d32f2f',
-                      borderRadius: '8px',
-                      '&:hover': {
-                        borderColor: '#c62828',
-                      },
-                      '&.Mui-focused': {
-                        borderColor: '#d32f2f',
-                      }
-                    }
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={4} md={2.4}>
-  <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
-    संभाग (Sambhag)
-  </Typography>
-  <TextField
-    fullWidth
-    placeholder="संभाग दर्ज करें"
-    value={filters.sambhag}
-    onChange={(e) => setFilters(prev => ({ ...prev, sambhag: e.target.value }))}
-    size="small"
-    sx={{
-      '& .MuiOutlinedInput-root': {
-        border: '2px solid #d32f2f',
-        borderRadius: '8px',
-        '&:hover': {
-          borderColor: '#c62828',
-        },
-        '&.Mui-focused': {
-          borderColor: '#d32f2f',
-        }
-      }
-    }}
-  />
-</Grid>
+              <Typography
+                variant="h3"
+                sx={{
+                  fontWeight: 950,
+                  mb: 1.3,
+                  fontSize: { xs: '1.9rem', md: '3rem' },
+                  fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                }}
+              >
+                असहयोग सूची
+              </Typography>
 
-<Grid item xs={12} sm={4} md={2.4}>
-  <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
-    जिला (District)
-  </Typography>
-  <TextField
-    fullWidth
-    placeholder="जिला दर्ज करें"
-    value={filters.district}
-    onChange={(e) => setFilters(prev => ({ ...prev, district: e.target.value }))}
-    size="small"
-    sx={{
-      '& .MuiOutlinedInput-root': {
-        border: '2px solid #d32f2f',
-        borderRadius: '8px',
-        '&:hover': {
-          borderColor: '#c62828',
-        },
-        '&.Mui-focused': {
-          borderColor: '#d32f2f',
-        }
-      }
-    }}
-  />
-</Grid>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 750,
+                  color: 'rgba(255,255,255,0.90)',
+                  fontSize: { xs: '1rem', md: '1.2rem' },
+                  fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                }}
+              >
+                जिन सदस्यों ने अभी तक सहयोग नहीं किया है
+              </Typography>
 
-<Grid item xs={12} sm={4} md={2.4}>
-  <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
-    ब्लॉक (Block)
-  </Typography>
-  <TextField
-    fullWidth
-    placeholder="ब्लॉक दर्ज करें"
-    value={filters.block}
-    onChange={(e) => setFilters(prev => ({ ...prev, block: e.target.value }))}
-    size="small"
-    sx={{
-      '& .MuiOutlinedInput-root': {
-        border: '2px solid #d32f2f',
-        borderRadius: '8px',
-        '&:hover': {
-          borderColor: '#c62828',
-        },
-        '&.Mui-focused': {
-          borderColor: '#d32f2f',
-        }
-      }
-    }}
-  />
-</Grid>
-<Grid item xs={12} sm={4} md={2.4}>
-  <Typography variant="body2" sx={{ mb: 1, fontWeight: 600, color: '#1a237e' }}>
-    Beneficiary
-  </Typography>
-  <FormControl fullWidth size="small">
-    <Select
-      value={filters.beneficiaryId}
-onChange={(e) => setFilters(prev => ({ ...prev, beneficiaryId: e.target.value }))}      displayEmpty
-    >
-      <MenuItem value="">All Beneficiaries</MenuItem>
-      {beneficiaryOptions.map((item) => (
-  <MenuItem key={item.id} value={item.id}>
-    {item.name}
-  </MenuItem>
-))}
-    </Select>
-  </FormControl>
-</Grid>
-<Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-  <Button
-    variant="contained"
-    onClick={handleExportAsahyog}
-    sx={{
-      backgroundColor: '#d32f2f',
-      '&:hover': { backgroundColor: '#b71c1c' }
-    }}
-  >
-    {hasActiveFilters() ? 'Export With Filter' : 'Export All'}
-  </Button>
-</Box>
-            </Grid>
-          </Paper>
+              <Chip
+                label={`कुल ${totalElements.toLocaleString('hi-IN')} असहयोग रिकॉर्ड`}
+                sx={{
+                  mt: 2.5,
+                  color: '#fff',
+                  fontWeight: 900,
+                  background: 'rgba(255,255,255,0.16)',
+                  border: '1px solid rgba(255,255,255,0.24)',
+                  fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                }}
+              />
+            </CardContent>
+          </Card>
+
+          <Card
+            elevation={0}
+            sx={{
+              mb: 4,
+              borderRadius: { xs: '24px', md: '32px' },
+              background: 'rgba(255,255,255,0.84)',
+              backdropFilter: 'blur(16px)',
+              border: '1px solid rgba(124, 58, 237, 0.15)',
+              boxShadow: '0 24px 70px rgba(76, 29, 149, 0.12)',
+              overflow: 'hidden',
+              position: 'relative',
+
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 7,
+                background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`,
+              },
+            }}
+          >
+            <CardContent sx={{ p: { xs: 2.5, md: 3.5 }, position: 'relative', zIndex: 1 }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 2,
+                  flexWrap: 'wrap',
+                  mb: 2.5,
+                }}
+              >
+                <Box>
+                  <Typography
+                    sx={{
+                      color: theme.dark,
+                      fontWeight: 950,
+                      fontSize: { xs: '1.25rem', md: '1.45rem' },
+                      fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                    }}
+                  >
+                    खोज और फिल्टर
+                  </Typography>
+
+                  <Typography
+                    sx={{
+                      color: theme.muted,
+                      fontWeight: 650,
+                      mt: 0.5,
+                      fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                    }}
+                  >
+                    यूजर आईडी, नाम, मोबाइल, स्थान या लाभार्थी के आधार पर असहयोग रिकॉर्ड खोजें।
+                  </Typography>
+                </Box>
+
+                <Button
+                  variant="contained"
+                  onClick={handleExportAsahyog}
+                  startIcon={<FileDownloadRounded />}
+                  sx={{
+                    borderRadius: '14px',
+                    px: 2.8,
+                    py: 1,
+                    fontWeight: 950,
+                    textTransform: 'none',
+                    background: `linear-gradient(135deg, ${theme.main}, ${theme.light})`,
+                    boxShadow: '0 12px 28px rgba(109, 40, 217, 0.28)',
+                    '&:hover': {
+                      background: `linear-gradient(135deg, ${theme.dark}, ${theme.main})`,
+                      transform: 'translateY(-1px)',
+                    },
+                  }}
+                >
+                  {hasActiveFilters() ? 'Export With Filter' : 'Export All'}
+                </Button>
+              </Box>
+
+              <Grid container spacing={2.5} alignItems="end">
+                <Grid item xs={12} sm={4} md={2.4}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mb: 1,
+                      fontWeight: 900,
+                      color: theme.dark,
+                      fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                    }}
+                  >
+                    यूजर आईडी (User ID)
+                  </Typography>
+
+                  <TextField
+                    fullWidth
+                    placeholder="यूजर आईडी दर्ज करें"
+                    value={filters.userId}
+                    onChange={(e) => setFilters((prev) => ({ ...prev, userId: e.target.value }))}
+                    size="small"
+                    sx={inputSx}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Search sx={{ color: theme.main }} />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={4} md={2.4}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mb: 1,
+                      fontWeight: 900,
+                      color: theme.dark,
+                      fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                    }}
+                  >
+                    पूरा नाम (Full Name)
+                  </Typography>
+
+                  <TextField
+                    fullWidth
+                    placeholder="पूरा नाम दर्ज करें"
+                    value={filters.fullName}
+                    onChange={(e) => setFilters((prev) => ({ ...prev, fullName: e.target.value }))}
+                    size="small"
+                    sx={inputSx}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Search sx={{ color: theme.main }} />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={4} md={2.4}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mb: 1,
+                      fontWeight: 900,
+                      color: theme.dark,
+                      fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                    }}
+                  >
+                    मोबाइल (Mobile)
+                  </Typography>
+
+                  <TextField
+                    fullWidth
+                    placeholder="मोबाइल नंबर दर्ज करें"
+                    value={filters.mobileNumber}
+                    onChange={(e) => setFilters((prev) => ({ ...prev, mobileNumber: e.target.value }))}
+                    size="small"
+                    sx={inputSx}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Search sx={{ color: theme.main }} />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={4} md={2.4}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mb: 1,
+                      fontWeight: 900,
+                      color: theme.dark,
+                      fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                    }}
+                  >
+                    संभाग (Sambhag)
+                  </Typography>
+
+                  <TextField
+                    fullWidth
+                    placeholder="संभाग दर्ज करें"
+                    value={filters.sambhag}
+                    onChange={(e) => setFilters((prev) => ({ ...prev, sambhag: e.target.value }))}
+                    size="small"
+                    sx={inputSx}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Search sx={{ color: theme.main }} />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={4} md={2.4}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mb: 1,
+                      fontWeight: 900,
+                      color: theme.dark,
+                      fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                    }}
+                  >
+                    जिला (District)
+                  </Typography>
+
+                  <TextField
+                    fullWidth
+                    placeholder="जिला दर्ज करें"
+                    value={filters.district}
+                    onChange={(e) => setFilters((prev) => ({ ...prev, district: e.target.value }))}
+                    size="small"
+                    sx={inputSx}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Search sx={{ color: theme.main }} />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={4} md={2.4}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mb: 1,
+                      fontWeight: 900,
+                      color: theme.dark,
+                      fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                    }}
+                  >
+                    ब्लॉक (Block)
+                  </Typography>
+
+                  <TextField
+                    fullWidth
+                    placeholder="ब्लॉक दर्ज करें"
+                    value={filters.block}
+                    onChange={(e) => setFilters((prev) => ({ ...prev, block: e.target.value }))}
+                    size="small"
+                    sx={inputSx}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Search sx={{ color: theme.main }} />
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={4} md={2.4}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mb: 1,
+                      fontWeight: 900,
+                      color: theme.dark,
+                      fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                    }}
+                  >
+                    लाभार्थी (Beneficiary)
+                  </Typography>
+
+                  <FormControl fullWidth size="small">
+                    <Select
+                      value={filters.beneficiaryId}
+                      onChange={(e) =>
+                        setFilters((prev) => ({ ...prev, beneficiaryId: e.target.value }))
+                      }
+                      displayEmpty
+                      sx={inputSx}
+                    >
+                      <MenuItem value="">All Beneficiaries</MenuItem>
+
+                      {beneficiaryOptions.map((item) => (
+                        <MenuItem key={item.id} value={item.id}>
+                          {item.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+              </Grid>
+
+              {hasActiveFilters() && (
+                <Alert
+                  severity="info"
+                  icon={<InfoRounded />}
+                  sx={{
+                    mt: 2.5,
+                    borderRadius: '16px',
+                    backgroundColor: 'rgba(124, 58, 237, 0.08)',
+                    border: '1px solid rgba(124, 58, 237, 0.16)',
+                    color: theme.text,
+                    fontWeight: 750,
+                    fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                  }}
+                >
+                  फिल्टर सक्रिय है। कुल {totalElements.toLocaleString('hi-IN')} परिणाम मिले।
+                </Alert>
+              )}
+            </CardContent>
+          </Card>
 
           {error && (
-            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
+            <Alert severity="error" sx={{ mb: 3, borderRadius: '16px' }}>
               {error}
             </Alert>
           )}
 
-          {/* Data Table */}
-          <Paper elevation={6} sx={{ borderRadius: 2, overflow: 'hidden' }}>
+          <Card
+            elevation={0}
+            sx={{
+              borderRadius: { xs: '24px', md: '32px' },
+              background: 'rgba(255,255,255,0.88)',
+              backdropFilter: 'blur(16px)',
+              border: '1px solid rgba(124, 58, 237, 0.15)',
+              boxShadow: '0 28px 80px rgba(76, 29, 149, 0.13)',
+              overflow: 'hidden',
+            }}
+          >
             {loading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', py: 8 }}>
-                <CircularProgress size={50} color="error" />
-                <Typography sx={{ ml: 2 }}>लोड हो रहा है...</Typography>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  py: 8,
+                }}
+              >
+                <CircularProgress size={50} sx={{ color: theme.main }} />
+
+                <Typography
+                  sx={{
+                    mt: 2,
+                    color: theme.muted,
+                    fontWeight: 800,
+                    fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                  }}
+                >
+                  लोड हो रहा है...
+                </Typography>
               </Box>
             ) : nonDonors.length === 0 ? (
-              <Box sx={{ textAlign: 'center', py: 8 }}>
-                <Typography variant="h6" sx={{ color: '#2e7d32' }}>
-                🎉 आपका सहयोग हो गया है
+              <Box sx={{ textAlign: 'center', py: 8, px: 2 }}>
+                <Box
+                  sx={{
+                    width: 72,
+                    height: 72,
+                    borderRadius: '24px',
+                    mx: 'auto',
+                    mb: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#fff',
+                    background: `linear-gradient(135deg, ${theme.green}, #22c55e)`,
+                    boxShadow: '0 14px 32px rgba(22, 163, 74, 0.24)',
+                  }}
+                >
+                  <CheckCircleRounded sx={{ fontSize: 40 }} />
+                </Box>
+
+                <Typography
+                  variant="h6"
+                  sx={{
+                    color: theme.dark,
+                    fontWeight: 950,
+                    fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                  }}
+                >
+                  🎉 आपका सहयोग हो गया है
+                </Typography>
+
+                <Typography
+                  sx={{
+                    mt: 1,
+                    color: theme.muted,
+                    fontWeight: 650,
+                    fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                  }}
+                >
+                  इस फिल्टर के अनुसार कोई असहयोग रिकॉर्ड उपलब्ध नहीं है।
                 </Typography>
               </Box>
             ) : (
               <>
-                <TableContainer>
-                  <Table>
+                <TableContainer sx={{ maxHeight: 'calc(100vh - 220px)' }}>
+                  <Table stickyHeader>
                     <TableHead>
-                      <TableRow sx={{ backgroundColor: '#d32f2f' }}>
-                        <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
-                          क्र.सं.
-                        </TableCell>
-                        <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
-                          रजिस्ट्रेशन नं.
-                        </TableCell>
-                        <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
-                          नाम (Name)
-                        </TableCell>
-                        <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
-                          विभाग
-                        </TableCell>
-                        <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
-                          राज्य
-                        </TableCell>
-                        <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
-                          संभाग
-                        </TableCell>
-                        <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
-                          जिला
-                        </TableCell>
-                        <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
-                          ब्लॉक
-                        </TableCell>
-                        <TableCell sx={{ fontWeight: 'bold', color: 'white', fontSize: '1rem' }}>
-                          स्कूल का नाम
-                        </TableCell>
+                      <TableRow
+                        sx={{
+                          '& th': {
+                            background: `linear-gradient(135deg, ${theme.dark}, ${theme.main})`,
+                            color: 'white',
+                            fontWeight: 950,
+                            fontSize: '0.92rem',
+                            whiteSpace: 'nowrap',
+                            fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                            borderBottom: 'none',
+                          },
+                        }}
+                      >
+                        <TableCell>क्र.सं.</TableCell>
+                        <TableCell>रजिस्ट्रेशन नं.</TableCell>
+                        <TableCell>नाम (Name)</TableCell>
+                        <TableCell>विभाग</TableCell>
+                        <TableCell>राज्य</TableCell>
+                        <TableCell>संभाग</TableCell>
+                        <TableCell>जिला</TableCell>
+                        <TableCell>ब्लॉक</TableCell>
+                        <TableCell>स्कूल का नाम</TableCell>
                       </TableRow>
                     </TableHead>
+
                     <TableBody>
                       {nonDonors.map((user, index) => (
                         <TableRow
-                          key={user.id}
+                          key={user.id || index}
                           sx={{
-                            '&:hover': { backgroundColor: '#ffebee' },
                             transition: 'background-color 0.2s',
-                            backgroundColor: index % 2 === 0 ? '#ffffff' : '#fff8f8'
+                            backgroundColor:
+                              index % 2 === 0
+                                ? '#ffffff'
+                                : 'rgba(245, 243, 255, 0.38)',
+                            '&:hover': {
+                              backgroundColor: 'rgba(245, 243, 255, 0.78)',
+                            },
+                            '& td': {
+                              borderBottom: '1px solid rgba(124, 58, 237, 0.10)',
+                              color: '#374151',
+                              fontWeight: 650,
+                              fontSize: '0.9rem',
+                              fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                            },
                           }}
                         >
-                          <TableCell sx={{ fontWeight: 500 }}>
+                          <TableCell sx={{ fontWeight: '900 !important', color: `${theme.main} !important` }}>
                             {page * pageSize + index + 1}
                           </TableCell>
-                          <TableCell sx={{ color: '#d32f2f', fontWeight: 500 }}>
+
+                          <TableCell sx={{ color: `${theme.main} !important`, fontWeight: '900 !important' }}>
                             {getDisplayValue(user.registrationNumber || user.id)}
                           </TableCell>
-                          <TableCell sx={{ fontWeight: 600 }}>
+
+                          <TableCell sx={{ fontWeight: '900 !important', color: `${theme.dark} !important` }}>
                             {getDisplayValue(user.name)}
                           </TableCell>
-                          <TableCell>
-                            {getDisplayValue(user.department)}
-                          </TableCell>
-                          <TableCell>
-                            {getDisplayValue(user.state || user.departmentState)}
-                          </TableCell>
-                          <TableCell>
-                            {getDisplayValue(user.sambhag || user.departmentSambhag)}
-                          </TableCell>
-                          <TableCell>
-                            {getDisplayValue(user.district || user.departmentDistrict)}
-                          </TableCell>
-                          <TableCell>
-                            {getDisplayValue(user.block || user.departmentBlock)}
-                          </TableCell>
-                          <TableCell sx={{ fontSize: '0.85rem' }}>
-                            {getDisplayValue(user.schoolName || user.schoolOfficeName)}
-                          </TableCell>
+
+                          <TableCell>{getDisplayValue(user.department)}</TableCell>
+                          <TableCell>{getDisplayValue(user.state || user.departmentState)}</TableCell>
+                          <TableCell>{getDisplayValue(user.sambhag || user.departmentSambhag)}</TableCell>
+                          <TableCell>{getDisplayValue(user.district || user.departmentDistrict)}</TableCell>
+                          <TableCell>{getDisplayValue(user.block || user.departmentBlock)}</TableCell>
+                          <TableCell>{getDisplayValue(user.schoolName || user.schoolOfficeName)}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
                   </Table>
                 </TableContainer>
 
-                {/* Pagination */}
                 {totalPages > 1 && (
-                  <Box sx={{ 
-                    display: 'flex', 
-                    flexDirection: 'column',
-                    justifyContent: 'center', 
-                    alignItems: 'center',
-                    gap: 2,
-                    py: 3 
-                  }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      gap: 2,
+                      py: 3,
+                      borderTop: '1px solid rgba(124, 58, 237, 0.12)',
+                      background: 'rgba(245,243,255,0.45)',
+                    }}
+                  >
                     <Pagination
                       count={totalPages}
                       page={page + 1}
                       onChange={handlePageChange}
-                      color="error"
                       size="large"
                       showFirstButton
                       showLastButton
+                      sx={{
+                        '& .MuiPaginationItem-root': {
+                          borderRadius: '12px',
+                          fontWeight: 800,
+                          color: theme.text,
+                        },
+                        '& .MuiPaginationItem-root.Mui-selected': {
+                          backgroundColor: `${theme.main} !important`,
+                          color: '#fff',
+                          boxShadow: '0 8px 20px rgba(124, 58, 237, 0.25)',
+                        },
+                      }}
                     />
-                    <Typography variant="body2" sx={{ color: '#666' }}>
+
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: theme.muted,
+                        fontWeight: 800,
+                        fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                      }}
+                    >
                       {`${startRecord.toLocaleString('hi-IN')} - ${endRecord.toLocaleString('hi-IN')} परिणाम (कुल ${totalElements.toLocaleString('hi-IN')} में से)`}
                     </Typography>
                   </Box>
                 )}
               </>
             )}
-          </Paper>
+          </Card>
         </Container>
       </Box>
     </Layout>

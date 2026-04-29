@@ -9,17 +9,147 @@ import {
   ListItemIcon,
   ListItemText,
   Chip,
-  Divider
+  Grid
 } from '@mui/material';
 import {
   CheckCircle,
   Favorite,
   People,
   Security,
-  Visibility
+  Visibility,
+  VolunteerActivismRounded,
+  GroupsRounded,
+  HandshakeRounded
 } from '@mui/icons-material';
 import Layout from '../components/Layout/Layout';
 import SelfDonation from '../components/SelfDonation';
+
+const theme = {
+  dark: '#3b0764',
+  main: '#6d28d9',
+  light: '#a855f7',
+  gold: '#facc15',
+  soft: '#f5f3ff',
+  softGold: '#fffbeb',
+  text: '#4c1d95',
+  muted: '#5b5b6b',
+};
+
+const SectionHeading = ({ eyebrow, title, center = true }) => (
+  <Box textAlign={center ? 'center' : 'left'} mb={{ xs: 3, md: 4 }}>
+    {eyebrow && (
+      <Typography
+        variant="overline"
+        sx={{
+          color: theme.main,
+          fontWeight: 900,
+          letterSpacing: '1.5px',
+          fontSize: '0.8rem',
+        }}
+      >
+        {eyebrow}
+      </Typography>
+    )}
+
+    <Typography
+      variant="h4"
+      sx={{
+        mt: eyebrow ? 0.6 : 0,
+        fontWeight: 950,
+        color: theme.dark,
+        fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+        fontSize: { xs: '1.55rem', md: '2.15rem' },
+        lineHeight: 1.3,
+      }}
+    >
+      {title}
+    </Typography>
+
+    <Box
+      sx={{
+        width: 90,
+        height: 5,
+        borderRadius: 99,
+        mt: 2,
+        mx: center ? 'auto' : 0,
+        background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`,
+      }}
+    />
+  </Box>
+);
+
+const GlassCard = ({ children, sx = {}, highlight = false }) => (
+  <Paper
+    elevation={0}
+    sx={{
+      mb: 4,
+      borderRadius: { xs: '24px', md: '32px' },
+      p: { xs: 2.5, sm: 3.5, md: 5 },
+      background: highlight
+        ? 'linear-gradient(135deg, rgba(255,251,235,0.92), rgba(255,255,255,0.88))'
+        : 'rgba(255,255,255,0.82)',
+      backdropFilter: 'blur(16px)',
+      border: highlight
+        ? '1px solid rgba(250, 204, 21, 0.35)'
+        : '1px solid rgba(124, 58, 237, 0.15)',
+      boxShadow: '0 24px 70px rgba(76, 29, 149, 0.12)',
+      position: 'relative',
+      overflow: 'hidden',
+
+      '&::before': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 7,
+        background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`,
+      },
+
+      ...sx,
+    }}
+  >
+    <Box sx={{ position: 'relative', zIndex: 1 }}>{children}</Box>
+  </Paper>
+);
+
+const StyledList = ({ items, small = false, gold = false }) => (
+  <List sx={{ p: 0 }}>
+    {items.map((item, index) => (
+      <ListItem
+        key={index}
+        sx={{
+          px: 0,
+          py: small ? 0.7 : 1,
+          alignItems: 'flex-start',
+        }}
+      >
+        <ListItemIcon sx={{ minWidth: 38, mt: 0.2 }}>
+          <CheckCircle
+            sx={{
+              color: gold ? theme.gold : theme.main,
+              fontSize: small ? 20 : 24,
+            }}
+          />
+        </ListItemIcon>
+
+        <ListItemText
+          primary={item}
+          sx={{
+            m: 0,
+            '& .MuiListItemText-primary': {
+              color: theme.muted,
+              fontSize: small ? '0.96rem' : '1.05rem',
+              lineHeight: 1.75,
+              fontWeight: 650,
+              fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+            },
+          }}
+        />
+      </ListItem>
+    ))}
+  </List>
+);
 
 const About = () => {
   const objectives = [
@@ -51,377 +181,419 @@ const About = () => {
     { icon: <Favorite />, title: 'सेवा भावना', desc: 'निस्वार्थ भाव से सहयोग' },
     { icon: <Visibility />, title: 'पारदर्शिता', desc: 'हर प्रक्रिया स्पष्ट और जवाबदेह' },
     { icon: <People />, title: 'एकता', desc: 'शिक्षक समाज की सामूहिक शक्ति' },
-    { icon: <Favorite />, title: 'मानवीय संवेदना', desc: 'दुख में साथ खड़े रहना' },
+    { icon: <VolunteerActivismRounded />, title: 'मानवीय संवेदना', desc: 'दुख में साथ खड़े रहना' },
     { icon: <Security />, title: 'विश्वास', desc: 'संगठन और सदस्यों के बीच मजबूत भरोसा' }
   ];
 
   return (
     <Layout>
-      <Box sx={{ py: 1, minHeight: '100vh', background: '#FFF8F0' }}>
-        <Container maxWidth="lg">
+      <Box
+        sx={{
+          minHeight: '100vh',
+          py: { xs: 5, md: 8 },
+          background: `
+            radial-gradient(circle at top left, rgba(124, 58, 237, 0.13), transparent 30%),
+            radial-gradient(circle at bottom right, rgba(250, 204, 21, 0.16), transparent 32%),
+            linear-gradient(180deg, #ffffff 0%, #fbfaff 45%, #f5f3ff 100%)
+          `,
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            width: 360,
+            height: 360,
+            borderRadius: '50%',
+            top: -170,
+            left: -130,
+            background: 'rgba(124, 58, 237, 0.10)',
+            filter: 'blur(8px)',
+          }}
+        />
+
+        <Box
+          sx={{
+            position: 'absolute',
+            width: 310,
+            height: 310,
+            borderRadius: '50%',
+            right: -120,
+            bottom: -140,
+            background: 'rgba(250, 204, 21, 0.16)',
+            filter: 'blur(10px)',
+          }}
+        />
+
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
           {/* Header Section */}
-          <Paper 
-            elevation={3} 
-            sx={{ 
-              p: 1, 
-              mb: 6, 
-              background: 'linear-gradient(135deg, #1E3A8A 0%, #3949ab 100%)',
-              color: 'white',
-              borderRadius: 4,
-              textAlign: 'center'
+          <GlassCard
+            sx={{
+              textAlign: 'center',
+              background:
+                'linear-gradient(135deg, rgba(76,29,149,0.96), rgba(124,58,237,0.92))',
+              color: '#fff',
+              border: '1px solid rgba(255,255,255,0.18)',
+              boxShadow: '0 30px 90px rgba(76, 29, 149, 0.22)',
+
+              '&::before': {
+                background: `linear-gradient(90deg, ${theme.gold}, #ffffff, ${theme.gold})`,
+              },
+
+              '&::after': {
+                content: '""',
+                position: 'absolute',
+                width: 260,
+                height: 260,
+                borderRadius: '50%',
+                right: -110,
+                bottom: -130,
+                background: 'rgba(250, 204, 21, 0.14)',
+              },
             }}
           >
             <Typography
               variant="h2"
               component="h1"
               sx={{
-                fontWeight: 'bold',
-                mb: 2,
-                fontSize: { xs: '2rem', md: '3rem' },
-                fontFamily: 'Poppins'
+                fontWeight: 950,
+                mb: 1.5,
+                fontSize: { xs: '2.2rem', md: '3.6rem' },
+                fontFamily: 'Poppins, Arial, sans-serif',
+                letterSpacing: '-1px',
               }}
             >
               PMUMS
             </Typography>
+
             <Typography
               variant="h5"
               sx={{
                 mb: 3,
-                fontSize: { xs: '1.2rem', md: '1.5rem' },
-                fontWeight: 600,
-                fontFamily: 'Poppins'
+                fontSize: { xs: '1.1rem', md: '1.45rem' },
+                fontWeight: 800,
+                lineHeight: 1.6,
+                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
               }}
             >
               प्राथमिक-माध्यमिक-उच्च-माध्यमिक शिक्षक संघ, मध्यप्रदेश
             </Typography>
+
             <Chip
               label="गैर-लाभकारी • सेवा-आधारित • पूर्णतः स्वैच्छिक संगठन"
               sx={{
-                background: 'rgba(255,255,255,0.2)',
-                color: 'white',
-                fontSize: '1rem',
-                fontWeight: 'bold',
-                px: 3,
+                background: 'rgba(255,255,255,0.16)',
+                color: '#fff',
+                fontSize: { xs: '0.82rem', md: '1rem' },
+                fontWeight: 900,
+                px: { xs: 1, md: 2 },
                 py: 1,
-                fontFamily: 'Poppins'
+                height: 'auto',
+                border: '1px solid rgba(255,255,255,0.24)',
+                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                '& .MuiChip-label': {
+                  whiteSpace: 'normal',
+                  lineHeight: 1.6,
+                },
               }}
             />
-          </Paper>
+          </GlassCard>
 
           {/* About Us Section */}
-          <Paper sx={{ mb: 6, borderRadius: 4, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
-            <Box sx={{ p: 5 }}>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: 'bold',
-                  mb: 4,
-                  color: '#1E3A8A',
-                  textAlign: 'center',
-                  fontFamily: 'Poppins'
-                }}
-              >
-                हमारे बारे में (About Us)
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  lineHeight: 1.8,
-                  mb: 3,
-                  textAlign: 'justify',
-                  fontSize: '1.1rem',
-                  fontFamily: 'Poppins'
-                }}
-              >
-                प्राथमिक-माध्यमिक-उच्च-माध्यमिक शिक्षक संघ, मध्यप्रदेश (PMUMS) एक गैर-लाभकारी, सेवा-आधारित एवं पूर्णतः स्वैच्छिक संगठन है, जिसकी स्थापना मध्यप्रदेश राज्य के शिक्षा विभाग एवं जनजातीय कार्य विभाग में कार्यरत शासकीय शिक्षकों एवं कर्मचारियों के कल्याण, एकता तथा पारस्परिक सहयोग के उद्देश्य से की गई है।
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  lineHeight: 1.8,
-                  textAlign: 'justify',
-                  fontSize: '1.1rem',
-                  fontFamily: 'Poppins'
-                }}
-              >
-                PMUMS का गठन इस मूल भावना के साथ किया गया है कि किसी भी शिक्षक अथवा कर्मचारी की आकस्मिक एवं दुःखद मृत्यु की स्थिति में उसका परिवार स्वयं को अकेला न महसूस करे। संगठन निरंतर यह प्रयास करता है कि ऐसी विषम परिस्थितियों में दिवंगत सदस्य के नामिनी अथवा परिजनों को निःशुल्क, निष्पक्ष, पारदर्शी एवं समयबद्ध सहयोग उपलब्ध कराया जा सके, जिससे उन्हें आर्थिक एवं मानसिक संबल प्राप्त हो सके।
-              </Typography>
-            </Box>
-          </Paper>
+          <GlassCard>
+            <SectionHeading eyebrow="ABOUT PMUMS" title="हमारे बारे में" />
 
-          {/* Our Objectives */}
-          <Paper sx={{ mb: 6, borderRadius: 4, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
-            <Box sx={{ p: 5 }}>
+            <Typography
+              sx={{
+                lineHeight: 1.9,
+                mb: 3,
+                textAlign: 'justify',
+                fontSize: { xs: '1rem', md: '1.08rem' },
+                color: theme.muted,
+                fontWeight: 650,
+                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+              }}
+            >
+              प्राथमिक-माध्यमिक-उच्च-माध्यमिक शिक्षक संघ, मध्यप्रदेश (PMUMS) एक गैर-लाभकारी, सेवा-आधारित एवं पूर्णतः स्वैच्छिक संगठन है, जिसकी स्थापना मध्यप्रदेश राज्य के शिक्षा विभाग एवं जनजातीय कार्य विभाग में कार्यरत शासकीय शिक्षकों एवं कर्मचारियों के कल्याण, एकता तथा पारस्परिक सहयोग के उद्देश्य से की गई है।
+            </Typography>
+
+            <Typography
+              sx={{
+                lineHeight: 1.9,
+                textAlign: 'justify',
+                fontSize: { xs: '1rem', md: '1.08rem' },
+                color: theme.muted,
+                fontWeight: 650,
+                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+              }}
+            >
+              PMUMS का गठन इस मूल भावना के साथ किया गया है कि किसी भी शिक्षक अथवा कर्मचारी की आकस्मिक एवं दुःखद मृत्यु की स्थिति में उसका परिवार स्वयं को अकेला न महसूस करे। संगठन निरंतर यह प्रयास करता है कि ऐसी विषम परिस्थितियों में दिवंगत सदस्य के नामिनी अथवा परिजनों को निःशुल्क, निष्पक्ष, पारदर्शी एवं समयबद्ध सहयोग उपलब्ध कराया जा सके, जिससे उन्हें आर्थिक एवं मानसिक संबल प्राप्त हो सके।
+            </Typography>
+          </GlassCard>
+
+          {/* Objectives */}
+          <GlassCard>
+            <SectionHeading eyebrow="OUR OBJECTIVE" title="हमारा उद्देश्य" />
+
+            <Typography
+              sx={{
+                mb: 2,
+                color: theme.text,
+                fontSize: { xs: '1rem', md: '1.1rem' },
+                fontWeight: 850,
+                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+              }}
+            >
+              PMUMS का प्रमुख उद्देश्य है —
+            </Typography>
+
+            <StyledList items={objectives} />
+
+            <Paper
+              elevation={0}
+              sx={{
+                mt: 3,
+                p: { xs: 2, md: 2.5 },
+                borderRadius: '22px',
+                background: 'linear-gradient(135deg, rgba(255,251,235,0.9), rgba(255,255,255,0.9))',
+                border: '1px solid rgba(250, 204, 21, 0.32)',
+              }}
+            >
               <Typography
-                variant="h4"
                 sx={{
-                  fontWeight: 'bold',
-                  mb: 4,
-                  color: '#1E3A8A',
-                  textAlign: 'center',
-                  fontFamily: 'Poppins'
-                }}
-              >
-                हमारा उद्देश्य
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  mb: 3,
-                  fontSize: '1.1rem',
-                  fontFamily: 'Poppins'
-                }}
-              >
-                PMUMS का प्रमुख उद्देश्य है —
-              </Typography>
-              <List>
-                {objectives.map((objective, index) => (
-                  <ListItem key={index} sx={{ py: 1 }}>
-                    <ListItemIcon>
-                      <CheckCircle sx={{ color: '#FF9933' }} />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={objective}
-                      sx={{
-                        '& .MuiListItemText-primary': {
-                          fontSize: '1rem',
-                          fontFamily: 'Poppins'
-                        }
-                      }}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-              
-              <Typography
-                variant="body1"
-                sx={{
-                  mt: 2,
-                  mb: 2,
-                  fontWeight: 600,
-                  fontSize: '1.1rem',
-                  fontFamily: 'Poppins'
+                  mb: 1.5,
+                  color: theme.dark,
+                  fontWeight: 900,
+                  fontSize: { xs: '1rem', md: '1.08rem' },
+                  fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
                 }}
               >
                 परिजनों को प्रशासनिक मार्गदर्शन देना, जैसे:
               </Typography>
-              <List sx={{ ml: 3 }}>
-                {adminGuidance.map((guidance, index) => (
-                  <ListItem key={index} sx={{ py: 0.5 }}>
-                    <ListItemIcon>
-                      <CheckCircle sx={{ color: '#4caf50', fontSize: '1rem' }} />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={guidance}
-                      sx={{
-                        '& .MuiListItemText-primary': {
-                          fontSize: '0.95rem',
-                          fontFamily: 'Poppins'
-                        }
-                      }}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            </Box>
-          </Paper>
+
+              <StyledList items={adminGuidance} small gold />
+            </Paper>
+          </GlassCard>
 
           {/* Working Method */}
-          <Paper sx={{ mb: 6, borderRadius: 4, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
-            <Box sx={{ p: 5 }}>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: 'bold',
-                  mb: 4,
-                  color: '#1E3A8A',
-                  textAlign: 'center',
-                  fontFamily: 'Poppins'
-                }}
-              >
-                हमारी कार्यप्रणाली
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  lineHeight: 1.8,
-                  mb: 3,
-                  textAlign: 'justify',
-                  fontSize: '1.1rem',
-                  fontFamily: 'Poppins'
-                }}
-              >
-                PMUMS राज्य स्तर से लेकर संभाग, जिला और ब्लॉक स्तर तक संगठित ढांचे के माध्यम से कार्य करता है। प्रत्येक स्तर पर समन्वय बनाकर यह सुनिश्चित किया जाता है कि:
-              </Typography>
-              <List>
-                {workingPrinciples.map((principle, index) => (
-                  <ListItem key={index} sx={{ py: 1 }}>
-                    <ListItemIcon>
-                      <CheckCircle sx={{ color: '#FF9933' }} />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={principle}
-                      sx={{
-                        '& .MuiListItemText-primary': {
-                          fontSize: '1rem',
-                          fontFamily: 'Poppins'
-                        }
-                      }}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-              <Typography
-                variant="body1"
-                sx={{
-                  lineHeight: 1.8,
-                  mt: 3,
-                  textAlign: 'justify',
-                  fontSize: '1.1rem',
-                  fontFamily: 'Poppins'
-                }}
-              >
-                संगठन द्वारा की जाने वाली सभी गतिविधियाँ सेवा-भाव से प्रेरित होती हैं और इनका उद्देश्य केवल शिक्षक-परिवार का कल्याण होता है।
-              </Typography>
-            </Box>
-          </Paper>
+          <GlassCard>
+            <SectionHeading eyebrow="WORKING METHOD" title="हमारी कार्यप्रणाली" />
+
+            <Typography
+              sx={{
+                lineHeight: 1.9,
+                mb: 3,
+                textAlign: 'justify',
+                fontSize: { xs: '1rem', md: '1.08rem' },
+                color: theme.muted,
+                fontWeight: 650,
+                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+              }}
+            >
+              PMUMS राज्य स्तर से लेकर संभाग, जिला और ब्लॉक स्तर तक संगठित ढांचे के माध्यम से कार्य करता है। प्रत्येक स्तर पर समन्वय बनाकर यह सुनिश्चित किया जाता है कि:
+            </Typography>
+
+            <StyledList items={workingPrinciples} />
+
+            <Typography
+              sx={{
+                lineHeight: 1.9,
+                mt: 3,
+                textAlign: 'justify',
+                fontSize: { xs: '1rem', md: '1.08rem' },
+                color: theme.muted,
+                fontWeight: 650,
+                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+              }}
+            >
+              संगठन द्वारा की जाने वाली सभी गतिविधियाँ सेवा-भाव से प्रेरित होती हैं और इनका उद्देश्य केवल शिक्षक-परिवार का कल्याण होता है।
+            </Typography>
+          </GlassCard>
 
           {/* Not Insurance */}
-          <Paper sx={{ mb: 6, borderRadius: 4, boxShadow: '0 10px 30px rgba(0,0,0,0.1)', bgcolor: '#fff3e0' }}>
-            <Box sx={{ p: 5 }}>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: 'bold',
-                  mb: 4,
-                  color: '#e65100',
-                  textAlign: 'center',
-                  fontFamily: 'Poppins'
-                }}
-              >
-                न बीमा, न व्यवसाय
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  lineHeight: 1.8,
-                  mb: 3,
-                  textAlign: 'justify',
-                  fontSize: '1.1rem',
-                  fontFamily: 'Poppins'
-                }}
-              >
-                PMUMS किसी भी प्रकार की बीमा योजना, निवेश योजना या लाभ-आधारित स्कीम नहीं है।
-                यह स्पष्ट रूप से एक मानवीय एवं सहयोगात्मक संगठन है, जिसमें:
-              </Typography>
-              <List>
-                {notInsurance.map((point, index) => (
-                  <ListItem key={index} sx={{ py: 1 }}>
-                    <ListItemIcon>
-                      <CheckCircle sx={{ color: '#e65100' }} />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={point}
-                      sx={{
-                        '& .MuiListItemText-primary': {
-                          fontSize: '1rem',
-                          fontFamily: 'Poppins'
-                        }
-                      }}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            </Box>
-          </Paper>
+          <GlassCard highlight>
+            <SectionHeading eyebrow="IMPORTANT CLARIFICATION" title="न बीमा, न व्यवसाय" />
+
+            <Typography
+              sx={{
+                lineHeight: 1.9,
+                mb: 3,
+                textAlign: 'justify',
+                fontSize: { xs: '1rem', md: '1.08rem' },
+                color: theme.muted,
+                fontWeight: 650,
+                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+              }}
+            >
+              PMUMS किसी भी प्रकार की बीमा योजना, निवेश योजना या लाभ-आधारित स्कीम नहीं है।
+              यह स्पष्ट रूप से एक मानवीय एवं सहयोगात्मक संगठन है, जिसमें:
+            </Typography>
+
+            <StyledList items={notInsurance} gold />
+          </GlassCard>
 
           {/* Core Values */}
-          <Paper sx={{ mb: 6, borderRadius: 4, boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
-            <Box sx={{ p: 5 }}>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: 'bold',
-                  mb: 4,
-                  color: '#1E3A8A',
-                  textAlign: 'center',
-                  fontFamily: 'Poppins'
-                }}
-              >
-                हमारे मूल्य (Our Core Values)
-              </Typography>
-              <List>
-                {coreValues.map((value, index) => (
-                  <ListItem key={index} sx={{ py: 2 }}>
-                    <ListItemIcon>
-                      <Box sx={{ color: '#FF9933' }}>
-                        {value.icon}
-                      </Box>
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={value.title}
-                      secondary={value.desc}
+          <GlassCard>
+            <SectionHeading eyebrow="OUR CORE VALUES" title="हमारे मूल्य" />
+
+            <Grid container spacing={3}>
+              {coreValues.map((value, index) => (
+                <Grid item xs={12} sm={6} md={index === 4 ? 12 : 6} key={index}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      height: '100%',
+                      p: { xs: 2.2, md: 2.6 },
+                      borderRadius: '22px',
+                      background:
+                        index % 2 === 0
+                          ? 'linear-gradient(135deg, rgba(245,243,255,0.92), rgba(255,255,255,0.9))'
+                          : 'linear-gradient(135deg, rgba(255,251,235,0.92), rgba(255,255,255,0.9))',
+                      border:
+                        index % 2 === 0
+                          ? '1px solid rgba(124, 58, 237, 0.14)'
+                          : '1px solid rgba(250, 204, 21, 0.30)',
+                      display: 'flex',
+                      gap: 2,
+                      alignItems: 'flex-start',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 18px 45px rgba(76, 29, 149, 0.12)',
+                      },
+                    }}
+                  >
+                    <Box
                       sx={{
-                        '& .MuiListItemText-primary': {
-                          fontSize: '1.2rem',
-                          fontWeight: 600,
-                          fontFamily: 'Poppins'
-                        },
-                        '& .MuiListItemText-secondary': {
-                          fontSize: '1rem',
-                          fontFamily: 'Poppins'
-                        }
+                        minWidth: 48,
+                        width: 48,
+                        height: 48,
+                        borderRadius: '16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#fff',
+                        background: `linear-gradient(135deg, ${theme.main}, ${theme.light})`,
+                        boxShadow: '0 12px 26px rgba(124, 58, 237, 0.22)',
                       }}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            </Box>
-          </Paper>
+                    >
+                      {value.icon}
+                    </Box>
+
+                    <Box>
+                      <Typography
+                        sx={{
+                          color: theme.dark,
+                          fontWeight: 900,
+                          fontSize: '1.08rem',
+                          mb: 0.5,
+                          fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                        }}
+                      >
+                        {value.title}
+                      </Typography>
+
+                      <Typography
+                        sx={{
+                          color: theme.muted,
+                          fontWeight: 650,
+                          lineHeight: 1.7,
+                          fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                        }}
+                      >
+                        {value.desc}
+                      </Typography>
+                    </Box>
+                  </Paper>
+                </Grid>
+              ))}
+            </Grid>
+          </GlassCard>
 
           {/* Our Belief */}
-          <Paper sx={{ mb: 6, borderRadius: 4, boxShadow: '0 10px 30px rgba(0,0,0,0.1)', bgcolor: '#e8f5e8' }}>
-            <Box sx={{ p: 2, textAlign: 'center' }}>
-              <Typography
-                variant="h4"
-                sx={{
-                  fontWeight: 'bold',
-                  mb: 4,
-                  color: '#2e7d32',
-                  fontFamily: 'Poppins'
-                }}
-              >
-                हमारा विश्वास
-              </Typography>
-              <Typography
-                variant="h5"
-                sx={{
-                  fontWeight: 600,
-                  mb: 3,
-                  color: '#1E3A8A',
-                  fontFamily: 'Poppins'
-                }}
-              >
-                सेवा, सहयोग और शिक्षक-कल्याण — यही PMUMS की पहचान है।
-              </Typography>
-              <Typography
-                variant="body1"
-                sx={{
-                  lineHeight: 1.8,
-                  textAlign: 'justify',
-                  fontSize: '1.1rem',
-                  fontFamily: 'Poppins'
-                }}
-              >
-                PMUMS का विश्वास है कि जब शिक्षक एक-दूसरे के साथ खड़े होते हैं, तब कोई भी परिवार असहाय नहीं रहता। संगठन निरंतर इस दिशा में कार्यरत है कि शिक्षक समाज सुरक्षित, संगठित और समर्थ बने।
-              </Typography>
+          <GlassCard
+            sx={{
+              textAlign: 'center',
+              background:
+                'linear-gradient(135deg, rgba(76,29,149,0.96), rgba(124,58,237,0.92))',
+              color: '#fff',
+              border: '1px solid rgba(255,255,255,0.18)',
+
+              '&::before': {
+                background: `linear-gradient(90deg, ${theme.gold}, #ffffff, ${theme.gold})`,
+              },
+            }}
+          >
+            <Box
+              sx={{
+                width: 68,
+                height: 68,
+                borderRadius: '22px',
+                mx: 'auto',
+                mb: 2.5,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'rgba(255,255,255,0.16)',
+                border: '1px solid rgba(255,255,255,0.25)',
+              }}
+            >
+              <HandshakeRounded sx={{ fontSize: 38, color: theme.gold }} />
             </Box>
-          </Paper>
+
+            <Typography
+              variant="h4"
+              sx={{
+                fontWeight: 950,
+                mb: 2,
+                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                fontSize: { xs: '1.6rem', md: '2.2rem' },
+              }}
+            >
+              हमारा विश्वास
+            </Typography>
+
+            <Typography
+              variant="h5"
+              sx={{
+                fontWeight: 850,
+                mb: 3,
+                color: theme.gold,
+                fontSize: { xs: '1.05rem', md: '1.35rem' },
+                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+              }}
+            >
+              सेवा, सहयोग और शिक्षक-कल्याण — यही PMUMS की पहचान है।
+            </Typography>
+
+            <Typography
+              sx={{
+                lineHeight: 1.9,
+                textAlign: 'center',
+                maxWidth: 900,
+                mx: 'auto',
+                fontSize: { xs: '1rem', md: '1.08rem' },
+                fontWeight: 650,
+                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+              }}
+            >
+              PMUMS का विश्वास है कि जब शिक्षक एक-दूसरे के साथ खड़े होते हैं, तब कोई भी परिवार असहाय नहीं रहता। संगठन निरंतर इस दिशा में कार्यरत है कि शिक्षक समाज सुरक्षित, संगठित और समर्थ बने।
+            </Typography>
+          </GlassCard>
         </Container>
       </Box>
-        <Box sx={{ py: 8, background: '#FFF8F0' }}>
-               <SelfDonation />
-            </Box>
+
+      <Box
+        sx={{
+          background: `
+            radial-gradient(circle at top right, rgba(124, 58, 237, 0.10), transparent 32%),
+            linear-gradient(180deg, #ffffff 0%, #fbfaff 45%, #f5f3ff 100%)
+          `,
+        }}
+      >
+        <SelfDonation />
+      </Box>
     </Layout>
   );
 };

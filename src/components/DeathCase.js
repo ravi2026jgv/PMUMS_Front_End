@@ -15,708 +15,830 @@ import {
   DialogActions,
   Chip,
   Avatar,
-  Skeleton
+  Skeleton,
+  Stack,
+  Paper,
+  Divider
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import ReceiptUpload from './ReceiptUpload';
 import api, { publicApi } from '../services/api';
 
+const theme = {
+  dark: '#3b0764',
+  main: '#6d28d9',
+  light: '#a855f7',
+  gold: '#facc15',
+  soft: '#f5f3ff',
+  soft2: '#faf5ff',
+  text: '#4c1d95',
+  muted: '#5b5b6b'
+};
+
+const SectionTitle = ({ title, subtitle }) => (
+  <Box textAlign="center" mb={{ xs: 3.5, md: 5 }}>
+    <Typography
+      variant="overline"
+      sx={{
+        color: theme.main,
+        fontWeight: 900,
+        letterSpacing: '1.5px',
+        fontSize: '0.82rem'
+      }}
+    >
+      NOMINEE SUPPORT
+    </Typography>
+
+    <Typography
+      variant="h4"
+      sx={{
+        mt: 0.6,
+        fontWeight: 950,
+        color: theme.dark,
+        fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+        fontSize: { xs: '1.75rem', md: '2.45rem' },
+        lineHeight: 1.25
+      }}
+    >
+      {title}
+    </Typography>
+
+    <Box
+      sx={{
+        width: 95,
+        height: 5,
+        borderRadius: 99,
+        mx: 'auto',
+        mt: 2,
+        mb: subtitle ? 2.5 : 0,
+        background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`
+      }}
+    />
+
+    {subtitle && (
+      <Box
+        sx={{
+          color: theme.muted,
+          lineHeight: 1.9,
+          fontWeight: 700,
+          fontSize: { xs: '0.98rem', md: '1.08rem' },
+          maxWidth: 900,
+          mx: 'auto',
+          fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+          '& p': {
+            mt: 0,
+            mb: 1.5
+          },
+          '& b, & strong': {
+            color: theme.dark,
+            fontWeight: 900
+          },
+          '& a': {
+            color: theme.main,
+            fontWeight: 800,
+            textDecoration: 'none',
+            borderBottom: '1px solid rgba(109, 40, 217, 0.35)'
+          }
+        }}
+        dangerouslySetInnerHTML={{ __html: subtitle || '' }}
+      />
+    )}
+  </Box>
+);
+
+const InfoBox = ({ children, sx = {} }) => (
+  <Paper
+    elevation={0}
+    sx={{
+      borderRadius: '24px',
+      p: { xs: 2.2, md: 2.8 },
+      background: 'rgba(255,255,255,0.86)',
+      border: '1px solid rgba(124, 58, 237, 0.14)',
+      boxShadow: '0 14px 38px rgba(76, 29, 149, 0.10)',
+      ...sx
+    }}
+  >
+    {children}
+  </Paper>
+);
+
+const ActionButton = ({ children, sx = {}, ...props }) => (
+  <Button
+    variant="contained"
+    {...props}
+    sx={{
+      borderRadius: '14px',
+      px: 3.2,
+      py: 1.1,
+      color: '#fff',
+      fontWeight: 900,
+      textTransform: 'none',
+      background: `linear-gradient(135deg, ${theme.main}, ${theme.light})`,
+      boxShadow: '0 12px 28px rgba(109, 40, 217, 0.26)',
+      transition: 'all 0.3s ease',
+      '&:hover': {
+        background: `linear-gradient(135deg, ${theme.dark}, ${theme.main})`,
+        transform: 'translateY(-2px)',
+        boxShadow: '0 16px 36px rgba(109, 40, 217, 0.36)'
+      },
+      ...sx
+    }}
+  >
+    {children}
+  </Button>
+);
+
+const QrCard = ({ qrCode, label, onDownload }) => (
+  <Paper
+    elevation={0}
+    sx={{
+      height: '100%',
+      borderRadius: '28px',
+      p: 2.2,
+      textAlign: 'center',
+      background: 'linear-gradient(180deg, #ffffff 0%, #f5f3ff 100%)',
+      border: '1px solid rgba(124, 58, 237, 0.16)',
+      boxShadow: '0 18px 44px rgba(76, 29, 149, 0.12)',
+      position: 'relative',
+      overflow: 'hidden',
+      transition: 'all 0.35s ease',
+      '&:hover': {
+        transform: 'translateY(-5px)',
+        boxShadow: '0 24px 62px rgba(76, 29, 149, 0.18)'
+      },
+      '&::before': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: 6,
+        background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`
+      }
+    }}
+  >
+    <Box
+      sx={{
+        mt: 1,
+        mb: 1.8,
+        p: 1.2,
+        borderRadius: '22px',
+        background: '#fff',
+        border: '1px solid rgba(124, 58, 237, 0.14)'
+      }}
+    >
+      {qrCode ? (
+        <Box
+          component="img"
+          src={qrCode}
+          alt={label}
+          sx={{
+            width: '100%',
+            height: 230,
+            objectFit: 'contain',
+            borderRadius: '18px'
+          }}
+        />
+      ) : (
+        <Box
+          sx={{
+            height: 230,
+            borderRadius: '18px',
+            background: '#f5f3ff',
+            border: '1px dashed rgba(124, 58, 237, 0.35)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          <Typography color={theme.text} fontWeight={900}>
+            QR Not Available
+          </Typography>
+        </Box>
+      )}
+    </Box>
+
+    <Chip
+      label={label}
+      sx={{
+        mb: 1.8,
+        maxWidth: '100%',
+        color: theme.dark,
+        fontWeight: 900,
+        background: '#fffbeb',
+        border: '1px solid rgba(250, 204, 21, 0.38)',
+        fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif'
+      }}
+    />
+
+    <ActionButton fullWidth size="small" onClick={onDownload} sx={{ py: 0.85 }}>
+      Download QR
+    </ActionButton>
+  </Paper>
+);
+
+const BankDetailsCard = ({ title, account, fallbackName, onCopy }) => (
+  <Paper
+    elevation={0}
+    sx={{
+      height: '100%',
+      minHeight: 270,
+      borderRadius: '28px',
+      p: 2.5,
+      background: 'linear-gradient(180deg, #ffffff 0%, #faf5ff 100%)',
+      border: '1px solid rgba(124, 58, 237, 0.16)',
+      boxShadow: '0 18px 44px rgba(76, 29, 149, 0.10)',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      position: 'relative',
+      overflow: 'hidden',
+      transition: 'all 0.35s ease',
+      '&:hover': {
+        transform: 'translateY(-5px)',
+        boxShadow: '0 24px 62px rgba(76, 29, 149, 0.16)'
+      },
+      '&::before': {
+        content: '""',
+        position: 'absolute',
+        left: 0,
+        top: 0,
+        bottom: 0,
+        width: 6,
+        background: `linear-gradient(180deg, ${theme.main}, ${theme.light}, ${theme.gold})`
+      }
+    }}
+  >
+    <Box>
+      <Typography
+        sx={{
+          fontWeight: 950,
+          color: theme.dark,
+          mb: 2,
+          fontSize: '1rem',
+          textAlign: 'center'
+        }}
+      >
+        {title}
+      </Typography>
+
+      {[
+        ['HOLDER', account?.accountHolderName || fallbackName],
+        ['BANK', account?.bankName || 'BANK NAME'],
+        ['ACC', account?.accountNumber || 'ACCOUNT NUMBER'],
+        ['IFSC', account?.ifscCode || 'IFSC CODE']
+      ].map(([label, value]) => (
+        <Box
+          key={label}
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            gap: 2,
+            py: 0.9,
+            borderBottom: '1px solid rgba(124, 58, 237, 0.10)'
+          }}
+        >
+          <Typography sx={{ fontSize: '0.82rem', fontWeight: 950, color: theme.text }}>
+            {label}
+          </Typography>
+
+          <Typography
+            sx={{
+              fontSize: '0.84rem',
+              fontWeight: 700,
+              color: '#4b5563',
+              textAlign: 'right',
+              wordBreak: 'break-word'
+            }}
+          >
+            {value}
+          </Typography>
+        </Box>
+      ))}
+    </Box>
+
+    <ActionButton size="small" onClick={onCopy} sx={{ mt: 2, py: 0.85 }}>
+      Copy Details
+    </ActionButton>
+  </Paper>
+);
+
 const DeathCase = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
-
-  // Download QR code using canvas approach (bypasses CORS properly)
-const getDownloadUrl = (imageUrl) => {
-  if (!imageUrl) return '';
-
-  if (
-    imageUrl.startsWith('http://') ||
-    imageUrl.startsWith('https://') ||
-    imageUrl.startsWith('blob:') ||
-    imageUrl.startsWith('data:')
-  ) {
-    return imageUrl;
-  }
-
-  const base = api.defaults?.baseURL || window.location.origin;
-
-  if (imageUrl.startsWith('/')) {
-    return `${base}${imageUrl}`;
-  }
-
-  return `${base}/${imageUrl}`;
-};
-
-const downloadQRCode = (imageUrl, fileName) => {
-  if (!imageUrl) {
-    showPayErrorDialog('QR Code not available.');
-    return;
-  }
-
-  try {
-    const finalUrl = getDownloadUrl(imageUrl);
-
-    const link = document.createElement('a');
-    link.href = finalUrl;
-    link.download = fileName || 'qr-code.png';
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  } catch (error) {
-    console.error('Download failed:', error);
-    showPayErrorDialog(error?.message || 'QR download failed.');
-  }
-};
-const isMobileDevice = () => {
-  return /Android|iPhone|iPad|iPod|Windows Phone/i.test(navigator.userAgent);
-};
-
-const handleDirectUpiPay = (upiLink, nomineeLabel = 'UPI') => {
-  if (!upiLink) {
-    showPayErrorDialog('UPI payment link not available.');
-    return;
-  }
-
-  if (!isMobileDevice()) {
-    showPayErrorDialog('UPI payment app can be opened only on mobile devices.');
-    return;
-  }
-
-  try {
-    setPayError('');
-    setPayLoading(nomineeLabel);
-const trimmedUpiId = (upiLink || '').trim();
-
-const deeplink = trimmedUpiId.toLowerCase().startsWith('upi://pay')
-  ? trimmedUpiId
-  : `upi://pay?pa=${trimmedUpiId}&cu=INR`;
-
-setTimeout(() => {
-  window.location.href = deeplink;
-}, 100);
-
-  } catch (err) {
-    console.error('UPI payment open failed:', err);
-    const exactMessage = err?.message || 'Unable to open UPI app.';
-    setPayError(exactMessage);
-    showPayErrorDialog(exactMessage);
-  } finally {
-    setPayLoading('');
-  }
-};
-
-
-const [payDialogOpen, setPayDialogOpen] = useState(false);
-const [payDialogMessage, setPayDialogMessage] = useState('');
+  const [payDialogOpen, setPayDialogOpen] = useState(false);
+  const [payDialogMessage, setPayDialogMessage] = useState('');
   const [receiptUploadOpen, setReceiptUploadOpen] = useState(false);
   const [loginAlertOpen, setLoginAlertOpen] = useState(false);
   const [deathCases, setDeathCases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedCase, setSelectedCase] = useState(null);
-const [payLoading, setPayLoading] = useState('');
-const [payError, setPayError] = useState('');
+  const [payLoading, setPayLoading] = useState('');
+  const [payError, setPayError] = useState('');
+  const [homeNoticeHtml, setHomeNoticeHtml] = useState('');
+
   const abortControllerRef = useRef(null);
-const [homeNoticeHtml, setHomeNoticeHtml] = useState('');
+
   const showPayErrorDialog = (message) => {
-  setPayDialogMessage(message || 'Unable to open UPI app.');
-  setPayDialogOpen(true);
-};
-useEffect(() => {
-  const loadHomeNotice = async () => {
+    setPayDialogMessage(message || 'Unable to open UPI app.');
+    setPayDialogOpen(true);
+  };
+
+  const getDownloadUrl = (imageUrl) => {
+    if (!imageUrl) return '';
+
+    if (
+      imageUrl.startsWith('http://') ||
+      imageUrl.startsWith('https://') ||
+      imageUrl.startsWith('blob:') ||
+      imageUrl.startsWith('data:')
+    ) {
+      return imageUrl;
+    }
+
+    const base = api.defaults?.baseURL || window.location.origin;
+
+    if (imageUrl.startsWith('/')) {
+      return `${base}${imageUrl}`;
+    }
+
+    return `${base}/${imageUrl}`;
+  };
+
+  const downloadQRCode = (imageUrl, fileName) => {
+    if (!imageUrl) {
+      showPayErrorDialog('QR Code not available.');
+      return;
+    }
+
     try {
-      const response = await publicApi.getHomeDisplayContent();
-      setHomeNoticeHtml(response?.data?.homeNoticeHtml || '');
+      const finalUrl = getDownloadUrl(imageUrl);
+
+      const link = document.createElement('a');
+      link.href = finalUrl;
+      link.download = fileName || 'qr-code.png';
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (error) {
-      console.error('Failed to load home notice content:', error);
+      console.error('Download failed:', error);
+      showPayErrorDialog(error?.message || 'QR download failed.');
     }
   };
 
-  loadHomeNotice();
-}, []);
-useEffect(() => {
-  const fetchAssignedOnly = async () => {
-    if (abortControllerRef.current) abortControllerRef.current.abort();
-    abortControllerRef.current = new AbortController();
+  const handleUploadClick = async () => {
+    if (!isAuthenticated) {
+      setLoginAlertOpen(true);
+      return;
+    }
 
     try {
-      setLoading(true);
-      setError('');
-
-      // ✅ If not logged in -> don't show this section
-      if (!isAuthenticated) {
-        setDeathCases([]);
-        return;
-      }
-
-      // ✅ Logged-in -> show ONLY assigned pool case
-      const res = await api.get('/pools/my', {
-        signal: abortControllerRef.current.signal
-      });
-
-      const assigned = res.data;
-      setDeathCases(assigned ? [assigned] : []);
-    } catch (err) {
-      if (err.name !== 'AbortError') {
-        console.error(err);
-        setError(err.response?.data?.message || 'डेटा लोड करने में त्रुटि हुई है');
-      }
-    } finally {
-      setLoading(false);
+      const res = await api.get('/pools/my');
+      setSelectedCase(res.data);
+      setReceiptUploadOpen(true);
+    } catch (e) {
+      console.error(e);
+      alert(e.response?.data?.message || 'Assigned pool नहीं मिला।');
     }
   };
 
-  fetchAssignedOnly();
-  return () => abortControllerRef.current?.abort();
-}, [isAuthenticated]);
-
-const handleUploadClick = async () => {
-  if (!isAuthenticated) {
-    setLoginAlertOpen(true);
-    return;
-  }
-
-  try {
-    // Always use assigned pool (backend rule)
-    const res = await api.get('/pools/my');
-    setSelectedCase(res.data);
-    setReceiptUploadOpen(true);
-  } catch (e) {
-    console.error(e);
-    alert(e.response?.data?.message || 'Assigned pool नहीं मिला।');
-  }
-};
   const formatDate = (date) => {
     if (!date) return 'N/A';
+
     const d = new Date(date);
     const day = d.getDate().toString().padStart(2, '0');
     const month = (d.getMonth() + 1).toString().padStart(2, '0');
     const year = d.getFullYear();
+
     return `${day}/${month}/${year}`;
   };
-if (!isAuthenticated) {
-  return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box textAlign="center" mb={4}>
-        <Typography variant="h4" fontWeight="bold" color="#1E3A8A">
-         नोमिनी सहयोग हेतु अपील
-        </Typography>
-        <Typography color="#666">
-          सहयोग देखने और भुगतान प्रमाण अपलोड करने के लिए कृपया लॉगिन करें।
-        </Typography>
-      </Box>
 
-      <Box textAlign="center" mt={3}>
-        <Button variant="contained" onClick={() => navigate('/login')}>
-          लॉगिन करें
-        </Button>
-      </Box>
-    </Container>
-  );
-}
-  return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box textAlign="center" mb={4}>
-        <Typography variant="h4" fontWeight="bold" color="#1E3A8A">
-         नोमिनी सहयोग हेतु अपील
-        </Typography>
-        {/* <Typography color="#666">
-सभी सम्मानित सदस्यों से निवेदन है कि
-दिवंगत सदस्य के परिवार (नोमिनी) की आर्थिक सहायता हेतु
-₹100 का अनिवार्य सहयोग निर्धारित किया गया है।
-        </Typography> */}
+  const copyBankDetails = (title, account, fallbackName) => {
+    const bankDetails = `${title}
+HOLDER: ${account?.accountHolderName || fallbackName}
+BANK: ${account?.bankName || 'BANK NAME'}
+ACC: ${account?.accountNumber || 'ACCOUNT NUMBER'}
+IFSC: ${account?.ifscCode || 'IFSC CODE'}`;
+
+    navigator.clipboard.writeText(bankDetails).then(() => {
+      alert('Bank details copied!');
+    }).catch(() => {
+      alert('Failed to copy');
+    });
+  };
+
+  useEffect(() => {
+    const loadHomeNotice = async () => {
+      try {
+        const response = await publicApi.getHomeDisplayContent();
+        setHomeNoticeHtml(response?.data?.homeNoticeHtml || '');
+      } catch (error) {
+        console.error('Failed to load home notice content:', error);
+      }
+    };
+
+    loadHomeNotice();
+  }, []);
+
+  useEffect(() => {
+    const fetchAssignedOnly = async () => {
+      if (abortControllerRef.current) abortControllerRef.current.abort();
+      abortControllerRef.current = new AbortController();
+
+      try {
+        setLoading(true);
+        setError('');
+
+        if (!isAuthenticated) {
+          setDeathCases([]);
+          return;
+        }
+
+        const res = await api.get('/pools/my', {
+          signal: abortControllerRef.current.signal
+        });
+
+        const assigned = res.data;
+        setDeathCases(assigned ? [assigned] : []);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          console.error(err);
+          setError(err.response?.data?.message || 'डेटा लोड करने में त्रुटि हुई है');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAssignedOnly();
+    return () => abortControllerRef.current?.abort();
+  }, [isAuthenticated]);
+
+  if (!isAuthenticated) {
+    return (
       <Box
-  sx={{
-    color: '#666',
-    lineHeight: 1.8,
-    fontWeight: 'bold',
-    fontSize: '1.1rem',
-    '& a': {
-      color: '#1976d2',
-      textDecoration: 'underline',
-    },
-  }}
-  dangerouslySetInnerHTML={{
-    __html: homeNoticeHtml || '',
-  }}
-/>
+        sx={{
+          py: { xs: 6, md: 8 },
+          background: `
+            radial-gradient(circle at top left, rgba(124, 58, 237, 0.12), transparent 32%),
+            radial-gradient(circle at bottom right, rgba(250, 204, 21, 0.13), transparent 34%),
+            linear-gradient(180deg, #ffffff 0%, #fbfaff 45%, #f5f3ff 100%)
+          `
+        }}
+      >
+        <Container maxWidth="lg">
+          <InfoBox sx={{ textAlign: 'center' }}>
+            <SectionTitle
+              title="नोमिनी सहयोग हेतु अपील"
+              subtitle="सहयोग देखने और भुगतान प्रमाण अपलोड करने के लिए कृपया लॉगिन करें।"
+            />
+
+            <ActionButton onClick={() => navigate('/login')}>
+              लॉगिन करें
+            </ActionButton>
+          </InfoBox>
+        </Container>
       </Box>
+    );
+  }
 
-      {error && <Alert severity="error">{error}</Alert>}
-{payError && <Alert severity="warning" sx={{ mt: 2 }}>{payError}</Alert>}
-      {loading && (
-        <Grid container spacing={3}>
-          {[1,2,3,4,5,6].map(i => (
-            <Grid item xs={12} md={6} key={i}>
-              <Card>
-                <Skeleton height={300} />
-                <CardContent>
-                  <Skeleton width="80%" />
-                  <Skeleton width="60%" />
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      )}
+  return (
+    <Box
+      sx={{
+        py: { xs: 6, md: 9 },
+        background: `
+          radial-gradient(circle at top left, rgba(124, 58, 237, 0.12), transparent 30%),
+          radial-gradient(circle at bottom right, rgba(250, 204, 21, 0.15), transparent 34%),
+          linear-gradient(180deg, #ffffff 0%, #fbfaff 42%, #f5f3ff 100%)
+        `,
+        position: 'relative',
+        overflow: 'hidden'
+      }}
+    >
+     
 
-      {!loading && deathCases.length > 0 && (
-        <Grid container spacing={3}>
-          {deathCases.map((dc, i) => (
-            <Grid item xs={12} md={6} key={dc.id || i}>
-              <Card sx={{ borderRadius: 3 }}>
-                <CardContent>
+      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+        <SectionTitle title="नोमिनी सहयोग हेतु अपील" subtitle={homeNoticeHtml} />
 
-                  <Box display="flex" gap={2} mb={2} sx={{justifyContent:'center'}}>
-                    {dc.userImage ? (
-                      <CardMedia
-                        component="img"
-                        image={dc.userImage}
-                        sx={{ width: 80, height: 80, borderRadius: '50%' }}
+        {error && (
+          <Alert severity="error" sx={{ mb: 3, borderRadius: 3 }}>
+            {error}
+          </Alert>
+        )}
+
+        {payError && (
+          <Alert severity="warning" sx={{ mb: 3, borderRadius: 3 }}>
+            {payError}
+          </Alert>
+        )}
+
+        {loading && (
+          <Grid container spacing={3}>
+            {[1, 2, 3, 4].map((i) => (
+              <Grid item xs={12} md={6} key={i}>
+                <Card sx={{ borderRadius: 5, overflow: 'hidden' }}>
+                  <Skeleton variant="rectangular" height={280} />
+                  <CardContent>
+                    <Skeleton width="80%" />
+                    <Skeleton width="60%" />
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        )}
+
+        {!loading && deathCases.length > 0 && (
+          <Grid container spacing={4} justifyContent="center">
+            {deathCases.map((dc, i) => (
+              <Grid item xs={12} key={dc.id || i}>
+                <Card
+                  sx={{
+                    borderRadius: { xs: '28px', md: '38px' },
+                    background: 'rgba(255,255,255,0.88)',
+                    backdropFilter: 'blur(16px)',
+                    border: '1px solid rgba(124, 58, 237, 0.16)',
+                    boxShadow: '0 28px 80px rgba(76, 29, 149, 0.14)',
+                    overflow: 'hidden',
+                    position: 'relative',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: 7,
+                      background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`
+                    }
+                  }}
+                >
+                  <CardContent sx={{ p: { xs: 2.4, md: 4.5 } }}>
+                    <Stack
+                      direction={{ xs: 'column', md: 'row' }}
+                      spacing={3}
+                      alignItems="center"
+                      justifyContent="space-between"
+                      sx={{
+                        mb: 4,
+                        p: { xs: 2, md: 2.5 },
+                        borderRadius: '26px',
+                        background: 'linear-gradient(135deg, rgba(245,243,255,0.95), rgba(255,255,255,0.92))',
+                        border: '1px solid rgba(124, 58, 237, 0.12)'
+                      }}
+                    >
+                      <Stack
+                        direction={{ xs: 'column', sm: 'row' }}
+                        spacing={2}
+                        alignItems="center"
+                        textAlign={{ xs: 'center', sm: 'left' }}
+                      >
+                        {dc.userImage ? (
+                          <CardMedia
+                            component="img"
+                            image={dc.userImage}
+                            sx={{
+                              width: 96,
+                              height: 96,
+                              borderRadius: '50%',
+                              border: '4px solid #fff',
+                              boxShadow: '0 12px 30px rgba(76, 29, 149, 0.20)'
+                            }}
+                          />
+                        ) : (
+                          <Avatar
+                            sx={{
+                              width: 96,
+                              height: 96,
+                              background: `linear-gradient(135deg, ${theme.main}, ${theme.light})`,
+                              fontWeight: 950,
+                              fontSize: '1.6rem',
+                              boxShadow: '0 12px 30px rgba(76, 29, 149, 0.20)'
+                            }}
+                          >
+                            {dc.deceasedName?.charAt(0) || 'श्री'}
+                          </Avatar>
+                        )}
+
+                        <Box>
+                          <Typography
+                            sx={{
+                              fontWeight: 950,
+                              color: theme.dark,
+                              fontSize: { xs: '1.28rem', md: '1.58rem' },
+                              fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif'
+                            }}
+                          >
+                            {dc.deceasedName}
+                          </Typography>
+
+                          <Typography sx={{ color: theme.muted, fontWeight: 800, mt: 0.5 }}>
+                            पंजीयन क्रमांक : {dc.employeeCode}
+                          </Typography>
+
+                          <Typography sx={{ color: theme.muted, fontWeight: 800 }}>
+                            मृत्यु दिनांक : {formatDate(dc.caseDate)}
+                          </Typography>
+                        </Box>
+                      </Stack>
+
+                      <Chip
+                        label="Assigned Support Case"
+                        sx={{
+                          color: theme.dark,
+                          fontWeight: 900,
+                          background: '#fffbeb',
+                          border: '1px solid rgba(250, 204, 21, 0.35)'
+                        }}
                       />
-                    ) : (
-                      <Avatar sx={{ width: 80, height: 80 }}>
-                        {dc.deceasedName?.charAt(0) || 'श्री'}
-                      </Avatar>
+                    </Stack>
+
+                    {dc.description && (
+                      <InfoBox sx={{ mb: 4 }}>
+                        <Typography
+                          sx={{
+                            color: theme.muted,
+                            lineHeight: 1.9,
+                            fontWeight: 650,
+                            fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif'
+                          }}
+                        >
+                          {dc.description}
+                        </Typography>
+                      </InfoBox>
                     )}
 
-                    <Box sx={{justifyContent:'center'}}>
-                      <Typography fontWeight="bold">
-                      {dc.deceasedName}
-                      </Typography>
-                      <Typography variant="body2">
-                        पंजीयन क्रमांक : {dc.employeeCode}
-                      </Typography>
-                      <Typography variant="body2">
-                        मृत्यु दिनांक: {formatDate(dc.caseDate)}
-                      </Typography>
-                    </Box>
-                  </Box>
-
-                  {dc.description && (
-                    <Typography variant="body2" color="text.secondary">
-                      {dc.description}
-                    </Typography>
-                  )}
-
-                  {/* Death Certificate Section */}
-                  {dc.certificate1 && (
-                    <Box sx={{ mb: 2, justifyContent:'center'}}>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, textAlign: 'center',fontSize: '1rem'}}>
-                        DEATH CERTIFICATE
-                      </Typography>
-                      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                        <img
-                          src={dc.certificate1}
-                          alt="Death Certificate"
-                          style={{
-                            maxWidth: '200px',
-                            maxHeight: '300px',
-                            objectFit: 'contain',
-                            borderRadius: '8px',
-                            border: '2px solid #ddd'
+                    {dc.certificate1 && (
+                      <Box sx={{ my: 4 }}>
+                        <Typography
+                          sx={{
+                            fontWeight: 950,
+                            mb: 2.5,
+                            textAlign: 'center',
+                            fontSize: { xs: '1.05rem', md: '1.18rem' },
+                            color: theme.dark,
+                            letterSpacing: '0.6px'
                           }}
-                        />
+                        >
+                          DEATH CERTIFICATE
+                        </Typography>
+
+                        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                          <Box
+                            component="img"
+                            src={dc.certificate1}
+                            alt="Death Certificate"
+                            sx={{
+                              maxWidth: { xs: '100%', sm: 270 },
+                              maxHeight: 350,
+                              objectFit: 'contain',
+                              borderRadius: '22px',
+                              border: '1px solid rgba(124, 58, 237, 0.18)',
+                              boxShadow: '0 16px 42px rgba(76, 29, 149, 0.16)',
+                              background: '#fff',
+                              p: 1.2
+                            }}
+                          />
+                        </Box>
                       </Box>
-                    </Box>
-                  )}
+                    )}
 
-                  {/* Payment Details */}
-                  <Box mt={2}>
-                    <Typography fontWeight="bold" textAlign="center" mb={2} sx={{ fontSize: '1.1rem'}}>
-                      PAYMENT DETAILS
-                    </Typography>
+                    <Divider sx={{ my: 4, borderColor: 'rgba(124, 58, 237, 0.12)' }} />
 
-                    {/* QR Codes Row */}
-                    <Box sx={{ mb: 4, display: 'flex', justifyContent: 'center' }}>
-                      <Grid container spacing={{ xs: 2, sm: 4, md: 10 }} sx={{ px: { xs: 1, sm: 4, md: 12 }, justifyContent: 'center' }}>
-                        {/* QR Code 1 */}
-                        <Grid item xs={12} sm={6} sx={{ display: 'flex', justifyContent: 'center' }}>
-                          <Box sx={{ 
-                            bgcolor: '#ffcc80', 
-                            p: 2.5, 
-                            borderRadius: 4, 
-                            textAlign: 'center',
-                            minHeight: '300px',
-                            width: { xs: '250px', sm: '220px' },
-                            maxWidth: '100%',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'space-between'
-                          }}>
-                            <Box sx={{display: 'grid', gap: 1, justifyContent: 'center'}}>
-                              {dc.nominee1QrCode ? (
-                                <img
-                                  src={dc.nominee1QrCode}
-                                  alt="QR Code 1"
-                                  style={{
-                                    width: '200px',
-                                    height: '250px',
-                                    objectFit: 'contain',
-                                    borderRadius: '8px',
-                                    border: '2px solid #333',
-                                    margin: '0 auto'
-                                  }}
-                                />
-                              ) : (
-                                <Box sx={{
-                                  width: '200px',
-                                  height: '250px',
-                                  bgcolor: '#f5f5f5',
-                                  border: '2px solid #333',
-                                  borderRadius: '8px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  mx: 'auto'
-                                }}>
-                                  <Typography variant="caption">QR-1</Typography>
-                                </Box>
-                              )}
-                              <Chip
-                                label={dc.nominee1Name || dc.account1?.accountHolderName || 'Nominee 1'}
-                                size="small"
-                                sx={{ bgcolor: '#ff9800', color: 'white', fontSize: '0.9rem', alignSelf: 'center' }}
-                              />
-                              <Button
-                              variant="contained"
-                              size="small"
-                              onClick={() => downloadQRCode(dc.nominee1QrCode, `QR-Code-1-${dc.deceasedName || 'DeathCase'}.png`)}
-                              sx={{ 
-                                bgcolor: '#ff9800', 
-                                borderRadius: 3,
-                                color: 'white', 
-                                fontSize: '0.9rem',
-                                fontWeight: 'bold',
-                                px: 2,
-                                '&:hover': { bgcolor: '#f57c00' }
-                              }}
-                            >
-                              DOWNLOAD QR
-                            </Button>
-                     
-                            </Box>
-                          </Box>
+                    <Box>
+                      <Typography
+                        sx={{
+                          fontWeight: 950,
+                          textAlign: 'center',
+                          mb: 3,
+                          fontSize: { xs: '1.22rem', md: '1.42rem' },
+                          color: theme.dark
+                        }}
+                      >
+                        PAYMENT DETAILS
+                      </Typography>
+
+                      <Grid container spacing={3} justifyContent="center" sx={{ mb: 4 }}>
+                        <Grid item xs={12} sm={6} md={4}>
+                          <QrCard
+                            qrCode={dc.nominee1QrCode}
+                            label={dc.nominee1Name || dc.account1?.accountHolderName || 'Nominee 1'}
+                            onDownload={() =>
+                              downloadQRCode(dc.nominee1QrCode, `QR-Code-1-${dc.deceasedName || 'DeathCase'}.png`)
+                            }
+                          />
                         </Grid>
 
-                        {/* QR Code 2 */}
-                        <Grid item xs={12} sm={6} sx={{ display: 'flex', justifyContent: 'center' }}>
-                          <Box sx={{ 
-                            bgcolor: '#ffcc80', 
-                            p: 2.5, 
-                            borderRadius: 4, 
-                            textAlign: 'center',
-                            minHeight: '300px',
-                            width: { xs: '250px', sm: '220px' },
-                            maxWidth: '100%',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'space-between'
-                          }}>
-                            <Box sx={{display: 'grid', gap: 1, justifyContent: 'center'}}>
-                              {dc.nominee2QrCode ? (
-                                <img
-                                  src={dc.nominee2QrCode}
-                                  alt="QR Code 2"
-                                  style={{
-                                    width: '200px',
-                                    height: '250px',
-                                    objectFit: 'contain',
-                                    borderRadius: '8px',
-                                    border: '2px solid #333',
-                                    margin: '0 auto'
-                                  }}
-                                />
-                              ) : (
-                                <Box sx={{
-                                  width: '200px',
-                                  height: '250px',
-                                  bgcolor: '#f5f5f5',
-                                  border: '2px solid #333',
-                                  borderRadius: '8px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  mx: 'auto'
-                                }}>
-                                  <Typography variant="caption">QR-2</Typography>
-                                </Box>
-                              )}
-                              <Chip
-                                label={dc.nominee2Name || dc.account2?.accountHolderName || 'Nominee 2'}
-                                size="small"
-                                sx={{ bgcolor: '#ff9800', color: 'white', fontSize: '0.9rem', alignSelf: 'center' }}
-                              />
-                               <Button
-                              variant="contained"
-                              size="small"
-                              onClick={() => downloadQRCode(dc.nominee2QrCode, `QR-Code-2-${dc.deceasedName || 'DeathCase'}.png`)}
-                              sx={{ 
-                                bgcolor: '#ff9800', 
-                                borderRadius: 3,
-                                color: 'white', 
-                                fontSize: '0.9rem',
-                                fontWeight: 'bold',
-                                px: 2,
-                                '&:hover': { bgcolor: '#f57c00' }
-                              }}
-                            >
-                              DOWNLOAD QR
-                            </Button>
-                           
-                            </Box>
-                          </Box>
+                        <Grid item xs={12} sm={6} md={4}>
+                          <QrCard
+                            qrCode={dc.nominee2QrCode}
+                            label={dc.nominee2Name || dc.account2?.accountHolderName || 'Nominee 2'}
+                            onDownload={() =>
+                              downloadQRCode(dc.nominee2QrCode, `QR-Code-2-${dc.deceasedName || 'DeathCase'}.png`)
+                            }
+                          />
+                        </Grid>
+                      </Grid>
+
+                      <Grid container spacing={3} justifyContent="center">
+                        <Grid item xs={12} sm={6} md={4}>
+                          <BankDetailsCard
+                            title="BANK DETAILS 01"
+                            account={dc.account1}
+                            fallbackName="बाली अहीरवार"
+                            onCopy={() => copyBankDetails('BANK DETAILS 01', dc.account1, 'बाली अहीरवार')}
+                          />
+                        </Grid>
+
+                        <Grid item xs={12} sm={6} md={4}>
+                          <BankDetailsCard
+                            title="BANK DETAILS 02"
+                            account={dc.account2}
+                            fallbackName="बाली अहीरवार"
+                            onCopy={() => copyBankDetails('BANK DETAILS 02', dc.account2, 'बाली अहीरवार')}
+                          />
+                        </Grid>
+
+                        <Grid item xs={12} sm={6} md={4}>
+                          <BankDetailsCard
+                            title="BANK DETAILS 03"
+                            account={dc.account3}
+                            fallbackName="बाली अहीरवार"
+                            onCopy={() => copyBankDetails('BANK DETAILS 03', dc.account3, 'बाली अहीरवार')}
+                          />
                         </Grid>
                       </Grid>
                     </Box>
 
-                    {/* Bank Details Row */}
-                    <Box sx={{ mb: 4, justifyContent: 'center', display: 'flex' }}>
-                      <Grid container spacing={10} sx={{ px: 12,justifyContent: 'center' }}>
-                        {/* Bank Details 1 */}
-                        <Grid item xs={4} sx={{ display: 'flex', justifyContent: 'center' }}  >
-                          <Box sx={{ 
-                            bgcolor: '#ffcc80', 
-                            p: 2.5, 
-                            borderRadius: 4, 
-                            textAlign: 'center',
-                            minHeight: '300px',
-                            minWidth: '220px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'space-between'
-                          }}>
-                            <Box sx={{display: 'grid', gap: 1, justifyContent: 'center'}}>
-                              <Typography variant="caption" fontWeight="bold" display="block" fontSize="1.2rem" sx={{ mb: 1 }}>
-                                BANK DETAILS 01:
-                              </Typography>
-                              <Typography variant="caption" display="block" fontSize=".9rem" sx={{ mb: 0.5 }}>
-                                <strong>HOLDER:</strong> {dc.account1?.accountHolderName || 'बाली अहीरवार'}
-                              </Typography>
-                              <Typography variant="caption" display="block" fontSize=".9rem" sx={{ mb: 0.5 }}>
-                                <strong>BANK:</strong> {dc.account1?.bankName || 'BANK NAME'}
-                              </Typography>
-                              <Typography variant="caption" display="block" fontSize=".9rem" sx={{ mb: 0.5 }}>
-                                <strong>ACC:</strong> {dc.account1?.accountNumber || 'ACCOUNT NUMBER'}
-                              </Typography>
-                              <Typography variant="caption" display="block" fontSize=".9rem" sx={{ mb: 1 }}>
-                                <strong>IFSC:</strong> {dc.account1?.ifscCode || 'IFSC CODE'}
-                              </Typography>
-                            </Box>
-                            <Button
-                              variant="contained"
-                              size="small"
-                              onClick={() => {
-                                const bankDetails = `BANK DETAILS 01:
-HOLDER: ${dc.account1?.accountHolderName || 'बाली अहीरवार'}
-BANK: ${dc.account1?.bankName || 'BANK NAME'}
-ACC: ${dc.account1?.accountNumber || 'ACCOUNT NUMBER'}
-IFSC: ${dc.account1?.ifscCode || 'IFSC CODE'}`;
-                                
-                                navigator.clipboard.writeText(bankDetails).then(() => {
-                                  alert('Bank details copied!');
-                                }).catch(() => {
-                                  alert('Failed to copy');
-                                });
-                              }}
-                              sx={{ 
-                                bgcolor: '#ff9800', 
-                                color: 'white', 
-                                fontSize: '0.55rem',
-                                fontWeight: 'bold',
-                                '&:hover': { bgcolor: '#f57c00' }
-                              }}
-                            >
-                              COPY
-                            </Button>
-                          </Box>
-                        </Grid>
-
-                        {/* Bank Details 2 */}
-                        <Grid item xs={4} sx={{ display: 'flex', justifyContent: 'center' }}>
-                          <Box sx={{ 
-                            bgcolor: '#ffcc80', 
-                            p: 2.5, 
-                            borderRadius: 4, 
-                            textAlign: 'center',
-                            minHeight: '300px',
-                            minWidth: '220px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'space-between'
-                          }}>
-                            <Box sx={{display: 'grid', gap: 1, justifyContent: 'center'}}>
-                              <Typography variant="caption" fontWeight="bold" display="block" fontSize="1.2rem" sx={{ mb: 1 }}>
-                                BANK DETAILS 02:
-                              </Typography>
-                              <Typography variant="caption" display="block" fontSize=".9rem" sx={{ mb: 0.5 }}>
-                                <strong>HOLDER:</strong> {dc.account2?.accountHolderName || 'बाली अहीरवार'}
-                              </Typography>
-                              <Typography variant="caption" display="block" fontSize=".9rem" sx={{ mb: 0.5 }}>
-                                <strong>BANK:</strong> {dc.account2?.bankName || 'BANK NAME'}
-                              </Typography>
-                              <Typography variant="caption" display="block" fontSize=".9rem" sx={{ mb: 0.5 }}>
-                                <strong>ACC:</strong> {dc.account2?.accountNumber || 'ACCOUNT NUMBER'}
-                              </Typography>
-                              <Typography variant="caption" display="block" fontSize=".9rem" sx={{ mb: 1 }}>
-                                <strong>IFSC:</strong> {dc.account2?.ifscCode || 'IFSC CODE'}
-                              </Typography>
-                            </Box>
-                            <Button
-                              variant="contained"
-                              size="small"
-                              onClick={() => {
-                                const bankDetails = `BANK DETAILS 02:
-HOLDER: ${dc.account2?.accountHolderName || 'बाली अहीरवार'}
-BANK: ${dc.account2?.bankName || 'BANK NAME'}
-ACC: ${dc.account2?.accountNumber || 'ACCOUNT NUMBER'}
-IFSC: ${dc.account2?.ifscCode || 'IFSC CODE'}`;
-                                
-                                navigator.clipboard.writeText(bankDetails).then(() => {
-                                  alert('Bank details copied!');
-                                }).catch(() => {
-                                  alert('Failed to copy');
-                                });
-                              }}
-                              sx={{ 
-                                bgcolor: '#ff9800', 
-                                color: 'white', 
-                                fontSize: '0.55rem',
-                                fontWeight: 'bold',
-                                '&:hover': { bgcolor: '#f57c00' }
-                              }}
-                            >
-                              COPY
-                            </Button>
-                          </Box>
-                        </Grid>
-
-                        {/* Bank Details 3 */}
-                        <Grid item xs={4} sx={{ display: 'flex', justifyContent: 'center' }}>
-                          <Box sx={{ 
-                            bgcolor: '#ffcc80', 
-                            p: 2.5, 
-                            borderRadius: 4, 
-                            textAlign: 'center',
-                            minHeight: '300px',
-                            minWidth: '220px',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'space-between'
-                          }}>
-                            <Box sx={{display: 'grid', gap: 1, justifyContent: 'center'}}>
-                              <Typography variant="caption" fontWeight="bold" display="block" fontSize="1.2rem" sx={{ mb: 1 }}>
-                                BANK DETAILS 03:
-                              </Typography>
-                              <Typography variant="caption" display="block" fontSize=".9rem" sx={{ mb: 0.5 }}>
-                                <strong>HOLDER:</strong> {dc.account3?.accountHolderName || 'बाली अहीरवार'}
-                              </Typography>
-                              <Typography variant="caption" display="block" fontSize=".9rem" sx={{ mb: 0.5 }}>
-                                <strong>BANK:</strong> {dc.account3?.bankName || 'BANK NAME'}
-                              </Typography>
-                              <Typography variant="caption" display="block" fontSize=".9rem" sx={{ mb: 0.5 }}>
-                                <strong>ACC:</strong> {dc.account3?.accountNumber || 'ACCOUNT NUMBER'}
-                              </Typography>
-                              <Typography variant="caption" display="block" fontSize=".9rem" sx={{ mb: 1 }}>
-                                <strong>IFSC:</strong> {dc.account3?.ifscCode || 'IFSC CODE'}
-                              </Typography>
-                            </Box>
-                            <Button
-                              variant="contained"
-                              size="small"
-                              onClick={() => {
-                                const bankDetails = `BANK DETAILS 03:
-HOLDER: ${dc.account3?.accountHolderName || 'बाली अहीरवार'}
-BANK: ${dc.account3?.bankName || 'BANK NAME'}
-ACC: ${dc.account3?.accountNumber || 'ACCOUNT NUMBER'}
-IFSC: ${dc.account3?.ifscCode || 'IFSC CODE'}`;
-                                
-                                navigator.clipboard.writeText(bankDetails).then(() => {
-                                  alert('Bank details copied!');
-                                }).catch(() => {
-                                  alert('Failed to copy');
-                                });
-                              }}
-                              sx={{ 
-                                bgcolor: '#ff9800', 
-                                color: 'white', 
-                                fontSize: '0.55rem',
-                                fontWeight: 'bold',
-                                '&:hover': { bgcolor: '#f57c00' }
-                              }}
-                            >
-                              COPY
-                            </Button>
-                          </Box>
-                        </Grid>
-                      </Grid>
+                    <Box textAlign="center" mt={5}>
+                      <ActionButton onClick={handleUploadClick} sx={{ px: 4, py: 1.2 }}>
+                        Upload Payment Proof
+                      </ActionButton>
                     </Box>
-                  </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        )}
 
-                  <Box textAlign="center" mt={3}>
-                    <Button
-                      variant="contained"
-                      color="warning"
-                      onClick={() => handleUploadClick()}
-                    >
-                      UPLOAD PAYMENT PROOF
-                    </Button>
-                  </Box>
+        {!loading && deathCases.length === 0 && (
+          <InfoBox>
+            <Typography
+              textAlign="center"
+              sx={{
+                color: theme.text,
+                fontWeight: 900,
+                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif'
+              }}
+            >
+              कोई सहायता अनुरोध उपलब्ध नहीं है।
+            </Typography>
+          </InfoBox>
+        )}
 
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      )}
+        <ReceiptUpload
+          open={receiptUploadOpen}
+          onClose={() => setReceiptUploadOpen(false)}
+          donationInfo={{
+            caseId: selectedCase?.id,
+            beneficiaryName: selectedCase?.deceasedName,
+            registrationNumber: selectedCase?.employeeCode
+          }}
+        />
 
-      {!loading && deathCases.length === 0 && (
-        <Typography textAlign="center">
-          कोई सहायता अनुरोध उपलब्ध नहीं है।
-        </Typography>
-      )}
+        <Dialog open={loginAlertOpen} onClose={() => setLoginAlertOpen(false)}>
+          <DialogTitle>लॉगिन आवश्यक</DialogTitle>
+          <DialogContent>
+            सहयोग के लिए लॉगिन करें।
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => navigate('/login')}>
+              लॉगिन करें
+            </Button>
+          </DialogActions>
+        </Dialog>
 
-      <ReceiptUpload
-        open={receiptUploadOpen}
-        onClose={() => setReceiptUploadOpen(false)}
-        donationInfo={{
-          caseId: selectedCase?.id,
-          beneficiaryName: selectedCase?.deceasedName,
-          registrationNumber: selectedCase?.employeeCode
-        }}
-      />
-
-      <Dialog open={loginAlertOpen} onClose={() => setLoginAlertOpen(false)}>
-        <DialogTitle>लॉगिन आवश्यक</DialogTitle>
-        <DialogContent>
-          सहयोग के लिए लॉगिन करें।
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => navigate('/login')}>
-            लॉगिन करें
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog open={payDialogOpen} onClose={() => setPayDialogOpen(false)} maxWidth="sm" fullWidth>
-  <DialogTitle>Payment Error</DialogTitle>
-  <DialogContent>
-    <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-      {payDialogMessage}
-    </Typography>
-  </DialogContent>
-  <DialogActions>
-    <Button onClick={() => setPayDialogOpen(false)} variant="contained">
-      OK
-    </Button>
-  </DialogActions>
-</Dialog>
-    </Container>
-    
+        <Dialog open={payDialogOpen} onClose={() => setPayDialogOpen(false)} maxWidth="sm" fullWidth>
+          <DialogTitle>Payment Error</DialogTitle>
+          <DialogContent>
+            <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+              {payDialogMessage}
+            </Typography>
+          </DialogContent>
+          <DialogActions>
+            <ActionButton onClick={() => setPayDialogOpen(false)}>
+              OK
+            </ActionButton>
+          </DialogActions>
+        </Dialog>
+      </Container>
+    </Box>
   );
 };
 

@@ -675,6 +675,10 @@ const receiptAPI = {
   uploadReceipt: (payload) => {
     return api.post('/receipts', payload);
   },
+
+  uploadPublicReceipt: (payload) => {
+    return publicApi.post('/receipts/public-upload', payload);
+  },
 };
 // Export all APIs
 export { adminAPI, managerAPI, publicAPI, receiptAPI };

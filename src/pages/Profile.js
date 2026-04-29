@@ -553,6 +553,248 @@ const response = await api.updateProfileById(userId, updatePayload);
     toast.success(message);
   };
 
+  const fontFamily = 'Noto Sans Devanagari, Poppins, Arial, sans-serif';
+
+const uiTheme = {
+  dark: '#3b0764',
+  main: '#6d28d9',
+  light: '#a855f7',
+  gold: '#facc15',
+  soft: '#f5f3ff',
+  soft2: '#faf5ff',
+  softGold: '#fffbeb',
+  text: '#4c1d95',
+  muted: '#5b5b6b',
+  green: '#16a34a',
+  red: '#dc2626',
+};
+
+const labelSx = {
+  color: uiTheme.dark,
+  fontWeight: 900,
+  mb: 0.8,
+  display: 'block',
+  fontSize: '0.94rem',
+  fontFamily,
+};
+
+const fieldSx = {
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '14px',
+    background: 'rgba(255,255,255,0.96)',
+    transition: 'all 0.25s ease',
+    '& fieldset': {
+      borderColor: 'rgba(124, 58, 237, 0.18)',
+    },
+    '&:hover fieldset': {
+      borderColor: 'rgba(124, 58, 237, 0.42)',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: uiTheme.main,
+      borderWidth: '2px',
+    },
+    '&.Mui-disabled': {
+      background: 'linear-gradient(135deg, rgba(245,243,255,0.9), rgba(255,251,235,0.55))',
+    },
+    '& input::placeholder, & textarea::placeholder': {
+      color: '#6b5d80',
+      opacity: 1,
+    },
+  },
+  '& .MuiInputBase-input': {
+    color: uiTheme.text,
+    fontWeight: 700,
+    fontFamily,
+  },
+  '& .MuiFormHelperText-root': {
+    fontWeight: 700,
+    fontFamily,
+  },
+};
+
+const selectSx = {
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '14px',
+    background: 'rgba(255,255,255,0.96)',
+  },
+  '& .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(124, 58, 237, 0.18)',
+  },
+  '&:hover .MuiOutlinedInput-notchedOutline': {
+    borderColor: 'rgba(124, 58, 237, 0.42)',
+  },
+  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+    borderColor: uiTheme.main,
+    borderWidth: '2px',
+  },
+  '& .MuiSelect-select': {
+    color: uiTheme.text,
+    fontWeight: 700,
+    fontFamily,
+    py: 1.55,
+  },
+};
+
+const cardSx = {
+  mb: 4,
+  p: { xs: 2, md: 3 },
+  borderRadius: '26px',
+  border: '1px solid rgba(124, 58, 237, 0.14)',
+  background: 'rgba(255,255,255,0.88)',
+  boxShadow: '0 18px 48px rgba(76, 29, 149, 0.08)',
+  position: 'relative',
+  overflow: 'hidden',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    inset: 0,
+    background:
+      'linear-gradient(135deg, rgba(124,58,237,0.04), transparent 38%, rgba(250,204,21,0.07))',
+    pointerEvents: 'none',
+  },
+};
+
+const primaryButtonSx = {
+  borderRadius: '16px',
+  px: 4,
+  py: 1.35,
+  fontWeight: 950,
+  textTransform: 'none',
+  fontFamily,
+  color: '#fff',
+  background: `linear-gradient(135deg, ${uiTheme.main}, ${uiTheme.light})`,
+  boxShadow: '0 14px 32px rgba(109, 40, 217, 0.28)',
+  transition: 'all 0.25s ease',
+  '&:hover': {
+    background: `linear-gradient(135deg, ${uiTheme.dark}, ${uiTheme.main})`,
+    transform: 'translateY(-2px)',
+    boxShadow: '0 18px 42px rgba(109, 40, 217, 0.38)',
+  },
+  '&:disabled': {
+    background: '#c4b5fd',
+    color: '#fff',
+  },
+};
+
+const orangeButtonSx = {
+  borderRadius: '16px',
+  px: 4,
+  py: 1.35,
+  fontWeight: 950,
+  textTransform: 'none',
+  fontFamily,
+  color: '#fff',
+  background: 'linear-gradient(135deg, #f59e0b, #f97316)',
+  boxShadow: '0 14px 32px rgba(249, 115, 22, 0.28)',
+  transition: 'all 0.25s ease',
+  '&:hover': {
+    background: 'linear-gradient(135deg, #d97706, #ea580c)',
+    transform: 'translateY(-2px)',
+    boxShadow: '0 18px 42px rgba(249, 115, 22, 0.38)',
+  },
+};
+
+const outlineButtonSx = {
+  borderRadius: '16px',
+  px: 4,
+  py: 1.35,
+  fontWeight: 950,
+  textTransform: 'none',
+  fontFamily,
+  borderColor: 'rgba(124, 58, 237, 0.35)',
+  color: uiTheme.main,
+  transition: 'all 0.25s ease',
+  '&:hover': {
+    borderColor: uiTheme.main,
+    background: 'rgba(124, 58, 237, 0.07)',
+  },
+};
+
+const menuProps = {
+  PaperProps: {
+    sx: {
+      maxHeight: 300,
+      minWidth: { xs: 260, md: 360 },
+      borderRadius: '16px',
+      boxShadow: '0 18px 50px rgba(76, 29, 149, 0.18)',
+      '& .MuiMenuItem-root': {
+        py: 1.2,
+        px: 2,
+        fontWeight: 700,
+        fontFamily,
+        whiteSpace: 'normal',
+      },
+    },
+  },
+};
+
+const FieldLabel = ({ children }) => (
+  <Typography variant="body2" sx={labelSx}>
+    {children}
+  </Typography>
+);
+
+const SectionHeader = ({ icon, number, title, subtitle }) => (
+  <Box
+    sx={{
+      mb: 2.5,
+      p: { xs: 2, md: 2.3 },
+      borderRadius: '22px',
+      background: `linear-gradient(135deg, ${uiTheme.dark}, ${uiTheme.main} 62%, ${uiTheme.light})`,
+      color: '#fff',
+      boxShadow: '0 16px 34px rgba(76, 29, 149, 0.22)',
+      display: 'flex',
+      alignItems: { xs: 'flex-start', sm: 'center' },
+      gap: 1.7,
+      flexDirection: { xs: 'column', sm: 'row' },
+    }}
+  >
+    <Box
+      sx={{
+        width: 48,
+        height: 48,
+        borderRadius: '16px',
+        background: 'rgba(255,255,255,0.18)',
+        border: '1px solid rgba(255,255,255,0.25)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontWeight: 950,
+        fontFamily,
+        flexShrink: 0,
+      }}
+    >
+      {icon}
+    </Box>
+
+    <Box>
+      <Typography
+        sx={{
+          fontWeight: 950,
+          fontSize: { xs: '1.05rem', md: '1.22rem' },
+          fontFamily,
+        }}
+      >
+        {number}. {title}
+      </Typography>
+
+      {subtitle && (
+        <Typography
+          sx={{
+            mt: 0.2,
+            opacity: 0.88,
+            fontWeight: 700,
+            fontSize: '0.9rem',
+            fontFamily,
+          }}
+        >
+          {subtitle}
+        </Typography>
+      )}
+    </Box>
+  </Box>
+);
+
   if (loading && !profileData) {
     return (
       <Layout>
@@ -565,683 +807,632 @@ const response = await api.updateProfileById(userId, updatePayload);
     );
   }
 
-  return (
-    <Layout>
-      <Box sx={{
+ return (
+  <Layout>
+    <Box
+      sx={{
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #FFF8F0 0%, #F5EFE7 100%)',
-        py: 1
-      }}>
-        <Container maxWidth="lg">
-          {/* Profile Header Card */}
-          <Paper 
-            elevation={10} 
-            sx={{ 
-              mb: 4,
-              p: 4,
-              borderRadius: 3,
-              background: '#FFFFFF',
-              textAlign: 'center'
-            }}
-          >
-            <Avatar sx={{ 
-              width: 100, 
-              height: 100,
+        py: { xs: 4, md: 6 },
+        background:
+          'radial-gradient(circle at top left, rgba(124,58,237,0.13), transparent 30%), radial-gradient(circle at bottom right, rgba(250,204,21,0.16), transparent 32%), linear-gradient(180deg, #ffffff 0%, #fbfaff 45%, #f5f3ff 100%)',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+    >
+      <Box
+        sx={{
+          position: 'absolute',
+          width: 360,
+          height: 360,
+          borderRadius: '50%',
+          top: -170,
+          left: -130,
+          background: 'rgba(124, 58, 237, 0.10)',
+          filter: 'blur(8px)',
+        }}
+      />
+
+      <Box
+        sx={{
+          position: 'absolute',
+          width: 320,
+          height: 320,
+          borderRadius: '50%',
+          right: -140,
+          bottom: -150,
+          background: 'rgba(250, 204, 21, 0.16)',
+          filter: 'blur(10px)',
+        }}
+      />
+
+      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
+        {/* Profile Header Card */}
+        <Paper
+          elevation={0}
+          sx={{
+            mb: 4,
+            p: { xs: 2.5, md: 4 },
+            borderRadius: { xs: '28px', md: '36px' },
+            background: 'rgba(255,255,255,0.82)',
+            backdropFilter: 'blur(16px)',
+            border: '1px solid rgba(124, 58, 237, 0.16)',
+            boxShadow: '0 30px 90px rgba(76, 29, 149, 0.16)',
+            textAlign: 'center',
+            position: 'relative',
+            overflow: 'hidden',
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 8,
+              background: `linear-gradient(90deg, ${uiTheme.main}, ${uiTheme.light}, ${uiTheme.gold})`,
+            },
+          }}
+        >
+          <Avatar
+            sx={{
+              width: 108,
+              height: 108,
               margin: '0 auto',
               mb: 2,
-              background: 'linear-gradient(135deg, #1E3A8A 0%, #5c6bc0 100%)',
-              fontSize: '2.5rem',
-              fontWeight: 'bold',
-              boxShadow: '0 8px 20px rgba(26, 35, 126, 0.3)'
-            }}>
-              {(profileData?.name || user?.name || 'U').charAt(0).toUpperCase()}
-            </Avatar>
-            <Typography variant="h4" sx={{ 
-              fontWeight: 'bold',
-              color: '#1E3A8A',
-              mb: 1
-            }}>
-              {(profileData?.name && profileData?.surname) 
-                ? `${profileData.name} ${profileData.surname}` 
-                : profileData?.name || user?.name || user?.username || 'उपयोगकर्ता'}
-            </Typography>
-            <Typography variant="body1" sx={{ color: '#666', mb: 2 }}>
-              {profileData?.department || 'शिक्षा विभाग'}
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap', mb: 3 }}>
-              <Chip 
-                icon={<Email />} 
-                label={profileData?.email || 'ईमेल अनुपलब्ध'} 
-                sx={{ bgcolor: '#e3f2fd', color: '#1E3A8A' }}
-              />
-              {profileData?.mobileNumber && (
-                <Chip 
-                  icon={<Phone />} 
-                  label={profileData.mobileNumber} 
-                  sx={{ bgcolor: '#e3f2fd', color: '#1E3A8A' }}
-                />
-              )}
-            </Box>
-            <Box
-  sx={{
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 2,
-    flexWrap: 'wrap',
-    mt: 2,
-  }}
->
-  <Button
-    variant="contained"
-    onClick={() => setMembershipCardOpen(true)}
-    startIcon={<Badge sx={{ fontSize: 22 }} />}
-    sx={{
-      background: 'linear-gradient(135deg, #FF9933 0%, #f57c00 100%)',
-      color: 'white',
-      borderRadius: 3,
-      px: 4,
-      py: 1.5,
-      fontWeight: 700,
-      minWidth: 180,
-      boxShadow: '0 6px 16px rgba(255,153,51,0.35)',
-      '&:hover': {
-        background: 'linear-gradient(135deg, #e6851a 0%, #ef6c00 100%)',
-        transform: 'translateY(-2px)',
-        boxShadow: '0 8px 20px rgba(255,153,51,0.45)',
-      },
-      transition: 'all 0.25s ease',
-    }}
-  >
-    ID Card देखें
-  </Button>
+              background: `linear-gradient(135deg, ${uiTheme.main}, ${uiTheme.light})`,
+              fontSize: '2.7rem',
+              fontWeight: 950,
+              fontFamily,
+              boxShadow: '0 16px 38px rgba(109, 40, 217, 0.30)',
+              border: '4px solid rgba(255,255,255,0.85)',
+            }}
+          >
+            {(profileData?.name || user?.name || 'U').charAt(0).toUpperCase()}
+          </Avatar>
 
-  <Button
-    variant={isEditing ? 'outlined' : 'contained'}
-    onClick={handleEditToggle}
-    startIcon={isEditing ? <Cancel /> : <Edit />}
-    sx={{
-      background: isEditing
-        ? 'transparent'
-        : 'linear-gradient(135deg, #1E3A8A 0%, #5c6bc0 100%)',
-      color: isEditing ? '#1E3A8A' : 'white',
-      borderColor: '#1E3A8A',
-      borderRadius: 3,
-      px: 4,
-      py: 1.5,
-      fontWeight: 700,
-      minWidth: 200,
-      boxShadow: isEditing ? 'none' : '0 6px 16px rgba(30,58,138,0.3)',
-      '&:hover': {
-        background: isEditing
-          ? 'rgba(30,58,138,0.08)'
-          : 'linear-gradient(135deg, #000051 0%, #3949ab 100%)',
-        transform: 'translateY(-2px)',
-        boxShadow: isEditing ? 'none' : '0 8px 20px rgba(30,58,138,0.4)',
-      },
-      transition: 'all 0.25s ease',
-    }}
-  >
-    {isEditing ? 'रद्द करें' : 'प्रोफाइल संपादित करें'}
-  </Button>
-</Box>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 950,
+              color: uiTheme.dark,
+              mb: 1,
+              fontFamily,
+              fontSize: { xs: '1.75rem', md: '2.35rem' },
+              lineHeight: 1.25,
+            }}
+          >
+            {(profileData?.name && profileData?.surname)
+              ? `${profileData.name} ${profileData.surname}`
+              : profileData?.name || user?.name || user?.username || 'उपयोगकर्ता'}
+          </Typography>
+
+          <Typography
+            sx={{
+              color: uiTheme.muted,
+              mb: 2,
+              fontWeight: 800,
+              fontFamily,
+            }}
+          >
+            {profileData?.department || 'शिक्षा विभाग'}
+          </Typography>
+
+          <Box sx={{ display: 'flex', gap: 1.5, justifyContent: 'center', flexWrap: 'wrap', mb: 3 }}>
+            <Chip
+              icon={<Email />}
+              label={profileData?.email || 'ईमेल अनुपलब्ध'}
+              sx={{
+                bgcolor: uiTheme.soft,
+                color: uiTheme.dark,
+                fontWeight: 850,
+                border: '1px solid rgba(124, 58, 237, 0.16)',
+                '& .MuiChip-icon': { color: uiTheme.main },
+              }}
+            />
+
+            {profileData?.mobileNumber && (
+              <Chip
+                icon={<Phone />}
+                label={profileData.mobileNumber}
+                sx={{
+                  bgcolor: uiTheme.softGold,
+                  color: uiTheme.dark,
+                  fontWeight: 850,
+                  border: '1px solid rgba(250, 204, 21, 0.28)',
+                  '& .MuiChip-icon': { color: '#d97706' },
+                }}
+              />
+            )}
+          </Box>
+
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: 2,
+              flexWrap: 'wrap',
+              mt: 2,
+            }}
+          >
+            <Button
+              variant="contained"
+              onClick={() => setMembershipCardOpen(true)}
+              startIcon={<Badge sx={{ fontSize: 22 }} />}
+              sx={{
+                ...orangeButtonSx,
+                minWidth: { xs: '100%', sm: 180 },
+              }}
+            >
+              ID Card देखें
+            </Button>
+
+            <Button
+              variant={isEditing ? 'outlined' : 'contained'}
+              onClick={handleEditToggle}
+              startIcon={isEditing ? <Cancel /> : <Edit />}
+              sx={{
+                ...(isEditing ? outlineButtonSx : primaryButtonSx),
+                minWidth: { xs: '100%', sm: 210 },
+              }}
+            >
+              {isEditing ? 'रद्द करें' : 'प्रोफाइल संपादित करें'}
+            </Button>
+          </Box>
+        </Paper>
+
+        {/* Alerts */}
+        {error && (
+          <Alert
+            severity="error"
+            sx={{
+              mb: 3,
+              borderRadius: '16px',
+              fontWeight: 800,
+              fontFamily,
+            }}
+          >
+            {error}
+          </Alert>
+        )}
+
+        {success && (
+          <Alert
+            severity="success"
+            sx={{
+              mb: 3,
+              borderRadius: '16px',
+              fontWeight: 800,
+              fontFamily,
+            }}
+          >
+            {success}
+          </Alert>
+        )}
+
+        {/* Profile Form */}
+        <Box component="form" onSubmit={handleSubmit(onSubmit, onInvalid)}>
+          {/* Section 1 */}
+          <SectionHeader
+            icon={<Person />}
+            number="1"
+            title="व्यक्तिगत जानकारी (Personal Information)"
+            subtitle="नाम, जन्मतिथि, मोबाइल और ईमेल जानकारी"
+          />
+
+          <Paper elevation={0} sx={cardSx}>
+            <Grid container spacing={2.5} sx={{ position: 'relative', zIndex: 1 }}>
+              <Grid item xs={12} md={8}>
+                <FieldLabel>पूरा नाम</FieldLabel>
+                <TextField
+                  fullWidth
+                  defaultValue={combineFullName(profileData?.name, profileData?.surname)}
+                  {...register('fullName', { required: 'पूरा नाम आवश्यक है' })}
+                  disabled={!isEditing || isFullNameLocked}
+                  error={!!errors.fullName}
+                  helperText={
+                    errors.fullName?.message ||
+                    (isFullNameLocked ? 'पूरा नाम एडमिन द्वारा लॉक किया गया है' : '')
+                  }
+                  sx={fieldSx}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <FieldLabel>पिता/पति का नाम</FieldLabel>
+                <TextField
+                  fullWidth
+                  defaultValue={profileData?.fatherName || ''}
+                  {...register('fatherName', { required: 'पिता/पति का नाम आवश्यक है' })}
+                  disabled={!isEditing}
+                  error={!!errors.fatherName}
+                  helperText={errors.fatherName?.message}
+                  sx={fieldSx}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <FieldLabel>लिंग</FieldLabel>
+                <Controller
+                  name="gender"
+                  control={control}
+                  defaultValue={profileData?.gender || ''}
+                  rules={{ required: 'लिंग चुनना आवश्यक है' }}
+                  render={({ field }) => (
+                    <FormControl fullWidth disabled={!isEditing} error={!!errors.gender} sx={selectSx}>
+                      <Select {...field} displayEmpty MenuProps={menuProps}>
+                        <MenuItem value="">लिंग चुनें</MenuItem>
+                        <MenuItem value="male">पुरुष (Male)</MenuItem>
+                        <MenuItem value="female">महिला (Female)</MenuItem>
+                        <MenuItem value="other">अन्य (Other)</MenuItem>
+                      </Select>
+                      {errors.gender && (
+                        <Typography variant="caption" color="error" sx={{ mt: 0.5, fontWeight: 700 }}>
+                          {errors.gender?.message}
+                        </Typography>
+                      )}
+                    </FormControl>
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <FieldLabel>वैवाहिक स्थिति</FieldLabel>
+                <Controller
+                  name="maritalStatus"
+                  control={control}
+                  defaultValue={profileData?.maritalStatus || ''}
+                  rules={{ required: 'वैवाहिक स्थिति चुनना आवश्यक है' }}
+                  render={({ field }) => (
+                    <FormControl fullWidth disabled={!isEditing} error={!!errors.maritalStatus} sx={selectSx}>
+                      <Select {...field} displayEmpty MenuProps={menuProps}>
+                        <MenuItem value="">वैवाहिक स्थिति चुनें</MenuItem>
+                        <MenuItem value="single">अविवाहित (Single)</MenuItem>
+                        <MenuItem value="married">विवाहित (Married)</MenuItem>
+                        <MenuItem value="divorced">तलाकशुदा (Divorced)</MenuItem>
+                        <MenuItem value="widowed">विधवा/विधुर (Widowed)</MenuItem>
+                      </Select>
+                      {errors.maritalStatus && (
+                        <Typography variant="caption" color="error" sx={{ mt: 0.5, fontWeight: 700 }}>
+                          {errors.maritalStatus?.message}
+                        </Typography>
+                      )}
+                    </FormControl>
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <FieldLabel>जन्मतिथि</FieldLabel>
+                <TextField
+                  fullWidth
+                  type="date"
+                  defaultValue={profileData?.dateOfBirth || ''}
+                  {...register('dateOfBirth', { required: 'जन्मतिथि आवश्यक है' })}
+                  disabled={!isEditing || isDateOfBirthLocked}
+                  error={!!errors.dateOfBirth}
+                  helperText={
+                    errors.dateOfBirth?.message ||
+                    (isDateOfBirthLocked ? 'जन्मतिथि एडमिन द्वारा लॉक की गई है' : '')
+                  }
+                  sx={fieldSx}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={2}>
+                <FieldLabel>Country Code</FieldLabel>
+                <TextField
+                  fullWidth
+                  defaultValue={profileData?.countryCode || '+91'}
+                  {...register('countryCode', { required: 'Country Code आवश्यक है' })}
+                  disabled
+                  placeholder="+91"
+                  error={!!errors.countryCode}
+                  helperText={errors.countryCode?.message}
+                  sx={fieldSx}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={5}>
+                <FieldLabel>मोबाइल नंबर</FieldLabel>
+                <TextField
+                  fullWidth
+                  defaultValue={profileData?.mobileNumber || ''}
+                  {...register('mobileNumber', {
+                    required: 'मोबाइल नंबर आवश्यक है',
+                    pattern: {
+                      value: /^[0-9]{10}$/,
+                      message: 'मोबाइल नंबर 10 अंकों का होना चाहिए',
+                    },
+                    minLength: {
+                      value: 10,
+                      message: 'मोबाइल नंबर 10 अंकों का होना चाहिए',
+                    },
+                    maxLength: {
+                      value: 10,
+                      message: 'मोबाइल नंबर 10 अंकों का होना चाहिए',
+                    },
+                  })}
+                  disabled={!isEditing || isMobileNumberLocked}
+                  error={!!errors.mobileNumber}
+                  helperText={
+                    errors.mobileNumber?.message ||
+                    (isMobileNumberLocked ? 'मोबाइल नंबर एडमिन द्वारा लॉक किया गया है' : '')
+                  }
+                  inputProps={{ maxLength: 10, inputMode: 'numeric' }}
+                  onInput={(e) => {
+                    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                  }}
+                  sx={fieldSx}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={5}>
+                <FieldLabel>ईमेल</FieldLabel>
+                <TextField
+                  fullWidth
+                  type="email"
+                  defaultValue={profileData?.email || ''}
+                  {...register('email', {
+                    required: 'ईमेल आवश्यक है',
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: 'कृपया सही ईमेल दर्ज करें',
+                    },
+                  })}
+                  disabled={!isEditing || isEmailLocked}
+                  error={!!errors.email}
+                  helperText={
+                    errors.email?.message ||
+                    (isEmailLocked ? 'ईमेल एडमिन द्वारा लॉक किया गया है' : '')
+                  }
+                  sx={fieldSx}
+                />
+              </Grid>
+            </Grid>
           </Paper>
 
-          {/* Alerts */}
-          {error && (
-            <Alert severity="error" sx={{ mb: 3, borderRadius: 2 }}>
-              {error}
-            </Alert>
-          )}
-          {success && (
-            <Alert severity="success" sx={{ mb: 3, borderRadius: 2 }}>
-              {success}
-            </Alert>
-          )}
+          {/* Section 2 */}
+          <SectionHeader
+            icon={<LocationOn />}
+            number="2"
+            title="पता विवरण (Address Details)"
+            subtitle="घर का पता और पिन कोड"
+          />
 
-          {/* Profile Form */}
-         <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
-            {/* Section 1: Personal Information */}
-            <Paper sx={{ mb: 3, p: 2, bgcolor: '#1a237e', color: 'white', borderRadius: 2 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Person /> 1. व्यक्तिगत जानकारी (Personal Information)
-              </Typography>
-            </Paper>
-            
-            <Paper sx={{ mb: 4, p: 3, borderRadius: 2, border: '1px solid #e0e0e0' }}>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={8}>
-  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>
-    पूरा नाम
-  </Typography>
-  <TextField
-    fullWidth
-    defaultValue={combineFullName(profileData?.name, profileData?.surname)}
-    {...register('fullName', { required: 'पूरा नाम आवश्यक है' })}
-      disabled={!isEditing || isFullNameLocked}
-  error={!!errors.fullName}
-  helperText={
-    errors.fullName?.message ||
-    (isFullNameLocked ? 'पूरा नाम एडमिन द्वारा लॉक किया गया है' : '')
-  }
-    sx={{
-      '& .MuiOutlinedInput-root': {
-        '& input::placeholder': { color: '#000', opacity: 1 },
-        '& textarea::placeholder': { color: '#000', opacity: 1 },
-        border: '1px solid #ccc',
-        borderRadius: '8px'
-      }
-    }}
-  />
-</Grid>
-                <Grid item xs={12} md={4}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पिता/पति का नाम (Father/Husband Name)</Typography>
-                  <TextField
-                    fullWidth
-                    defaultValue={profileData?.fatherName || ''}
-                    {...register('fatherName', { required: 'पिता/पति का नाम आवश्यक है' })}
-                    disabled={!isEditing}
-                    error={!!errors.fatherName}
-                    helperText={errors.fatherName?.message}
-                    sx={{
-                      '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                        border: '1px solid #ccc',
-                        borderRadius: '8px'
-                      }
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>लिंग</Typography>
-                  <Controller
-                    name="gender"
-                    control={control}
-                    defaultValue={profileData?.gender || ''}
-                    rules={{ required: 'लिंग चुनना आवश्यक है' }}
-                    render={({ field }) => (
-                      <FormControl fullWidth disabled={!isEditing} error={!!errors.gender}>
-                        <Select
-                          {...field}
-                          displayEmpty
-                          sx={{
-                            '& .MuiOutlinedInput-notchedOutline': {
-                              border: '1px solid #ccc',
-                              borderRadius: '8px'
-                            }
-                          }}
-                        >
-                          <MenuItem value="">लिंग चुनें</MenuItem>
-                          <MenuItem value="male">पुरुष (Male)</MenuItem>
-                          <MenuItem value="female">महिला (Female)</MenuItem>
-                          <MenuItem value="other">अन्य (Other)</MenuItem>
-                        </Select>
-                        {errors.gender && <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>{errors.gender?.message}</Typography>}
-                      </FormControl>
-                    )}
-                  />
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>वैवाहिक स्थिति</Typography>
-                  <Controller
-                    name="maritalStatus"
-                    control={control}
-                    defaultValue={profileData?.maritalStatus || ''}
-                    rules={{ required: 'वैवाहिक स्थिति चुनना आवश्यक है' }}
-                    render={({ field }) => (
-                      <FormControl fullWidth disabled={!isEditing} error={!!errors.maritalStatus}>
-                        <Select
-                          {...field}
-                          displayEmpty
-                          sx={{
-                            '& .MuiOutlinedInput-notchedOutline': {
-                              border: '1px solid #ccc',
-                              borderRadius: '8px'
-                            }
-                          }}
-                        >
-                          <MenuItem value="">वैवाहिक स्थिति चुनें</MenuItem>
-                          <MenuItem value="single">अविवाहित (Single)</MenuItem>
-                          <MenuItem value="married">विवाहित (Married)</MenuItem>
-                          <MenuItem value="divorced">तलाकशुदा (Divorced)</MenuItem>
-                          <MenuItem value="widowed">विधवा/विधुर (Widowed)</MenuItem>
-                        </Select>
-                        {errors.maritalStatus && <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>{errors.maritalStatus?.message}</Typography>}
-                      </FormControl>
-                    )}
-                  />
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>जन्मतिथि</Typography>
-                  <TextField
-                    fullWidth
-                    type="date"
-                    defaultValue={profileData?.dateOfBirth || ''}
-                    {...register('dateOfBirth', { required: 'जन्मतिथि आवश्यक है' })}
-  disabled={!isEditing || isDateOfBirthLocked}
-  error={!!errors.dateOfBirth}
-  helperText={
-    errors.dateOfBirth?.message ||
-    (isDateOfBirthLocked ? 'जन्मतिथि एडमिन द्वारा लॉक की गई है' : '')
-  }
-                    sx={{
-                      '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                        border: '1px solid #ccc',
-                        borderRadius: '8px'
-                      }
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={2}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>Country Code</Typography>
-                  <TextField
-                    fullWidth
-                    defaultValue={profileData?.countryCode || '+91'}
-                    {...register('countryCode', { required: 'Country Code आवश्यक है' })}
-                    disabled={true}
-                    placeholder="+91"
-                    error={!!errors.countryCode}
-                    helperText={errors.countryCode?.message}
-                    sx={{
-                      '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                        border: '1px solid #ccc',
-                        borderRadius: '8px'
-                      }
-                    }}
-                  />
-                </Grid>
-                
-                <Grid item xs={12} md={6}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>मोबाइल नंबर</Typography>
-                  <TextField
-  fullWidth
-  defaultValue={profileData?.mobileNumber || ''}
-  {...register('mobileNumber', {
-    required: 'मोबाइल नंबर आवश्यक है',
-    pattern: {
-      value: /^[0-9]{10}$/,
-      message: 'मोबाइल नंबर 10 अंकों का होना चाहिए'
-    },
-    minLength: {
-      value: 10,
-      message: 'मोबाइल नंबर 10 अंकों का होना चाहिए'
-    },
-    maxLength: {
-      value: 10,
-      message: 'मोबाइल नंबर 10 अंकों का होना चाहिए'
-    }
-  })}
- disabled={!isEditing || isMobileNumberLocked}
-  error={!!errors.mobileNumber}
-helperText={
-  errors.mobileNumber?.message ||
-  (isMobileNumberLocked ? 'मोबाइल नंबर एडमिन द्वारा लॉक किया गया है' : '')
-}  inputProps={{ maxLength: 10, inputMode: 'numeric' }}
-  onInput={(e) => {
-    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
-  }}
-  sx={{
-    '& .MuiOutlinedInput-root': {
-      '& input::placeholder': { color: '#000', opacity: 1 },
-      '& textarea::placeholder': { color: '#000', opacity: 1 },
-      border: '1px solid #ccc',
-      borderRadius: '8px'
-    }
-  }}
-/>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>ईमेल</Typography>
-                  <TextField
-                    fullWidth
-                    type="email"
-                    defaultValue={profileData?.email || ''}
-                    {...register('email', { 
-                      required: 'ईमेल आवश्यक है',
-                      pattern: {
-                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                        message: 'कृपया सही ईमेल दर्ज करें'
-                      }
-                    })}
-                   disabled={!isEditing || isEmailLocked}
-                    error={!!errors.email}
-                   helperText={
-  errors.email?.message ||
-  (isEmailLocked ? 'ईमेल एडमिन द्वारा लॉक किया गया है' : '')
-}
-                    sx={{
-                      '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                        border: '1px solid #ccc',
-                        borderRadius: '8px'
-                      }
-                    }}
-                  />
-                </Grid>
-                
-              </Grid>
-            </Paper>
-
-            {/* Section 2: Address Details */}
-            <Paper sx={{ mb: 3, p: 2, bgcolor: '#1a237e', color: 'white', borderRadius: 2 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <LocationOn /> 2. पता विवरण (Address Details)
-              </Typography>
-            </Paper>
-            
-            <Paper sx={{ mb: 4, p: 3, borderRadius: 2, border: '1px solid #e0e0e0' }}>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={9}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पूरा पता</Typography>
-                  <TextField
-                    fullWidth
-                    multiline
-                    rows={3}
-                    defaultValue={profileData?.homeAddress || ''}
-                    {...register('homeAddress', { required: 'पूरा पता आवश्यक है' })}
-                    disabled={!isEditing}
-                    error={!!errors.homeAddress}
-                    helperText={errors.homeAddress?.message}
-                    sx={{
-                      '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                        border: '1px solid #ccc',
-                        borderRadius: '8px'
-                      }
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={3}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>पिन कोड</Typography>
-                  <TextField
-                    fullWidth
-                    type="number"
-                    defaultValue={profileData?.pincode || ''}
-                    {...register('pincode', { required: 'पिन कोड आवश्यक है', pattern: { value: /^[0-9]{6}$/, message: 'वैध 6 अंकों का पिन कोड दर्ज करें' } })}
-                    disabled={!isEditing}
-                    placeholder="जैसे: 462001"
-                    error={!!errors.pincode}
-                    helperText={errors.pincode?.message}
-                    sx={{
-                      '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 },
-                        border: '1px solid #ccc',
-                        borderRadius: '8px'
-                      }
-                    }}
-                  />
-                </Grid>
-              </Grid>
-            </Paper>
-
-            {/* Section 3: Professional Details */}
-            <Paper sx={{ mb: 3, p: 2, bgcolor: '#1a237e', color: 'white', borderRadius: 2 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Work /> 3. व्यावसायिक विवरण (Professional Details)
-              </Typography>
-            </Paper>
-            
-            <Paper sx={{ mb: 4, p: 3, borderRadius: 2, border: '1px solid #e0e0e0' }}>
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={4}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>विभाग का नाम</Typography>
-                  <Controller
-                    name="department"
-                    control={control}
-                    defaultValue={profileData?.department || ''}
-                    rules={{ required: 'विभाग का नाम चुनना आवश्यक है' }}
-                    render={({ field }) => (
-                      <FormControl 
-                        fullWidth
-                        disabled={!isEditing}
-                        error={!!errors.department}
-                        sx={{
-                          '& .MuiOutlinedInput-notchedOutline': {
-                            border: '1px solid #ccc',
-                            borderRadius: '8px'
-                          }
-                        }}>
-                        <Select
-                          {...field}
-                          displayEmpty
-                          MenuProps={{
-                            PaperProps: {
-                              sx: {
-                                maxHeight: 300,
-                                minWidth: '400px',
-                                width: 'auto',
-                                '& .MuiMenuItem-root': {
-                                  padding: '12px 16px',
-                                  fontSize: '1rem',
-                                  whiteSpace: 'nowrap',
-                                  minHeight: '48px',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  width: '100%'
-                                }
-                              }
-                            }
-                          }}
-                        >
-                          <MenuItem value="शिक्षा विभाग">शिक्षा विभाग</MenuItem>
-                          <MenuItem value="आदिम जाति कल्याण विभाग">आदिम जाति कल्याण विभाग</MenuItem>
-                        </Select>
-                        {errors.department && <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>{errors.department?.message}</Typography>}
-                      </FormControl>
-                    )}
-                  />
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>स्कूल/कार्यालय का नाम</Typography>
-                  <TextField
-                    fullWidth
-                    defaultValue={profileData?.schoolOfficeName || ''}
-                    {...register('schoolOfficeName', { required: 'स्कूल/कार्यालय का नाम आवश्यक है' })}
-                    disabled={!isEditing}
-                    error={!!errors.schoolOfficeName}
-                    helperText={errors.schoolOfficeName?.message}
-                    sx={{
-                      '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                        border: '1px solid #ccc',
-                        borderRadius: '8px'
-                      }
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>विभाग आईडी (Department Unique ID)</Typography>
+          <Paper elevation={0} sx={cardSx}>
+            <Grid container spacing={2.5} sx={{ position: 'relative', zIndex: 1 }}>
+              <Grid item xs={12} md={9}>
+                <FieldLabel>पूरा पता</FieldLabel>
                 <TextField
-  fullWidth
-  defaultValue={profileData?.departmentUniqueId || ''}
-  {...register('departmentUniqueId', { required: 'विभाग आईडी आवश्यक है' })}
-  disabled={!isEditing || isDepartmentUniqueIdLocked}
-  error={!!errors.departmentUniqueId}
- helperText={
-  errors.departmentUniqueId?.message ||
-  (isDepartmentUniqueIdLocked
-    ? 'विभाग आईडी लॉक है, इसे बदला नहीं जा सकता'
-    : '')
-}
-  sx={{
-    '& .MuiOutlinedInput-root': {
-      '& input::placeholder': { color: '#000', opacity: 1 },
-      '& textarea::placeholder': { color: '#000', opacity: 1 },
-      border: '1px solid #ccc',
-      borderRadius: '8px',
-    }
-  }}
-/>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>राज्य</Typography>
-                  <TextField
-                    fullWidth
-                    value="मध्य प्रदेश"
-                    disabled={true}
-                    sx={{
-                      '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                        border: '1px solid #ccc',
-                        borderRadius: '8px',
-                        backgroundColor: '#f5f5f5'
-                      }
-                    }}
-                  />
-                  <input type="hidden" {...register('departmentState')} />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>संभाग</Typography>
-                  <FormControl fullWidth disabled={!isEditing || loadingLocations}>
-                    <Select
-                      value={selectedSambhag}
-                      displayEmpty
-                      onChange={(e) => handleSambhagChange(e.target.value)}
-                      sx={{
-                        '& .MuiOutlinedInput-notchedOutline': {
-                          border: '1px solid #ccc',
-                          borderRadius: '8px'
-                        },
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: '#1a237e'
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: '#1a237e'
-                        }
-                      }}
-                    >
-                      <MenuItem value="">संभाग चुनें</MenuItem>
-                      {availableSambhags.map((sambhag) => (
-                        <MenuItem key={sambhag.id} value={sambhag.id}>
-                          {sambhag.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  <input type="hidden" {...register('departmentSambhag')} />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>जिला</Typography>
-                  <FormControl fullWidth disabled={!isEditing || !selectedSambhag}>
-                    <Select
-                      value={selectedDistrict}
-                      displayEmpty
-                      onChange={(e) => handleDistrictChange(e.target.value)}
-                      sx={{
-                        '& .MuiOutlinedInput-notchedOutline': {
-                          border: '1px solid #ccc',
-                          borderRadius: '8px'
-                        },
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: '#1a237e'
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: '#1a237e'
-                        }
-                      }}
-                    >
-                      <MenuItem value="">जिला चुनें</MenuItem>
-                      {availableDistricts.map((district) => (
-                        <MenuItem key={district.id} value={district.id}>
-                          {district.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  <input type="hidden" {...register('departmentDistrict')} />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>ब्लॉक</Typography>
-                  <FormControl fullWidth disabled={!isEditing || !selectedDistrict}>
-                    <Select
-                      value={selectedBlock}
-                      displayEmpty
-                      onChange={(e) => handleBlockChange(e.target.value)}
-                      sx={{
-                        '& .MuiOutlinedInput-notchedOutline': {
-                          border: '1px solid #ccc',
-                          borderRadius: '8px'
-                        },
-                        '&:hover .MuiOutlinedInput-notchedOutline': {
-                          borderColor: '#1a237e'
-                        },
-                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                          borderColor: '#1a237e'
-                        }
-                      }}
-                    >
-                      <MenuItem value="">ब्लॉक चुनें</MenuItem>
-                      {availableBlocks.map((block) => (
-                        <MenuItem key={block.id} value={block.id}>
-                          {block.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                  <input type="hidden" {...register('departmentBlock')} />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>संकुल का नाम (Sankul Name)</Typography>
-                  <TextField
-                    fullWidth
-                    defaultValue={profileData?.sankulName || ''}
-                    {...register('sankulName', { required: 'संकुल का नाम आवश्यक है' })}
-                    disabled={!isEditing}
-                    error={!!errors.sankulName}
-                    helperText={errors.sankulName?.message}
-                    sx={{
-                      '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                        border: '1px solid #ccc',
-                        borderRadius: '8px'
-                      }
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नियुक्ति तिथि (Joining Date)</Typography>
-                  <TextField
-                    fullWidth
-                    type="date"
-                    defaultValue={profileData?.joiningDate || ''}
-                    {...register('joiningDate', { required: 'नियुक्ति तिथि आवश्यक है' })}
-                    disabled={!isEditing}
-                    error={!!errors.joiningDate}
-                    helperText={errors.joiningDate?.message}
-                    sx={{
-                      '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                        border: '1px solid #ccc',
-                        borderRadius: '8px'
-                      }
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>सेवानिवृत्ति तिथि (Retirement Date)</Typography>
-                  <TextField
-                    fullWidth
-                    type="date"
-                    defaultValue={profileData?.retirementDate || ''}
-                    {...register('retirementDate')}
-                    disabled={!isEditing}
-                    sx={{
-                      '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                        border: '1px solid #ccc',
-                        borderRadius: '8px'
-                      }
-                    }}
-                  />
-                </Grid>
+                  fullWidth
+                  multiline
+                  rows={3}
+                  defaultValue={profileData?.homeAddress || ''}
+                  {...register('homeAddress', { required: 'पूरा पता आवश्यक है' })}
+                  disabled={!isEditing}
+                  error={!!errors.homeAddress}
+                  helperText={errors.homeAddress?.message}
+                  sx={fieldSx}
+                />
               </Grid>
-            </Paper>
 
-            {/* Section 4: Nominee Details */}
-            <Paper sx={{ mb: 3, p: 2, bgcolor: '#1a237e', color: 'white', borderRadius: 2 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <PersonAdd /> 4. नामांकित व्यक्ति का विवरण (Nominee Details)
-              </Typography>
-            </Paper>
-            
-            <Paper sx={{ mb: 4, p: 3, borderRadius: 2, border: '1px solid #e0e0e0' }}>
-              <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600, color: '#1a237e' }}>
+              <Grid item xs={12} md={3}>
+                <FieldLabel>पिन कोड</FieldLabel>
+                <TextField
+                  fullWidth
+                  type="number"
+                  defaultValue={profileData?.pincode || ''}
+                  {...register('pincode', {
+                    required: 'पिन कोड आवश्यक है',
+                    pattern: {
+                      value: /^[0-9]{6}$/,
+                      message: 'वैध 6 अंकों का पिन कोड दर्ज करें',
+                    },
+                  })}
+                  disabled={!isEditing}
+                  placeholder="जैसे: 462001"
+                  error={!!errors.pincode}
+                  helperText={errors.pincode?.message}
+                  sx={fieldSx}
+                />
+              </Grid>
+            </Grid>
+          </Paper>
+
+          {/* Section 3 */}
+          <SectionHeader
+            icon={<Work />}
+            number="3"
+            title="व्यावसायिक विवरण (Professional Details)"
+            subtitle="विभाग, स्कूल/कार्यालय, स्थान और सेवा विवरण"
+          />
+
+          <Paper elevation={0} sx={cardSx}>
+            <Grid container spacing={2.5} sx={{ position: 'relative', zIndex: 1 }}>
+              <Grid item xs={12} md={4}>
+                <FieldLabel>विभाग का नाम</FieldLabel>
+                <Controller
+                  name="department"
+                  control={control}
+                  defaultValue={profileData?.department || ''}
+                  rules={{ required: 'विभाग का नाम चुनना आवश्यक है' }}
+                  render={({ field }) => (
+                    <FormControl fullWidth disabled={!isEditing} error={!!errors.department} sx={selectSx}>
+                      <Select {...field} displayEmpty MenuProps={menuProps}>
+                        <MenuItem value="">विभाग चुनें</MenuItem>
+                        <MenuItem value="शिक्षा विभाग">शिक्षा विभाग</MenuItem>
+                        <MenuItem value="आदिम जाति कल्याण विभाग">आदिम जाति कल्याण विभाग</MenuItem>
+                      </Select>
+                      {errors.department && (
+                        <Typography variant="caption" color="error" sx={{ mt: 0.5, fontWeight: 700 }}>
+                          {errors.department?.message}
+                        </Typography>
+                      )}
+                    </FormControl>
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <FieldLabel>स्कूल/कार्यालय का नाम</FieldLabel>
+                <TextField
+                  fullWidth
+                  defaultValue={profileData?.schoolOfficeName || ''}
+                  {...register('schoolOfficeName', { required: 'स्कूल/कार्यालय का नाम आवश्यक है' })}
+                  disabled={!isEditing}
+                  error={!!errors.schoolOfficeName}
+                  helperText={errors.schoolOfficeName?.message}
+                  sx={fieldSx}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <FieldLabel>विभाग आईडी (Department Unique ID)</FieldLabel>
+                <TextField
+                  fullWidth
+                  defaultValue={profileData?.departmentUniqueId || ''}
+                  {...register('departmentUniqueId', { required: 'विभाग आईडी आवश्यक है' })}
+                  disabled={!isEditing || isDepartmentUniqueIdLocked}
+                  error={!!errors.departmentUniqueId}
+                  helperText={
+                    errors.departmentUniqueId?.message ||
+                    (isDepartmentUniqueIdLocked ? 'विभाग आईडी लॉक है, इसे बदला नहीं जा सकता' : '')
+                  }
+                  sx={fieldSx}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <FieldLabel>राज्य</FieldLabel>
+                <TextField fullWidth value="मध्य प्रदेश" disabled sx={fieldSx} />
+                <input type="hidden" {...register('departmentState')} />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <FieldLabel>संभाग</FieldLabel>
+                <FormControl fullWidth disabled={!isEditing || loadingLocations} sx={selectSx}>
+                  <Select
+                    value={selectedSambhag}
+                    displayEmpty
+                    onChange={(e) => handleSambhagChange(e.target.value)}
+                    MenuProps={menuProps}
+                  >
+                    <MenuItem value="">संभाग चुनें</MenuItem>
+                    {availableSambhags.map((sambhag) => (
+                      <MenuItem key={sambhag.id} value={sambhag.id}>
+                        {sambhag.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <input type="hidden" {...register('departmentSambhag')} />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <FieldLabel>जिला</FieldLabel>
+                <FormControl fullWidth disabled={!isEditing || !selectedSambhag} sx={selectSx}>
+                  <Select
+                    value={selectedDistrict}
+                    displayEmpty
+                    onChange={(e) => handleDistrictChange(e.target.value)}
+                    MenuProps={menuProps}
+                  >
+                    <MenuItem value="">जिला चुनें</MenuItem>
+                    {availableDistricts.map((district) => (
+                      <MenuItem key={district.id} value={district.id}>
+                        {district.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <input type="hidden" {...register('departmentDistrict')} />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <FieldLabel>ब्लॉक</FieldLabel>
+                <FormControl fullWidth disabled={!isEditing || !selectedDistrict} sx={selectSx}>
+                  <Select
+                    value={selectedBlock}
+                    displayEmpty
+                    onChange={(e) => handleBlockChange(e.target.value)}
+                    MenuProps={menuProps}
+                  >
+                    <MenuItem value="">ब्लॉक चुनें</MenuItem>
+                    {availableBlocks.map((block) => (
+                      <MenuItem key={block.id} value={block.id}>
+                        {block.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <input type="hidden" {...register('departmentBlock')} />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <FieldLabel>संकुल का नाम (Sankul Name)</FieldLabel>
+                <TextField
+                  fullWidth
+                  defaultValue={profileData?.sankulName || ''}
+                  {...register('sankulName', { required: 'संकुल का नाम आवश्यक है' })}
+                  disabled={!isEditing}
+                  error={!!errors.sankulName}
+                  helperText={errors.sankulName?.message}
+                  sx={fieldSx}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <FieldLabel>नियुक्ति तिथि (Joining Date)</FieldLabel>
+                <TextField
+                  fullWidth
+                  type="date"
+                  defaultValue={profileData?.joiningDate || ''}
+                  {...register('joiningDate', { required: 'नियुक्ति तिथि आवश्यक है' })}
+                  disabled={!isEditing}
+                  error={!!errors.joiningDate}
+                  helperText={errors.joiningDate?.message}
+                  sx={fieldSx}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <FieldLabel>सेवानिवृत्ति तिथि (Retirement Date)</FieldLabel>
+                <TextField
+                  fullWidth
+                  type="date"
+                  defaultValue={profileData?.retirementDate || ''}
+                  {...register('retirementDate')}
+                  disabled={!isEditing}
+                  sx={fieldSx}
+                />
+              </Grid>
+            </Grid>
+          </Paper>
+
+          {/* Section 4 */}
+          <SectionHeader
+            icon={<PersonAdd />}
+            number="4"
+            title="नामांकित व्यक्ति का विवरण (Nominee Details)"
+            subtitle="पहले और दूसरे नामांकित की जानकारी"
+          />
+
+          <Paper elevation={0} sx={cardSx}>
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Typography
+                sx={{
+                  mb: 2,
+                  fontWeight: 950,
+                  color: uiTheme.main,
+                  fontFamily,
+                  fontSize: '1.05rem',
+                }}
+              >
                 पहला नामांकित (First Nominee)
               </Typography>
-              <Grid container spacing={3}>
+
+              <Grid container spacing={2.5}>
                 <Grid item xs={12} md={6}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नामांकित का नाम</Typography>
+                  <FieldLabel>नामांकित का नाम</FieldLabel>
                   <TextField
                     fullWidth
                     defaultValue={profileData?.nominee1Name || ''}
@@ -1249,33 +1440,20 @@ helperText={
                     disabled={!isEditing}
                     error={!!errors.nominee1Name}
                     helperText={errors.nominee1Name?.message}
-                    sx={{
-                      '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                        border: '1px solid #ccc',
-                        borderRadius: '8px'
-                      }
-                    }}
+                    sx={fieldSx}
                   />
                 </Grid>
+
                 <Grid item xs={12} md={6}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नामांकित का संबंध</Typography>
+                  <FieldLabel>नामांकित का संबंध</FieldLabel>
                   <Controller
                     name="nominee1Relation"
                     control={control}
                     defaultValue={profileData?.nominee1Relation || ''}
                     rules={{ required: 'पहले नामांकित का संबंध आवश्यक है' }}
                     render={({ field }) => (
-                      <FormControl fullWidth disabled={!isEditing} error={!!errors.nominee1Relation}>
-                        <Select
-                          {...field}
-                          displayEmpty
-                          sx={{
-                            '& .MuiOutlinedInput-notchedOutline': {
-                              border: '1px solid #ccc',
-                              borderRadius: '8px'
-                            }
-                          }}
-                        >
+                      <FormControl fullWidth disabled={!isEditing} error={!!errors.nominee1Relation} sx={selectSx}>
+                        <Select {...field} displayEmpty MenuProps={menuProps}>
                           <MenuItem value="">संबंध चुनें</MenuItem>
                           <MenuItem value="पिता">पिता (Father)</MenuItem>
                           <MenuItem value="माता">माता (Mother)</MenuItem>
@@ -1289,19 +1467,33 @@ helperText={
                           <MenuItem value="दादी">दादी (Grandmother)</MenuItem>
                           <MenuItem value="अन्य">अन्य (Other)</MenuItem>
                         </Select>
-                        {errors.nominee1Relation && <Typography variant="caption" color="error" sx={{ mt: 0.5 }}>{errors.nominee1Relation?.message}</Typography>}
+                        {errors.nominee1Relation && (
+                          <Typography variant="caption" color="error" sx={{ mt: 0.5, fontWeight: 700 }}>
+                            {errors.nominee1Relation?.message}
+                          </Typography>
+                        )}
                       </FormControl>
                     )}
                   />
                 </Grid>
               </Grid>
 
-              <Typography variant="subtitle1" sx={{ mt: 3, mb: 2, fontWeight: 600, color: '#1a237e' }}>
+              <Typography
+                sx={{
+                  mt: 3.5,
+                  mb: 2,
+                  fontWeight: 950,
+                  color: uiTheme.main,
+                  fontFamily,
+                  fontSize: '1.05rem',
+                }}
+              >
                 दूसरा नामांकित (Second Nominee)
               </Typography>
-              <Grid container spacing={3}>
+
+              <Grid container spacing={2.5}>
                 <Grid item xs={12} md={6}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नामांकित का नाम</Typography>
+                  <FieldLabel>नामांकित का नाम</FieldLabel>
                   <TextField
                     fullWidth
                     defaultValue={profileData?.nominee2Name || ''}
@@ -1309,33 +1501,20 @@ helperText={
                     disabled={!isEditing}
                     error={!!errors.nominee2Name}
                     helperText={errors.nominee2Name?.message}
-                    sx={{
-                      '& .MuiOutlinedInput-root': { '& input::placeholder': { color: '#000', opacity: 1 }, '& textarea::placeholder': { color: '#000', opacity: 1 },
-                        border: '1px solid #ccc',
-                        borderRadius: '8px'
-                      }
-                    }}
+                    sx={fieldSx}
                   />
                 </Grid>
+
                 <Grid item xs={12} md={6}>
-                  <Typography variant="body2" sx={{ color: '#666', fontWeight: 600, mb: 0.5, display: 'block', fontSize: '0.95rem' }}>नामांकित का संबंध</Typography>
+                  <FieldLabel>नामांकित का संबंध</FieldLabel>
                   <Controller
                     name="nominee2Relation"
                     control={control}
                     defaultValue={profileData?.nominee2Relation || ''}
                     rules={{ required: 'दूसरे नामांकित का संबंध आवश्यक है' }}
                     render={({ field }) => (
-                      <FormControl fullWidth disabled={!isEditing}>
-                        <Select
-                          {...field}
-                          displayEmpty
-                          sx={{
-                            '& .MuiOutlinedInput-notchedOutline': {
-                              border: '1px solid #ccc',
-                              borderRadius: '8px'
-                            }
-                          }}
-                        >
+                      <FormControl fullWidth disabled={!isEditing} error={!!errors.nominee2Relation} sx={selectSx}>
+                        <Select {...field} displayEmpty MenuProps={menuProps}>
                           <MenuItem value="">संबंध चुनें</MenuItem>
                           <MenuItem value="पिता">पिता (Father)</MenuItem>
                           <MenuItem value="माता">माता (Mother)</MenuItem>
@@ -1349,102 +1528,129 @@ helperText={
                           <MenuItem value="दादी">दादी (Grandmother)</MenuItem>
                           <MenuItem value="अन्य">अन्य (Other)</MenuItem>
                         </Select>
+                        {errors.nominee2Relation && (
+                          <Typography variant="caption" color="error" sx={{ mt: 0.5, fontWeight: 700 }}>
+                            {errors.nominee2Relation?.message}
+                          </Typography>
+                        )}
                       </FormControl>
                     )}
                   />
                 </Grid>
               </Grid>
-            </Paper>
+            </Box>
+          </Paper>
 
-            {/* Section 5: Account Security */}
-            <Paper sx={{ mb: 3, p: 2, bgcolor: '#1a237e', color: 'white', borderRadius: 2 }}>
-              <Typography variant="h6" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Security /> 5. खाता सुरक्षा (Account Security)
-              </Typography>
-            </Paper>
-            
-            <Paper sx={{ mb: 4, p: 3, borderRadius: 2, border: '1px solid #e0e0e0' }}>
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <Typography variant="body2" sx={{ color: '#666', mb: 2 }}>
-                    अपना पासवर्ड बदलने के लिए नीचे दिए गए बटन पर क्लिक करें
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    onClick={() => setShowPasswordDialog(true)}
-                    startIcon={<Security />}
+          {/* Section 5 */}
+          <SectionHeader
+            icon={<Security />}
+            number="5"
+            title="खाता सुरक्षा (Account Security)"
+            subtitle="पासवर्ड बदलने और खाते की सुरक्षा"
+          />
+
+          <Paper elevation={0} sx={cardSx}>
+            <Box sx={{ position: 'relative', zIndex: 1 }}>
+              <Grid container spacing={2.5} alignItems="center">
+                <Grid item xs={12} md={8}>
+                  <Typography
                     sx={{
-                      borderColor: '#1a237e',
-                      color: '#1a237e',
-                      '&:hover': {
-                        borderColor: '#000051',
-                        bgcolor: 'rgba(26, 35, 126, 0.05)'
-                      }
+                      color: uiTheme.text,
+                      fontWeight: 900,
+                      fontFamily,
+                      mb: 0.5,
+                      fontSize: '1.05rem',
                     }}
                   >
                     पासवर्ड बदलें
-                  </Button>
+                  </Typography>
+
+                  <Typography
+                    sx={{
+                      color: uiTheme.muted,
+                      fontWeight: 700,
+                      fontFamily,
+                      lineHeight: 1.7,
+                    }}
+                  >
+                    अपना पासवर्ड बदलने के लिए नीचे दिए गए बटन पर क्लिक करें।
+                  </Typography>
+                </Grid>
+
+                <Grid item xs={12} md={4}>
+                  <Box sx={{ display: 'flex', justifyContent: { xs: 'flex-start', md: 'flex-end' } }}>
+                    <Button
+                      variant="outlined"
+                      onClick={() => setShowPasswordDialog(true)}
+                      startIcon={<Security />}
+                      sx={outlineButtonSx}
+                    >
+                      पासवर्ड बदलें
+                    </Button>
+                  </Box>
                 </Grid>
               </Grid>
-            </Paper>
+            </Box>
+          </Paper>
 
-            {/* Submit Button */}
-            {isEditing && (
-              <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mb: 3 }}>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  disabled={loading}
-                  startIcon={<Save />}
-                  sx={{
-                    background: 'linear-gradient(135deg, #FF9933 0%, #f57c00 100%)',
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #e6851a 0%, #ef6c00 100%)'
-                    },
-                    px: 4,
-                    py: 1.5,
-                    fontSize: '1.1rem',
-                    fontWeight: 600,
-                    borderRadius: 3,
-                    minWidth: 200
-                  }}
-                >
-                  {loading ? <CircularProgress size={20} sx={{ color: 'white' }} /> : 'प्रोफाइल सेव करें'}
-                </Button>
-                <Button
-                  variant="outlined"
-                  onClick={handleEditToggle}
-                  sx={{
-                    borderColor: '#1a237e',
-                    color: '#1a237e',
-                    px: 4,
-                    py: 1.5,
-                    fontSize: '1.1rem',
-                    borderRadius: 3,
-                    minWidth: 150
-                  }}
-                >
-                  रद्द करें
-                </Button>
-              </Box>
-            )}
-          </form>
+          {/* Submit Button */}
+          {isEditing && (
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                gap: 2,
+                mb: 3,
+                flexWrap: 'wrap',
+              }}
+            >
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={loading}
+                startIcon={!loading && <Save />}
+                sx={{
+                  ...orangeButtonSx,
+                  minWidth: { xs: '100%', sm: 220 },
+                }}
+              >
+                {loading ? (
+                  <CircularProgress size={20} sx={{ color: 'white' }} />
+                ) : (
+                  'प्रोफाइल सेव करें'
+                )}
+              </Button>
 
-          {/* Change Password Dialog */}
-          <ChangePasswordDialog
-            open={showPasswordDialog}
-            onClose={() => setShowPasswordDialog(false)}
-            onSuccess={handlePasswordChangeSuccess}
-          />
-        </Container>
-      </Box>
-      <MembershipCardPopup
-  open={membershipCardOpen}
-  onClose={() => setMembershipCardOpen(false)}
-  memberData={membershipCardData}
-/>
-    </Layout>
-  );
+              <Button
+                variant="outlined"
+                onClick={handleEditToggle}
+                sx={{
+                  ...outlineButtonSx,
+                  minWidth: { xs: '100%', sm: 160 },
+                }}
+              >
+                रद्द करें
+              </Button>
+            </Box>
+          )}
+        </Box>
+
+        {/* Change Password Dialog */}
+        <ChangePasswordDialog
+          open={showPasswordDialog}
+          onClose={() => setShowPasswordDialog(false)}
+          onSuccess={handlePasswordChangeSuccess}
+        />
+      </Container>
+    </Box>
+
+    <MembershipCardPopup
+      open={membershipCardOpen}
+      onClose={() => setMembershipCardOpen(false)}
+      memberData={membershipCardData}
+    />
+  </Layout>
+);
 };
 
 export default Profile;
