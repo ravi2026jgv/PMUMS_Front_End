@@ -2235,7 +2235,6 @@ const handleSendInsuranceInquiryEmail = async () => {
 };
   // Export death cases to Excel
   const handleExportDeathCases = async () => {
-    alert('Export button clicked!'); // Test if function is called
     console.log('Export button clicked - starting death cases export...');
     try {
       setExportLoading(true);
@@ -3007,7 +3006,165 @@ const handleExportZeroUtr = async () => {
     setRowsPerPage(parseInt(event.target.value, 10));
     setPage(0);
   };
+  const manualCreateSectionHeader = (number, title, icon = <PersonAdd fontSize="small" />, gradient = 'linear-gradient(135deg, #dc2626 0%, #f97316 100%)') => (
+  <Paper
+    elevation={0}
+    sx={{
+      p: 2,
+      mb: 2.5,
+      borderRadius: 3,
+      background: gradient,
+      color: '#fff',
+      boxShadow: '0 12px 28px rgba(15, 23, 42, 0.14)',
+      position: 'relative',
+      overflow: 'hidden',
+      '&::after': {
+        content: '""',
+        position: 'absolute',
+        width: 140,
+        height: 140,
+        borderRadius: '50%',
+        right: -50,
+        top: -70,
+        background: 'rgba(255,255,255,0.16)',
+      },
+    }}
+  >
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, position: 'relative', zIndex: 1 }}>
+      <Box
+        sx={{
+          width: 34,
+          height: 34,
+          borderRadius: '12px',
+          bgcolor: 'rgba(255,255,255,0.18)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        {icon}
+      </Box>
 
+      <Box>
+        <Typography variant="caption" sx={{ opacity: 0.88, fontWeight: 800 }}>
+          Section {number}
+        </Typography>
+
+        <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1.15 }}>
+          {title}
+        </Typography>
+      </Box>
+    </Box>
+  </Paper>
+);
+const premiumDialogPaperSx = {
+  borderRadius: 4,
+  overflow: 'hidden',
+  background: 'rgba(255,255,255,0.98)',
+  boxShadow: '0 28px 80px rgba(15, 23, 42, 0.22)',
+};
+const settingsCardSx = {
+  p: { xs: 2, md: 2.5 },
+  borderRadius: 3,
+  bgcolor: '#fff',
+  border: '1px solid rgba(226, 232, 240, 0.95)',
+  boxShadow: '0 12px 30px rgba(15, 23, 42, 0.05)',
+};
+
+const settingsSwitchRowSx = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 2,
+  p: 1.5,
+  borderRadius: 3,
+  bgcolor: '#f8fafc',
+  border: '1px solid rgba(226, 232, 240, 0.85)',
+};
+
+const premiumDialogTitleSx = {
+  px: 3,
+  py: 2.25,
+  fontWeight: 900,
+  color: '#fff',
+  background: 'linear-gradient(135deg, #dc2626 0%, #f97316 100%)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+};
+
+const premiumDialogContentSx = {
+  p: 3,
+  background:
+    'linear-gradient(135deg, rgba(248,250,252,0.96) 0%, rgba(255,247,237,0.75) 100%)',
+};
+
+const premiumDialogActionsSx = {
+  px: 3,
+  py: 2,
+  bgcolor: '#fff',
+  borderTop: '1px solid rgba(226, 232, 240, 0.95)',
+};
+
+const premiumTextFieldSx = {
+  '& .MuiOutlinedInput-root': {
+    borderRadius: 3,
+    bgcolor: '#fff',
+    '& fieldset': {
+      borderColor: '#cbd5e1',
+    },
+    '&:hover fieldset': {
+      borderColor: '#f97316',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#dc2626',
+      borderWidth: 2,
+    },
+  },
+};
+
+const premiumSelectSx = {
+  borderRadius: 3,
+  bgcolor: '#fff',
+  '& fieldset': {
+    borderColor: '#cbd5e1',
+  },
+  '&:hover fieldset': {
+    borderColor: '#f97316',
+  },
+  '&.Mui-focused fieldset': {
+    borderColor: '#dc2626',
+    borderWidth: 2,
+  },
+};
+
+const premiumCancelButtonSx = {
+  borderRadius: 3,
+  px: 2.5,
+  py: 1,
+  fontWeight: 800,
+  textTransform: 'none',
+  color: '#475569',
+  borderColor: '#cbd5e1',
+  '&:hover': {
+    borderColor: '#94a3b8',
+    bgcolor: '#f8fafc',
+  },
+};
+
+const premiumPrimaryButtonSx = {
+  borderRadius: 3,
+  px: 2.5,
+  py: 1,
+  fontWeight: 800,
+  textTransform: 'none',
+  background: 'linear-gradient(135deg, #dc2626 0%, #f97316 100%)',
+  boxShadow: '0 10px 22px rgba(220, 38, 38, 0.24)',
+  '&:hover': {
+    background: 'linear-gradient(135deg, #b91c1c 0%, #ea580c 100%)',
+    transform: 'translateY(-1px)',
+  },
+};
   // Role-based access control - Dashboard should be visible for managers and admin only
 const allowedRoles = ['ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_SAMBHAG_MANAGER', 'ROLE_DISTRICT_MANAGER', 'ROLE_BLOCK_MANAGER'];
   const hasAccess = currentUser && allowedRoles.includes(currentUser.role);
@@ -3183,10 +3340,37 @@ const allowedRoles = ['ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_SAM
     showSnackbar(`Query status updated: ${getStatusLabel(newStatus)}`, 'success');
   };
 
-  const handleExportData = (type) => {
-    // Implementation for Excel export
-    showSnackbar(`${type} Data exported`, 'success');
-  };
+const handleExportData = async (type) => {
+  try {
+    setExportLoading(true);
+
+    if (type === 'receipts') {
+      const response = await adminAPI.exportReceipts();
+
+      downloadBlobFile(
+        response.data,
+        `receipts_${new Date().toISOString().slice(0, 10)}.xlsx`,
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      );
+
+      showSnackbar('Receipts exported successfully!', 'success');
+      return;
+    }
+
+    showSnackbar(`${type} export is not configured yet.`, 'warning');
+  } catch (error) {
+    console.error(`${type} export error:`, error);
+
+    showSnackbar(
+      error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        `Error exporting ${type}!`,
+      'error'
+    );
+  } finally {
+    setExportLoading(false);
+  }
+};
 
   const showSnackbar = (message, severity = 'success') => {
     setSnackbar({ open: true, message, severity });
@@ -3211,92 +3395,358 @@ const allowedRoles = ['ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_SAM
     });
   };
 
-  const renderPoolTab = () => {
+const renderPoolTab = () => {
   const activePools = (deathCases || []).filter(
-    (c) => (c.caseStatus || c.status) === "OPEN"
+    (c) => String(c.caseStatus || c.status || '').toUpperCase() === 'OPEN'
   );
+const totalAssignedUsersInOpenPools = activePools.reduce(
+  (sum, pool) => sum + Number(pool.assignedUserCount || 0),
+  0
+);
+const handleRebalance = async () => {
+  try {
+    setExportLoading(true);
 
-  const handleRebalance = async () => {
-    try {
-      setExportLoading(true); // reusing existing loading state (minimal)
-      await adminAPI.rebalancePools(true); // we’ll add this in services/api.js
-      showSnackbar("Rebalance completed successfully!", "success");
+    const response = await adminAPI.rebalancePools(true);
 
-      // refresh list after rebalance
-      await fetchDeathCases();
-    } catch (e) {
-      console.error(e);
-      showSnackbar(e.response?.data?.message || "Rebalance failed!", "error");
-    } finally {
-      setExportLoading(false);
-    }
-  };
+    showSnackbar(
+      response?.data || 'Rebalance completed successfully!',
+      'success'
+    );
+
+    await fetchDeathCases();
+  } catch (error) {
+    console.error('Pool rebalance error:', error);
+
+    showSnackbar(
+      error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.response?.data ||
+        'Rebalance failed!',
+      'error'
+    );
+  } finally {
+    setExportLoading(false);
+  }
+};
 
   return (
-    <Paper elevation={6} sx={{ borderRadius: 3, overflow: "hidden" }}>
+    <Paper
+      elevation={0}
+      sx={{
+        borderRadius: 4,
+        overflow: 'hidden',
+        background: 'rgba(255,255,255,0.96)',
+        border: '1px solid rgba(226, 232, 240, 0.95)',
+        boxShadow: '0 18px 44px rgba(15, 23, 42, 0.08)',
+      }}
+    >
       <Box
         sx={{
-          p: 3,
-          bgcolor: "#f5f5f5",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          p: { xs: 2.5, md: 3 },
+          background:
+            'linear-gradient(135deg, rgba(239,246,255,0.96) 0%, rgba(240,253,244,0.92) 100%)',
+          borderBottom: '1px solid rgba(226, 232, 240, 0.9)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: { xs: 'flex-start', md: 'center' },
+          flexWrap: 'wrap',
+          gap: 2,
         }}
       >
-        <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-          Active Pool List ({activePools.length})
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box
+            sx={{
+              width: 46,
+              height: 46,
+              borderRadius: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'linear-gradient(135deg, #2563eb 0%, #16a34a 100%)',
+              color: '#fff',
+              boxShadow: '0 12px 24px rgba(37, 99, 235, 0.22)',
+            }}
+          >
+            <Assignment sx={{ fontSize: 26 }} />
+          </Box>
 
-        <Button
-          variant="contained"
-          onClick={handleRebalance}
-          disabled={exportLoading}
-          sx={{ bgcolor: "#1565c0" }}
-        >
-          {exportLoading ? "Rebalancing..." : "Rebalance"}
-        </Button>
+          <Box>
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 900,
+                color: '#0f172a',
+                letterSpacing: '-0.02em',
+              }}
+            >
+              Active Pool List
+            </Typography>
+
+            <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+            {deathCasesLoading
+  ? 'Loading active pools...'
+  : `${activePools.length} active open pools • ${totalAssignedUsersInOpenPools} users assigned`}
+            </Typography>
+          </Box>
+        </Box>
+
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+          <Chip
+            label="Open Cases Only"
+            size="small"
+            variant="outlined"
+            sx={{
+              bgcolor: 'rgba(22, 163, 74, 0.12)',
+              color: '#15803d',
+              border: '1px solid rgba(22, 163, 74, 0.20)',
+              fontWeight: 900,
+              borderRadius: '10px',
+            }}
+          />
+
+          <Button
+            variant="contained"
+            onClick={handleRebalance}
+            disabled={exportLoading || deathCasesLoading}
+            startIcon={
+              exportLoading ? (
+                <CircularProgress size={18} color="inherit" />
+              ) : (
+                <Assignment />
+              )
+            }
+            sx={{
+              borderRadius: 3,
+              px: 2,
+              py: 1,
+              fontWeight: 800,
+              textTransform: 'none',
+              background: 'linear-gradient(135deg, #2563eb 0%, #16a34a 100%)',
+              boxShadow: '0 10px 22px rgba(37, 99, 235, 0.22)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #1d4ed8 0%, #15803d 100%)',
+                transform: 'translateY(-1px)',
+              },
+              '&.Mui-disabled': {
+                color: 'rgba(255,255,255,0.75)',
+                opacity: 0.75,
+              },
+            }}
+          >
+            {exportLoading ? 'Rebalancing...' : 'Rebalance'}
+          </Button>
+        </Box>
       </Box>
 
-      <TableContainer>
-        <Table>
+      <TableContainer
+        sx={{
+          maxWidth: '100%',
+          overflowX: 'auto',
+          bgcolor: '#fff',
+        }}
+      >
+        <Table
+          sx={{
+            minWidth: 950,
+            '& .MuiTableCell-root': {
+              whiteSpace: 'nowrap',
+            },
+          }}
+        >
           <TableHead>
-            <TableRow sx={{ bgcolor: "#E3F2FD" }}>
-              <TableCell><strong>Deceased Name</strong></TableCell>
-              <TableCell><strong>Employee Code</strong></TableCell>
-              <TableCell><strong>Department</strong></TableCell>
-              <TableCell><strong>District</strong></TableCell>
-              <TableCell><strong>Status</strong></TableCell>
+            <TableRow>
+              <TableCell sx={tableHeaderCellSx}>Deceased Name</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Employee Code</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Department</TableCell>
+              <TableCell sx={tableHeaderCellSx}>District</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Nominee</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Assigned Users</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Status</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Actions</TableCell>
             </TableRow>
           </TableHead>
 
           <TableBody>
             {deathCasesLoading ? (
               <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
-                  <CircularProgress size={40} />
-                  <Typography variant="body2" sx={{ mt: 2 }}>
-                    Loading pools...
-                  </Typography>
+                <TableCell colSpan={8} align="center" sx={{ py: 6, borderBottom: 'none' }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 1.5,
+                    }}
+                  >
+                    <CircularProgress size={24} sx={{ color: '#2563eb' }} />
+                    <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 700 }}>
+                      Loading pools...
+                    </Typography>
+                  </Box>
                 </TableCell>
               </TableRow>
             ) : activePools.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
-                  <Typography variant="body1" color="textSecondary">
-                    No Active Pool found
-                  </Typography>
+                <TableCell colSpan={8} align="center" sx={{ py: 6, borderBottom: 'none' }}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Assignment sx={{ fontSize: 44, color: '#cbd5e1', mb: 1 }} />
+                    <Typography variant="body1" sx={{ color: '#475569', fontWeight: 800 }}>
+                      No Active Pool found
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#94a3b8', mt: 0.5 }}>
+                      Open death assistance cases will appear here for pool tracking.
+                    </Typography>
+                  </Box>
                 </TableCell>
               </TableRow>
             ) : (
-              activePools.map((p) => (
-                <TableRow key={p.id} hover>
-                  <TableCell>{p.deceasedName}</TableCell>
-                  <TableCell>{p.employeeCode}</TableCell>
-                  <TableCell>{p.department}</TableCell>
-                  <TableCell>{p.district}</TableCell>
-                  <TableCell>{p.caseStatus || p.status}</TableCell>
-                </TableRow>
-              ))
+              activePools.map((pool) => {
+                const poolId = pool.id || pool.caseId || pool.deathCaseId;
+                const status = pool.caseStatus || pool.status || 'OPEN';
+
+                return (
+                  <TableRow
+                    key={poolId || `${pool.employeeCode}-${pool.deceasedName}`}
+                    hover
+                    sx={{
+                      transition: 'all 0.18s ease',
+                      '&:hover': {
+                        bgcolor: 'rgba(239, 246, 255, 0.72)',
+                      },
+                    }}
+                  >
+                    <TableCell sx={tableBodyCellSx}>
+                      <Typography variant="body2" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                        {pool.deceasedName || '-'}
+                      </Typography>
+
+                      {pool.caseDate && (
+                        <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>
+                          {new Date(pool.caseDate).toLocaleDateString('hi-IN')}
+                        </Typography>
+                      )}
+                    </TableCell>
+
+                    <TableCell sx={tableBodyCellSx}>
+                      <Typography variant="body2" sx={{ fontWeight: 800, color: '#334155' }}>
+                        {pool.employeeCode || '-'}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell sx={tableBodyCellSx}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <BusinessCenter sx={{ fontSize: 16, color: '#64748b' }} />
+                        <Typography variant="body2" sx={{ color: '#334155', fontWeight: 700 }}>
+                          {pool.department || '-'}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+
+                    <TableCell sx={tableBodyCellSx}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <LocationOn sx={{ fontSize: 16, color: '#2563eb' }} />
+                        <Typography variant="body2" sx={{ color: '#334155', fontWeight: 700 }}>
+                          {pool.district || '-'}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+
+                    <TableCell sx={tableBodyCellSx}>
+                      <Box>
+                        {pool.nominee1Name ? (
+                          <Typography variant="body2" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                            {pool.nominee1Name}
+                          </Typography>
+                        ) : (
+                          <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 700 }}>
+                            No Nominee
+                          </Typography>
+                        )}
+
+                        {pool.nominee2Name && (
+                          <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>
+                            + {pool.nominee2Name}
+                          </Typography>
+                        )}
+                      </Box>
+                    </TableCell>
+<TableCell sx={tableBodyCellSx}>
+  <Chip
+    label={`${Number(pool.assignedUserCount || 0)} Users`}
+    size="small"
+    variant="outlined"
+    sx={{
+      bgcolor: 'rgba(37, 99, 235, 0.10)',
+      color: '#1d4ed8',
+      border: '1px solid rgba(37, 99, 235, 0.18)',
+      fontWeight: 900,
+      borderRadius: '10px',
+    }}
+  />
+</TableCell>
+                    <TableCell sx={tableBodyCellSx}>
+                      <Chip
+                        label={String(status).toUpperCase() === 'OPEN' ? 'Open' : status}
+                        size="small"
+                        variant="outlined"
+                        sx={{
+                          ...getDeathCaseStatusChipSx(status),
+                          fontWeight: 900,
+                          borderRadius: '10px',
+                        }}
+                      />
+                    </TableCell>
+
+                    <TableCell sx={tableBodyCellSx}>
+                      <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center' }}>
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            setSelectedDeathCase(pool);
+                            setDeathCaseDialog(true);
+                          }}
+                          title="View Details"
+                          sx={actionIconSx('#0284c7', 'rgba(2, 132, 199, 0.12)')}
+                        >
+                          <Visibility fontSize="small" />
+                        </IconButton>
+
+                        <IconButton
+                          size="small"
+                          onClick={() => handleEditDeathCase(pool)}
+                          title="Edit"
+                          sx={actionIconSx('#f97316', 'rgba(249, 115, 22, 0.14)')}
+                        >
+                          <Edit fontSize="small" />
+                        </IconButton>
+
+                        {pool.nominee1QrCode && (
+                          <IconButton
+                            size="small"
+                            onClick={() => window.open(pool.nominee1QrCode, '_blank')}
+                            title="Nominee 1 QR Code"
+                            sx={actionIconSx('#16a34a', 'rgba(22, 163, 74, 0.14)')}
+                          >
+                            <Download fontSize="small" />
+                          </IconButton>
+                        )}
+
+                        {pool.nominee2QrCode && (
+                          <IconButton
+                            size="small"
+                            onClick={() => window.open(pool.nominee2QrCode, '_blank')}
+                            title="Nominee 2 QR Code"
+                            sx={actionIconSx('#15803d', 'rgba(21, 128, 61, 0.14)')}
+                          >
+                            <Download fontSize="small" />
+                          </IconButton>
+                        )}
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>
@@ -3304,81 +3754,290 @@ const allowedRoles = ['ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_SAM
     </Paper>
   );
 };
+
+const getAuditActionChipSx = (actionType) => {
+  const action = String(actionType || '').toUpperCase();
+
+  if (action.includes('CREATE')) {
+    return {
+      bgcolor: 'rgba(22, 163, 74, 0.12)',
+      color: '#15803d',
+      border: '1px solid rgba(22, 163, 74, 0.20)',
+    };
+  }
+
+  if (action.includes('DELETE') || action.includes('REJECT')) {
+    return {
+      bgcolor: 'rgba(220, 38, 38, 0.10)',
+      color: '#b91c1c',
+      border: '1px solid rgba(220, 38, 38, 0.20)',
+    };
+  }
+
+  if (action.includes('UPDATE') || action.includes('EDIT')) {
+    return {
+      bgcolor: 'rgba(249, 115, 22, 0.12)',
+      color: '#c2410c',
+      border: '1px solid rgba(249, 115, 22, 0.20)',
+    };
+  }
+
+  if (action.includes('RESTORE') || action.includes('APPROVE')) {
+    return {
+      bgcolor: 'rgba(37, 99, 235, 0.10)',
+      color: '#1d4ed8',
+      border: '1px solid rgba(37, 99, 235, 0.18)',
+    };
+  }
+
+  return {
+    bgcolor: 'rgba(100, 116, 139, 0.10)',
+    color: '#475569',
+    border: '1px solid rgba(100, 116, 139, 0.20)',
+  };
+};
+
 const renderLogsTab = () => (
-  <Paper elevation={6} sx={{ borderRadius: 3, overflow: 'hidden' }}>
+  <Paper
+    elevation={0}
+    sx={{
+      borderRadius: 4,
+      overflow: 'hidden',
+      background: 'rgba(255,255,255,0.96)',
+      border: '1px solid rgba(226, 232, 240, 0.95)',
+      boxShadow: '0 18px 44px rgba(15, 23, 42, 0.08)',
+    }}
+  >
     <Box
       sx={{
-        p: 3,
-        bgcolor: '#f5f5f5',
+        p: { xs: 2.5, md: 3 },
+        background:
+          'linear-gradient(135deg, rgba(245,243,255,0.96) 0%, rgba(239,246,255,0.92) 100%)',
+        borderBottom: '1px solid rgba(226, 232, 240, 0.9)',
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: { xs: 'flex-start', md: 'center' },
+        flexWrap: 'wrap',
+        gap: 2,
       }}
     >
-      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-        Audit Logs ({logsTotal})
-      </Typography>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <Box
+          sx={{
+            width: 46,
+            height: 46,
+            borderRadius: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'linear-gradient(135deg, #7c3aed 0%, #2563eb 100%)',
+            color: '#fff',
+            boxShadow: '0 12px 24px rgba(124, 58, 237, 0.22)',
+          }}
+        >
+          <Assignment sx={{ fontSize: 26 }} />
+        </Box>
+
+        <Box>
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 900,
+              color: '#0f172a',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Audit Logs
+          </Typography>
+
+          <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+            {logsLoading
+              ? 'Loading audit activity...'
+              : `${logsTotal} audit records available`}
+          </Typography>
+        </Box>
+      </Box>
+
+      <Chip
+        label={`${logs.length} visible`}
+        size="small"
+        variant="outlined"
+        sx={{
+          bgcolor: 'rgba(124, 58, 237, 0.10)',
+          color: '#6d28d9',
+          border: '1px solid rgba(124, 58, 237, 0.20)',
+          fontWeight: 900,
+          borderRadius: '10px',
+        }}
+      />
     </Box>
 
     {logsLoading ? (
-      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-        <CircularProgress />
+      <Box
+        sx={{
+          py: 6,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 1.5,
+          bgcolor: '#fff',
+        }}
+      >
+        <CircularProgress size={24} sx={{ color: '#7c3aed' }} />
+        <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 700 }}>
+          Loading audit logs...
+        </Typography>
       </Box>
     ) : logs.length === 0 ? (
-      <Box sx={{ textAlign: 'center', p: 4 }}>
-        <Typography variant="body2" color="text.secondary">
-          No audit logs found.
+      <Box
+        sx={{
+          p: 6,
+          textAlign: 'center',
+          bgcolor: '#fff',
+        }}
+      >
+        <Assignment sx={{ fontSize: 52, color: '#cbd5e1', mb: 1 }} />
+
+        <Typography variant="h6" sx={{ color: '#475569', fontWeight: 900 }}>
+          No audit logs found
+        </Typography>
+
+        <Typography variant="body2" sx={{ color: '#94a3b8', mt: 0.75, fontWeight: 600 }}>
+          User actions, delete requests, updates and admin activities will appear here.
         </Typography>
       </Box>
     ) : (
       <>
-        <TableContainer>
-          <Table>
+        <TableContainer
+          sx={{
+            maxWidth: '100%',
+            overflowX: 'auto',
+            bgcolor: '#fff',
+          }}
+        >
+          <Table
+            sx={{
+              minWidth: 1150,
+              '& .MuiTableCell-root': {
+                whiteSpace: 'nowrap',
+              },
+            }}
+          >
             <TableHead>
-              <TableRow sx={{ bgcolor: '#ede7f6' }}>
-                <TableCell><strong>ID</strong></TableCell>
-                <TableCell><strong>Action</strong></TableCell>
-                <TableCell><strong>Entity Type</strong></TableCell>
-                <TableCell><strong>Entity ID</strong></TableCell>
-                <TableCell><strong>Performed By</strong></TableCell>
-                <TableCell><strong>Role</strong></TableCell>
-                <TableCell><strong>Remarks</strong></TableCell>
-                <TableCell><strong>Time</strong></TableCell>
+              <TableRow>
+                <TableCell sx={tableHeaderCellSx}>ID</TableCell>
+                <TableCell sx={tableHeaderCellSx}>Action</TableCell>
+                <TableCell sx={tableHeaderCellSx}>Entity Type</TableCell>
+                <TableCell sx={tableHeaderCellSx}>Entity ID</TableCell>
+                <TableCell sx={tableHeaderCellSx}>Performed By</TableCell>
+                <TableCell sx={tableHeaderCellSx}>Role</TableCell>
+                <TableCell sx={tableHeaderCellSx}>Remarks</TableCell>
+                <TableCell sx={tableHeaderCellSx}>Time</TableCell>
               </TableRow>
             </TableHead>
+
             <TableBody>
               {logs.map((log) => (
-                <TableRow key={log.id} hover>
-                  <TableCell>{log.id}</TableCell>
-                  <TableCell>
+                <TableRow
+                  key={log.id}
+                  hover
+                  sx={{
+                    transition: 'all 0.18s ease',
+                    '&:hover': {
+                      bgcolor: 'rgba(245, 243, 255, 0.72)',
+                    },
+                  }}
+                >
+                  <TableCell sx={tableBodyCellSx}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        fontWeight: 900,
+                        color: '#0f172a',
+                        fontSize: '0.82rem',
+                      }}
+                    >
+                      {log.id || '-'}
+                    </Typography>
+                  </TableCell>
+
+                  <TableCell sx={tableBodyCellSx}>
                     <Chip
                       label={log.actionType || '-'}
                       size="small"
-                      color="primary"
                       variant="outlined"
+                      sx={{
+                        ...getAuditActionChipSx(log.actionType),
+                        fontWeight: 900,
+                        borderRadius: '10px',
+                      }}
                     />
                   </TableCell>
-                  <TableCell>{log.entityType || '-'}</TableCell>
-                  <TableCell>{log.entityId || '-'}</TableCell>
-                 <TableCell>
-  {log.performedByName ? (
-    <>
-      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-        {log.performedByName}
-      </Typography>
-      <Typography variant="caption" color="text.secondary">
-        {log.performedById || '-'}
-      </Typography>
-    </>
-  ) : (
-    log.performedById || '-'
-  )}
-</TableCell>
 
-                  <TableCell>{log.performedByRole || '-'}</TableCell>
-                  <TableCell>{log.remarks || '-'}</TableCell>
-                  <TableCell>
-                    {log.performedAt ? new Date(log.performedAt).toLocaleString('en-IN') : '-'}
+                  <TableCell sx={tableBodyCellSx}>
+                    <Typography variant="body2" sx={{ color: '#334155', fontWeight: 800 }}>
+                      {log.entityType || '-'}
+                    </Typography>
+                  </TableCell>
+
+                  <TableCell sx={tableBodyCellSx}>
+                    <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 700 }}>
+                      {log.entityId || '-'}
+                    </Typography>
+                  </TableCell>
+
+                  <TableCell sx={tableBodyCellSx}>
+                    {log.performedByName ? (
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                          {log.performedByName}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>
+                          {log.performedById || '-'}
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 700 }}>
+                        {log.performedById || '-'}
+                      </Typography>
+                    )}
+                  </TableCell>
+
+                  <TableCell sx={tableBodyCellSx}>
+                    <Chip
+                      label={getRoleLabel(log.performedByRole) || log.performedByRole || '-'}
+                      size="small"
+                      variant="outlined"
+                      sx={{
+                        ...getRoleChipSx(log.performedByRole),
+                        fontWeight: 900,
+                        borderRadius: '10px',
+                      }}
+                    />
+                  </TableCell>
+
+                  <TableCell sx={tableBodyCellSx}>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: '#475569',
+                        fontWeight: 700,
+                        maxWidth: 280,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                      title={log.remarks || '-'}
+                    >
+                      {log.remarks || '-'}
+                    </Typography>
+                  </TableCell>
+
+                  <TableCell sx={tableBodyCellSx}>
+                    <Typography variant="body2" sx={{ color: '#475569', fontWeight: 800 }}>
+                      {log.performedAt
+                        ? new Date(log.performedAt).toLocaleString('en-IN')
+                        : '-'}
+                    </Typography>
                   </TableCell>
                 </TableRow>
               ))}
@@ -3397,6 +4056,19 @@ const renderLogsTab = () => (
             setLogsPage(0);
           }}
           rowsPerPageOptions={[10, 20, 50]}
+          labelDisplayedRows={({ from, to, count }) =>
+            `${from + 1}-${Math.min(to + 1, count)} of ${count}`
+          }
+          labelRowsPerPage="Rows per page:"
+          sx={{
+            borderTop: '1px solid rgba(226, 232, 240, 0.95)',
+            bgcolor: '#f8fafc',
+            color: '#475569',
+            '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+              fontWeight: 800,
+              color: '#64748b',
+            },
+          }}
         />
       </>
     )}
@@ -3446,49 +4118,130 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
 
   setUserMembershipCardOpen(true);
 };
-  const renderUsersTab = () => (
-    <Paper elevation={6} sx={{ borderRadius: 3, overflow: 'hidden' }}>
-      <Box sx={{ p: 3, bgcolor: '#f5f5f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
-        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-          User Management ({usersLoading ? 'Loading...' : `${totalUsers} of ${users.length} shown`})
+ const renderUsersTab = () => (
+  <Paper
+    elevation={0}
+    sx={{
+      borderRadius: 4,
+      overflow: 'hidden',
+      background: 'rgba(255,255,255,0.96)',
+      border: '1px solid rgba(226, 232, 240, 0.95)',
+      boxShadow: '0 18px 44px rgba(15, 23, 42, 0.08)',
+    }}
+  >
+    <Box
+      sx={{
+        p: { xs: 2.5, md: 3 },
+        background:
+          'linear-gradient(135deg, rgba(248,250,252,0.96) 0%, rgba(255,247,237,0.92) 100%)',
+        borderBottom: '1px solid rgba(226, 232, 240, 0.9)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: { xs: 'flex-start', md: 'center' },
+        flexWrap: 'wrap',
+        gap: 2,
+      }}
+    >
+      <Box>
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: 900,
+            color: '#0f172a',
+            letterSpacing: '-0.02em',
+          }}
+        >
+          User Management
         </Typography>
 
-        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-          <Button
-  variant="contained"
-  size="small"
-  startIcon={<PersonAdd />}
-  onClick={openManualCreateDialog}
-  sx={{ borderRadius: 2, bgcolor: '#2e7d32', '&:hover': { bgcolor: '#1b5e20' } }}
->
-  Add User
-</Button>
-          <Button
-  variant="contained"
-  color="error"
-  size="small"
-  onClick={handleBulkSoftDelete}
-  disabled={selectedUserIds.length === 0}
-  startIcon={<Delete />}
-  sx={{ borderRadius: 2 }}
->
-  Bulk Delete ({selectedUserIds.length})
-</Button>
-          <Button
-            variant="outlined"
-            size="small"
-            onClick={openTrash}
-            startIcon={<DeleteSweep />}
-            sx={{ borderRadius: 2 }}
-          >
-            Trash
-          </Button>
-        </Box>
+        <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+          {usersLoading
+            ? 'Loading user records...'
+            : `${totalUsers} total records • ${users.length} visible on current page`}
+        </Typography>
       </Box>
+
+      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+        <Button
+          variant="contained"
+          size="small"
+          startIcon={<PersonAdd />}
+          onClick={openManualCreateDialog}
+          sx={{
+            borderRadius: 3,
+            px: 2,
+            py: 1,
+            fontWeight: 800,
+            textTransform: 'none',
+            bgcolor: '#16a34a',
+            boxShadow: '0 10px 20px rgba(22, 163, 74, 0.22)',
+            '&:hover': {
+              bgcolor: '#15803d',
+              transform: 'translateY(-1px)',
+            },
+          }}
+        >
+          Add User
+        </Button>
+
+        <Button
+          variant="contained"
+          size="small"
+          onClick={handleBulkSoftDelete}
+          disabled={selectedUserIds.length === 0}
+          startIcon={<Delete />}
+          sx={{
+            borderRadius: 3,
+            px: 2,
+            py: 1,
+            fontWeight: 800,
+            textTransform: 'none',
+            bgcolor: '#dc2626',
+            boxShadow: selectedUserIds.length > 0 ? '0 10px 20px rgba(220, 38, 38, 0.22)' : 'none',
+            '&:hover': {
+              bgcolor: '#b91c1c',
+              transform: 'translateY(-1px)',
+            },
+          }}
+        >
+          Bulk Delete ({selectedUserIds.length})
+        </Button>
+
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={openTrash}
+          startIcon={<DeleteSweep />}
+          sx={{
+            borderRadius: 3,
+            px: 2,
+            py: 1,
+            fontWeight: 800,
+            textTransform: 'none',
+            borderColor: '#cbd5e1',
+            color: '#334155',
+            bgcolor: '#fff',
+            '&:hover': {
+              borderColor: '#dc2626',
+              bgcolor: 'rgba(220, 38, 38, 0.06)',
+              color: '#b91c1c',
+            },
+          }}
+        >
+          Trash
+        </Button>
+      </Box>
+    </Box>
       
       {/* Search Filters */}
-      <Box sx={{ p: 3, bgcolor: '#fff', borderBottom: '1px solid #e0e0e0' }}>
-        <Grid container spacing={2} alignItems="center">
+{/* Search Filters */}
+<Box
+  sx={{
+    p: { xs: 2.5, md: 3 },
+    bgcolor: '#fff',
+    borderBottom: '1px solid rgba(226, 232, 240, 0.95)',
+  }}
+>        <Grid container spacing={2} alignItems="center">
           <Grid item xs={12} sm={4} md={3}>
             <TextField
               fullWidth
@@ -3496,14 +4249,22 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
               placeholder="Search by User ID"
               value={filters.userId || ''}
               onChange={(e) => setFilters(prev => ({ ...prev, userId: e.target.value }))}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  border: '2px solid #1976d2',
-                  borderRadius: '8px',
-                  '&:hover': { borderColor: '#1565c0' },
-                  '&.Mui-focused': { borderColor: '#1976d2' }
-                }
-              }}
+             sx={{
+  '& .MuiOutlinedInput-root': {
+    borderRadius: 3,
+    bgcolor: '#f8fafc',
+    '& fieldset': {
+      borderColor: '#cbd5e1',
+    },
+    '&:hover fieldset': {
+      borderColor: '#f97316',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#dc2626',
+      borderWidth: 2,
+    },
+  },
+}}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -3520,14 +4281,22 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
               placeholder="Search by Name"
               value={filters.name}
               onChange={(e) => setFilters(prev => ({ ...prev, name: e.target.value }))}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  border: '2px solid #1976d2',
-                  borderRadius: '8px',
-                  '&:hover': { borderColor: '#1565c0' },
-                  '&.Mui-focused': { borderColor: '#1976d2' }
-                }
-              }}
+             sx={{
+  '& .MuiOutlinedInput-root': {
+    borderRadius: 3,
+    bgcolor: '#f8fafc',
+    '& fieldset': {
+      borderColor: '#cbd5e1',
+    },
+    '&:hover fieldset': {
+      borderColor: '#f97316',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#dc2626',
+      borderWidth: 2,
+    },
+  },
+}}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -3544,14 +4313,22 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
               placeholder="Search by Mobile"
               value={filters.mobileNumber}
               onChange={(e) => setFilters(prev => ({ ...prev, mobileNumber: e.target.value }))}
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  border: '2px solid #1976d2',
-                  borderRadius: '8px',
-                  '&:hover': { borderColor: '#1565c0' },
-                  '&.Mui-focused': { borderColor: '#1976d2' }
-                }
-              }}
+             sx={{
+  '& .MuiOutlinedInput-root': {
+    borderRadius: 3,
+    bgcolor: '#f8fafc',
+    '& fieldset': {
+      borderColor: '#cbd5e1',
+    },
+    '&:hover fieldset': {
+      borderColor: '#f97316',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#dc2626',
+      borderWidth: 2,
+    },
+  },
+}}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -3563,125 +4340,207 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
           </Grid>
           <Grid item xs={12} sm={12} md={3}>
             <Button
-              fullWidth
-              variant="outlined"
-              color="error"
-              startIcon={<Clear />}
-              onClick={clearFilters}
-              disabled={!hasActiveFilters}
-              sx={{ height: '40px' }}
-            >
-              Clear Filters
-            </Button>
+  fullWidth
+  variant="outlined"
+  startIcon={<Clear />}
+  onClick={clearFilters}
+  disabled={!hasActiveFilters}
+  sx={{
+    height: 40,
+    borderRadius: 3,
+    fontWeight: 800,
+    textTransform: 'none',
+    borderColor: '#fecaca',
+    color: '#b91c1c',
+    bgcolor: hasActiveFilters ? 'rgba(254, 242, 242, 0.75)' : '#f8fafc',
+    '&:hover': {
+      borderColor: '#dc2626',
+      bgcolor: 'rgba(254, 226, 226, 0.9)',
+    },
+  }}
+>
+  Clear Filters
+</Button>
           </Grid>
         </Grid>
       </Box>
       
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow sx={{ bgcolor: '#e3f2fd' }}>
-               <TableCell padding="checkbox">
-   <Checkbox
-  checked={
-    selectableUsers.length > 0 &&
-    selectedUserIds.length === selectableUsers.length
-  }
-  indeterminate={
-    selectedUserIds.length > 0 &&
-    selectedUserIds.length < selectableUsers.length
-  }
-  onChange={handleSelectAllUsers}
-/>
-  </TableCell>
-              <TableCell><strong>User ID</strong></TableCell>
-              <TableCell><strong>Name</strong></TableCell>
-              <TableCell><strong>Email/Phone</strong></TableCell>
-              <TableCell><strong>Role</strong></TableCell>
-              <TableCell><strong>Location</strong></TableCell>
-              <TableCell><strong>Status</strong></TableCell>
-              <TableCell><strong>Last Login</strong></TableCell>
-              <TableCell><strong>Actions</strong></TableCell>
-            </TableRow>
-          </TableHead>
+    <TableContainer
+  sx={{
+    maxWidth: '100%',
+    overflowX: 'auto',
+    bgcolor: '#fff',
+  }}
+>
+  <Table
+    sx={{
+      minWidth: 1100,
+      '& .MuiTableCell-root': {
+        whiteSpace: 'nowrap',
+      },
+    }}
+  >
+         <TableHead>
+  <TableRow>
+    <TableCell padding="checkbox" sx={tableHeaderCellSx}>
+      <Checkbox
+        checked={
+          selectableUsers.length > 0 &&
+          selectedUserIds.length === selectableUsers.length
+        }
+        indeterminate={
+          selectedUserIds.length > 0 &&
+          selectedUserIds.length < selectableUsers.length
+        }
+        onChange={handleSelectAllUsers}
+        sx={{
+          color: '#94a3b8',
+          '&.Mui-checked': {
+            color: '#dc2626',
+          },
+          '&.MuiCheckbox-indeterminate': {
+            color: '#f97316',
+          },
+        }}
+      />
+    </TableCell>
+
+    <TableCell sx={tableHeaderCellSx}>User ID</TableCell>
+    <TableCell sx={tableHeaderCellSx}>Name</TableCell>
+    <TableCell sx={tableHeaderCellSx}>Email / Phone</TableCell>
+    <TableCell sx={tableHeaderCellSx}>Role</TableCell>
+    <TableCell sx={tableHeaderCellSx}>Location</TableCell>
+    <TableCell sx={tableHeaderCellSx}>Status</TableCell>
+    <TableCell sx={tableHeaderCellSx}>Last Login</TableCell>
+    <TableCell sx={tableHeaderCellSx}>Actions</TableCell>
+  </TableRow>
+</TableHead>
           <TableBody>
             {usersLoading ? (
               <TableRow>
-                <TableCell colSpan={9} align="center" sx={{ py: 4 }}>
-                  <Typography variant="body1" color="textSecondary">
-                    Loading user data...
-                  </Typography>
+<TableCell colSpan={9} align="center" sx={{ py: 6, borderBottom: 'none' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5 }}>
+  <CircularProgress size={24} sx={{ color: '#dc2626' }} />
+  <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 700 }}>
+    Loading user data...
+  </Typography>
+</Box>
                 </TableCell>
               </TableRow>
             ) : users.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={9} align="center" sx={{ py: 4 }}>
-                  <Typography variant="body1" color="textSecondary">
-                    No User found
-                  </Typography>
+                 <Box sx={{ textAlign: 'center' }}>
+  <People sx={{ fontSize: 44, color: '#cbd5e1', mb: 1 }} />
+  <Typography variant="body1" sx={{ color: '#475569', fontWeight: 800 }}>
+    No User found
+  </Typography>
+  <Typography variant="body2" sx={{ color: '#94a3b8', mt: 0.5 }}>
+    Try clearing filters or adding a new user.
+  </Typography>
+</Box>
                 </TableCell>
               </TableRow>
             ) : users.map((user) => (
-              <TableRow key={user.id} hover>
-                  <TableCell padding="checkbox">
+              <TableRow
+  key={user.id}
+  hover
+  sx={{
+    transition: 'all 0.18s ease',
+    '&:hover': {
+      bgcolor: 'rgba(255, 247, 237, 0.78)',
+    },
+  }}
+>
+                  <TableCell sx={tableBodyCellSx} padding="checkbox">
      {user.role !== 'ROLE_ADMIN' ? (
     <Checkbox
-      checked={selectedUserIds.includes(user.id)}
-      onChange={() => handleSelectUser(user.id)}
-    />
+  checked={selectedUserIds.includes(user.id)}
+  onChange={() => handleSelectUser(user.id)}
+  sx={{
+    color: '#94a3b8',
+    '&.Mui-checked': {
+      color: '#dc2626',
+    },
+  }}
+/>
   ) : null}
   </TableCell>
-                <TableCell>
-  <Typography variant="body2" sx={{ fontWeight: 500 }}>
-    {user.id || '-'}
-  </Typography>
+                <TableCell sx={tableBodyCellSx}>
+ <Typography
+  variant="body2"
+  sx={{
+    fontWeight: 900,
+    color: '#0f172a',
+    fontSize: '0.82rem',
+  }}
+>
+  {user.id || '-'}
+</Typography>
 </TableCell>
-                <TableCell>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                    {user.name}
-                  </Typography>
+                <TableCell sx={tableBodyCellSx}>
+                  <Typography variant="body2" sx={{ fontWeight: 900, color: '#0f172a' }}>
+  {combineFullName(user.name, user.surname) || user.name || '-'}
+</Typography>
+<Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>
+  {user.departmentUniqueId || 'No Department ID'}
+</Typography>
                 </TableCell>
-                <TableCell>
-                  <Typography variant="body2">{user.email}</Typography>
-                  <Typography variant="caption" color="textSecondary">
-                    <Phone sx={{ fontSize: 12, mr: 0.5 }} />
-                    {user.mobileNumber || user.phone || 'N/A'}
-                  </Typography>
+                <TableCell sx={tableBodyCellSx}>
+                 <Typography variant="body2" sx={{ color: '#334155', fontWeight: 700 }}>
+  {user.email || '-'}
+</Typography>
+<Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.35 }}>
+  <Phone sx={{ fontSize: 13, color: '#64748b' }} />
+  <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>
+    {user.mobileNumber || user.phone || 'N/A'}
+  </Typography>
+</Box>
                 </TableCell>
-                <TableCell>
-                  <Chip 
-                    label={getRoleLabel(user.role)} 
-                    size="small"
-                    sx={{ 
-                      bgcolor: user.role === 'ROLE_ADMIN' ? '#f44336' : 
-                              (user.role && user.role.includes('MANAGER')) ? '#ff9800' : '#2196f3',
-                      color: 'white'
-                    }}
-                  />
+                <TableCell sx={tableBodyCellSx}>
+                 <Chip
+  label={getRoleLabel(user.role)}
+  size="small"
+  variant="outlined"
+  sx={{
+    ...getRoleChipSx(user.role),
+    fontWeight: 900,
+    borderRadius: '10px',
+  }}
+/>
                 </TableCell>
-                <TableCell>
-                  <Typography variant="caption">
-                    <LocationOn sx={{ fontSize: 12, mr: 0.5 }} />
-                    {(user.departmentSambhag || user.sambhag || 'N/A')}/{(user.departmentDistrict || user.district || 'N/A')}
-                  </Typography>
+                <TableCell sx={tableBodyCellSx}>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.75 }}>
+  <LocationOn sx={{ fontSize: 16, color: '#f97316', mt: 0.15 }} />
+  <Box>
+    <Typography variant="caption" sx={{ display: 'block', color: '#334155', fontWeight: 800 }}>
+      {user.departmentSambhag || user.sambhag || 'N/A'}
+    </Typography>
+    <Typography variant="caption" sx={{ display: 'block', color: '#94a3b8', fontWeight: 600 }}>
+      {user.departmentDistrict || user.district || 'N/A'}
+    </Typography>
+  </Box>
+</Box>
                 </TableCell>
-                <TableCell>
-                  <Chip 
-                    label={getStatusLabel(user.status)}
-                    size="small"
-                    sx={{ 
-                      bgcolor: getStatusColor(user.status),
-                      color: 'white'
-                    }}
-                  />
+                <TableCell sx={tableBodyCellSx}>
+                 <Chip
+  label={getStatusLabel(user.status)}
+  size="small"
+  variant="outlined"
+  sx={{
+    ...getStatusChipSx(user.status),
+    fontWeight: 900,
+    borderRadius: '10px',
+  }}
+/>
                 </TableCell>
-                <TableCell>
+                <TableCell sx={tableBodyCellSx}>
                   <Typography variant="caption">
                     {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString('hi-IN') : 
                      user.updatedAt ? new Date(user.updatedAt).toLocaleDateString('hi-IN') : 'N/A'}
                   </Typography>
                 </TableCell>
-                <TableCell>
+                <TableCell sx={tableBodyCellSx}>
                     {user.role === 'ROLE_ADMIN' && currentUser?.role !== 'ROLE_SUPERADMIN'  ? (
     <Box sx={{ display: 'flex', gap: 0.5 }}>
       <IconButton
@@ -3720,12 +4579,7 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
                       }}
                       title="Assign Role"
                       color="primary"
-                      sx={{
-                        bgcolor: '#1976d220',
-                        '&:hover': {
-                          bgcolor: '#1976d240'
-                        }
-                      }}
+                     sx={actionIconSx('#1976d2', 'rgba(25, 118, 210, 0.12)')}
                     >
                       <ManageAccounts fontSize="small" sx={{ color: '#1976d2' }} />
                     </IconButton>
@@ -3735,12 +4589,7 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
                         size="small" 
                         onClick={() => handleRemoveAllManagerAccess(user)}
                         title="Remove Manager Access"
-                        sx={{
-                          bgcolor: '#ff980020',
-                          '&:hover': {
-                            bgcolor: '#ff980040'
-                          }
-                        }}
+                       sx={actionIconSx('#f97316', 'rgba(249, 115, 22, 0.14)')}
                       >
                         <RemoveCircleOutline fontSize="small" sx={{ color: '#ff9800' }} />
                       </IconButton>
@@ -3750,12 +4599,12 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
                       onClick={() => handleUpdateUserStatus(user.id, user.status?.toLowerCase() === 'blocked' ? 'active' : 'blocked')}
                       title={user.status?.toLowerCase() === 'blocked' ? 'Unblock' : 'Block'}
                       color={user.status?.toLowerCase() === 'blocked' ? 'success' : 'error'}
-                      sx={{
-                        bgcolor: user.status?.toLowerCase() === 'blocked' ? '#4caf5020' : '#f4433620',
-                        '&:hover': {
-                          bgcolor: user.status?.toLowerCase() === 'blocked' ? '#4caf5040' : '#f4433640'
-                        }
-                      }}
+                     sx={actionIconSx(
+  user.status?.toLowerCase() === 'blocked' ? '#16a34a' : '#dc2626',
+  user.status?.toLowerCase() === 'blocked'
+    ? 'rgba(22, 163, 74, 0.14)'
+    : 'rgba(220, 38, 38, 0.12)'
+)}
                     >
                       {user.status?.toLowerCase() === 'blocked' ? 
                         <Lock fontSize="small" sx={{ color: '#4caf50' }} /> : 
@@ -3766,10 +4615,7 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
                       size="small"
                       onClick={() => openUserDetails(user)}
                       title="View / Edit Details"
-                      sx={{
-                        bgcolor: '#2196f320',
-                        '&:hover': { bgcolor: '#2196f340' },
-                      }}
+                      sx={actionIconSx('#0284c7', 'rgba(2, 132, 199, 0.12)')}
                     >
                       <InfoOutlined fontSize="small" sx={{ color: '#2196f3' }} />
                     </IconButton>
@@ -3777,14 +4623,7 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
   size="small"
   onClick={() => openUserMembershipCard(user)}
   title="View / Download ID Card"
-  sx={{
-    bgcolor: '#1E3A8A20',
-    '&:hover': {
-      bgcolor: '#1E3A8A40',
-      transform: 'translateY(-1px)',
-    },
-    transition: 'all 0.2s ease',
-  }}
+ sx={actionIconSx('#1e3a8a', 'rgba(30, 58, 138, 0.12)')}
 >
   <Badge fontSize="small" sx={{ color: '#1E3A8A' }} />
 </IconButton>
@@ -3792,10 +4631,7 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
                       size="small"
                       onClick={() => openPasswordReset(user)}
                       title="Reset Password"
-                      sx={{
-                        bgcolor: '#9c27b020',
-                        '&:hover': { bgcolor: '#9c27b040' },
-                      }}
+                     sx={actionIconSx('#9333ea', 'rgba(147, 51, 234, 0.12)')}
                     >
                       <LockReset fontSize="small" sx={{ color: '#9c27b0' }} />
                     </IconButton>
@@ -3804,12 +4640,7 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
                       size="small" 
                       onClick={() => handleDeleteUser(user)}
                       title={(user.status || '').toLowerCase() === 'deleted' ? 'Permanent Delete' : 'Soft Delete'}
-                      sx={{
-                        bgcolor: (user.status || '').toLowerCase() === 'deleted' ? '#d32f2f20' : '#f4433620',
-                        '&:hover': {
-                          bgcolor: (user.status || '').toLowerCase() === 'deleted' ? '#d32f2f40' : '#f4433640'
-                        }
-                      }}
+                     sx={actionIconSx('#dc2626', 'rgba(220, 38, 38, 0.12)')}
                     >
                       <Delete fontSize="small" sx={{ color: (user.status || '').toLowerCase() === 'deleted' ? '#d32f2f' : '#f44336' }} />
                     </IconButton>
@@ -3822,15 +4653,24 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
         </Table>
       </TableContainer>
       <TablePagination
-        component="div"
-        count={totalUsers}
-        page={page}
-        onPageChange={handlePageChange}
-        rowsPerPage={rowsPerPage}
-        onRowsPerPageChange={handleRowsPerPageChange}
-        labelDisplayedRows={({ from, to, count }) => `${from + 1}-${Math.min(to + 1, count)} of ${count}`}
-        labelRowsPerPage="Rows per page:"
-      />
+  component="div"
+  count={totalUsers}
+  page={page}
+  onPageChange={handlePageChange}
+  rowsPerPage={rowsPerPage}
+  onRowsPerPageChange={handleRowsPerPageChange}
+  labelDisplayedRows={({ from, to, count }) => `${from + 1}-${Math.min(to + 1, count)} of ${count}`}
+  labelRowsPerPage="Rows per page:"
+  sx={{
+    borderTop: '1px solid rgba(226, 232, 240, 0.95)',
+    bgcolor: '#f8fafc',
+    color: '#475569',
+    '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+      fontWeight: 800,
+      color: '#64748b',
+    },
+  }}
+/>
     </Paper>
   );
 
@@ -3969,350 +4809,668 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
     </Paper>
   );
 
-  const renderDeathCasesTab = () => (
-    <Paper elevation={6} sx={{ borderRadius: 3, overflow: 'hidden' }}>
-      <Box sx={{ p: 3, bgcolor: '#f5f5f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-            Death Assistance Cases ({deathCases.length})
-          </Typography>
-          <IconButton 
-            size="small" 
-            onClick={() => setDeathCasesListExpanded(!deathCasesListExpanded)}
-            sx={{ color: '#d32f2f' }}
-          >
-            {deathCasesListExpanded ? <ExpandLess /> : <ExpandMore />}
-          </IconButton>
+ const renderDeathCasesTab = () => (
+  <Paper
+    elevation={0}
+    sx={{
+      borderRadius: 4,
+      overflow: 'hidden',
+      background: 'rgba(255,255,255,0.96)',
+      border: '1px solid rgba(226, 232, 240, 0.95)',
+      boxShadow: '0 18px 44px rgba(15, 23, 42, 0.08)',
+    }}
+  >
+    <Box
+      sx={{
+        p: { xs: 2.5, md: 3 },
+        background:
+          'linear-gradient(135deg, rgba(254,242,242,0.96) 0%, rgba(255,247,237,0.92) 100%)',
+        borderBottom: '1px solid rgba(226, 232, 240, 0.9)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: { xs: 'flex-start', md: 'center' },
+        flexWrap: 'wrap',
+        gap: 2,
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <Box
+          sx={{
+            width: 46,
+            height: 46,
+            borderRadius: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'linear-gradient(135deg, #dc2626 0%, #f97316 100%)',
+            color: '#fff',
+            boxShadow: '0 12px 24px rgba(220, 38, 38, 0.24)',
+          }}
+        >
+          <Assignment sx={{ fontSize: 26 }} />
         </Box>
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button 
-            variant="contained" 
-            startIcon={<Add />}
-            onClick={() => setCreateDeathCaseDialog(true)}
-            sx={{ bgcolor: '#d32f2f' }}
-          >
-            New Case
-          </Button>
-          <Button 
-            variant="outlined" 
-            startIcon={<Download />}
-            onClick={async () => {
-              console.log('Export button clicked - starting death cases export...');
-              try {
-                setExportLoading(true);
-                console.log('Making API call to export death cases...');
-                
-                const response = await adminAPI.exportDeathCases();
-                console.log('Export response:', response);
-                console.log('Response data type:', typeof response.data);
-                console.log('Response data size:', response.data?.size || 'unknown');
-                
-                if (!response.data) {
-                  throw new Error('No data received from server');
-                }
-                
-                // Create and download Excel file
-                const blob = new Blob([response.data], { 
-                  type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
-                });
-                console.log('Blob created, size:', blob.size);
-                
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                
-                // Generate filename with current timestamp
-                const now = new Date();
-                const timestamp = now.toISOString().slice(0, 19).replace(/[-:]/g, '').replace('T', '_');
-                const filename = `death_cases_${timestamp}.xlsx`;
-                link.setAttribute('download', filename);
-                
-                console.log('Downloading file:', filename);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(url);
-                
-                showSnackbar('Death cases exported successfully!', 'success');
-                console.log('Export completed successfully');
-              } catch (error) {
-                console.error('Death cases export error:', error);
-                console.error('Error details:', {
-                  message: error.message,
-                  response: error.response?.data,
-                  status: error.response?.status,
-                  statusText: error.response?.statusText
-                });
-                
-                let errorMessage = 'Error exporting death cases!';
-                if (error.response?.status === 404) {
-                  errorMessage = 'Export API not available!';
-                } else if (error.response?.status === 403) {
-                  errorMessage = 'No permission to export!';
-                }
-                
-                showSnackbar(errorMessage, 'error');
-              } finally {
-                setExportLoading(false);
-                console.log('Export loading state reset');
-              }
+
+        <Box>
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 900,
+              color: '#0f172a',
+              letterSpacing: '-0.02em',
             }}
-            disabled={exportLoading}
           >
-            {exportLoading ? 'Exporting...' : 'Export'}
-          </Button>
+            Death Assistance Cases
+          </Typography>
+
+          <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+            {deathCasesLoading
+              ? 'Loading assistance cases...'
+              : `${deathCases.length} cases available`}
+          </Typography>
         </Box>
+
+        <IconButton
+          size="small"
+          onClick={() => setDeathCasesListExpanded(!deathCasesListExpanded)}
+          sx={actionIconSx('#dc2626', 'rgba(220, 38, 38, 0.12)')}
+          title={deathCasesListExpanded ? 'Collapse List' : 'Expand List'}
+        >
+          {deathCasesListExpanded ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
+        </IconButton>
       </Box>
-      <TableContainer>
-        <Table>
+
+      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+        <Button
+          variant="contained"
+          startIcon={<Add />}
+          onClick={() => setCreateDeathCaseDialog(true)}
+          sx={{
+            borderRadius: 3,
+            px: 2,
+            py: 1,
+            fontWeight: 800,
+            textTransform: 'none',
+            background: 'linear-gradient(135deg, #dc2626 0%, #f97316 100%)',
+            boxShadow: '0 10px 22px rgba(220, 38, 38, 0.24)',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #b91c1c 0%, #ea580c 100%)',
+              transform: 'translateY(-1px)',
+            },
+          }}
+        >
+          New Case
+        </Button>
+
+        <Button
+          variant="outlined"
+          startIcon={exportLoading ? <CircularProgress size={18} /> : <Download />}
+          onClick={async () => {
+            try {
+              setExportLoading(true);
+
+              const response = await adminAPI.exportDeathCases();
+
+              if (!response.data) {
+                throw new Error('No data received from server');
+              }
+
+              const blob = new Blob([response.data], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              });
+
+              const url = window.URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.href = url;
+
+              const now = new Date();
+              const timestamp = now
+                .toISOString()
+                .slice(0, 19)
+                .replace(/[-:]/g, '')
+                .replace('T', '_');
+
+              link.setAttribute('download', `death_cases_${timestamp}.xlsx`);
+
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              window.URL.revokeObjectURL(url);
+
+              showSnackbar('Death cases exported successfully!', 'success');
+            } catch (error) {
+              console.error('Death cases export error:', error);
+
+              let errorMessage = 'Error exporting death cases!';
+              if (error.response?.status === 404) {
+                errorMessage = 'Export API not available!';
+              } else if (error.response?.status === 403) {
+                errorMessage = 'No permission to export!';
+              }
+
+              showSnackbar(errorMessage, 'error');
+            } finally {
+              setExportLoading(false);
+            }
+          }}
+          disabled={exportLoading}
+          sx={{
+            borderRadius: 3,
+            px: 2,
+            py: 1,
+            fontWeight: 800,
+            textTransform: 'none',
+            borderColor: '#fed7aa',
+            color: '#c2410c',
+            bgcolor: '#fff',
+            '&:hover': {
+              borderColor: '#f97316',
+              bgcolor: 'rgba(255, 247, 237, 0.9)',
+              transform: 'translateY(-1px)',
+            },
+          }}
+        >
+          {exportLoading ? 'Exporting...' : 'Export'}
+        </Button>
+      </Box>
+    </Box>
+
+    <Collapse in={deathCasesListExpanded} timeout="auto" unmountOnExit>
+      <TableContainer
+        sx={{
+          maxWidth: '100%',
+          overflowX: 'auto',
+          bgcolor: '#fff',
+        }}
+      >
+        <Table
+          sx={{
+            minWidth: 1050,
+            '& .MuiTableCell-root': {
+              whiteSpace: 'nowrap',
+            },
+          }}
+        >
           <TableHead>
-            <TableRow sx={{ bgcolor: '#ffebee' }}>
-              <TableCell><strong>Deceased Name</strong></TableCell>
-              <TableCell><strong>Employee Code</strong></TableCell>
-              <TableCell><strong>Department</strong></TableCell>
-              <TableCell><strong>District</strong></TableCell>
-              <TableCell><strong>Nominee</strong></TableCell>
-              <TableCell><strong>Status</strong></TableCell>
-              <TableCell><strong>Actions</strong></TableCell>
+            <TableRow>
+              <TableCell sx={tableHeaderCellSx}>Deceased Name</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Employee Code</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Department</TableCell>
+              <TableCell sx={tableHeaderCellSx}>District</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Nominee</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Status</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Actions</TableCell>
             </TableRow>
           </TableHead>
+
           <TableBody>
             {deathCasesLoading ? (
               <TableRow>
-                <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                  <CircularProgress size={40} />
-                  <Typography variant="body2" sx={{ mt: 2 }}>
-                    Loading death cases...
-                  </Typography>
+                <TableCell colSpan={7} align="center" sx={{ py: 6, borderBottom: 'none' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1.5 }}>
+                    <CircularProgress size={24} sx={{ color: '#dc2626' }} />
+                    <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 700 }}>
+                      Loading death cases...
+                    </Typography>
+                  </Box>
                 </TableCell>
               </TableRow>
             ) : deathCases.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} align="center" sx={{ py: 4 }}>
-                  <Typography variant="body1" color="textSecondary">
-                    No Death Case found
-                  </Typography>
+                <TableCell colSpan={7} align="center" sx={{ py: 6, borderBottom: 'none' }}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Assignment sx={{ fontSize: 44, color: '#cbd5e1', mb: 1 }} />
+                    <Typography variant="body1" sx={{ color: '#475569', fontWeight: 800 }}>
+                      No Death Case found
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: '#94a3b8', mt: 0.5 }}>
+                      Create a new assistance case to start tracking nominee and case details.
+                    </Typography>
+                  </Box>
                 </TableCell>
               </TableRow>
-            ) : deathCases.map((deathCase) => (
-              <TableRow key={deathCase.id || deathCase.caseId || deathCase.deathCaseId || Math.random()} hover>
-                <TableCell>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                    {deathCase.deceasedName}
+            ) : (
+              deathCases.map((deathCase) => {
+                const deathCaseId =
+                  deathCase.id || deathCase.caseId || deathCase.deathCaseId;
+
+                const status = deathCase.caseStatus || deathCase.status || 'OPEN';
+                const isOpen = String(status).toUpperCase() === 'OPEN';
+
+                return (
+                  <TableRow
+                    key={deathCaseId || `${deathCase.employeeCode}-${deathCase.deceasedName}`}
+                    hover
+                    sx={{
+                      transition: 'all 0.18s ease',
+                      '&:hover': {
+                        bgcolor: 'rgba(255, 247, 237, 0.78)',
+                      },
+                    }}
+                  >
+                    <TableCell sx={tableBodyCellSx}>
+                      <Typography variant="body2" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                        {deathCase.deceasedName || '-'}
+                      </Typography>
+
+                      {deathCase.caseDate && (
+                        <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>
+                          {new Date(deathCase.caseDate).toLocaleDateString('hi-IN')}
+                        </Typography>
+                      )}
+                    </TableCell>
+
+                    <TableCell sx={tableBodyCellSx}>
+                      <Typography variant="body2" sx={{ fontWeight: 800, color: '#334155' }}>
+                        {deathCase.employeeCode || '-'}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell sx={tableBodyCellSx}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <BusinessCenter sx={{ fontSize: 16, color: '#64748b' }} />
+                        <Typography variant="body2" sx={{ color: '#334155', fontWeight: 700 }}>
+                          {deathCase.department || '-'}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+
+                    <TableCell sx={tableBodyCellSx}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <LocationOn sx={{ fontSize: 16, color: '#f97316' }} />
+                        <Typography variant="body2" sx={{ color: '#334155', fontWeight: 700 }}>
+                          {deathCase.district || '-'}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+
+                    <TableCell sx={tableBodyCellSx}>
+                      <Box>
+                        {deathCase.nominee1Name ? (
+                          <Typography variant="body2" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                            {deathCase.nominee1Name}
+                          </Typography>
+                        ) : (
+                          <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 700 }}>
+                            No Nominee
+                          </Typography>
+                        )}
+
+                        {deathCase.nominee2Name && (
+                          <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>
+                            + {deathCase.nominee2Name}
+                          </Typography>
+                        )}
+                      </Box>
+                    </TableCell>
+
+                    <TableCell sx={tableBodyCellSx}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <Chip
+                          label={isOpen ? 'Open' : 'Closed'}
+                          size="small"
+                          variant="outlined"
+                          sx={{
+                            ...getDeathCaseStatusChipSx(status),
+                            fontWeight: 900,
+                            borderRadius: '10px',
+                          }}
+                        />
+
+                        {deathCase.isHidden === true && (
+                          <Chip
+                            label="Hidden"
+                            size="small"
+                            icon={<Lock fontSize="small" />}
+                            variant="outlined"
+                            sx={{
+                              bgcolor: 'rgba(220, 38, 38, 0.10)',
+                              color: '#b91c1c',
+                              border: '1px solid rgba(220, 38, 38, 0.20)',
+                              fontWeight: 900,
+                              borderRadius: '10px',
+                              '& .MuiChip-icon': {
+                                color: '#b91c1c',
+                              },
+                            }}
+                          />
+                        )}
+                      </Box>
+                    </TableCell>
+
+                    <TableCell sx={tableBodyCellSx}>
+                      <Box sx={{ display: 'flex', gap: 0.75, alignItems: 'center' }}>
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            setSelectedDeathCase(deathCase);
+                            setDeathCaseDialog(true);
+                          }}
+                          title="View Details"
+                          sx={actionIconSx('#0284c7', 'rgba(2, 132, 199, 0.12)')}
+                        >
+                          <Visibility fontSize="small" />
+                        </IconButton>
+
+                        <IconButton
+                          size="small"
+                          onClick={() => handleEditDeathCase(deathCase)}
+                          title="Edit"
+                          sx={actionIconSx('#f97316', 'rgba(249, 115, 22, 0.14)')}
+                        >
+                          <Edit fontSize="small" />
+                        </IconButton>
+
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            if (!deathCaseId) {
+                              showSnackbar('Death case ID not found!', 'error');
+                              return;
+                            }
+
+                            handleUpdateDeathCaseStatus(
+                              deathCaseId,
+                              isOpen ? 'close' : 'open'
+                            );
+                          }}
+                          title={isOpen ? 'Close Case' : 'Open Case'}
+                          sx={actionIconSx(
+                            isOpen ? '#dc2626' : '#16a34a',
+                            isOpen
+                              ? 'rgba(220, 38, 38, 0.12)'
+                              : 'rgba(22, 163, 74, 0.14)'
+                          )}
+                        >
+                          <Lock fontSize="small" />
+                        </IconButton>
+
+                        {deathCase.nominee1QrCode && (
+                          <IconButton
+                            size="small"
+                            onClick={() => window.open(deathCase.nominee1QrCode, '_blank')}
+                            title="Nominee 1 QR Code"
+                            sx={actionIconSx('#16a34a', 'rgba(22, 163, 74, 0.14)')}
+                          >
+                            <Download fontSize="small" />
+                          </IconButton>
+                        )}
+
+                        {deathCase.nominee2QrCode && (
+                          <IconButton
+                            size="small"
+                            onClick={() => window.open(deathCase.nominee2QrCode, '_blank')}
+                            title="Nominee 2 QR Code"
+                            sx={actionIconSx('#15803d', 'rgba(21, 128, 61, 0.14)')}
+                          >
+                            <Download fontSize="small" />
+                          </IconButton>
+                        )}
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Collapse>
+  </Paper>
+);
+
+ const renderPaymentsTab = () => (
+  <Paper
+    elevation={0}
+    sx={{
+      borderRadius: 4,
+      overflow: 'hidden',
+      background: 'rgba(255,255,255,0.96)',
+      border: '1px solid rgba(226, 232, 240, 0.95)',
+      boxShadow: '0 18px 44px rgba(15, 23, 42, 0.08)',
+    }}
+  >
+    <Box
+      sx={{
+        p: { xs: 2.5, md: 3 },
+        background:
+          'linear-gradient(135deg, rgba(239,246,255,0.96) 0%, rgba(240,253,244,0.92) 100%)',
+        borderBottom: '1px solid rgba(226, 232, 240, 0.9)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: { xs: 'flex-start', md: 'center' },
+        flexWrap: 'wrap',
+        gap: 2,
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        <Box
+          sx={{
+            width: 46,
+            height: 46,
+            borderRadius: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'linear-gradient(135deg, #2563eb 0%, #16a34a 100%)',
+            color: '#fff',
+            boxShadow: '0 12px 24px rgba(37, 99, 235, 0.22)',
+          }}
+        >
+          <Payment sx={{ fontSize: 26 }} />
+        </Box>
+
+        <Box>
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 900,
+              color: '#0f172a',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Receipts Management
+          </Typography>
+
+          <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+            {receiptsLoading
+              ? 'Loading receipt records...'
+              : `${totalReceipts} receipt records available`}
+          </Typography>
+        </Box>
+      </Box>
+
+      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+        <Chip
+          label={`${receipts.length} visible`}
+          size="small"
+          variant="outlined"
+          sx={{
+            bgcolor: 'rgba(37, 99, 235, 0.10)',
+            color: '#1d4ed8',
+            border: '1px solid rgba(37, 99, 235, 0.18)',
+            fontWeight: 900,
+            borderRadius: '10px',
+          }}
+        />
+
+       <Button
+  variant="outlined"
+  startIcon={exportLoading ? <CircularProgress size={18} /> : <Download />}
+  onClick={() => handleExportData('receipts')}
+  disabled={exportLoading}
+  sx={{
+    borderRadius: 3,
+    px: 2,
+    py: 1,
+    fontWeight: 800,
+    textTransform: 'none',
+    borderColor: '#bfdbfe',
+    color: '#1d4ed8',
+    bgcolor: '#fff',
+    '&:hover': {
+      borderColor: '#2563eb',
+      bgcolor: 'rgba(239, 246, 255, 0.9)',
+      transform: 'translateY(-1px)',
+    },
+  }}
+>
+  {exportLoading ? 'Exporting...' : 'Export'}
+</Button>
+ </Box>
+    </Box>
+
+    {receiptsLoading ? (
+      <Box
+        sx={{
+          py: 6,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 1.5,
+          bgcolor: '#fff',
+        }}
+      >
+        <CircularProgress size={24} sx={{ color: '#2563eb' }} />
+        <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 700 }}>
+          Receipts लोड हो रहे हैं...
+        </Typography>
+      </Box>
+    ) : receipts.length === 0 ? (
+      <Box
+        sx={{
+          p: 6,
+          textAlign: 'center',
+          bgcolor: '#fff',
+        }}
+      >
+        <Payment sx={{ fontSize: 52, color: '#cbd5e1', mb: 1 }} />
+
+        <Typography variant="h6" sx={{ color: '#475569', fontWeight: 900 }}>
+          कोई receipt उपलब्ध नहीं है
+        </Typography>
+
+        <Typography variant="body2" sx={{ color: '#94a3b8', mt: 0.75, fontWeight: 600 }}>
+          जैसे ही users payment proof submit करेंगे, यहाँ list दिखाई देगी।
+        </Typography>
+      </Box>
+    ) : (
+      <TableContainer
+        sx={{
+          maxWidth: '100%',
+          overflowX: 'auto',
+          bgcolor: '#fff',
+        }}
+      >
+        <Table
+          sx={{
+            minWidth: 1050,
+            '& .MuiTableCell-root': {
+              whiteSpace: 'nowrap',
+            },
+          }}
+        >
+          <TableHead>
+            <TableRow>
+              <TableCell sx={tableHeaderCellSx}>Reg No</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Name</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Sambhag</TableCell>
+              <TableCell sx={tableHeaderCellSx}>District</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Block</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Department</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Payment Date</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Amount</TableCell>
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {receipts.map((receipt, index) => (
+              <TableRow
+                key={`${receipt.regNo || 'receipt'}-${index}`}
+                hover
+                sx={{
+                  transition: 'all 0.18s ease',
+                  '&:hover': {
+                    bgcolor: 'rgba(239, 246, 255, 0.72)',
+                  },
+                }}
+              >
+                <TableCell sx={tableBodyCellSx}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontWeight: 900,
+                      color: '#0f172a',
+                      fontSize: '0.82rem',
+                    }}
+                  >
+                    {receipt.regNo ?? '-'}
                   </Typography>
-                  {deathCase.caseDate && (
-                    <Typography variant="caption" color="textSecondary">
-                      {new Date(deathCase.caseDate).toLocaleDateString('hi-IN')}
+                </TableCell>
+
+                <TableCell sx={tableBodyCellSx}>
+                  <Typography variant="body2" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                    {receipt.name ?? '-'}
+                  </Typography>
+                </TableCell>
+
+                <TableCell sx={tableBodyCellSx}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                    <LocationOn sx={{ fontSize: 16, color: '#2563eb' }} />
+                    <Typography variant="body2" sx={{ color: '#334155', fontWeight: 700 }}>
+                      {receipt.sambhag ?? '-'}
                     </Typography>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2">
-                    {deathCase.employeeCode}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2">
-                    {deathCase.department}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2">
-                    {deathCase.district}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Box>
-                    {deathCase.nominee1Name && (
-                      <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                        {deathCase.nominee1Name}
-                      </Typography>
-                    )}
-                    {deathCase.nominee2Name && (
-                      <Typography variant="caption" color="textSecondary">
-                        + {deathCase.nominee2Name}
-                      </Typography>
-                    )}
-                    {!deathCase.nominee1Name && !deathCase.nominee2Name && (
-                      <Typography variant="caption" color="textSecondary">
-                        No Nominee
-                      </Typography>
-                    )}
                   </Box>
                 </TableCell>
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <Chip 
-                      label={deathCase.status === 'OPEN' ? 'Open' : 'Closed'}
-                      size="small"
-                      sx={{ 
-                        bgcolor: deathCase.status === 'OPEN' ? '#4caf50' : '#f44336',
-                        color: 'white'
-                      }}
-                    />
-                    {(deathCase.isHidden === true) && (
-                      <Chip
-                        label="Hidden"
-                        size="small"
-                        icon={<Lock fontSize="small" />}
-                        sx={{
-                          bgcolor: '#f44336',
-                          color: 'white',
-                          '& .MuiChip-icon': {
-                            color: 'white'
-                          }
-                        }}
-                      />
-                    )}
+
+                <TableCell sx={tableBodyCellSx}>
+                  <Typography variant="body2" sx={{ color: '#334155', fontWeight: 700 }}>
+                    {receipt.district ?? '-'}
+                  </Typography>
+                </TableCell>
+
+                <TableCell sx={tableBodyCellSx}>
+                  <Typography variant="body2" sx={{ color: '#334155', fontWeight: 700 }}>
+                    {receipt.block ?? '-'}
+                  </Typography>
+                </TableCell>
+
+                <TableCell sx={tableBodyCellSx}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                    <BusinessCenter sx={{ fontSize: 16, color: '#64748b' }} />
+                    <Typography variant="body2" sx={{ color: '#334155', fontWeight: 700 }}>
+                      {receipt.department ?? '-'}
+                    </Typography>
                   </Box>
                 </TableCell>
-                <TableCell>
-                  <Box sx={{ display: 'flex', gap: 0.5 }}>
-                    <IconButton 
-                      size="small" 
-                      onClick={() => {
-                        console.log('Selected death case for view:', deathCase);
-                        setSelectedDeathCase(deathCase);
-                        setDeathCaseDialog(true);
-                      }}
-                      title="View Details"
-                      color="primary"
-                    >
-                      <Visibility fontSize="small" />
-                    </IconButton>
-                                        <IconButton
-                      size="small"
-                      onClick={() => handleEditDeathCase(deathCase)}
-                      title="Edit"
-                      color="warning"
-                      sx={{
-                        bgcolor: '#ff980020',
-                        '&:hover': {
-                          bgcolor: '#ff980040'
-                        }
-                      }}
-                    >
-                      <Edit fontSize="small" />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        console.log('Death case object:', deathCase);
-                        const id = deathCase.id || deathCase.caseId || deathCase.deathCaseId;
-                        console.log('Extracted ID:', id);
-                        handleUpdateDeathCaseStatus(id, deathCase.status === 'OPEN' ? 'close' : 'open');
-                      }}
-                      title={deathCase.status === 'OPEN' ? 'Close' : 'Open'}
-                      sx={{
-                        color: deathCase.status === 'OPEN' ? '#4caf50' : '#f44336',
-                        bgcolor: deathCase.status === 'OPEN' ? '#4caf5020' : '#f4433620',
-                        '&:hover': {
-                          bgcolor: deathCase.status === 'OPEN' ? '#4caf5040' : '#f4433640'
-                        }
-                      }}
-                    >
-                      <Lock fontSize="small" />
-                    </IconButton>
-                    {deathCase.nominee1QrCode && (
-                      <IconButton 
-                        size="small" 
-                        onClick={() => window.open(deathCase.nominee1QrCode, '_blank')}
-                        title="Nominee 1 QR Code"
-                        color="success"
-                      >
-                        <Download fontSize="small" />
-                      </IconButton>
-                    )}
-                    {deathCase.nominee2QrCode && (
-                      <IconButton 
-                        size="small" 
-                        onClick={() => window.open(deathCase.nominee2QrCode, '_blank')}
-                        title="Nominee 2 QR Code"
-                        color="success"
-                      >
-                        <Download fontSize="small" />
-                      </IconButton>
-                    )}
-                  </Box>
+
+                <TableCell sx={tableBodyCellSx}>
+                  <Typography variant="body2" sx={{ color: '#475569', fontWeight: 800 }}>
+                    {formatDate(receipt.paymentDate)}
+                  </Typography>
+                </TableCell>
+
+                <TableCell sx={tableBodyCellSx}>
+                  <Chip
+                    label={`₹${receipt.amount ?? '-'}`}
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      bgcolor: 'rgba(22, 163, 74, 0.12)',
+                      color: '#15803d',
+                      border: '1px solid rgba(22, 163, 74, 0.20)',
+                      fontWeight: 900,
+                      borderRadius: '10px',
+                    }}
+                  />
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
-    </Paper>
-  );
-
-  const renderPaymentsTab = () => (
-    <Paper elevation={6} sx={{ borderRadius: 3, overflow: 'hidden' }}>
-      <Box sx={{ p: 3, bgcolor: '#f5f5f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-      <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-  Receipts Management ({totalReceipts})
-</Typography>
-
-<Button
-  variant="outlined"
-  startIcon={<Download />}
-  onClick={() => handleExportData('receipts')}
->
-  Export
-</Button>
-      </Box>
-       {receiptsLoading ? (
-             <Box sx={{ p: 3 }}>
-               <Box sx={{ display: 'flex', justifyContent: 'center' }}><CircularProgress /></Box>
-               <Typography sx={{ mt: 2, textAlign: 'center', color: '#666' }}>
-                 Receipts लोड हो रहे हैं...
-               </Typography>
-             </Box>
-           ) : receipts.length === 0 ? (
-             <Box sx={{ p: 4, textAlign: 'center' }}>
-               <Payment sx={{ fontSize: 48, color: '#ccc', mb: 2 }} />
-               <Typography variant="h6" sx={{ color: '#666' }}>
-                 कोई receipt उपलब्ध नहीं है
-               </Typography>
-               <Typography variant="body2" sx={{ color: '#999', mt: 1 }}>
-                 जैसे ही users payment proof submit करेंगे, यहाँ list दिखाई देगी।
-               </Typography>
-             </Box>
-           ) : (
-             <TableContainer>
-              <Table>
-  <TableHead>
-    <TableRow sx={{ bgcolor: '#1976d2' }}>
-      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Reg No</TableCell>
-      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Name</TableCell>
-      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Sambhag</TableCell>
-      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>District</TableCell>
-      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Block</TableCell>
-      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Department</TableCell>
-      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Payment Date</TableCell>
-      <TableCell sx={{ color: 'white', fontWeight: 'bold' }}>Amount</TableCell>
-    </TableRow>
-  </TableHead>
-
-  <TableBody>
-    {receipts.map((r, index) => (
-      <TableRow
-        key={`${r.regNo || 'row'}-${index}`}
-        sx={{ '&:nth-of-type(odd)': { bgcolor: '#f9f9f9' } }}
-      >
-        <TableCell>{r.regNo ?? '-'}</TableCell>
-        <TableCell>{r.name ?? '-'}</TableCell>
-        <TableCell>{r.sambhag ?? '-'}</TableCell>
-        <TableCell>{r.district ?? '-'}</TableCell>
-        <TableCell>{r.block ?? '-'}</TableCell>
-        <TableCell>{r.department ?? '-'}</TableCell>
-        <TableCell>{formatDate(r.paymentDate)}</TableCell>
-        <TableCell>₹{r.amount ?? '-'}</TableCell>
-      </TableRow>
-    ))}
-  </TableBody>
-</Table>
-             </TableContainer>
-           )}
-         </Paper>
-       );
+    )}
+  </Paper>
+);
      
 
   const renderQueriesTab = () => (
@@ -4397,385 +5555,708 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
       </TableContainer>
     </Paper>
   );
+const quickActionButtonSx = (gradient, shadowColor) => ({
+  py: 1.8,
+  px: 2,
+  minHeight: 58,
+  borderRadius: 3,
+  justifyContent: 'flex-start',
+  textTransform: 'none',
+  fontWeight: 800,
+  fontSize: '0.92rem',
+  color: '#fff',
+  background: gradient,
+  boxShadow: `0 12px 26px ${shadowColor}`,
+  position: 'relative',
+  overflow: 'hidden',
+  transition: 'all 0.25s ease',
+  '& .MuiButton-startIcon': {
+    mr: 1.2,
+  },
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: '-80%',
+    width: '55%',
+    height: '100%',
+    background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent)',
+    transform: 'skewX(-20deg)',
+    transition: 'all 0.6s ease',
+  },
+  '&:hover': {
+    transform: 'translateY(-3px)',
+    boxShadow: `0 18px 36px ${shadowColor}`,
+    filter: 'brightness(1.03)',
+  },
+  '&:hover::before': {
+    left: '130%',
+  },
+  '&.Mui-disabled': {
+    color: 'rgba(255,255,255,0.75)',
+    opacity: 0.75,
+  },
+});
 
+const tabItemSx = {
+  textTransform: 'none',
+  fontWeight: 800,
+  fontSize: '0.92rem',
+  minHeight: 54,
+  borderRadius: '16px',
+  px: 2.25,
+  mx: 0.4,
+  color: '#475569',
+  transition: 'all 0.25s ease',
+  '& .MuiSvgIcon-root': {
+    fontSize: 20,
+  },
+  '&.Mui-selected': {
+    color: '#fff',
+    background: 'linear-gradient(135deg, #dc2626 0%, #f97316 100%)',
+    boxShadow: '0 12px 24px rgba(220, 38, 38, 0.28)',
+  },
+};
+const tableHeaderCellSx = {
+  color: '#334155',
+  fontWeight: 900,
+  fontSize: '0.78rem',
+  textTransform: 'uppercase',
+  letterSpacing: '0.04em',
+  borderBottom: '1px solid rgba(203, 213, 225, 0.9)',
+  py: 1.8,
+  bgcolor: 'rgba(248, 250, 252, 0.95)',
+};
+
+const tableBodyCellSx = {
+  borderBottom: '1px solid rgba(226, 232, 240, 0.85)',
+  py: 1.7,
+  color: '#334155',
+};
+
+const actionIconSx = (color, bg) => ({
+  width: 34,
+  height: 34,
+  borderRadius: '12px',
+  bgcolor: bg,
+  color,
+  border: `1px solid ${bg}`,
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    bgcolor: bg,
+    color,
+    transform: 'translateY(-2px)',
+    boxShadow: `0 8px 18px ${bg}`,
+  },
+});
+
+const getRoleChipSx = (role) => {
+  if (role === 'ROLE_ADMIN') {
+    return {
+      bgcolor: 'rgba(220, 38, 38, 0.10)',
+      color: '#b91c1c',
+      border: '1px solid rgba(220, 38, 38, 0.18)',
+    };
+  }
+
+  if (role && role.includes('MANAGER')) {
+    return {
+      bgcolor: 'rgba(249, 115, 22, 0.12)',
+      color: '#c2410c',
+      border: '1px solid rgba(249, 115, 22, 0.20)',
+    };
+  }
+
+  return {
+    bgcolor: 'rgba(37, 99, 235, 0.10)',
+    color: '#1d4ed8',
+    border: '1px solid rgba(37, 99, 235, 0.18)',
+  };
+};
+
+const getStatusChipSx = (status) => {
+  const normalized = String(status || '').toUpperCase();
+
+  if (normalized === 'ACTIVE') {
+    return {
+      bgcolor: 'rgba(22, 163, 74, 0.12)',
+      color: '#15803d',
+      border: '1px solid rgba(22, 163, 74, 0.20)',
+    };
+  }
+
+  if (normalized === 'BLOCKED') {
+    return {
+      bgcolor: 'rgba(220, 38, 38, 0.10)',
+      color: '#b91c1c',
+      border: '1px solid rgba(220, 38, 38, 0.20)',
+    };
+  }
+
+  return {
+    bgcolor: 'rgba(100, 116, 139, 0.10)',
+    color: '#475569',
+    border: '1px solid rgba(100, 116, 139, 0.20)',
+  };
+};
+
+const getDeathCaseStatusChipSx = (status) => {
+  const normalized = String(status || '').toUpperCase();
+
+  if (normalized === 'OPEN') {
+    return {
+      bgcolor: 'rgba(22, 163, 74, 0.12)',
+      color: '#15803d',
+      border: '1px solid rgba(22, 163, 74, 0.20)',
+    };
+  }
+
+  if (normalized === 'CLOSED') {
+    return {
+      bgcolor: 'rgba(220, 38, 38, 0.10)',
+      color: '#b91c1c',
+      border: '1px solid rgba(220, 38, 38, 0.20)',
+    };
+  }
+
+  return {
+    bgcolor: 'rgba(100, 116, 139, 0.10)',
+    color: '#475569',
+    border: '1px solid rgba(100, 116, 139, 0.20)',
+  };
+};
   return (
     <Layout>
-      <Box sx={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #1a237e 0%, #d32f2f 50%, #f57c00 100%)',
-        py: 4,
-        fontFamily: '"Noto Sans Devanagari", "Inter", sans-serif',
-        '& *': {
-          fontFamily: '"Noto Sans Devanagari", "Inter", sans-serif !important',
-        }
-      }}>
-        <Container maxWidth="xl">
+      <Box
+  sx={{
+    minHeight: '100vh',
+    background: `
+      radial-gradient(circle at 8% 8%, rgba(220, 38, 38, 0.16) 0%, transparent 30%),
+      radial-gradient(circle at 92% 12%, rgba(249, 115, 22, 0.18) 0%, transparent 32%),
+      radial-gradient(circle at 50% 95%, rgba(30, 58, 138, 0.10) 0%, transparent 34%),
+      linear-gradient(135deg, #fff7ed 0%, #fef2f2 42%, #f8fafc 100%)
+    `,
+    py: { xs: 2.5, md: 4 },
+    position: 'relative',
+    overflow: 'hidden',
+    fontFamily: '"Noto Sans Devanagari", "Inter", sans-serif',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      inset: 0,
+      backgroundImage:
+        'linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px)',
+      backgroundSize: '42px 42px',
+      maskImage: 'linear-gradient(to bottom, rgba(0,0,0,0.65), transparent 75%)',
+      pointerEvents: 'none',
+    },
+    '& *': {
+      fontFamily: '"Noto Sans Devanagari", "Inter", sans-serif !important',
+    },
+  }}
+>
+     <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1 }}>
           {/* Admin Header */}
-          <Paper 
-            elevation={24} 
-            sx={{ 
-              mb: 4,
-              borderRadius: 4,
-              background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)',
-              backdropFilter: 'blur(20px)',
+        {/* Admin Header */}
+<Paper
+  elevation={0}
+  sx={{
+    mb: 4,
+    borderRadius: 5,
+    overflow: 'hidden',
+    position: 'relative',
+    background:
+      'linear-gradient(135deg, rgba(255,255,255,0.96) 0%, rgba(255,247,237,0.94) 48%, rgba(254,242,242,0.96) 100%)',
+    backdropFilter: 'blur(22px)',
+    border: '1px solid rgba(255,255,255,0.75)',
+    boxShadow: '0 24px 70px rgba(127, 29, 29, 0.14)',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      width: 260,
+      height: 260,
+      borderRadius: '50%',
+      right: -80,
+      top: -120,
+      background: 'radial-gradient(circle, rgba(249, 115, 22, 0.24), transparent 68%)',
+    },
+    '&::after': {
+      content: '""',
+      position: 'absolute',
+      width: 220,
+      height: 220,
+      borderRadius: '50%',
+      left: -90,
+      bottom: -120,
+      background: 'radial-gradient(circle, rgba(220, 38, 38, 0.16), transparent 68%)',
+    },
+  }}
+>
+  <Box sx={{ p: { xs: 3, md: 4 }, position: 'relative', zIndex: 1 }}>
+    <Box
+      sx={{
+        display: 'flex',
+        alignItems: { xs: 'flex-start', md: 'center' },
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: 3,
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2.5 }}>
+        <Box
+          sx={{
+            width: 72,
+            height: 72,
+            borderRadius: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'linear-gradient(135deg, #dc2626 0%, #f97316 100%)',
+            color: '#fff',
+            boxShadow: '0 18px 34px rgba(220, 38, 38, 0.35)',
+          }}
+        >
+          <AdminPanelSettings sx={{ fontSize: 40 }} />
+        </Box>
+
+        <Box>
+          <Chip
+            label="Administrative Control Center"
+            size="small"
+            sx={{
+              mb: 1,
+              fontWeight: 800,
+              color: '#b91c1c',
+              bgcolor: 'rgba(220, 38, 38, 0.10)',
+              border: '1px solid rgba(220, 38, 38, 0.16)',
+            }}
+          />
+
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 900,
+              letterSpacing: '-0.04em',
+              background: 'linear-gradient(135deg, #991b1b 0%, #dc2626 45%, #f97316 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              lineHeight: 1.1,
+              mb: 0.75,
             }}
           >
-            <Box sx={{ p: 4 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <AdminPanelSettings sx={{ 
-                    fontSize: 48,
-                    color: '#d32f2f'
-                  }} />
-                  <Box>
-                    <Typography variant="h4" sx={{ 
-                      fontWeight: 'bold',
-                      background: 'linear-gradient(135deg, #d32f2f 0%, #f57c00 100%)',
-                      backgroundClip: 'text',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      mb: 1
-                    }}>
-                      Admin Dashboard
-                    </Typography>
-                    <Typography variant="h6" sx={{ color: '#666' }}>
-                      Complete Management Control Center
-                    </Typography>
-                  </Box>
-                </Box>
-                <Chip 
-                  label={`Welcome, ${currentUser?.name || 'Admin'}`}
-                  color="error"
-                  sx={{ 
-                    fontWeight: 'bold',
-                    fontSize: '1rem',
-                    py: 2.5,
-                    px: 1
-                  }}
-                />
-              </Box>
-            </Box>
-          </Paper>
+            Admin Dashboard
+          </Typography>
 
-          {/* Stats Cards */}
-          {/* <Grid container spacing={3} sx={{ mb: 4 }}>
-            {adminStats.map((stat, index) => (
-              <Grid item xs={12} sm={6} lg={3} key={index}>
-                <Card
-                  elevation={12}
-                  sx={{
-                    borderRadius: 3,
-                    background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)',
-                    backdropFilter: 'blur(20px)',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      transform: 'translateY(-10px)',
-                      boxShadow: '0 20px 40px rgba(26, 35, 126, 0.3)',
-                    },
-                  }}
-                >
-                  <CardContent sx={{ p: 3 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                      <Box
-                        sx={{
-                          p: 1.5,
-                          borderRadius: 2,
-                          background: `linear-gradient(135deg, ${stat.color} 0%, ${stat.color}80 100%)`,
-                          color: 'white',
-                        }}
-                      >
-                        {stat.icon}
-                      </Box>
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          color: stat.growth.startsWith('+') ? '#4caf50' : '#f44336',
-                          fontWeight: 'bold',
-                          fontSize: '0.875rem',
-                        }}
-                      >
-                        {stat.growth}
-                      </Typography>
-                    </Box>
-                    <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 1 }}>
-                      {stat.value}
-                    </Typography>
-                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 0.5 }}>
-                      {stat.title}
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      {stat.subtitle}
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid> */}
+          <Typography
+            variant="body1"
+            sx={{
+              color: '#64748b',
+              fontWeight: 600,
+              maxWidth: 650,
+            }}
+          >
+            Manage users, assistance cases, receipts, reports, audit logs and support tickets from one secure dashboard.
+          </Typography>
+        </Box>
+      </Box>
+
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.5,
+          p: 1,
+          pl: 1.5,
+          borderRadius: 4,
+          bgcolor: 'rgba(255,255,255,0.72)',
+          border: '1px solid rgba(148, 163, 184, 0.20)',
+          boxShadow: '0 12px 30px rgba(15, 23, 42, 0.08)',
+        }}
+      >
+        <Box>
+          <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>
+            Welcome back
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#0f172a', fontWeight: 900 }}>
+            {currentUser?.name || 'Admin'}
+          </Typography>
+        </Box>
+
+        <Chip
+          label={currentUser?.role === 'ROLE_SUPERADMIN' ? 'Super Admin' : 'Admin'}
+          sx={{
+            fontWeight: 900,
+            color: '#fff',
+            bgcolor: '#dc2626',
+            height: 36,
+            px: 0.5,
+            boxShadow: '0 10px 20px rgba(220, 38, 38, 0.24)',
+          }}
+        />
+      </Box>
+    </Box>
+  </Box>
+</Paper>
+
 
           {/* Quick Action Panel */}
-          <Paper elevation={12} sx={{ borderRadius: 4, mb: 4, overflow: 'hidden' }}>
-            <Box sx={{ p: 3, bgcolor: '#f5f5f5' }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
-                Quick Actions
-              </Typography>
-              <Grid container spacing={2}>
-                 <Grid item xs={12} sm={6} md={3}>
-  <Button
-    fullWidth
-    variant="contained"
-    startIcon={<Settings />}
-    onClick={openSettingsDialog}
-    sx={{
-      bgcolor: '#ff9800',
-      py: 2,
-      '&:hover': { bgcolor: '#f57c00' }
-    }}
-  >
-    Settings
-  </Button>
-</Grid>
-<Grid item xs={12} sm={6} md={3}>
-  <Button
-    fullWidth
-    variant="contained"
-    startIcon={<Article />}
-    onClick={openContentDialog}
-    sx={{
-      bgcolor: '#6a1b9a',
-      py: 2,
-      '&:hover': { bgcolor: '#4a148c' }
-    }}
-  >
-    Content
-  </Button>
-</Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    startIcon={<Download />}
-                    onClick={() => setExportDialog(true)}
-                    sx={{ 
-                      bgcolor: '#2196f3',
-                      py: 2,
-                      '&:hover': { bgcolor: '#1976d2' }
-                    }}
-                  >
-                    User Export
-                  </Button>
-                </Grid>
-               
-               
-<Grid item xs={12} sm={6} md={3}>
-  <Button
-    fullWidth
-    variant="contained"
-    startIcon={<Download />}
-    onClick={() => openDashboardExportDialog('sahyog')}
-    sx={{
-      bgcolor: '#00695c',
-      py: 2,
-      '&:hover': { bgcolor: '#004d40' }
-    }}
-  >
-    Export Sahyog
-  </Button>
-</Grid>
-<Grid item xs={12} sm={6} md={3}>
-  <Button
-    fullWidth
-    variant="contained"
-    startIcon={<Download />}
-    onClick={() => openDashboardExportDialog('asahyog')}
-    sx={{
-      bgcolor: '#6a1b9a',
-      py: 2,
-      '&:hover': { bgcolor: '#4a148c' }
-    }}
-  >
-    Export Asahyog
-  </Button>
-</Grid>
-<Grid item xs={12} sm={6} md={3}>
-  <Button
-    fullWidth
-    variant="contained"
-    startIcon={<Download />}
-    onClick={handleExportZeroUtr}
-    sx={{
-      bgcolor: '#ad1457',
-      py: 2,
-      '&:hover': { bgcolor: '#880e4f' }
-    }}
-  >
-    Export Zero UTR
-  </Button>
-</Grid>
-<Grid item xs={12} sm={6} md={3}>
-  <Button
-    fullWidth
-    variant="contained"
-    startIcon={<Download />}
-    onClick={() => openDashboardExportDialog('pending-profiles')}
-    sx={{
-      bgcolor: '#ef6c00',
-      py: 2,
-      '&:hover': { bgcolor: '#e65100' }
-    }}
-  >
-    Export Pending Profiles
-  </Button>
-</Grid>
-<Grid item xs={12} sm={6} md={3}>
-  <Button
-    fullWidth
-    variant="contained"
-    startIcon={exportLoading ? <CircularProgress size={18} color="inherit" /> : <Download />}
-    onClick={handleSendInsuranceInquiryEmail}
-    disabled={exportLoading}
-    sx={{
-      bgcolor: '#8e24aa',
-      py: 2,
-      '&:hover': { bgcolor: '#6a1b9a' }
-    }}
-  >
-    {exportLoading ? 'Sending...' : 'Mail Insurance Excel'}
-  </Button>
-</Grid>
-<Grid item xs={12} sm={6} md={3}>
-  <Button
-    fullWidth
-    variant="contained"
-    startIcon={<DeleteForever />}
-    onClick={() => setDeleteRequestsOpen(true)}
-    sx={{
-      bgcolor: '#c62828',
-      py: 2,
-      '&:hover': { bgcolor: '#b71c1c' }
-    }}
-  >
-    Delete Requests
-  </Button>
-
-</Grid>
-  <Grid item xs={12} sm={6} md={3}>
-  <Button
-    fullWidth
-    variant="contained"
-    startIcon={<Download />}
-    onClick={() => openDateExportDialog('joining')}
-    sx={{
-      bgcolor: '#1565c0',
-      py: 2,
-      '&:hover': { bgcolor: '#0d47a1' },
-    }}
-  >
-    नियुक्ति तिथि Export
-  </Button>
-</Grid>
-
-<Grid item xs={12} sm={6} md={3}>
-  <Button
-    fullWidth
-    variant="contained"
-    startIcon={<Download />}
-    onClick={() => openDateExportDialog('retirement')}
-    sx={{
-      bgcolor: '#5d4037',
-      py: 2,
-      '&:hover': { bgcolor: '#3e2723' },
-    }}
-  >
-    सेवानिवृत्ति तिथि Export
-  </Button>
-</Grid><Grid item xs={12} sm={6} md={3}>
-<Button
-  variant="contained"
-  startIcon={<Download />}
-  onClick={handleExportNoLoginThreeMonths}
-  disabled={exportLoading}
-   sx={{
-      bgcolor: '#c62828',
-      py: 2,
-      '&:hover': { bgcolor: '#b71c1c' }
-    }}
+        {/* Quick Action Panel */}
+<Paper
+  elevation={0}
+  sx={{
+    borderRadius: 5,
+    mb: 4,
+    overflow: 'hidden',
+    background: 'rgba(255,255,255,0.88)',
+    backdropFilter: 'blur(20px)',
+    border: '1px solid rgba(255,255,255,0.76)',
+    boxShadow: '0 22px 60px rgba(15, 23, 42, 0.10)',
+  }}
 >
-  3 महीने से Login नहीं
-</Button>
-</Grid><Grid item xs={12} sm={6} md={3}>
-<Button
-  variant="contained"
-  startIcon={<Download />}
-  onClick={handleExportNoSahyogTwoMonths}
-  disabled={exportLoading}
-   sx={{
-      bgcolor: '#c62828',
-      py: 2,
-      '&:hover': { bgcolor: '#b71c1c' }
-    }}
->
-  2 महीने से Sahyog नहीं
-</Button></Grid><Grid item xs={12} sm={6} md={3}>
-{['ROLE_ADMIN', 'ROLE_SUPERADMIN'].includes(currentUser?.role) && (
-  <Button
-    variant="contained"
-    startIcon={<Payment />}
-    onClick={openManualSahyogMoveDialog}
+  <Box
     sx={{
-      borderRadius: 2,
-      bgcolor: '#2e7d32',
-      '&:hover': { bgcolor: '#1b5e20' },
+      p: { xs: 2.5, md: 3 },
+      background:
+        'linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(248,250,252,0.88) 100%)',
     }}
   >
-    Manual Asahyog → Sahyog
-  </Button>
-)}</Grid>
-              </Grid>
-            </Box>
-          </Paper>
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: { xs: 'flex-start', md: 'center' },
+        flexWrap: 'wrap',
+        gap: 1.5,
+        mb: 2.5,
+      }}
+    >
+      <Box>
+        <Typography
+          variant="h6"
+          sx={{
+            fontWeight: 900,
+            color: '#0f172a',
+            letterSpacing: '-0.02em',
+          }}
+        >
+          Quick Actions
+        </Typography>
+        <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+          Common admin exports and controls
+        </Typography>
+      </Box>
+
+      <Chip
+        size="small"
+        label="Admin Tools"
+        sx={{
+          fontWeight: 800,
+          color: '#b91c1c',
+          bgcolor: 'rgba(220, 38, 38, 0.10)',
+          border: '1px solid rgba(220, 38, 38, 0.16)',
+        }}
+      />
+    </Box>
+
+    <Grid container spacing={2}>
+      <Grid item xs={12} sm={6} md={3}>
+        <Button
+          fullWidth
+          variant="contained"
+          startIcon={<Settings />}
+          onClick={openSettingsDialog}
+          sx={quickActionButtonSx(
+            'linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)',
+            'rgba(234, 88, 12, 0.24)'
+          )}
+        >
+          Settings
+        </Button>
+      </Grid>
+
+      <Grid item xs={12} sm={6} md={3}>
+        <Button
+          fullWidth
+          variant="contained"
+          startIcon={<Article />}
+          onClick={openContentDialog}
+          sx={quickActionButtonSx(
+            'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
+            'rgba(124, 58, 237, 0.24)'
+          )}
+        >
+          Content
+        </Button>
+      </Grid>
+
+      <Grid item xs={12} sm={6} md={3}>
+        <Button
+          fullWidth
+          variant="contained"
+          startIcon={<Download />}
+          onClick={() => setExportDialog(true)}
+          sx={quickActionButtonSx(
+            'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+            'rgba(37, 99, 235, 0.22)'
+          )}
+        >
+          User Export
+        </Button>
+      </Grid>
+
+      <Grid item xs={12} sm={6} md={3}>
+        <Button
+          fullWidth
+          variant="contained"
+          startIcon={<Download />}
+          onClick={() => openDashboardExportDialog('sahyog')}
+          sx={quickActionButtonSx(
+            'linear-gradient(135deg, #059669 0%, #047857 100%)',
+            'rgba(5, 150, 105, 0.22)'
+          )}
+        >
+          Export Sahyog
+        </Button>
+      </Grid>
+
+      <Grid item xs={12} sm={6} md={3}>
+        <Button
+          fullWidth
+          variant="contained"
+          startIcon={<Download />}
+          onClick={() => openDashboardExportDialog('asahyog')}
+          sx={quickActionButtonSx(
+            'linear-gradient(135deg, #9333ea 0%, #7e22ce 100%)',
+            'rgba(147, 51, 234, 0.22)'
+          )}
+        >
+          Export Asahyog
+        </Button>
+      </Grid>
+
+      <Grid item xs={12} sm={6} md={3}>
+        <Button
+          fullWidth
+          variant="contained"
+          startIcon={<Download />}
+          onClick={handleExportZeroUtr}
+          sx={quickActionButtonSx(
+            'linear-gradient(135deg, #db2777 0%, #be185d 100%)',
+            'rgba(219, 39, 119, 0.22)'
+          )}
+        >
+          Export Zero UTR
+        </Button>
+      </Grid>
+
+      <Grid item xs={12} sm={6} md={3}>
+        <Button
+          fullWidth
+          variant="contained"
+          startIcon={<Download />}
+          onClick={() => openDashboardExportDialog('pending-profiles')}
+          sx={quickActionButtonSx(
+            'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+            'rgba(249, 115, 22, 0.22)'
+          )}
+        >
+          Export Pending Profiles
+        </Button>
+      </Grid>
+
+      <Grid item xs={12} sm={6} md={3}>
+        <Button
+          fullWidth
+          variant="contained"
+          startIcon={exportLoading ? <CircularProgress size={18} color="inherit" /> : <Download />}
+          onClick={handleSendInsuranceInquiryEmail}
+          disabled={exportLoading}
+          sx={quickActionButtonSx(
+            'linear-gradient(135deg, #a855f7 0%, #9333ea 100%)',
+            'rgba(168, 85, 247, 0.22)'
+          )}
+        >
+          {exportLoading ? 'Sending...' : 'Mail Insurance Excel'}
+        </Button>
+      </Grid>
+
+      <Grid item xs={12} sm={6} md={3}>
+        <Button
+          fullWidth
+          variant="contained"
+          startIcon={<DeleteForever />}
+          onClick={() => setDeleteRequestsOpen(true)}
+          sx={quickActionButtonSx(
+            'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)',
+            'rgba(220, 38, 38, 0.24)'
+          )}
+        >
+          Delete Requests
+        </Button>
+      </Grid>
+
+      <Grid item xs={12} sm={6} md={3}>
+        <Button
+          fullWidth
+          variant="contained"
+          startIcon={<Download />}
+          onClick={() => openDateExportDialog('joining')}
+          sx={quickActionButtonSx(
+            'linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%)',
+            'rgba(29, 78, 216, 0.22)'
+          )}
+        >
+          नियुक्ति तिथि Export
+        </Button>
+      </Grid>
+
+      <Grid item xs={12} sm={6} md={3}>
+        <Button
+          fullWidth
+          variant="contained"
+          startIcon={<Download />}
+          onClick={() => openDateExportDialog('retirement')}
+          sx={quickActionButtonSx(
+            'linear-gradient(135deg, #795548 0%, #4e342e 100%)',
+            'rgba(121, 85, 72, 0.22)'
+          )}
+        >
+          सेवानिवृत्ति तिथि Export
+        </Button>
+      </Grid>
+
+      <Grid item xs={12} sm={6} md={3}>
+        <Button
+          fullWidth
+          variant="contained"
+          startIcon={<Download />}
+          onClick={handleExportNoLoginThreeMonths}
+          disabled={exportLoading}
+          sx={quickActionButtonSx(
+            'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
+            'rgba(239, 68, 68, 0.22)'
+          )}
+        >
+          3 महीने से Login नहीं
+        </Button>
+      </Grid>
+
+      <Grid item xs={12} sm={6} md={3}>
+        <Button
+          fullWidth
+          variant="contained"
+          startIcon={<Download />}
+          onClick={handleExportNoSahyogTwoMonths}
+          disabled={exportLoading}
+          sx={quickActionButtonSx(
+            'linear-gradient(135deg, #f43f5e 0%, #be123c 100%)',
+            'rgba(244, 63, 94, 0.22)'
+          )}
+        >
+          2 महीने से Sahyog नहीं
+        </Button>
+      </Grid>
+
+      {['ROLE_ADMIN', 'ROLE_SUPERADMIN'].includes(currentUser?.role) && (
+        <Grid item xs={12} sm={6} md={3}>
+          <Button
+            fullWidth
+            variant="contained"
+            startIcon={<Payment />}
+            onClick={openManualSahyogMoveDialog}
+            sx={quickActionButtonSx(
+              'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+              'rgba(22, 163, 74, 0.22)'
+            )}
+          >
+            Manual Asahyog → Sahyog
+          </Button>
+        </Grid>
+      )}
+    </Grid>
+  </Box>
+</Paper>
 
           {/* Main Management Tabs */}
-          <Paper elevation={12} sx={{ borderRadius: 4, overflow: 'hidden' }}>
-            <Tabs
-              value={activeTab}
-              onChange={handleTabChange}
-              variant="scrollable"
-              scrollButtons="auto"
-              sx={{
-                bgcolor: '#f5f5f5',
-                '& .MuiTab-root': {
-                  textTransform: 'none',
-                  fontWeight: 'bold',
-                  fontSize: '1rem',
-                  minHeight: 60,
-                },
-              }}
-            >
-              <Tab 
-                icon={<People />} 
-                label="User Management" 
-                iconPosition="start"
-              />
-              <Tab 
-                icon={<Assignment />} 
-                label="Death Assistance Cases" 
-                iconPosition="start"
-              />
-                <Tab label="Pool"iconPosition="start"  icon={<Assignment />} />
-            <Tab icon={<Payment />} iconPosition="start" label="Receipts" />
-          <Tab
-  icon={<Assignment />}
-  iconPosition="start"
-  label="Audit Logs"
-/>
-<Tab
-  icon={<Chat />}
-  iconPosition="start"
-  label="Ticket System"
-/>
-            </Tabs>
+         {/* Main Management Tabs */}
+<Paper
+  elevation={0}
+  sx={{
+    borderRadius: 5,
+    overflow: 'hidden',
+    background: 'rgba(255,255,255,0.90)',
+    backdropFilter: 'blur(20px)',
+    border: '1px solid rgba(255,255,255,0.78)',
+    boxShadow: '0 24px 70px rgba(15, 23, 42, 0.12)',
+  }}
+>
+  <Box
+    sx={{
+      p: 1.5,
+      bgcolor: 'rgba(248,250,252,0.82)',
+      borderBottom: '1px solid rgba(226, 232, 240, 0.9)',
+    }}
+  >
+    <Tabs
+      value={activeTab}
+      onChange={handleTabChange}
+      variant="scrollable"
+      scrollButtons="auto"
+      TabIndicatorProps={{ sx: { display: 'none' } }}
+      sx={{
+        minHeight: 58,
+        '& .MuiTabs-flexContainer': {
+          gap: 0.5,
+          alignItems: 'center',
+        },
+      }}
+    >
+      <Tab
+        icon={<People />}
+        label="User Management"
+        iconPosition="start"
+        sx={tabItemSx}
+      />
 
-            <Box sx={{ p: 3 }}>
+      <Tab
+        icon={<Assignment />}
+        label="Death Assistance Cases"
+        iconPosition="start"
+        sx={tabItemSx}
+      />
+
+      <Tab
+        icon={<Assignment />}
+        label="Pool"
+        iconPosition="start"
+        sx={tabItemSx}
+      />
+
+      <Tab
+        icon={<Payment />}
+        iconPosition="start"
+        label="Receipts"
+        sx={tabItemSx}
+      />
+
+      <Tab
+        icon={<Assignment />}
+        iconPosition="start"
+        label="Audit Logs"
+        sx={tabItemSx}
+      />
+
+      <Tab
+        icon={<Chat />}
+        iconPosition="start"
+        label="Ticket System"
+        sx={tabItemSx}
+      />
+    </Tabs>
+  </Box>
+
+  <Box sx={{ p: { xs: 2, md: 3 } }}>
               {activeTab === 0 && renderUsersTab()}
               {activeTab === 1 && renderDeathCasesTab()}
                {activeTab === 2 && renderPoolTab()}
@@ -4801,52 +6282,102 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
             </Box>
           </Paper>
         </Container>
-        <Dialog
+       <Dialog
   open={dateExportDialogOpen}
   onClose={() => setDateExportDialogOpen(false)}
   maxWidth="sm"
   fullWidth
+  PaperProps={{
+    sx: premiumDialogPaperSx,
+  }}
 >
-  <DialogTitle sx={{ fontWeight: 'bold' }}>
-    {dateExportType === 'joining'
-      ? 'नियुक्ति तिथि Export'
-      : 'सेवानिवृत्ति तिथि Export'}
+  <DialogTitle sx={premiumDialogTitleSx}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+      <Download />
+      <Box>
+        <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1.1 }}>
+          {dateExportType === 'joining'
+            ? 'नियुक्ति तिथि Export'
+            : 'सेवानिवृत्ति तिथि Export'}
+        </Typography>
+        <Typography variant="caption" sx={{ opacity: 0.9, fontWeight: 600 }}>
+          Export users by selected date range
+        </Typography>
+      </Box>
+    </Box>
+
+    <IconButton
+      onClick={() => setDateExportDialogOpen(false)}
+      sx={{
+        color: '#fff',
+        bgcolor: 'rgba(255,255,255,0.14)',
+        '&:hover': { bgcolor: 'rgba(255,255,255,0.22)' },
+      }}
+    >
+      <Close />
+    </IconButton>
   </DialogTitle>
 
-  <DialogContent dividers>
-    <Grid container spacing={2} sx={{ mt: 0.5 }}>
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          type="date"
-          label="From Date"
-          InputLabelProps={{ shrink: true }}
-          value={dateExportFromDate}
-          onChange={(e) => setDateExportFromDate(e.target.value)}
-        />
-      </Grid>
+  <DialogContent dividers sx={premiumDialogContentSx}>
+    <Paper
+      elevation={0}
+      sx={{
+        p: 2.5,
+        borderRadius: 3,
+        bgcolor: '#fff',
+        border: '1px solid rgba(226, 232, 240, 0.95)',
+      }}
+    >
+      <Grid container spacing={2}>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            type="date"
+            label="From Date"
+            InputLabelProps={{ shrink: true }}
+            value={dateExportFromDate}
+            onChange={(e) => setDateExportFromDate(e.target.value)}
+            sx={premiumTextFieldSx}
+          />
+        </Grid>
 
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          type="date"
-          label="To Date"
-          InputLabelProps={{ shrink: true }}
-          value={dateExportToDate}
-          onChange={(e) => setDateExportToDate(e.target.value)}
-        />
-      </Grid>
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            type="date"
+            label="To Date"
+            InputLabelProps={{ shrink: true }}
+            value={dateExportToDate}
+            onChange={(e) => setDateExportToDate(e.target.value)}
+            sx={premiumTextFieldSx}
+          />
+        </Grid>
 
-      <Grid item xs={12}>
-        <Typography variant="body2" color="text.secondary">
-          Date blank रखने पर सभी records export होंगे. Date range देने पर केवल उसी range के users export होंगे.
-        </Typography>
+        <Grid item xs={12}>
+          <Alert
+            severity="info"
+            sx={{
+              borderRadius: 3,
+              bgcolor: 'rgba(37, 99, 235, 0.08)',
+              border: '1px solid rgba(37, 99, 235, 0.14)',
+              '& .MuiAlert-icon': {
+                color: '#2563eb',
+              },
+            }}
+          >
+            Date blank रखने पर सभी records export होंगे. Date range देने पर केवल उसी range के users export होंगे.
+          </Alert>
+        </Grid>
       </Grid>
-    </Grid>
+    </Paper>
   </DialogContent>
 
-  <DialogActions>
-    <Button onClick={() => setDateExportDialogOpen(false)}>
+  <DialogActions sx={premiumDialogActionsSx}>
+    <Button
+      variant="outlined"
+      onClick={() => setDateExportDialogOpen(false)}
+      sx={premiumCancelButtonSx}
+    >
       Cancel
     </Button>
 
@@ -4855,6 +6386,7 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
       onClick={handleDateRelatedExport}
       disabled={exportLoading}
       startIcon={exportLoading ? <CircularProgress size={18} color="inherit" /> : <Download />}
+      sx={premiumPrimaryButtonSx}
     >
       {exportLoading ? 'Exporting...' : 'Export'}
     </Button>
@@ -4865,140 +6397,229 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
   onClose={() => setManualSahyogMoveOpen(false)}
   maxWidth="sm"
   fullWidth
+  PaperProps={{
+    sx: premiumDialogPaperSx,
+  }}
 >
-  <DialogTitle sx={{ fontWeight: 'bold' }}>
-    Manual Move: Asahyog → Sahyog
+  <DialogTitle
+    sx={{
+      ...premiumDialogTitleSx,
+      background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+    }}
+  >
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+      <Payment />
+      <Box>
+        <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1.1 }}>
+          Manual Move: Asahyog → Sahyog
+        </Typography>
+        <Typography variant="caption" sx={{ opacity: 0.9, fontWeight: 600 }}>
+          Manually add contribution and move member to Sahyog
+        </Typography>
+      </Box>
+    </Box>
+
+    <IconButton
+      onClick={() => setManualSahyogMoveOpen(false)}
+      sx={{
+        color: '#fff',
+        bgcolor: 'rgba(255,255,255,0.14)',
+        '&:hover': { bgcolor: 'rgba(255,255,255,0.22)' },
+      }}
+    >
+      <Close />
+    </IconButton>
   </DialogTitle>
 
-  <DialogContent dividers>
-    <Grid container spacing={2} sx={{ mt: 0.5 }}>
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          label="User ID / Registration Number"
-          value={manualSahyogMoveForm.userId}
-          onChange={(e) =>
-            setManualSahyogMoveForm((prev) => ({
-              ...prev,
-              userId: e.target.value,
-            }))
-          }
-          placeholder="Example: PMUMS203001"
-        />
-      </Grid>
-
-      <Grid item xs={12}>
-        <FormControl fullWidth>
-          <InputLabel>Death Case / Beneficiary</InputLabel>
-          <Select
-            value={manualSahyogMoveForm.deathCaseId}
-            label="Death Case / Beneficiary"
+  <DialogContent dividers sx={premiumDialogContentSx}>
+    <Paper
+      elevation={0}
+      sx={{
+        p: 2.5,
+        borderRadius: 3,
+        bgcolor: '#fff',
+        border: '1px solid rgba(226, 232, 240, 0.95)',
+      }}
+    >
+      <Grid container spacing={2}>
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="User ID / Registration Number"
+            value={manualSahyogMoveForm.userId}
             onChange={(e) =>
               setManualSahyogMoveForm((prev) => ({
                 ...prev,
-                deathCaseId: e.target.value,
+                userId: e.target.value,
               }))
             }
+            placeholder="Example: PMUMS203001"
+            sx={premiumTextFieldSx}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Badge sx={{ color: '#64748b' }} />
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Grid>
+
+        <Grid item xs={12}>
+          <FormControl fullWidth>
+            <InputLabel>Death Case / Beneficiary</InputLabel>
+            <Select
+              value={manualSahyogMoveForm.deathCaseId}
+              label="Death Case / Beneficiary"
+              onChange={(e) =>
+                setManualSahyogMoveForm((prev) => ({
+                  ...prev,
+                  deathCaseId: e.target.value,
+                }))
+              }
+              sx={premiumSelectSx}
+            >
+              {(deathCases || []).map((deathCase) => (
+                <MenuItem key={deathCase.id} value={deathCase.id}>
+                  {deathCase.deceasedName} - {deathCase.employeeCode || 'N/A'}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            type="number"
+            label="Amount"
+            value={manualSahyogMoveForm.amount}
+            onChange={(e) =>
+              setManualSahyogMoveForm((prev) => ({
+                ...prev,
+                amount: e.target.value,
+              }))
+            }
+            sx={premiumTextFieldSx}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  ₹
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Grid>
+
+        <Grid item xs={12} sm={6}>
+          <TextField
+            fullWidth
+            type="date"
+            label="Payment Date"
+            InputLabelProps={{ shrink: true }}
+            value={manualSahyogMoveForm.paymentDate}
+            onChange={(e) =>
+              setManualSahyogMoveForm((prev) => ({
+                ...prev,
+                paymentDate: e.target.value,
+              }))
+            }
+            sx={premiumTextFieldSx}
+          />
+        </Grid>
+
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="Reference Name"
+            value={manualSahyogMoveForm.referenceName}
+            onChange={(e) =>
+              setManualSahyogMoveForm((prev) => ({
+                ...prev,
+                referenceName: e.target.value,
+              }))
+            }
+            placeholder="Manual Admin Entry"
+            sx={premiumTextFieldSx}
+          />
+        </Grid>
+
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            label="UTR Number"
+            value={manualSahyogMoveForm.utrNumber}
+            onChange={(e) =>
+              setManualSahyogMoveForm((prev) => ({
+                ...prev,
+                utrNumber: e.target.value,
+              }))
+            }
+            placeholder="Optional. Auto-generated if blank."
+            sx={premiumTextFieldSx}
+          />
+        </Grid>
+
+        <Grid item xs={12}>
+          <TextField
+            fullWidth
+            multiline
+            minRows={3}
+            label="Remarks"
+            value={manualSahyogMoveForm.remarks}
+            onChange={(e) =>
+              setManualSahyogMoveForm((prev) => ({
+                ...prev,
+                remarks: e.target.value,
+              }))
+            }
+            placeholder="Reason for manual migration"
+            sx={premiumTextFieldSx}
+          />
+        </Grid>
+
+        <Grid item xs={12}>
+          <Alert
+            severity="success"
+            sx={{
+              borderRadius: 3,
+              bgcolor: 'rgba(22, 163, 74, 0.08)',
+              border: '1px solid rgba(22, 163, 74, 0.14)',
+              '& .MuiAlert-icon': {
+                color: '#16a34a',
+              },
+            }}
           >
-            {(deathCases || []).map((deathCase) => (
-              <MenuItem key={deathCase.id} value={deathCase.id}>
-                {deathCase.deceasedName} - {deathCase.employeeCode || 'N/A'}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+            This will create/update the user contribution and move the member from Asahyog to Sahyog for the selected death case.
+          </Alert>
+        </Grid>
       </Grid>
-
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          type="number"
-          label="Amount"
-          value={manualSahyogMoveForm.amount}
-          onChange={(e) =>
-            setManualSahyogMoveForm((prev) => ({
-              ...prev,
-              amount: e.target.value,
-            }))
-          }
-        />
-      </Grid>
-
-      <Grid item xs={12} sm={6}>
-        <TextField
-          fullWidth
-          type="date"
-          label="Payment Date"
-          InputLabelProps={{ shrink: true }}
-          value={manualSahyogMoveForm.paymentDate}
-          onChange={(e) =>
-            setManualSahyogMoveForm((prev) => ({
-              ...prev,
-              paymentDate: e.target.value,
-            }))
-          }
-        />
-      </Grid>
-
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          label="Reference Name"
-          value={manualSahyogMoveForm.referenceName}
-          onChange={(e) =>
-            setManualSahyogMoveForm((prev) => ({
-              ...prev,
-              referenceName: e.target.value,
-            }))
-          }
-          placeholder="Manual Admin Entry"
-        />
-      </Grid>
-
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          label="UTR Number"
-          value={manualSahyogMoveForm.utrNumber}
-          onChange={(e) =>
-            setManualSahyogMoveForm((prev) => ({
-              ...prev,
-              utrNumber: e.target.value,
-            }))
-          }
-          placeholder="Optional. Auto-generated if blank."
-        />
-      </Grid>
-
-      <Grid item xs={12}>
-        <TextField
-          fullWidth
-          multiline
-          minRows={3}
-          label="Remarks"
-          value={manualSahyogMoveForm.remarks}
-          onChange={(e) =>
-            setManualSahyogMoveForm((prev) => ({
-              ...prev,
-              remarks: e.target.value,
-            }))
-          }
-          placeholder="Reason for manual migration"
-        />
-      </Grid>
-    </Grid>
+    </Paper>
   </DialogContent>
 
-  <DialogActions>
-    <Button onClick={() => setManualSahyogMoveOpen(false)}>
+  <DialogActions sx={premiumDialogActionsSx}>
+    <Button
+      variant="outlined"
+      onClick={() => setManualSahyogMoveOpen(false)}
+      sx={premiumCancelButtonSx}
+    >
       Cancel
     </Button>
 
     <Button
       variant="contained"
-      color="success"
       onClick={handleManualSahyogMove}
       disabled={manualSahyogMoveLoading}
+      startIcon={manualSahyogMoveLoading ? <CircularProgress size={18} color="inherit" /> : <Payment />}
+      sx={{
+        ...premiumPrimaryButtonSx,
+        background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+        boxShadow: '0 10px 22px rgba(22, 163, 74, 0.24)',
+        '&:hover': {
+          background: 'linear-gradient(135deg, #15803d 0%, #166534 100%)',
+          transform: 'translateY(-1px)',
+        },
+      }}
     >
       {manualSahyogMoveLoading ? 'Saving...' : 'Move to Sahyog'}
     </Button>
@@ -5025,50 +6646,97 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
   maxWidth="md"
   fullWidth
   PaperProps={{
-    sx: { borderRadius: 3 }
+    sx: premiumDialogPaperSx,
   }}
 >
-  <DialogTitle
-    sx={{
-      bgcolor: '#6a1b9a',
-      color: 'white',
-      fontWeight: 'bold',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-    }}
-  >
-    Home Content Settings
+  <DialogTitle sx={premiumDialogTitleSx}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+      <Article />
+      <Box>
+        <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1.1 }}>
+          Home Content Settings
+        </Typography>
+        <Typography variant="caption" sx={{ opacity: 0.9, fontWeight: 600 }}>
+          Manage notice and statistics HTML content
+        </Typography>
+      </Box>
+    </Box>
+
     <IconButton
       onClick={() => setContentDialogOpen(false)}
-      sx={{ color: 'white' }}
+      sx={{
+        color: '#fff',
+        bgcolor: 'rgba(255,255,255,0.14)',
+        '&:hover': { bgcolor: 'rgba(255,255,255,0.22)' },
+      }}
     >
       <Close />
     </IconButton>
   </DialogTitle>
 
-  <DialogContent dividers sx={{ pt: 3 }}>
+  <DialogContent dividers sx={premiumDialogContentSx}>
     {contentLoading ? (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-        <CircularProgress />
+      <Box
+        sx={{
+          py: 6,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 1.5,
+        }}
+      >
+        <CircularProgress size={24} sx={{ color: '#dc2626' }} />
+        <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 700 }}>
+          Loading content settings...
+        </Typography>
       </Box>
     ) : (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
         <Paper
           elevation={0}
           sx={{
-            p: 2,
-            borderRadius: 2,
-            border: '1px solid #e0e0e0',
-            bgcolor: '#fafafa',
+            p: { xs: 2, md: 2.5 },
+            borderRadius: 3,
+            bgcolor: '#fff',
+            border: '1px solid rgba(226, 232, 240, 0.95)',
+            boxShadow: '0 12px 30px rgba(15, 23, 42, 0.05)',
           }}
         >
-          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1, color: '#1a237e' }}>
-            Home / Death Case Notice Content
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            This content will be shown on Home page and Death Case page.
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}>
+            <Box
+              sx={{
+                width: 40,
+                height: 40,
+                borderRadius: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'linear-gradient(135deg, #dc2626 0%, #f97316 100%)',
+                color: '#fff',
+                boxShadow: '0 10px 20px rgba(220, 38, 38, 0.18)',
+                flexShrink: 0,
+              }}
+            >
+              <Article fontSize="small" />
+            </Box>
+
+            <Box>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 900,
+                  color: '#0f172a',
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                Home / Death Case Notice Content
+              </Typography>
+
+              <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+                This content will be shown on Home page and Death Case page.
+              </Typography>
+            </Box>
+          </Box>
 
           <TextField
             fullWidth
@@ -5076,26 +6744,59 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
             minRows={8}
             label="Home Notice HTML"
             value={homeDisplayContent.homeNoticeHtml}
-            onChange={(e) => handleContentFieldChange('homeNoticeHtml', e.target.value)}
+            onChange={(e) =>
+              handleContentFieldChange('homeNoticeHtml', e.target.value)
+            }
             placeholder="Enter HTML content for home/death case notice"
+            sx={premiumTextFieldSx}
           />
         </Paper>
 
         <Paper
           elevation={0}
           sx={{
-            p: 2,
-            borderRadius: 2,
-            border: '1px solid #e0e0e0',
-            bgcolor: '#fafafa',
+            p: { xs: 2, md: 2.5 },
+            borderRadius: 3,
+            bgcolor: '#fff',
+            border: '1px solid rgba(226, 232, 240, 0.95)',
+            boxShadow: '0 12px 30px rgba(15, 23, 42, 0.05)',
           }}
         >
-          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1, color: '#1a237e' }}>
-            Statistics Content
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            This content will be shown on the left side of the Statistics section.
-          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}>
+            <Box
+              sx={{
+                width: 40,
+                height: 40,
+                borderRadius: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+                color: '#fff',
+                boxShadow: '0 10px 20px rgba(37, 99, 235, 0.18)',
+                flexShrink: 0,
+              }}
+            >
+              <InfoOutlined fontSize="small" />
+            </Box>
+
+            <Box>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontWeight: 900,
+                  color: '#0f172a',
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                Statistics Content
+              </Typography>
+
+              <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+                This content will be shown on the left side of the Statistics section.
+              </Typography>
+            </Box>
+          </Box>
 
           <TextField
             fullWidth
@@ -5103,23 +6804,46 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
             minRows={14}
             label="Statistics HTML"
             value={homeDisplayContent.statisticsContentHtml}
-            onChange={(e) => handleContentFieldChange('statisticsContentHtml', e.target.value)}
+            onChange={(e) =>
+              handleContentFieldChange('statisticsContentHtml', e.target.value)
+            }
             placeholder="Enter HTML content for statistics section"
+            sx={premiumTextFieldSx}
           />
         </Paper>
+
+        <Alert
+          severity="warning"
+          sx={{
+            borderRadius: 3,
+            bgcolor: 'rgba(249, 115, 22, 0.08)',
+            border: '1px solid rgba(249, 115, 22, 0.16)',
+            '& .MuiAlert-icon': {
+              color: '#f97316',
+            },
+          }}
+        >
+          Please enter valid and safe HTML only. This content will be displayed on the public pages.
+        </Alert>
       </Box>
     )}
   </DialogContent>
 
-  <DialogActions sx={{ p: 2 }}>
-    <Button onClick={() => setContentDialogOpen(false)}>
+  <DialogActions sx={premiumDialogActionsSx}>
+    <Button
+      variant="outlined"
+      onClick={() => setContentDialogOpen(false)}
+      sx={premiumCancelButtonSx}
+    >
       Cancel
     </Button>
+
     <Button
       variant="contained"
       onClick={handleSaveContentSettings}
       disabled={contentSaving || contentLoading}
-      sx={{ bgcolor: '#6a1b9a', '&:hover': { bgcolor: '#4a148c' } }}
+      startIcon={contentSaving ? <CircularProgress size={18} color="inherit" /> : <Save />}
+      sx={premiumPrimaryButtonSx}
     >
       {contentSaving ? 'Saving...' : 'Save Content'}
     </Button>
@@ -5259,43 +6983,78 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
         <Dialog
   open={manualCreateOpen}
   onClose={closeManualCreateDialog}
-  maxWidth="md"
+  maxWidth="lg"
   fullWidth
   PaperProps={{
     sx: {
-      borderRadius: 3,
-      width: '95vw',
-      maxWidth: '1200px',
-      height: '90vh',
-      display: 'flex',
-      overflow: 'hidden',
+      ...premiumDialogPaperSx,
+      maxHeight: '92vh',
     },
   }}
 >
-  <DialogTitle sx={{ bgcolor: '#2e7d32', color: 'white', fontWeight: 'bold' }}>
-    Manual User Creation
-  </DialogTitle>
+  <DialogTitle
+  sx={{
+    ...premiumDialogTitleSx,
+    background: 'linear-gradient(135deg, #16a34a 0%, #2563eb 55%, #7c3aed 100%)',
+  }}
+>
+  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+    <PersonAdd />
+    <Box>
+      <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1.1 }}>
+        Manual Create User
+      </Typography>
+
+      <Typography variant="caption" sx={{ opacity: 0.9, fontWeight: 600 }}>
+        Create old/manual member entry with department, nominee and password details
+      </Typography>
+    </Box>
+  </Box>
+
+  <IconButton
+    onClick={closeManualCreateDialog}
+    disabled={manualCreateLoading}
+    sx={{
+      color: '#fff',
+      bgcolor: 'rgba(255,255,255,0.14)',
+      '&:hover': {
+        bgcolor: 'rgba(255,255,255,0.22)',
+      },
+      '&.Mui-disabled': {
+        color: 'rgba(255,255,255,0.55)',
+      },
+    }}
+  >
+    <Close />
+  </IconButton>
+</DialogTitle>
 <DialogContent
   dividers
   sx={{
-    p: 0,
-    flex: 1,
-    overflowY: 'auto',
-    bgcolor: '#fafafa',
+    ...premiumDialogContentSx,
+    p: { xs: 2, md: 3 },
   }}
 >
-  <Box sx={{ p: 3 }}>
+ <Box
+  sx={{
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 0.5,
+  }}
+>
     {/* 1. Basic Information */}
-    <Paper sx={{ p: 1.75, mb: 2.5, bgcolor: '#1a237e', color: 'white', borderRadius: 2 }}>
-      <Typography variant="h6" sx={{ fontWeight: 700 }}>
-        1. मूल जानकारी (Basic Information)
-      </Typography>
-    </Paper>
+    {manualCreateSectionHeader(
+  1,
+  'Personal Information',
+  <People fontSize="small" />,
+  'linear-gradient(135deg, #0284c7 0%, #2563eb 100%)'
+)}
 
     <Grid container spacing={2.5} sx={{ mb: 4 }}>
      <Grid item xs={12} md={6}>
   <TextField
     fullWidth
+    
     label="पूरा नाम *"
     value={manualCreateForm.fullName}
     onChange={(e) => setManualCreateForm((p) => ({ ...p, fullName: e.target.value }))}
@@ -5480,11 +7239,12 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
     </Grid>
 
     {/* 2. Address Details */}
-    <Paper sx={{ p: 1.75, mb: 2.5, bgcolor: '#1a237e', color: 'white', borderRadius: 2 }}>
-      <Typography variant="h6" sx={{ fontWeight: 700 }}>
-        2. पता विवरण (Address Details)
-      </Typography>
-    </Paper>
+   {manualCreateSectionHeader(
+  2,
+  'Contact & Address Details',
+  <Phone fontSize="small" />,
+  'linear-gradient(135deg, #7c3aed 0%, #9333ea 100%)'
+)}
 
     <Grid container spacing={2.5} sx={{ mb: 4 }}>
       <Grid item xs={12} md={4}>
@@ -5588,11 +7348,12 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
     </Grid>
 
     {/* 3. Professional Details */}
-    <Paper sx={{ p: 1.75, mb: 2.5, bgcolor: '#1a237e', color: 'white', borderRadius: 2 }}>
-      <Typography variant="h6" sx={{ fontWeight: 700 }}>
-        3. व्यावसायिक विवरण (Professional Details)
-      </Typography>
-    </Paper>
+  {manualCreateSectionHeader(
+  3,
+  'Department Information',
+  <BusinessCenter fontSize="small" />,
+  'linear-gradient(135deg, #f97316 0%, #dc2626 100%)'
+)}
 
     <Grid container spacing={2.5} sx={{ mb: 4 }}>
      <Grid item xs={12} md={6}>
@@ -5681,11 +7442,12 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
     </Grid>
 
     {/* 4. Nominee Details */}
-    <Paper sx={{ p: 1.75, mb: 2.5, bgcolor: '#1a237e', color: 'white', borderRadius: 2 }}>
-      <Typography variant="h6" sx={{ fontWeight: 700 }}>
-        4. नामांकित व्यक्ति का विवरण (Nominee Details)
-      </Typography>
-    </Paper>
+   {manualCreateSectionHeader(
+  4,
+  'Location Details',
+  <LocationOn fontSize="small" />,
+  'linear-gradient(135deg, #2563eb 0%, #16a34a 100%)'
+)}
 
     <Grid container spacing={2.5} sx={{ mb: 4 }}>
       <Grid item xs={12}>
@@ -5738,11 +7500,12 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
     </Grid>
 
     {/* 5. Manual Entry Details */}
-    <Paper sx={{ p: 1.75, mb: 2.5, bgcolor: '#1a237e', color: 'white', borderRadius: 2 }}>
-      <Typography variant="h6" sx={{ fontWeight: 700 }}>
-        5. Manual Entry Details
-      </Typography>
-    </Paper>
+    {manualCreateSectionHeader(
+  5,
+  'Nominee Information',
+  <People fontSize="small" />,
+  'linear-gradient(135deg, #16a34a 0%, #15803d 100%)'
+)}
 
     <Grid container spacing={2.5} sx={{ mb: 4 }}>
       <Grid item xs={12} md={4}>
@@ -5794,7 +7557,13 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
                 Fill Existing Data
               </Button>
             }
-            sx={{ alignItems: 'center' }}
+              sx={{
+    borderRadius: 3,
+    bgcolor: 'rgba(249, 115, 22, 0.08)',
+    border: '1px solid rgba(249, 115, 22, 0.16)',
+    '& .MuiAlert-icon': {
+      color: '#f97316',
+    },}}
           >
             <Typography variant="body2" sx={{ fontWeight: 700 }}>
               Existing user match found
@@ -5812,11 +7581,12 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
     </Grid>
 
     {/* 6. Password */}
-    <Paper sx={{ p: 1.75, mb: 2.5, bgcolor: '#1a237e', color: 'white', borderRadius: 2 }}>
-      <Typography variant="h6" sx={{ fontWeight: 700 }}>
-        6. Password
-      </Typography>
-    </Paper>
+    {manualCreateSectionHeader(
+  6,
+  'Password',
+  <LockReset fontSize="small" />,
+  'linear-gradient(135deg, #334155 0%, #7c3aed 100%)'
+)}
 
     <Grid container spacing={2.5}>
       <Grid item xs={12} md={6}>
@@ -5834,26 +7604,49 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
   </Box>
 </DialogContent>
 
- <DialogActions
+<DialogActions
   sx={{
-    px: 3,
-    py: 2,
-    borderTop: '1px solid #e0e0e0',
-    bgcolor: 'white',
-    flexShrink: 0,
+    ...premiumDialogActionsSx,
     justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 1.5,
   }}
 >
-  <Button onClick={closeManualCreateDialog} sx={{ minWidth: 110 }}>
+  <Button
+    variant="outlined"
+    onClick={closeManualCreateDialog}
+    disabled={manualCreateLoading || manualCheckLoading}
+    sx={premiumCancelButtonSx}
+  >
     Cancel
   </Button>
 
-  <Box sx={{ display: 'flex', gap: 1.5 }}>
+  <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
     <Button
       variant="outlined"
       onClick={handleCheckManualCreateMatch}
-      disabled={manualCheckLoading}
-      sx={{ minWidth: 170 }}
+      disabled={manualCheckLoading || manualCreateLoading}
+      startIcon={
+        manualCheckLoading ? (
+          <CircularProgress size={18} />
+        ) : (
+          <Search />
+        )
+      }
+      sx={{
+        borderRadius: 3,
+        px: 2.5,
+        py: 1,
+        fontWeight: 800,
+        textTransform: 'none',
+        color: '#2563eb',
+        borderColor: 'rgba(37, 99, 235, 0.30)',
+        bgcolor: '#fff',
+        '&:hover': {
+          borderColor: '#2563eb',
+          bgcolor: 'rgba(239, 246, 255, 0.9)',
+        },
+      }}
     >
       {manualCheckLoading ? 'Checking...' : 'Check Old Entry'}
     </Button>
@@ -5861,96 +7654,329 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
     <Button
       variant="contained"
       onClick={handleManualCreateUser}
-      disabled={manualCreateLoading}
-      sx={{ bgcolor: '#2e7d32', minWidth: 160 }}
+      disabled={manualCreateLoading || manualCheckLoading}
+      startIcon={
+        manualCreateLoading ? (
+          <CircularProgress size={18} color="inherit" />
+        ) : (
+          <PersonAdd />
+        )
+      }
+      sx={{
+        ...premiumPrimaryButtonSx,
+        background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+        boxShadow: '0 10px 22px rgba(22, 163, 74, 0.24)',
+        '&:hover': {
+          background: 'linear-gradient(135deg, #15803d 0%, #166534 100%)',
+          transform: 'translateY(-1px)',
+        },
+      }}
     >
       {manualCreateLoading ? 'Creating...' : 'Create User'}
     </Button>
   </Box>
 </DialogActions>
 </Dialog>
+{/* Delete Requests Dialog */}
 <Dialog
   open={deleteRequestsOpen}
   onClose={() => setDeleteRequestsOpen(false)}
-  maxWidth="lg"
+  maxWidth="md"
   fullWidth
   PaperProps={{
-    sx: { borderRadius: 3 }
+    sx: premiumDialogPaperSx,
   }}
 >
-  <DialogTitle sx={{ bgcolor: '#c62828', color: 'white', fontWeight: 'bold' }}>
-    Pending Delete Requests
+  <DialogTitle
+    sx={{
+      ...premiumDialogTitleSx,
+      background: 'linear-gradient(135deg, #991b1b 0%, #dc2626 55%, #f97316 100%)',
+    }}
+  >
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+      <DeleteForever />
+      <Box>
+        <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1.1 }}>
+          Delete Approval Requests
+        </Typography>
+
+        <Typography variant="caption" sx={{ opacity: 0.9, fontWeight: 600 }}>
+          Review pending user delete requests before moving users to trash
+        </Typography>
+      </Box>
+    </Box>
+
+    <IconButton
+      onClick={() => setDeleteRequestsOpen(false)}
+      sx={{
+        color: '#fff',
+        bgcolor: 'rgba(255,255,255,0.14)',
+        '&:hover': {
+          bgcolor: 'rgba(255,255,255,0.22)',
+        },
+      }}
+    >
+      <Close />
+    </IconButton>
   </DialogTitle>
 
-  <DialogContent dividers>
-    {deleteRequestsLoading ? (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-        <CircularProgress />
-      </Box>
-    ) : deleteRequests.length === 0 ? (
-      <Typography variant="body1" color="textSecondary">
-        No pending delete requests found.
-      </Typography>
-    ) : (
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow sx={{ bgcolor: '#ffebee' }}>
-              <TableCell><strong>ID</strong></TableCell>
-              <TableCell><strong>Entity</strong></TableCell>
-              <TableCell><strong>Entity ID</strong></TableCell>
-              <TableCell><strong>Requested By</strong></TableCell>
-              <TableCell><strong>Role</strong></TableCell>
-              <TableCell><strong>Reason</strong></TableCell>
-              <TableCell><strong>Created At</strong></TableCell>
-              <TableCell><strong>Actions</strong></TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {deleteRequests.map((request) => (
-              <TableRow key={request.id} hover>
-                <TableCell>{request.id}</TableCell>
-                <TableCell>{request.entityType}</TableCell>
-                <TableCell>{request.entityId}</TableCell>
-                <TableCell>
-                  {request.requestedByName || request.requestedBy}
-                </TableCell>
-                <TableCell>{request.requestedByRole}</TableCell>
-                <TableCell>{request.reason || '-'}</TableCell>
-                <TableCell>
-                  {request.createdAt ? new Date(request.createdAt).toLocaleString('en-IN') : '-'}
-                </TableCell>
-                <TableCell>
-                  <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button
-                      size="small"
-                      variant="contained"
-                      color="success"
-                      onClick={() => handleApproveDeleteRequest(request.id)}
-                    >
-                      Approve
-                    </Button>
+  <DialogContent dividers sx={premiumDialogContentSx}>
+    <Paper
+      elevation={0}
+      sx={{
+        borderRadius: 3,
+        bgcolor: '#fff',
+        border: '1px solid rgba(226, 232, 240, 0.95)',
+        overflow: 'hidden',
+      }}
+    >
+      <Box
+        sx={{
+          p: 2,
+          display: 'flex',
+          alignItems: { xs: 'flex-start', md: 'center' },
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 1.5,
+          background:
+            'linear-gradient(135deg, rgba(254,242,242,0.96) 0%, rgba(255,247,237,0.82) 100%)',
+          borderBottom: '1px solid rgba(226, 232, 240, 0.9)',
+        }}
+      >
+        <Box>
+          <Typography variant="subtitle1" sx={{ fontWeight: 900, color: '#0f172a' }}>
+            Pending Requests
+          </Typography>
 
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      color="error"
-                      onClick={() => handleRejectDeleteRequest(request.id)}
-                    >
-                      Reject
-                    </Button>
-                  </Box>
-                </TableCell>
+          <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+            {deleteRequestsLoading
+              ? 'Loading delete requests...'
+              : `${deleteRequests.length} pending requests`}
+          </Typography>
+        </Box>
+
+        <Chip
+          label="Approval Required"
+          size="small"
+          variant="outlined"
+          sx={{
+            bgcolor: 'rgba(220, 38, 38, 0.10)',
+            color: '#b91c1c',
+            border: '1px solid rgba(220, 38, 38, 0.20)',
+            fontWeight: 900,
+            borderRadius: '10px',
+          }}
+        />
+      </Box>
+
+      {deleteRequestsLoading ? (
+        <Box
+          sx={{
+            p: 6,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 1.5,
+          }}
+        >
+          <CircularProgress size={24} sx={{ color: '#dc2626' }} />
+          <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 700 }}>
+            Loading delete requests...
+          </Typography>
+        </Box>
+      ) : deleteRequests.length === 0 ? (
+        <Box sx={{ textAlign: 'center', p: 6 }}>
+          <DeleteForever sx={{ fontSize: 52, color: '#cbd5e1', mb: 1 }} />
+
+          <Typography variant="h6" sx={{ color: '#475569', fontWeight: 900 }}>
+            No pending delete requests
+          </Typography>
+
+          <Typography variant="body2" sx={{ color: '#94a3b8', mt: 0.75, fontWeight: 600 }}>
+            Delete requests raised by managers/users will appear here.
+          </Typography>
+        </Box>
+      ) : (
+        <TableContainer
+          sx={{
+            maxWidth: '100%',
+            overflowX: 'auto',
+            bgcolor: '#fff',
+          }}
+        >
+          <Table
+            size="small"
+            sx={{
+              minWidth: 950,
+              '& .MuiTableCell-root': {
+                whiteSpace: 'nowrap',
+              },
+            }}
+          >
+            <TableHead>
+              <TableRow>
+                <TableCell sx={tableHeaderCellSx}>User</TableCell>
+                <TableCell sx={tableHeaderCellSx}>Requested By</TableCell>
+                <TableCell sx={tableHeaderCellSx}>Reason</TableCell>
+                <TableCell sx={tableHeaderCellSx}>Requested At</TableCell>
+                <TableCell sx={tableHeaderCellSx}>Status</TableCell>
+                <TableCell align="right" sx={tableHeaderCellSx}>Actions</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    )}
+            </TableHead>
+
+            <TableBody>
+              {(Array.isArray(deleteRequests) ? deleteRequests : []).map((request) => {
+                const targetUser =
+                  request.user ||
+                  request.targetUser ||
+                  request.deletedUser ||
+                  {};
+
+                const requestedBy =
+                  request.requestedBy ||
+                  request.createdBy ||
+                  request.requestedByUser ||
+                  {};
+
+                const targetName =
+                  request.userName ||
+                  request.targetUserName ||
+                  combineFullName(targetUser.name, targetUser.surname) ||
+                  targetUser.name ||
+                  '-';
+
+                const requestedByName =
+                  request.requestedByName ||
+                  combineFullName(requestedBy.name, requestedBy.surname) ||
+                  requestedBy.name ||
+                  '-';
+
+                return (
+                  <TableRow
+                    key={request.id}
+                    hover
+                    sx={{
+                      transition: 'all 0.18s ease',
+                      '&:hover': {
+                        bgcolor: 'rgba(254, 242, 242, 0.65)',
+                      },
+                    }}
+                  >
+                    <TableCell sx={tableBodyCellSx}>
+                      <Typography variant="body2" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                        {targetName}
+                      </Typography>
+
+                      <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>
+                        {request.userId || request.targetUserId || targetUser.id || '-'}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell sx={tableBodyCellSx}>
+                      <Typography variant="body2" sx={{ fontWeight: 800, color: '#334155' }}>
+                        {requestedByName}
+                      </Typography>
+
+                      <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>
+                        {request.requestedByRole || requestedBy.role || '-'}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell sx={tableBodyCellSx}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: '#475569',
+                          fontWeight: 700,
+                          maxWidth: 280,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                        title={request.reason || request.deleteReason || '-'}
+                      >
+                        {request.reason || request.deleteReason || '-'}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell sx={tableBodyCellSx}>
+                      <Typography variant="body2" sx={{ color: '#475569', fontWeight: 800 }}>
+                        {formatDate(request.requestedAt || request.createdAt)}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell sx={tableBodyCellSx}>
+                      <Chip
+                        label={request.status || 'PENDING'}
+                        size="small"
+                        variant="outlined"
+                        sx={{
+                          bgcolor: 'rgba(249, 115, 22, 0.12)',
+                          color: '#c2410c',
+                          border: '1px solid rgba(249, 115, 22, 0.20)',
+                          fontWeight: 900,
+                          borderRadius: '10px',
+                        }}
+                      />
+                    </TableCell>
+
+                    <TableCell align="right" sx={tableBodyCellSx}>
+                      <Box sx={{ display: 'flex', gap: 0.75, justifyContent: 'flex-end' }}>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          startIcon={<Close />}
+                          onClick={() => handleRejectDeleteRequest(request.id)}
+                          sx={{
+                            borderRadius: 3,
+                            fontWeight: 800,
+                            textTransform: 'none',
+                            color: '#475569',
+                            borderColor: '#cbd5e1',
+                            '&:hover': {
+                              borderColor: '#64748b',
+                              bgcolor: '#f8fafc',
+                            },
+                          }}
+                        >
+                          Reject
+                        </Button>
+
+                        <Button
+                          size="small"
+                          variant="contained"
+                          startIcon={<DeleteForever />}
+                          onClick={() => handleApproveDeleteRequest(request.id)}
+                          sx={{
+                            borderRadius: 3,
+                            fontWeight: 800,
+                            textTransform: 'none',
+                            background: 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)',
+                            boxShadow: '0 8px 18px rgba(220, 38, 38, 0.18)',
+                            '&:hover': {
+                              background: 'linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%)',
+                            },
+                          }}
+                        >
+                          Approve
+                        </Button>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+    </Paper>
   </DialogContent>
 
-  <DialogActions>
-    <Button onClick={() => setDeleteRequestsOpen(false)}>
+  <DialogActions sx={premiumDialogActionsSx}>
+    <Button
+      variant="outlined"
+      onClick={() => setDeleteRequestsOpen(false)}
+      sx={premiumCancelButtonSx}
+    >
       Close
     </Button>
   </DialogActions>
@@ -6110,264 +8136,580 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
         </Dialog>
 
         {/* Role Assignment Dialog */}
-        <Dialog 
-          open={roleAssignmentDialog} 
-          onClose={() => setRoleAssignmentDialog(false)}
-          maxWidth="md"
-          fullWidth
-          PaperProps={{
-            sx: { borderRadius: 3 }
-          }}
-        >
-          <DialogTitle sx={{ bgcolor: '#1976d2', color: 'white', fontWeight: 'bold' }}>
-            Role Assignment
-          </DialogTitle>
-          
-          <DialogContent sx={{ pt: 3 }}>
-            {selectedUserForRole && (
-              <Box sx={{ mb: 3, p: 2, bgcolor: '#f5f5f5', borderRadius: 2 }}>
-                <Typography variant="h6" sx={{ mb: 1 }}>
-                  Selected User: {selectedUserForRole.name}
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  {selectedUserForRole.email}
-                </Typography>
-                <Typography variant="body2" color="textSecondary">
-                  Current Role: {selectedUserForRole.role === 'ROLE_USER' ? 'User' : 
-                                  selectedUserForRole.role === 'ROLE_SAMBHAG_MANAGER' ? 'Division Manager' :
-                                  selectedUserForRole.role === 'ROLE_DISTRICT_MANAGER' ? 'District Manager' :
-                                  selectedUserForRole.role === 'ROLE_BLOCK_MANAGER' ? 'Block Manager' : selectedUserForRole.role}
-                </Typography>
-              </Box>
-            )}
-            
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              {/* Role Selection */}
-              <FormControl fullWidth required>
-                <InputLabel>Select New Role</InputLabel>
-                <Select
-                  value={roleAssignmentData.role}
-                  label="Select New Role"
-                  onChange={(e) => handleRoleAssignmentChange('role', e.target.value)}
+      {/* Role Assignment Dialog */}
+<Dialog
+  open={roleAssignmentDialog}
+  onClose={() => setRoleAssignmentDialog(false)}
+  maxWidth="md"
+  fullWidth
+  PaperProps={{
+    sx: premiumDialogPaperSx,
+  }}
+>
+  <DialogTitle
+    sx={{
+      ...premiumDialogTitleSx,
+      background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+    }}
+  >
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+      <ManageAccounts />
+      <Box>
+        <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1.1 }}>
+          Assign User Role
+        </Typography>
+
+        <Typography variant="caption" sx={{ opacity: 0.9, fontWeight: 600 }}>
+          Assign admin, manager or user role with location scope
+        </Typography>
+      </Box>
+    </Box>
+
+    <IconButton
+      onClick={() => setRoleAssignmentDialog(false)}
+      sx={{
+        color: '#fff',
+        bgcolor: 'rgba(255,255,255,0.14)',
+        '&:hover': {
+          bgcolor: 'rgba(255,255,255,0.22)',
+        },
+      }}
+    >
+      <Close />
+    </IconButton>
+  </DialogTitle>
+
+  <DialogContent dividers sx={premiumDialogContentSx}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 2, md: 2.5 },
+          borderRadius: 3,
+          bgcolor: '#fff',
+          border: '1px solid rgba(226, 232, 240, 0.95)',
+          boxShadow: '0 12px 30px rgba(15, 23, 42, 0.05)',
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+          <Box
+            sx={{
+              width: 42,
+              height: 42,
+              borderRadius: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+              color: '#fff',
+              boxShadow: '0 10px 20px rgba(37, 99, 235, 0.18)',
+              flexShrink: 0,
+            }}
+          >
+            <People fontSize="small" />
+          </Box>
+
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a' }}>
+              Selected User
+            </Typography>
+
+            <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 700 }}>
+              {combineFullName(selectedUserForRole?.name, selectedUserForRole?.surname) ||
+                selectedUserForRole?.name ||
+                '-'}
+            </Typography>
+
+            <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mt: 1 }}>
+              <Chip
+                label={selectedUserForRole?.id || 'No User ID'}
+                size="small"
+                variant="outlined"
+                sx={{
+                  bgcolor: 'rgba(37, 99, 235, 0.08)',
+                  color: '#1d4ed8',
+                  border: '1px solid rgba(37, 99, 235, 0.18)',
+                  fontWeight: 800,
+                  borderRadius: '10px',
+                }}
+              />
+
+              <Chip
+                label={getRoleLabel(selectedUserForRole?.role) || 'Current Role'}
+                size="small"
+                variant="outlined"
+                sx={{
+                  ...getRoleChipSx(selectedUserForRole?.role),
+                  fontWeight: 900,
+                  borderRadius: '10px',
+                }}
+              />
+            </Box>
+          </Box>
+        </Box>
+      </Paper>
+
+      <Paper
+        elevation={0}
+        sx={{
+          p: { xs: 2, md: 2.5 },
+          borderRadius: 3,
+          bgcolor: '#fff',
+          border: '1px solid rgba(226, 232, 240, 0.95)',
+          boxShadow: '0 12px 30px rgba(15, 23, 42, 0.05)',
+        }}
+      >
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <FormControl fullWidth>
+              <InputLabel>Select Role</InputLabel>
+              <Select
+                value={roleAssignmentData.role}
+                label="Select Role"
+                onChange={(e) => handleRoleAssignmentChange('role', e.target.value)}
+                sx={premiumSelectSx}
+              >
+                {roles
+                  .filter((role) => {
+                    if (role === 'ROLE_ADMIN' && currentUser?.role !== 'ROLE_SUPERADMIN') {
+                      return false;
+                    }
+                    return true;
+                  })
+                  .map((role) => (
+                    <MenuItem key={role} value={role}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Chip
+                          label={getRoleLabel(role)}
+                          size="small"
+                          variant="outlined"
+                          sx={{
+                            ...getRoleChipSx(role),
+                            fontWeight: 900,
+                            borderRadius: '10px',
+                          }}
+                        />
+                      </Box>
+                    </MenuItem>
+                  ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {roleAssignmentData.role &&
+            roleAssignmentData.role !== 'ROLE_USER' &&
+            roleAssignmentData.role !== 'ROLE_ADMIN' && (
+              <Grid item xs={12}>
+                <Alert
+                  severity="info"
+                  sx={{
+                    borderRadius: 3,
+                    bgcolor: 'rgba(37, 99, 235, 0.08)',
+                    border: '1px solid rgba(37, 99, 235, 0.14)',
+                    '& .MuiAlert-icon': {
+                      color: '#2563eb',
+                    },
+                  }}
                 >
-                  {currentUser?.role === 'ROLE_SUPERADMIN' && (
-  <MenuItem value="ROLE_ADMIN">Admin</MenuItem>
-)}
-                  <MenuItem value="ROLE_SAMBHAG_MANAGER">Division Manager</MenuItem>
-                  <MenuItem value="ROLE_DISTRICT_MANAGER">District Manager</MenuItem>
-                  <MenuItem value="ROLE_BLOCK_MANAGER">Block Manager</MenuItem>
-                  <MenuItem value="ROLE_USER">Regular User</MenuItem>
+                  Manager roles require location assignment. Please select the required area according to the selected role.
+                </Alert>
+              </Grid>
+            )}
+
+          {(roleAssignmentData.role === 'ROLE_SAMBHAG_MANAGER' ||
+            roleAssignmentData.role === 'ROLE_DISTRICT_MANAGER' ||
+            roleAssignmentData.role === 'ROLE_BLOCK_MANAGER') && (
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <InputLabel>Division / Sambhag</InputLabel>
+                <Select
+                  multiple
+                  value={roleAssignmentData.sambhagIds}
+                  label="Division / Sambhag"
+                  onChange={(e) =>
+                    handleRoleAssignmentChange('sambhagIds', e.target.value)
+                  }
+                  sx={premiumSelectSx}
+                  renderValue={(selected) =>
+                    selected
+                      .map(
+                        (id) =>
+                          availableSambhags.find((s) => s.id === id)?.name || id
+                      )
+                      .join(', ')
+                  }
+                >
+                  {(availableSambhags || []).map((sambhag) => (
+                    <MenuItem key={sambhag.id} value={sambhag.id}>
+                      <Checkbox
+                        checked={roleAssignmentData.sambhagIds.includes(sambhag.id)}
+                        sx={{
+                          color: '#94a3b8',
+                          '&.Mui-checked': {
+                            color: '#2563eb',
+                          },
+                        }}
+                      />
+                      <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                        {sambhag.name}
+                      </Typography>
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
+            </Grid>
+          )}
 
-              {/* Location Dropdowns - Show based on selected role */}
-              {(roleAssignmentData.role === 'ROLE_SAMBHAG_MANAGER' || 
-                roleAssignmentData.role === 'ROLE_DISTRICT_MANAGER' || 
-                roleAssignmentData.role === 'ROLE_BLOCK_MANAGER') && (
-                <FormControl fullWidth required>
-                  <InputLabel>Select Division</InputLabel>
-                  <Select
-  multiple
-  value={roleAssignmentData.sambhagIds}
-  label="Select Division"
-  onChange={(e) => handleRoleAssignmentChange('sambhagIds', e.target.value)}
-  disabled={loadingLocations}
- renderValue={(selected) =>
-  (availableSambhags || [])
-    .filter((s) => (selected || []).includes(s.id))
-    .map((s) => s.name)
-    .join(', ')
-}
->
-                   {availableSambhags.map((sambhag) => (
-  <MenuItem key={sambhag.id} value={sambhag.id}>
-    <Checkbox checked={(roleAssignmentData.sambhagIds || []).includes(sambhag.id)} />
-    {sambhag.name}
-  </MenuItem>
-))}
-                    {availableSambhags.length === 0 && !loadingLocations && (
-                      <MenuItem disabled>
-                        No Division available
-                      </MenuItem>
-                    )}
-                  </Select>
-                  {loadingLocations && (
-                    <Typography variant="caption" color="textSecondary" sx={{ mt: 1 }}>
-                      Loading Divisions...
-                    </Typography>
-                  )}
-                </FormControl>
-              )}
+          {(roleAssignmentData.role === 'ROLE_DISTRICT_MANAGER' ||
+            roleAssignmentData.role === 'ROLE_BLOCK_MANAGER') && (
+            <Grid item xs={12}>
+              <FormControl fullWidth disabled={availableDistricts.length === 0}>
+                <InputLabel>District</InputLabel>
+                <Select
+                  multiple
+                  value={roleAssignmentData.districtIds}
+                  label="District"
+                  onChange={(e) =>
+                    handleRoleAssignmentChange('districtIds', e.target.value)
+                  }
+                  sx={premiumSelectSx}
+                  renderValue={(selected) =>
+                    selected
+                      .map(
+                        (id) =>
+                          availableDistricts.find((d) => d.id === id)?.name || id
+                      )
+                      .join(', ')
+                  }
+                >
+                  {(availableDistricts || []).map((district) => (
+                    <MenuItem key={district.id} value={district.id}>
+                      <Checkbox
+                        checked={roleAssignmentData.districtIds.includes(district.id)}
+                        sx={{
+                          color: '#94a3b8',
+                          '&.Mui-checked': {
+                            color: '#2563eb',
+                          },
+                        }}
+                      />
+                      <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                        {district.name}
+                      </Typography>
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          )}
 
-              {(roleAssignmentData.role === 'ROLE_DISTRICT_MANAGER' || 
-                roleAssignmentData.role === 'ROLE_BLOCK_MANAGER') && roleAssignmentData.sambhagIds.length > 0 && (
-                <FormControl fullWidth required>
-                  <InputLabel>Select District</InputLabel>
-                  <Select
-  multiple
-  value={roleAssignmentData.districtIds}
-  label="Select District"
-  onChange={(e) => handleRoleAssignmentChange('districtIds', e.target.value)}
-  disabled={loadingLocations}
- renderValue={(selected) =>
-  (availableDistricts || [])
-    .filter((d) => (selected || []).includes(d.id))
-    .map((d) => d.name)
-    .join(', ')
-}
->
-                   {availableDistricts.map((district) => (
-  <MenuItem key={district.id} value={district.id}>
-   <Checkbox checked={(roleAssignmentData.districtIds || []).includes(district.id)} />
-    {district.name}
-  </MenuItem>
-))}
-                    {availableDistricts.length === 0 && !loadingLocations && (
-                      <MenuItem disabled>
-                        No District available
-                      </MenuItem>
-                    )}
-                  </Select>
-                  {loadingLocations && (
-                    <Typography variant="caption" color="textSecondary" sx={{ mt: 1 }}>
-                      Loading Districts...
-                    </Typography>
-                  )}
-                </FormControl>
-              )}
+          {roleAssignmentData.role === 'ROLE_BLOCK_MANAGER' && (
+            <Grid item xs={12}>
+              <FormControl fullWidth disabled={availableBlocks.length === 0}>
+                <InputLabel>Block</InputLabel>
+                <Select
+                  multiple
+                  value={roleAssignmentData.blockIds}
+                  label="Block"
+                  onChange={(e) =>
+                    handleRoleAssignmentChange('blockIds', e.target.value)
+                  }
+                  sx={premiumSelectSx}
+                  renderValue={(selected) =>
+                    selected
+                      .map(
+                        (id) =>
+                          availableBlocks.find((b) => b.id === id)?.name || id
+                      )
+                      .join(', ')
+                  }
+                >
+                  {(availableBlocks || []).map((block) => (
+                    <MenuItem key={block.id} value={block.id}>
+                      <Checkbox
+                        checked={roleAssignmentData.blockIds.includes(block.id)}
+                        sx={{
+                          color: '#94a3b8',
+                          '&.Mui-checked': {
+                            color: '#2563eb',
+                          },
+                        }}
+                      />
+                      <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                        {block.name}
+                      </Typography>
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+          )}
 
-              {roleAssignmentData.role === 'ROLE_BLOCK_MANAGER' && roleAssignmentData.districtIds.length > 0 && (
-                <FormControl fullWidth required>
-                  <InputLabel>Select Block</InputLabel>
-                  <Select
-  multiple
-  value={roleAssignmentData.blockIds}
-  label="Select Block"
-  onChange={(e) => handleRoleAssignmentChange('blockIds', e.target.value)}
-  disabled={loadingLocations}
- renderValue={(selected) =>
-  (availableBlocks || [])
-    .filter((b) => (selected || []).includes(b.id))
-    .map((b) => b.name)
-    .join(', ')
-}
->
-                   {availableBlocks.map((block) => (
-  <MenuItem key={block.id} value={block.id}>
-    <Checkbox checked={(roleAssignmentData.blockIds || []).includes(block.id)} />
-    {block.name}
-  </MenuItem>
-))}
-                    {availableBlocks.length === 0 && !loadingLocations && (
-                      <MenuItem disabled>
-                        No Block available
-                      </MenuItem>
-                    )}
-                  </Select>
-                  {loadingLocations && (
-                    <Typography variant="caption" color="textSecondary" sx={{ mt: 1 }}>
-                      Loading Blocks...
-                    </Typography>
-                  )}
-                </FormControl>
-              )}
-              
-              <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
-                💡 The user will get appropriate rights and responsibilities according to the selected role.
-              </Typography>
-            </Box>
-          </DialogContent>
-          
-          <DialogActions sx={{ p: 3, pt: 1 }}>
-            <Button 
-              onClick={() => setRoleAssignmentDialog(false)}
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleRoleAssignmentSubmit}
-              variant="contained"
-              disabled={!roleAssignmentData.role}
-              sx={{ bgcolor: '#1976d2' }}
-            >
-              Assign Role
-            </Button>
-          </DialogActions>
-        </Dialog>
+          {roleAssignmentData.role === 'ROLE_USER' && (
+            <Grid item xs={12}>
+              <Alert
+                severity="success"
+                sx={{
+                  borderRadius: 3,
+                  bgcolor: 'rgba(22, 163, 74, 0.08)',
+                  border: '1px solid rgba(22, 163, 74, 0.14)',
+                  '& .MuiAlert-icon': {
+                    color: '#16a34a',
+                  },
+                }}
+              >
+                This will keep the selected member as a normal user. No manager location assignment is required.
+              </Alert>
+            </Grid>
+          )}
+
+          {roleAssignmentData.role === 'ROLE_ADMIN' && (
+            <Grid item xs={12}>
+              <Alert
+                severity="warning"
+                sx={{
+                  borderRadius: 3,
+                  bgcolor: 'rgba(249, 115, 22, 0.08)',
+                  border: '1px solid rgba(249, 115, 22, 0.16)',
+                  '& .MuiAlert-icon': {
+                    color: '#f97316',
+                  },
+                }}
+              >
+                Admin role should be assigned carefully. Only Super Admin can assign this role.
+              </Alert>
+            </Grid>
+          )}
+        </Grid>
+      </Paper>
+    </Box>
+  </DialogContent>
+
+  <DialogActions sx={premiumDialogActionsSx}>
+    <Button
+      variant="outlined"
+      onClick={() => {
+        setRoleAssignmentDialog(false);
+        setSelectedUserForRole(null);
+        setRoleAssignmentData({
+          role: '',
+          sambhagIds: [],
+          districtIds: [],
+          blockIds: [],
+        });
+        setAvailableDistricts([]);
+        setAvailableBlocks([]);
+      }}
+      sx={premiumCancelButtonSx}
+    >
+      Cancel
+    </Button>
+
+    <Button
+      variant="contained"
+      onClick={handleRoleAssignmentSubmit}
+      startIcon={<ManageAccounts />}
+      sx={{
+        ...premiumPrimaryButtonSx,
+        background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+        boxShadow: '0 10px 22px rgba(37, 99, 235, 0.24)',
+        '&:hover': {
+          background: 'linear-gradient(135deg, #1d4ed8 0%, #6d28d9 100%)',
+          transform: 'translateY(-1px)',
+        },
+      }}
+    >
+      Assign Role
+    </Button>
+  </DialogActions>
+</Dialog>
 {/* Dashboard Export Dialog */}
 <Dialog
   open={dashboardExportDialog}
-  onClose={() => setDashboardExportDialog(false)}
+  onClose={() => !exportLoading && setDashboardExportDialog(false)}
   maxWidth="sm"
   fullWidth
   PaperProps={{
-    sx: { borderRadius: 3 }
+    sx: premiumDialogPaperSx,
   }}
 >
-  <DialogTitle sx={{ bgcolor: '#00695c', color: 'white', fontWeight: 'bold' }}>
-    {dashboardExportType === 'pending-profiles'
-      ? 'Export Pending Profiles'
-      : `Export ${dashboardExportType === 'sahyog' ? 'Sahyog' : 'Asahyog'}`}
+  <DialogTitle sx={premiumDialogTitleSx}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+      <Box
+        sx={{
+          width: 38,
+          height: 38,
+          borderRadius: '14px',
+          bgcolor: 'rgba(255,255,255,0.18)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Download fontSize="small" />
+      </Box>
+
+      <Box>
+        <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1.15 }}>
+          {dashboardExportType === 'pending-profiles'
+            ? 'Export Pending Profiles'
+            : `Export ${dashboardExportType === 'sahyog' ? 'Sahyog' : 'Asahyog'}`}
+        </Typography>
+
+        <Typography variant="caption" sx={{ opacity: 0.9, fontWeight: 600 }}>
+          Choose export mode and download records
+        </Typography>
+      </Box>
+    </Box>
+
+    <IconButton
+      size="small"
+      onClick={() => setDashboardExportDialog(false)}
+      disabled={exportLoading}
+      sx={{
+        color: '#fff',
+        bgcolor: 'rgba(255,255,255,0.14)',
+        '&:hover': {
+          bgcolor: 'rgba(255,255,255,0.24)',
+        },
+      }}
+    >
+      <Close fontSize="small" />
+    </IconButton>
   </DialogTitle>
 
-  <DialogContent sx={{ pt: 3 }}>
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 1 }}>
+  <DialogContent sx={premiumDialogContentSx}>
+    <Paper
+      elevation={0}
+      sx={{
+        p: 2.25,
+        mb: 3,
+        borderRadius: 3,
+        bgcolor: '#fff',
+        border: '1px solid rgba(226, 232, 240, 0.95)',
+        boxShadow: '0 12px 30px rgba(15, 23, 42, 0.05)',
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+        <Box
+          sx={{
+            width: 40,
+            height: 40,
+            borderRadius: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            bgcolor:
+              dashboardExportType === 'sahyog'
+                ? 'rgba(5, 150, 105, 0.12)'
+                : dashboardExportType === 'asahyog'
+                ? 'rgba(147, 51, 234, 0.12)'
+                : 'rgba(249, 115, 22, 0.12)',
+            color:
+              dashboardExportType === 'sahyog'
+                ? '#059669'
+                : dashboardExportType === 'asahyog'
+                ? '#9333ea'
+                : '#f97316',
+            flexShrink: 0,
+          }}
+        >
+          <InfoOutlined fontSize="small" />
+        </Box>
+
+        <Box>
+          <Typography variant="subtitle2" sx={{ fontWeight: 900, color: '#0f172a' }}>
+            Export Configuration
+          </Typography>
+
+          <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600, mt: 0.35 }}>
+            {dashboardExportType === 'pending-profiles'
+              ? 'Pending profiles export will download all users whose profiles are not completed.'
+              : 'Select whether you want to export death-case-wise, month-wise, or complete records.'}
+          </Typography>
+        </Box>
+      </Box>
+    </Paper>
+
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
       {dashboardExportType !== 'pending-profiles' && (
-        <>
-          <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+        <Box>
+          <Typography
+            variant="subtitle2"
+            sx={{
+              fontWeight: 900,
+              color: '#0f172a',
+              mb: 1.5,
+            }}
+          >
             Select Export Type
           </Typography>
 
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={4}>
-              <Button
-                fullWidth
-                variant={dashboardExportMode === 'beneficiary' ? 'contained' : 'outlined'}
-                onClick={() => setDashboardExportMode('beneficiary')}
-                sx={{
-                  py: 1.5,
-                  borderRadius: 2
-                }}
-              >
-                Death Case Wise
-              </Button>
-            </Grid>
+          <Grid container spacing={1.5}>
+            {[
+              { key: 'beneficiary', label: 'Death Case Wise' },
+              { key: 'month', label: 'Month Wise' },
+              { key: 'all', label: 'All' },
+            ].map((item) => {
+              const selected = dashboardExportMode === item.key;
 
-            <Grid item xs={12} sm={4}>
-              <Button
-                fullWidth
-                variant={dashboardExportMode === 'month' ? 'contained' : 'outlined'}
-                onClick={() => setDashboardExportMode('month')}
-                sx={{
-                  py: 1.5,
-                  borderRadius: 2
-                }}
-              >
-                Month Wise
-              </Button>
-            </Grid>
-
-            <Grid item xs={12} sm={4}>
-              <Button
-                fullWidth
-                variant={dashboardExportMode === 'all' ? 'contained' : 'outlined'}
-                onClick={() => setDashboardExportMode('all')}
-                sx={{
-                  py: 1.5,
-                  borderRadius: 2
-                }}
-              >
-                All
-              </Button>
-            </Grid>
+              return (
+                <Grid item xs={12} sm={4} key={item.key}>
+                  <Button
+                    fullWidth
+                    variant={selected ? 'contained' : 'outlined'}
+                    onClick={() => setDashboardExportMode(item.key)}
+                    sx={{
+                      py: 1.35,
+                      borderRadius: 3,
+                      fontWeight: 900,
+                      textTransform: 'none',
+                      borderColor: selected ? 'transparent' : '#cbd5e1',
+                      color: selected ? '#fff' : '#475569',
+                      background: selected
+                        ? dashboardExportType === 'sahyog'
+                          ? 'linear-gradient(135deg, #059669 0%, #047857 100%)'
+                          : 'linear-gradient(135deg, #9333ea 0%, #7e22ce 100%)'
+                        : '#fff',
+                      boxShadow: selected
+                        ? dashboardExportType === 'sahyog'
+                          ? '0 10px 22px rgba(5, 150, 105, 0.22)'
+                          : '0 10px 22px rgba(147, 51, 234, 0.22)'
+                        : 'none',
+                      '&:hover': {
+                        borderColor:
+                          dashboardExportType === 'sahyog' ? '#059669' : '#9333ea',
+                        bgcolor: selected ? undefined : '#f8fafc',
+                        transform: 'translateY(-1px)',
+                      },
+                    }}
+                  >
+                    {item.label}
+                  </Button>
+                </Grid>
+              );
+            })}
           </Grid>
-        </>
+        </Box>
       )}
 
       {dashboardExportType === 'pending-profiles' && (
-        <Typography variant="body2" color="textSecondary">
-          Pending profiles export will download all pending profile users.
-        </Typography>
+        <Box
+          sx={{
+            p: 2,
+            borderRadius: 3,
+            bgcolor: 'rgba(255, 247, 237, 0.9)',
+            border: '1px solid rgba(254, 215, 170, 0.9)',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: 1.25,
+          }}
+        >
+          <InfoOutlined sx={{ fontSize: 20, color: '#f97316', mt: 0.15 }} />
+          <Typography variant="body2" sx={{ color: '#9a3412', fontWeight: 700 }}>
+            This will download all pending profile users in the export file.
+          </Typography>
+        </Box>
       )}
 
       {(dashboardExportType === 'sahyog' || dashboardExportType === 'asahyog') &&
@@ -6378,6 +8720,16 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
               value={dashboardExportBeneficiary}
               label="Select Death Case"
               onChange={(e) => setDashboardExportBeneficiary(e.target.value)}
+              sx={premiumSelectSx}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    borderRadius: 3,
+                    mt: 1,
+                    boxShadow: '0 18px 44px rgba(15, 23, 42, 0.16)',
+                  },
+                },
+              }}
             >
               <MenuItem value="">All Death Cases</MenuItem>
               {deathCases.map((dc) => (
@@ -6391,115 +8743,24 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
 
       {(dashboardExportType === 'sahyog' || dashboardExportType === 'asahyog') &&
         dashboardExportMode === 'month' && (
-          <>
-            <FormControl fullWidth required>
-              <InputLabel>Month</InputLabel>
-              <Select
-                value={dashboardExportMonth}
-                label="Month"
-                onChange={(e) => setDashboardExportMonth(e.target.value)}
-              >
-                <MenuItem value={1}>January</MenuItem>
-                <MenuItem value={2}>February</MenuItem>
-                <MenuItem value={3}>March</MenuItem>
-                <MenuItem value={4}>April</MenuItem>
-                <MenuItem value={5}>May</MenuItem>
-                <MenuItem value={6}>June</MenuItem>
-                <MenuItem value={7}>July</MenuItem>
-                <MenuItem value={8}>August</MenuItem>
-                <MenuItem value={9}>September</MenuItem>
-                <MenuItem value={10}>October</MenuItem>
-                <MenuItem value={11}>November</MenuItem>
-                <MenuItem value={12}>December</MenuItem>
-              </Select>
-            </FormControl>
-
-            <TextField
-              fullWidth
-              label="Year"
-              type="number"
-              value={dashboardExportYear}
-              onChange={(e) => setDashboardExportYear(parseInt(e.target.value, 10))}
-              inputProps={{
-                min: 2020,
-                max: new Date().getFullYear() + 5
-              }}
-            />
-          </>
-        )}
-
-      {(dashboardExportType === 'sahyog' || dashboardExportType === 'asahyog') &&
-        dashboardExportMode === 'all' && (
-          <Typography variant="body2" color="textSecondary">
-            This will export all records for{' '}
-            {dashboardExportType === 'sahyog' ? 'Sahyog' : 'Asahyog'}.
-          </Typography>
-        )}
-    </Box>
-  </DialogContent>
-
-  <DialogActions sx={{ p: 3, pt: 1 }}>
-    <Button onClick={() => setDashboardExportDialog(false)}>
-      Cancel
-    </Button>
-
-    <Button
-      variant="contained"
-      disabled={
-        exportLoading ||
-        (dashboardExportMode === 'month' && (!dashboardExportMonth || !dashboardExportYear))
-      }
-      startIcon={exportLoading ? <CircularProgress size={18} color="inherit" /> : <Download />}
-      onClick={() => {
-        if (dashboardExportType === 'sahyog') {
-          handleExportSahyog();
-        } else if (dashboardExportType === 'asahyog') {
-          handleExportAsahyog();
-        } else if (dashboardExportType === 'pending-profiles') {
-          handleExportPendingProfiles();
-        }
-      }}
-      sx={{
-        bgcolor:
-          dashboardExportType === 'sahyog'
-            ? '#00695c'
-            : dashboardExportType === 'asahyog'
-            ? '#6a1b9a'
-            : '#ef6c00'
-      }}
-    >
-      {exportLoading ? 'Exporting...' : 'Export'}
-    </Button>
-  </DialogActions>
-</Dialog>
-
-        {/* Export Users Dialog */}
-        <Dialog 
-          open={exportDialog} 
-          onClose={() => setExportDialog(false)}
-          maxWidth="sm"
-          fullWidth
-          PaperProps={{
-            sx: { borderRadius: 3 }
-          }}
-        >
-          <DialogTitle sx={{ bgcolor: '#2196f3', color: 'white', fontWeight: 'bold' }}>
-            Export User Data
-          </DialogTitle>
-          
-          <DialogContent sx={{ pt: 3 }}>
-            <Typography variant="body2" color="textSecondary" sx={{ mb: 3 }}>
-              Please select Month and Year for export
-            </Typography>
-            
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              {/* Month Selection */}
+          <Grid container spacing={2.25}>
+            <Grid item xs={12} sm={6}>
               <FormControl fullWidth required>
                 <InputLabel>Month</InputLabel>
                 <Select
-                  value={exportMonth}
+                  value={dashboardExportMonth}
                   label="Month"
-                  onChange={(e) => setExportMonth(e.target.value)}
+                  onChange={(e) => setDashboardExportMonth(e.target.value)}
+                  sx={premiumSelectSx}
+                  MenuProps={{
+                    PaperProps: {
+                      sx: {
+                        borderRadius: 3,
+                        mt: 1,
+                        boxShadow: '0 18px 44px rgba(15, 23, 42, 0.16)',
+                      },
+                    },
+                  }}
                 >
                   <MenuItem value={1}>January</MenuItem>
                   <MenuItem value={2}>February</MenuItem>
@@ -6515,297 +8776,796 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
                   <MenuItem value={12}>December</MenuItem>
                 </Select>
               </FormControl>
+            </Grid>
 
-              {/* Year Selection */}
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 label="Year"
                 type="number"
-                value={exportYear}
-                onChange={(e) => setExportYear(parseInt(e.target.value))}
+                value={dashboardExportYear}
+                onChange={(e) => setDashboardExportYear(parseInt(e.target.value, 10))}
                 inputProps={{
                   min: 2020,
-                  max: new Date().getFullYear() + 5
+                  max: new Date().getFullYear() + 5,
                 }}
-                required
+                sx={premiumTextFieldSx}
               />
-              
-              <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-                💡 User data will be downloaded in CSV format according to selected month and year.
-              </Typography>
-            </Box>
-          </DialogContent>
-          
-          <DialogActions sx={{ p: 3, pt: 1 }}>
-  <Button onClick={() => setExportDialog(false)}>
-    Cancel
-  </Button>
+            </Grid>
+          </Grid>
+        )}
 
-  <Button
-    onClick={handleExportAllUsers}
-    variant="outlined"
-    disabled={exportLoading}
-    startIcon={exportLoading ? <CircularProgress size={18} /> : <Download />}
-  >
-    {exportLoading ? 'Exporting...' : 'Export All'}
-  </Button>
+      {(dashboardExportType === 'sahyog' || dashboardExportType === 'asahyog') &&
+        dashboardExportMode === 'all' && (
+          <Box
+            sx={{
+              p: 2,
+              borderRadius: 3,
+              bgcolor:
+                dashboardExportType === 'sahyog'
+                  ? 'rgba(240, 253, 244, 0.92)'
+                  : 'rgba(250, 245, 255, 0.92)',
+              border:
+                dashboardExportType === 'sahyog'
+                  ? '1px solid rgba(187, 247, 208, 0.95)'
+                  : '1px solid rgba(221, 214, 254, 0.95)',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 1.25,
+            }}
+          >
+            <InfoOutlined
+              sx={{
+                fontSize: 20,
+                color: dashboardExportType === 'sahyog' ? '#059669' : '#9333ea',
+                mt: 0.15,
+              }}
+            />
 
-  <Button 
-    onClick={handleExportUsers}
-    variant="contained"
-    disabled={exportLoading || !exportMonth || !exportYear}
-    startIcon={exportLoading ? <CircularProgress size={18} /> : <Download />}
-    sx={{ bgcolor: '#2196f3' }}
-  >
-    {exportLoading ? 'Exporting...' : 'Export'}
-  </Button>
-</DialogActions>
-        </Dialog>
-
-        {/* Death Case Details Dialog */}
-        <Dialog 
-          open={deathCaseDialog} 
-          onClose={() => {
-            setDeathCaseDialog(false);
-            setSelectedDeathCase(null);
-          }}
-          maxWidth="md"
-          fullWidth
-          PaperProps={{
-            sx: { borderRadius: 3 }
-          }}
-        >
-          <DialogTitle sx={{ bgcolor: '#d32f2f', color: 'white', fontWeight: 'bold' }}>
-            Death Assistance Case Details
-          </DialogTitle>
-          
-          {selectedDeathCase && (
-            <DialogContent sx={{ pt: 3 }}>
-              <Grid container spacing={3}>
-                {/* Basic Information */}
-                <Grid item xs={12} md={6}>
-                  <Paper elevation={2} sx={{ p: 2, bgcolor: '#f5f5f5' }}>
-                    <Typography variant="h6" sx={{ mb: 2, color: '#d32f2f' }}>
-                      Deceased Information
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      {selectedDeathCase.userImage && (
-                        <img 
-                          src={selectedDeathCase.userImage} 
-                          alt="Deceased Photo"
-                          style={{
-                            width: 60,
-                            height: 60,
-                            borderRadius: '50%',
-                            marginRight: 16,
-                            objectFit: 'cover'
-                          }}
-                        />
-                      )}
-                      <Box>
-                        <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
-                          {selectedDeathCase.deceasedName}
-                        </Typography>
-                        <Typography variant="body2" color="textSecondary">
-                          Code: {selectedDeathCase.employeeCode}
-                        </Typography>
-                      </Box>
-                    </Box>
-                    <Typography variant="body2" sx={{ mb: 1 }}>
-                      <strong>Department:</strong> {selectedDeathCase.department}
-                    </Typography>
-                    <Typography variant="body2" sx={{ mb: 1 }}>
-                      <strong>District:</strong> {selectedDeathCase.district}
-                    </Typography>
-                    {selectedDeathCase.caseDate && (
-                      <Typography variant="body2" sx={{ mb: 1 }}>
-                        <strong>Case Date:</strong> {new Date(selectedDeathCase.caseDate).toLocaleDateString('hi-IN')}
-                      </Typography>
-                    )}
-                    <Typography variant="body2">
-                      <strong>Status:</strong>{' '}
-                      <Chip
-                        label={
-                          selectedDeathCase.status === 'OPEN' ? 'Open' : 
-                          selectedDeathCase.status === 'CLOSED' ? 'Closed' : 
-                          selectedDeathCase.status === 'ACTIVE' ? 'Active' :
-                          selectedDeathCase.status === 'INACTIVE' ? 'Inactive' :
-                          selectedDeathCase.status
-                        }
-                        size="small"
-                        sx={{
-                          bgcolor: 
-                            selectedDeathCase.status === 'OPEN' ? '#ff9800' : 
-                            selectedDeathCase.status === 'CLOSED' ? '#4caf50' : 
-                            selectedDeathCase.status === 'ACTIVE' ? '#4caf50' :
-                            selectedDeathCase.status === 'INACTIVE' ? '#f44336' :
-                            '#f44336',
-                          color: 'white',
-                          ml: 1
-                        }}
-                      />
-                    </Typography>
-                  </Paper>
-                </Grid>
-
-                {/* Description */}
-                <Grid item xs={12} md={6}>
-                  <Paper elevation={2} sx={{ p: 2, bgcolor: '#f5f5f5' }}>
-                    <Typography variant="h6" sx={{ mb: 2, color: '#d32f2f' }}>
-                      Details
-                    </Typography>
-                    <Typography variant="body2">
-                      {selectedDeathCase.description || 'No details available'}
-                    </Typography>
-                  </Paper>
-                </Grid>
-
-                {/* Nominee 1 Information */}
-                {selectedDeathCase.nominee1Name && (
-                  <Grid item xs={12} md={6}>
-                    <Paper elevation={2} sx={{ p: 2, bgcolor: '#e8f5e8' }}>
-                      <Typography variant="h6" sx={{ mb: 2, color: '#2e7d32' }}>
-                        First Nominee
-                      </Typography>
-                      <Typography variant="body2" sx={{ mb: 2 }}>
-                        <strong>Name:</strong> {selectedDeathCase.nominee1Name}
-                      </Typography>
-                      {selectedDeathCase.nominee1QrCode && (
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          startIcon={<Download />}
-                          onClick={() => window.open(selectedDeathCase.nominee1QrCode, '_blank')}
-                          sx={{ borderColor: '#2e7d32', color: '#2e7d32' }}
-                        >
-                          QR Code Download
-                        </Button>
-                      )}
-                    </Paper>
-                  </Grid>
-                )}
-
-                {/* Nominee 2 Information */}
-                <Grid item xs={12} md={6}>
-                  <Paper elevation={2} sx={{ p: 2, bgcolor: selectedDeathCase.nominee2Name ? '#e3f2fd' : '#fafafa' }}>
-                    <Typography variant="h6" sx={{ mb: 2, color: selectedDeathCase.nominee2Name ? '#1976d2' : '#757575' }}>
-                      Second Nominee
-                    </Typography>
-                    {selectedDeathCase.nominee2Name ? (
-                      <>
-                        <Typography variant="body2" sx={{ mb: 2 }}>
-                          <strong>Name:</strong> {selectedDeathCase.nominee2Name}
-                        </Typography>
-                        {selectedDeathCase.nominee2QrCode && (
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            startIcon={<Download />}
-                            onClick={() => window.open(selectedDeathCase.nominee2QrCode, '_blank')}
-                            sx={{ borderColor: '#1976d2', color: '#1976d2' }}
-                          >
-                            QR Code Download
-                          </Button>
-                        )}
-                      </>
-                    ) : (
-                      <Typography variant="body2" color="textSecondary">
-                        No Second Nominee 
-                      </Typography>
-                    )}
-                  </Paper>
-                </Grid>
-
-                {/* Bank Accounts */}
-                {(selectedDeathCase.account1 || selectedDeathCase.account2 || selectedDeathCase.account3) && (
-                  <Grid item xs={12}>
-                    <Paper elevation={2} sx={{ p: 2, bgcolor: '#fff3e0' }}>
-                      <Typography variant="h6" sx={{ mb: 2, color: '#f57c00' }}>
-                        Bank Account Information
-                      </Typography>
-                      <Grid container spacing={2}>
-                        {selectedDeathCase.account1 && (
-                          <Grid item xs={12} md={4}>
-                            <Box sx={{ p: 2, bgcolor: 'white', borderRadius: 1, border: '1px solid #e0e0e0' }}>
-                              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
-                                Account 1
-                              </Typography>
-                              <Typography variant="body2" sx={{ mb: 0.5 }}>
-                                <strong>Bank:</strong> {selectedDeathCase.account1.bankName}
-                              </Typography>
-                              <Typography variant="body2" sx={{ mb: 0.5 }}>
-                                <strong>Account Number:</strong> {selectedDeathCase.account1.accountNumber}
-                              </Typography>
-                              <Typography variant="body2" sx={{ mb: 0.5 }}>
-                                <strong>IFSC:</strong> {selectedDeathCase.account1.ifscCode}
-                              </Typography>
-                              <Typography variant="body2">
-                                <strong>Account Holder:</strong> {selectedDeathCase.account1.accountHolderName}
-                              </Typography>
-                            </Box>
-                          </Grid>
-                        )}
-                        {selectedDeathCase.account2 && (
-                          <Grid item xs={12} md={4}>
-                            <Box sx={{ p: 2, bgcolor: 'white', borderRadius: 1, border: '1px solid #e0e0e0' }}>
-                              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
-                                Account 2
-                              </Typography>
-                              <Typography variant="body2" sx={{ mb: 0.5 }}>
-                                <strong>Bank:</strong> {selectedDeathCase.account2.bankName}
-                              </Typography>
-                              <Typography variant="body2" sx={{ mb: 0.5 }}>
-                                <strong>Account Number:</strong> {selectedDeathCase.account2.accountNumber}
-                              </Typography>
-                              <Typography variant="body2" sx={{ mb: 0.5 }}>
-                                <strong>IFSC:</strong> {selectedDeathCase.account2.ifscCode}
-                              </Typography>
-                              <Typography variant="body2">
-                                <strong>Account Holder:</strong> {selectedDeathCase.account2.accountHolderName}
-                              </Typography>
-                            </Box>
-                          </Grid>
-                        )}
-                        {selectedDeathCase.account3 && (
-                          <Grid item xs={12} md={4}>
-                            <Box sx={{ p: 2, bgcolor: 'white', borderRadius: 1, border: '1px solid #e0e0e0' }}>
-                              <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
-                                Account 3
-                              </Typography>
-                              <Typography variant="body2" sx={{ mb: 0.5 }}>
-                                <strong>Bank:</strong> {selectedDeathCase.account3.bankName}
-                              </Typography>
-                              <Typography variant="body2" sx={{ mb: 0.5 }}>
-                                <strong>Account Number:</strong> {selectedDeathCase.account3.accountNumber}
-                              </Typography>
-                              <Typography variant="body2" sx={{ mb: 0.5 }}>
-                                <strong>IFSC:</strong> {selectedDeathCase.account3.ifscCode}
-                              </Typography>
-                              <Typography variant="body2">
-                                <strong>Account Holder:</strong> {selectedDeathCase.account3.accountHolderName}
-                              </Typography>
-                            </Box>
-                          </Grid>
-                        )}
-                      </Grid>
-                    </Paper>
-                  </Grid>
-                )}
-              </Grid>
-            </DialogContent>
-          )}
-          
-          <DialogActions sx={{ p: 3, pt: 1 }}>
-            <Button 
-              onClick={() => {
-                setDeathCaseDialog(false);
-                setSelectedDeathCase(null);
+            <Typography
+              variant="body2"
+              sx={{
+                color: dashboardExportType === 'sahyog' ? '#065f46' : '#6b21a8',
+                fontWeight: 700,
               }}
             >
-              Close
-            </Button>
-          </DialogActions>
-        </Dialog>
+              This will export all records for{' '}
+              <strong>{dashboardExportType === 'sahyog' ? 'Sahyog' : 'Asahyog'}</strong>.
+            </Typography>
+          </Box>
+        )}
+    </Box>
+  </DialogContent>
+
+  <DialogActions sx={premiumDialogActionsSx}>
+    <Button
+      onClick={() => setDashboardExportDialog(false)}
+      disabled={exportLoading}
+      variant="outlined"
+      sx={premiumCancelButtonSx}
+    >
+      Cancel
+    </Button>
+
+    <Button
+      variant="contained"
+      disabled={
+        exportLoading ||
+        (dashboardExportMode === 'month' &&
+          (!dashboardExportMonth || !dashboardExportYear))
+      }
+      startIcon={
+        exportLoading ? (
+          <CircularProgress size={18} color="inherit" />
+        ) : (
+          <Download />
+        )
+      }
+      onClick={() => {
+        if (dashboardExportType === 'sahyog') {
+          handleExportSahyog();
+        } else if (dashboardExportType === 'asahyog') {
+          handleExportAsahyog();
+        } else if (dashboardExportType === 'pending-profiles') {
+          handleExportPendingProfiles();
+        }
+      }}
+      sx={{
+        ...premiumPrimaryButtonSx,
+        background:
+          dashboardExportType === 'sahyog'
+            ? 'linear-gradient(135deg, #059669 0%, #047857 100%)'
+            : dashboardExportType === 'asahyog'
+            ? 'linear-gradient(135deg, #9333ea 0%, #7e22ce 100%)'
+            : 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+        boxShadow:
+          dashboardExportType === 'sahyog'
+            ? '0 10px 22px rgba(5, 150, 105, 0.22)'
+            : dashboardExportType === 'asahyog'
+            ? '0 10px 22px rgba(147, 51, 234, 0.22)'
+            : '0 10px 22px rgba(249, 115, 22, 0.22)',
+        '&:hover': {
+          background:
+            dashboardExportType === 'sahyog'
+              ? 'linear-gradient(135deg, #047857 0%, #065f46 100%)'
+              : dashboardExportType === 'asahyog'
+              ? 'linear-gradient(135deg, #7e22ce 0%, #581c87 100%)'
+              : 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)',
+          transform: 'translateY(-1px)',
+        },
+      }}
+    >
+      {exportLoading ? 'Exporting...' : 'Export'}
+    </Button>
+  </DialogActions>
+</Dialog>
+
+        {/* Export Users Dialog */}
+    {/* Export Users Dialog */}
+<Dialog
+  open={exportDialog}
+  onClose={() => !exportLoading && setExportDialog(false)}
+  maxWidth="sm"
+  fullWidth
+  PaperProps={{
+    sx: premiumDialogPaperSx,
+  }}
+>
+  <DialogTitle sx={premiumDialogTitleSx}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+      <Box
+        sx={{
+          width: 38,
+          height: 38,
+          borderRadius: '14px',
+          bgcolor: 'rgba(255,255,255,0.18)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Download fontSize="small" />
+      </Box>
+
+      <Box>
+        <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1.15 }}>
+          Export User Data
+        </Typography>
+        <Typography variant="caption" sx={{ opacity: 0.9, fontWeight: 600 }}>
+          Download user records by selected month and year
+        </Typography>
+      </Box>
+    </Box>
+
+    <IconButton
+      size="small"
+      onClick={() => setExportDialog(false)}
+      disabled={exportLoading}
+      sx={{
+        color: '#fff',
+        bgcolor: 'rgba(255,255,255,0.14)',
+        '&:hover': {
+          bgcolor: 'rgba(255,255,255,0.24)',
+        },
+      }}
+    >
+      <Close fontSize="small" />
+    </IconButton>
+  </DialogTitle>
+
+  <DialogContent sx={premiumDialogContentSx}>
+    <Paper
+      elevation={0}
+      sx={{
+        p: 2.25,
+        mb: 3,
+        borderRadius: 3,
+        bgcolor: '#fff',
+        border: '1px solid rgba(226, 232, 240, 0.95)',
+        boxShadow: '0 12px 30px rgba(15, 23, 42, 0.05)',
+      }}
+    >
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+        <Box
+          sx={{
+            width: 40,
+            height: 40,
+            borderRadius: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            bgcolor: 'rgba(37, 99, 235, 0.10)',
+            color: '#2563eb',
+            flexShrink: 0,
+          }}
+        >
+          <InfoOutlined fontSize="small" />
+        </Box>
+
+        <Box>
+          <Typography variant="subtitle2" sx={{ fontWeight: 900, color: '#0f172a' }}>
+            Select Export Period
+          </Typography>
+          <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600, mt: 0.35 }}>
+            Please select month and year to download filtered user data. You can also export all users directly.
+          </Typography>
+        </Box>
+      </Box>
+    </Paper>
+
+    <Grid container spacing={2.25}>
+      <Grid item xs={12} sm={6}>
+        <FormControl fullWidth required>
+          <InputLabel>Month</InputLabel>
+          <Select
+            value={exportMonth}
+            label="Month"
+            onChange={(e) => setExportMonth(e.target.value)}
+            sx={premiumSelectSx}
+            MenuProps={{
+              PaperProps: {
+                sx: {
+                  borderRadius: 3,
+                  mt: 1,
+                  boxShadow: '0 18px 44px rgba(15, 23, 42, 0.16)',
+                },
+              },
+            }}
+          >
+            <MenuItem value={1}>January</MenuItem>
+            <MenuItem value={2}>February</MenuItem>
+            <MenuItem value={3}>March</MenuItem>
+            <MenuItem value={4}>April</MenuItem>
+            <MenuItem value={5}>May</MenuItem>
+            <MenuItem value={6}>June</MenuItem>
+            <MenuItem value={7}>July</MenuItem>
+            <MenuItem value={8}>August</MenuItem>
+            <MenuItem value={9}>September</MenuItem>
+            <MenuItem value={10}>October</MenuItem>
+            <MenuItem value={11}>November</MenuItem>
+            <MenuItem value={12}>December</MenuItem>
+          </Select>
+        </FormControl>
+      </Grid>
+
+      <Grid item xs={12} sm={6}>
+        <TextField
+          fullWidth
+          required
+          label="Year"
+          type="number"
+          value={exportYear}
+          onChange={(e) => setExportYear(parseInt(e.target.value, 10))}
+          inputProps={{
+            min: 2020,
+            max: new Date().getFullYear() + 5,
+          }}
+          sx={premiumTextFieldSx}
+        />
+      </Grid>
+    </Grid>
+
+    <Box
+      sx={{
+        mt: 3,
+        p: 2,
+        borderRadius: 3,
+        bgcolor: 'rgba(255, 247, 237, 0.9)',
+        border: '1px solid rgba(254, 215, 170, 0.9)',
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 1.25,
+      }}
+    >
+      <InfoOutlined sx={{ fontSize: 20, color: '#f97316', mt: 0.15 }} />
+      <Typography variant="body2" sx={{ color: '#9a3412', fontWeight: 700 }}>
+        User data will be downloaded according to the selected month and year. Use
+        <strong> Export All </strong>
+        when you need the complete user list.
+      </Typography>
+    </Box>
+  </DialogContent>
+
+  <DialogActions sx={premiumDialogActionsSx}>
+    <Button
+      onClick={() => setExportDialog(false)}
+      disabled={exportLoading}
+      variant="outlined"
+      sx={premiumCancelButtonSx}
+    >
+      Cancel
+    </Button>
+
+    <Button
+      onClick={handleExportAllUsers}
+      variant="outlined"
+      disabled={exportLoading}
+      startIcon={exportLoading ? <CircularProgress size={18} /> : <Download />}
+      sx={{
+        borderRadius: 3,
+        px: 2.5,
+        py: 1,
+        fontWeight: 800,
+        textTransform: 'none',
+        borderColor: '#bfdbfe',
+        color: '#1d4ed8',
+        bgcolor: '#fff',
+        '&:hover': {
+          borderColor: '#2563eb',
+          bgcolor: 'rgba(239, 246, 255, 0.9)',
+          transform: 'translateY(-1px)',
+        },
+      }}
+    >
+      {exportLoading ? 'Exporting...' : 'Export All'}
+    </Button>
+
+    <Button
+      onClick={handleExportUsers}
+      variant="contained"
+      disabled={exportLoading || !exportMonth || !exportYear}
+      startIcon={exportLoading ? <CircularProgress size={18} color="inherit" /> : <Download />}
+      sx={premiumPrimaryButtonSx}
+    >
+      {exportLoading ? 'Exporting...' : 'Export Selected'}
+    </Button>
+  </DialogActions>
+</Dialog>
+
+        {/* Death Case Details Dialog */}
+     <Dialog
+  open={deathCaseDialog}
+  onClose={() => {
+    setDeathCaseDialog(false);
+    setSelectedDeathCase(null);
+  }}
+  maxWidth="md"
+  fullWidth
+  PaperProps={{
+    sx: premiumDialogPaperSx,
+  }}
+>
+  <DialogTitle sx={premiumDialogTitleSx}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+      <Box
+        sx={{
+          width: 38,
+          height: 38,
+          borderRadius: '14px',
+          bgcolor: 'rgba(255,255,255,0.18)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Assignment fontSize="small" />
+      </Box>
+
+      <Box>
+        <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1.15 }}>
+          Death Assistance Case Details
+        </Typography>
+        <Typography variant="caption" sx={{ opacity: 0.9, fontWeight: 600 }}>
+          Complete nominee, case and bank account information
+        </Typography>
+      </Box>
+    </Box>
+
+    <IconButton
+      size="small"
+      onClick={() => {
+        setDeathCaseDialog(false);
+        setSelectedDeathCase(null);
+      }}
+      sx={{
+        color: '#fff',
+        bgcolor: 'rgba(255,255,255,0.14)',
+        '&:hover': {
+          bgcolor: 'rgba(255,255,255,0.24)',
+        },
+      }}
+    >
+      <Close fontSize="small" />
+    </IconButton>
+  </DialogTitle>
+
+  {selectedDeathCase && (
+    <DialogContent sx={premiumDialogContentSx}>
+      <Grid container spacing={2.5}>
+        {/* Deceased Information */}
+        <Grid item xs={12} md={6}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: 2.5,
+              height: '100%',
+              borderRadius: 3,
+              bgcolor: '#fff',
+              border: '1px solid rgba(226, 232, 240, 0.95)',
+              boxShadow: '0 12px 30px rgba(15, 23, 42, 0.05)',
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, mb: 2 }}>
+              <Box
+                sx={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: '14px',
+                  bgcolor: 'rgba(220, 38, 38, 0.10)',
+                  color: '#dc2626',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <People fontSize="small" />
+              </Box>
+
+              <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                Deceased Information
+              </Typography>
+            </Box>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2.25 }}>
+              {selectedDeathCase.userImage ? (
+                <Box
+                  component="img"
+                  src={selectedDeathCase.userImage}
+                  alt="Deceased Photo"
+                  sx={{
+                    width: 66,
+                    height: 66,
+                    borderRadius: '20px',
+                    objectFit: 'cover',
+                    border: '3px solid #fff',
+                    boxShadow: '0 10px 22px rgba(15, 23, 42, 0.16)',
+                  }}
+                />
+              ) : (
+                <Box
+                  sx={{
+                    width: 66,
+                    height: 66,
+                    borderRadius: '20px',
+                    bgcolor: 'rgba(220, 38, 38, 0.10)',
+                    color: '#dc2626',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 900,
+                    fontSize: '1.35rem',
+                  }}
+                >
+                  {(selectedDeathCase.deceasedName || 'D').charAt(0)}
+                </Box>
+              )}
+
+              <Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                  {selectedDeathCase.deceasedName || '-'}
+                </Typography>
+
+                <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 700 }}>
+                  Code: {selectedDeathCase.employeeCode || '-'}
+                </Typography>
+              </Box>
+            </Box>
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.15 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <BusinessCenter sx={{ fontSize: 18, color: '#64748b' }} />
+                <Typography variant="body2" sx={{ color: '#334155', fontWeight: 700 }}>
+                  <strong>Department:</strong> {selectedDeathCase.department || '-'}
+                </Typography>
+              </Box>
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <LocationOn sx={{ fontSize: 18, color: '#f97316' }} />
+                <Typography variant="body2" sx={{ color: '#334155', fontWeight: 700 }}>
+                  <strong>District:</strong> {selectedDeathCase.district || '-'}
+                </Typography>
+              </Box>
+
+              {selectedDeathCase.caseDate && (
+                <Typography variant="body2" sx={{ color: '#334155', fontWeight: 700 }}>
+                  <strong>Case Date:</strong>{' '}
+                  {new Date(selectedDeathCase.caseDate).toLocaleDateString('hi-IN')}
+                </Typography>
+              )}
+
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="body2" sx={{ color: '#334155', fontWeight: 800 }}>
+                  Status:
+                </Typography>
+
+                <Chip
+                  label={
+                    selectedDeathCase.status === 'OPEN'
+                      ? 'Open'
+                      : selectedDeathCase.status === 'CLOSED'
+                      ? 'Closed'
+                      : selectedDeathCase.status === 'ACTIVE'
+                      ? 'Active'
+                      : selectedDeathCase.status === 'INACTIVE'
+                      ? 'Inactive'
+                      : selectedDeathCase.status || '-'
+                  }
+                  size="small"
+                  variant="outlined"
+                  sx={{
+                    ...getDeathCaseStatusChipSx(selectedDeathCase.status),
+                    fontWeight: 900,
+                    borderRadius: '10px',
+                  }}
+                />
+              </Box>
+            </Box>
+          </Paper>
+        </Grid>
+
+        {/* Details */}
+        <Grid item xs={12} md={6}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: 2.5,
+              height: '100%',
+              borderRadius: 3,
+              bgcolor: '#fff',
+              border: '1px solid rgba(226, 232, 240, 0.95)',
+              boxShadow: '0 12px 30px rgba(15, 23, 42, 0.05)',
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, mb: 2 }}>
+              <Box
+                sx={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: '14px',
+                  bgcolor: 'rgba(249, 115, 22, 0.12)',
+                  color: '#f97316',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <InfoOutlined fontSize="small" />
+              </Box>
+
+              <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                Details
+              </Typography>
+            </Box>
+
+            <Typography
+              variant="body2"
+              sx={{
+                color: selectedDeathCase.description ? '#334155' : '#94a3b8',
+                fontWeight: 650,
+                lineHeight: 1.75,
+                p: 2,
+                borderRadius: 3,
+                bgcolor: '#f8fafc',
+                border: '1px solid rgba(226, 232, 240, 0.85)',
+                minHeight: 116,
+              }}
+            >
+              {selectedDeathCase.description || 'No details available'}
+            </Typography>
+          </Paper>
+        </Grid>
+
+        {/* First Nominee */}
+        {selectedDeathCase.nominee1Name && (
+          <Grid item xs={12} md={6}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2.5,
+                height: '100%',
+                borderRadius: 3,
+                bgcolor: 'rgba(240, 253, 244, 0.9)',
+                border: '1px solid rgba(187, 247, 208, 0.95)',
+                boxShadow: '0 12px 30px rgba(22, 163, 74, 0.07)',
+              }}
+            >
+              <Typography variant="h6" sx={{ mb: 1.5, color: '#15803d', fontWeight: 900 }}>
+                First Nominee
+              </Typography>
+
+              <Typography variant="body2" sx={{ mb: 2, color: '#334155', fontWeight: 700 }}>
+                <strong>Name:</strong> {selectedDeathCase.nominee1Name}
+              </Typography>
+
+              {selectedDeathCase.nominee1QrCode && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<Download />}
+                  onClick={() => window.open(selectedDeathCase.nominee1QrCode, '_blank')}
+                  sx={{
+                    borderRadius: 3,
+                    textTransform: 'none',
+                    fontWeight: 800,
+                    borderColor: '#86efac',
+                    color: '#15803d',
+                    bgcolor: '#fff',
+                    '&:hover': {
+                      borderColor: '#16a34a',
+                      bgcolor: 'rgba(240, 253, 244, 0.95)',
+                    },
+                  }}
+                >
+                  QR Code Download
+                </Button>
+              )}
+            </Paper>
+          </Grid>
+        )}
+
+        {/* Second Nominee */}
+        <Grid item xs={12} md={6}>
+          <Paper
+            elevation={0}
+            sx={{
+              p: 2.5,
+              height: '100%',
+              borderRadius: 3,
+              bgcolor: selectedDeathCase.nominee2Name
+                ? 'rgba(239, 246, 255, 0.92)'
+                : '#fff',
+              border: selectedDeathCase.nominee2Name
+                ? '1px solid rgba(191, 219, 254, 0.95)'
+                : '1px solid rgba(226, 232, 240, 0.95)',
+              boxShadow: selectedDeathCase.nominee2Name
+                ? '0 12px 30px rgba(37, 99, 235, 0.07)'
+                : '0 12px 30px rgba(15, 23, 42, 0.05)',
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{
+                mb: 1.5,
+                color: selectedDeathCase.nominee2Name ? '#1d4ed8' : '#64748b',
+                fontWeight: 900,
+              }}
+            >
+              Second Nominee
+            </Typography>
+
+            {selectedDeathCase.nominee2Name ? (
+              <>
+                <Typography variant="body2" sx={{ mb: 2, color: '#334155', fontWeight: 700 }}>
+                  <strong>Name:</strong> {selectedDeathCase.nominee2Name}
+                </Typography>
+
+                {selectedDeathCase.nominee2QrCode && (
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<Download />}
+                    onClick={() => window.open(selectedDeathCase.nominee2QrCode, '_blank')}
+                    sx={{
+                      borderRadius: 3,
+                      textTransform: 'none',
+                      fontWeight: 800,
+                      borderColor: '#bfdbfe',
+                      color: '#1d4ed8',
+                      bgcolor: '#fff',
+                      '&:hover': {
+                        borderColor: '#2563eb',
+                        bgcolor: 'rgba(239, 246, 255, 0.95)',
+                      },
+                    }}
+                  >
+                    QR Code Download
+                  </Button>
+                )}
+              </>
+            ) : (
+              <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 700 }}>
+                No Second Nominee
+              </Typography>
+            )}
+          </Paper>
+        </Grid>
+
+        {/* Bank Accounts */}
+        {(selectedDeathCase.account1 ||
+          selectedDeathCase.account2 ||
+          selectedDeathCase.account3) && (
+          <Grid item xs={12}>
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2.5,
+                borderRadius: 3,
+                bgcolor: '#fff',
+                border: '1px solid rgba(226, 232, 240, 0.95)',
+                boxShadow: '0 12px 30px rgba(15, 23, 42, 0.05)',
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, mb: 2 }}>
+                <Box
+                  sx={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: '14px',
+                    bgcolor: 'rgba(249, 115, 22, 0.12)',
+                    color: '#f97316',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Payment fontSize="small" />
+                </Box>
+
+                <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                  Bank Account Information
+                </Typography>
+              </Box>
+
+              <Grid container spacing={2}>
+                {[selectedDeathCase.account1, selectedDeathCase.account2, selectedDeathCase.account3]
+                  .filter(Boolean)
+                  .map((account, index) => (
+                    <Grid item xs={12} md={4} key={`account-${index + 1}`}>
+                      <Box
+                        sx={{
+                          p: 2,
+                          height: '100%',
+                          bgcolor: '#f8fafc',
+                          borderRadius: 3,
+                          border: '1px solid rgba(226, 232, 240, 0.95)',
+                        }}
+                      >
+                        <Typography
+                          variant="subtitle2"
+                          sx={{ fontWeight: 900, mb: 1.25, color: '#0f172a' }}
+                        >
+                          Account {index + 1}
+                        </Typography>
+
+                        <Typography variant="body2" sx={{ mb: 0.65, color: '#334155', fontWeight: 700 }}>
+                          <strong>Bank:</strong> {account.bankName || '-'}
+                        </Typography>
+
+                        <Typography variant="body2" sx={{ mb: 0.65, color: '#334155', fontWeight: 700 }}>
+                          <strong>Account Number:</strong> {account.accountNumber || '-'}
+                        </Typography>
+
+                        <Typography variant="body2" sx={{ mb: 0.65, color: '#334155', fontWeight: 700 }}>
+                          <strong>IFSC:</strong> {account.ifscCode || '-'}
+                        </Typography>
+
+                        <Typography variant="body2" sx={{ color: '#334155', fontWeight: 700 }}>
+                          <strong>Account Holder:</strong> {account.accountHolderName || '-'}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  ))}
+              </Grid>
+            </Paper>
+          </Grid>
+        )}
+      </Grid>
+    </DialogContent>
+  )}
+
+  <DialogActions sx={premiumDialogActionsSx}>
+    <Button
+      onClick={() => {
+        setDeathCaseDialog(false);
+        setSelectedDeathCase(null);
+      }}
+      variant="outlined"
+      sx={premiumCancelButtonSx}
+    >
+      Close
+    </Button>
+  </DialogActions>
+</Dialog>
 
         {/* Create Death Case Dialog */}
         <Dialog 
@@ -6845,9 +9605,12 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
           }}
           maxWidth="md"
           fullWidth
-          PaperProps={{
-            sx: { borderRadius: 3 }
-          }}
+            PaperProps={{
+    sx: {
+      ...premiumDialogPaperSx,
+      maxHeight: '92vh',
+    },
+  }}
         >
                     <DialogTitle sx={{ bgcolor: '#d32f2f', color: 'white', fontWeight: 'bold' }}>
             {isDeathCaseEditMode ? 'Edit Death Assistance Case' : 'New Death Assistance Case'}
@@ -7567,877 +10330,1843 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
         </Dialog>
 
         {/* Manager Userssss Dialog */}
-        <Dialog 
-          open={managerUsersDialog} 
-          onClose={() => setManagerUsersDialog(false)}
-          maxWidth="lg"
-          fullWidth
-        >
-          <DialogTitle>
-            {selectedManagerInfo ? `${selectedManagerInfo.managerName} 's Users` : 'Manager Usersss'}
-            <Typography variant="subtitle2" color="textSecondary">
-              {selectedManagerInfo && (
-                `${selectedManagerInfo.managerLevel === 'SAMBHAG' ? 'Division' : 
-                   selectedManagerInfo.managerLevel === 'DISTRICT' ? 'District' : 
-                   selectedManagerInfo.managerLevel === 'BLOCK' ? 'Block' : selectedManagerInfo.managerLevel} Manager`
-              )}
-            </Typography>
-          </DialogTitle>
-          <DialogContent dividers>
-            {managerUsers.length === 0 ? (
-              <Typography variant="body2" color="textSecondary" align="center" sx={{ py: 4 }}>
-                No User found
-              </Typography>
-            ) : (
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell><strong>Name</strong></TableCell>
-                      <TableCell><strong>Email</strong></TableCell>
-                      <TableCell><strong>Mobile</strong></TableCell>
-                      <TableCell><strong>Department</strong></TableCell>
-                      <TableCell><strong>Location</strong></TableCell>
-                      <TableCell><strong>Role</strong></TableCell>
-                      <TableCell><strong>Status</strong></TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {managerUsers.map((user) => (
-                      <TableRow key={user.id} hover>
-                        
-                        <TableCell>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {user.name} {user.surname}
-                          </Typography>
-                          {user.fatherName && (
-                            <Typography variant="caption" color="textSecondary">
-                              {user.fatherName}
-                            </Typography>
-                          )}
-                        </TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>{user.mobileNumber}</TableCell>
-                        <TableCell>
-                          <Typography variant="body2">{user.department}</Typography>
-                          {user.schoolOfficeName && (
-                            <Typography variant="caption" display="block" color="textSecondary">
-                              {user.schoolOfficeName}
-                            </Typography>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Typography variant="caption">
-                            {user.departmentBlock && `${user.departmentBlock}, `}
-                            {user.departmentDistrict && `${user.departmentDistrict}, `}
-                            {user.departmentSambhag}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={user.role === 'ROLE_ADMIN' ? 'Admin' :
-                                   user.role === 'ROLE_SAMBHAG_MANAGER' ? 'Division Manager' :
-                                   user.role === 'ROLE_DISTRICT_MANAGER' ? 'District Manager' :
-                                   user.role === 'ROLE_BLOCK_MANAGER' ? 'Block Manager' : 
-                                   'User'}
-                            size="small"
-                            color={user.role === 'ROLE_ADMIN' ? 'error' : 
-                                   user.role.includes('MANAGER') ? 'primary' : 'default'}
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={user.status === 'ACTIVE' ? 'Active' : 
-                                   user.status === 'BLOCKED' ? 'Blocked' : 'Inactive'}
-                            size="small"
-                            color={user.status === 'ACTIVE' ? 'success' : 
-                                   user.status === 'BLOCKED' ? 'error' : 'default'}
-                          />
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setManagerUsersDialog(false)}>
-              Close
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* Admin - View/Edit User Details Dialog */}
-        <Dialog
-          open={userDetailsOpen}
-          onClose={closeUserDetails}
-          maxWidth="md"
-          fullWidth
-        >
-          <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Box>
-              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>User Details</Typography>
-              <Typography variant="caption" color="text.secondary">
-                {userDetailsUser?.id ? `User ID: ${userDetailsUser.id}` : ''}
-              </Typography>
-            </Box>
-            <Chip
-              size="small"
-              label={(userDetailsUser?.status || 'ACTIVE').toString()}
-              sx={{
-                bgcolor: getStatusColor(userDetailsUser?.status),
-                color: 'white'
-              }}
-            />
-          </DialogTitle>
-
-          <DialogContent dividers>
-            <Grid container spacing={2}>
-              {/* Basic Info */}
-              <Grid item xs={12}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
-                  Basic Information
-                </Typography>
-              </Grid>
-
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  fullWidth
-                  label="Name"
-                  value={userDetailsForm.name}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, name: e.target.value }))}
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  fullWidth
-                  label="Surname"
-                  value={userDetailsForm.surname}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, surname: e.target.value }))}
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  fullWidth
-                  label="Father Name"
-                  value={userDetailsForm.fatherName}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, fatherName: e.target.value }))}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Email"
-                  value={userDetailsForm.email}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, email: e.target.value }))}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={2}>
-                <TextField
-                  fullWidth
-                  label="Country Code"
-                  value={userDetailsForm.countryCode}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, countryCode: e.target.value }))}
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  fullWidth
-                  label="Mobile Number"
-                  value={userDetailsForm.mobileNumber}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, mobileNumber: e.target.value }))}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  fullWidth
-                  label="Gender"
-                  value={userDetailsForm.gender}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, gender: e.target.value }))}
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  fullWidth
-                  label="Marital Status"
-                  value={userDetailsForm.maritalStatus}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, maritalStatus: e.target.value }))}
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  fullWidth
-                  label="Pincode"
-                  type="number"
-                  value={userDetailsForm.pincode}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, pincode: e.target.value }))}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Home Address"
-                  value={userDetailsForm.homeAddress}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, homeAddress: e.target.value }))}
-                />
-              </Grid>
-
-              {/* Dates */}
-              <Grid item xs={12}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, mt: 1 }}>
-                  Dates
-                </Typography>
-              </Grid>
-
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  fullWidth
-                  label="Date of Birth"
-                  type="date"
-                  InputLabelProps={{ shrink: true }}
-                  value={userDetailsForm.dateOfBirth}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, dateOfBirth: e.target.value }))}
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  fullWidth
-                  label="Joining Date"
-                  type="date"
-                  InputLabelProps={{ shrink: true }}
-                  value={userDetailsForm.joiningDate}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, joiningDate: e.target.value }))}
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <TextField
-                  fullWidth
-                  label="Retirement Date"
-                  type="date"
-                  InputLabelProps={{ shrink: true }}
-                  value={userDetailsForm.retirementDate}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, retirementDate: e.target.value }))}
-                />
-              </Grid>
-
-              {/* Department / Location */}
-              <Grid item xs={12}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, mt: 1 }}>
-                  Department / Location
-                </Typography>
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="School/Office Name"
-                  value={userDetailsForm.schoolOfficeName}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, schoolOfficeName: e.target.value }))}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Sankul Name"
-                  value={userDetailsForm.sankulName}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, sankulName: e.target.value }))}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Department"
-                  value={userDetailsForm.department}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, department: e.target.value }))}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Department Unique ID"
-                  value={userDetailsForm.departmentUniqueId}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, departmentUniqueId: e.target.value }))}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={3}>
-                <TextField
-                  fullWidth
-                  label="State"
-                  value={userDetailsForm.departmentState}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, departmentState: e.target.value }))}
-                />
-              </Grid>
-              <Grid item xs={12} sm={3}>
-                <TextField
-                  fullWidth
-                  label="Sambhag"
-                  value={userDetailsForm.departmentSambhag}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, departmentSambhag: e.target.value }))}
-                />
-              </Grid>
-              <Grid item xs={12} sm={3}>
-                <TextField
-                  fullWidth
-                  label="District"
-                  value={userDetailsForm.departmentDistrict}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, departmentDistrict: e.target.value }))}
-                />
-              </Grid>
-              <Grid item xs={12} sm={3}>
-                <TextField
-                  fullWidth
-                  label="Block"
-                  value={userDetailsForm.departmentBlock}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, departmentBlock: e.target.value }))}
-                />
-              </Grid>
-
-              {/* Nominees */}
-              <Grid item xs={12}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1, mt: 1 }}>
-                  Nominees
-                </Typography>
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Nominee 1 Name"
-                  value={userDetailsForm.nominee1Name}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, nominee1Name: e.target.value }))}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Nominee 1 Relation"
-                  value={userDetailsForm.nominee1Relation}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, nominee1Relation: e.target.value }))}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Nominee 2 Name"
-                  value={userDetailsForm.nominee2Name}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, nominee2Name: e.target.value }))}
-                />
-              </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  fullWidth
-                  label="Nominee 2 Relation"
-                  value={userDetailsForm.nominee2Relation}
-                  onChange={(e) => setUserDetailsForm((p) => ({ ...p, nominee2Relation: e.target.value }))}
-                />
-              </Grid>
-            </Grid>
-          </DialogContent>
-
-          <DialogActions sx={{ p: 2 }}>
-            <Button onClick={closeUserDetails} disabled={userDetailsSaving}>
-              Close
-            </Button>
-            <Button
-              variant="contained"
-              onClick={saveUserDetails}
-              disabled={userDetailsSaving}
-              startIcon={userDetailsSaving ? <CircularProgress size={16} /> : <Save />}
-            >
-              Save Changes
-            </Button>
-          </DialogActions>
-        </Dialog>
-<Dialog
-  open={settingsDialogOpen}
-  onClose={() => setSettingsDialogOpen(false)}
-  maxWidth="sm"
+       <Dialog
+  open={managerUsersDialog}
+  onClose={() => setManagerUsersDialog(false)}
+  maxWidth="lg"
   fullWidth
+  PaperProps={{
+    sx: premiumDialogPaperSx,
+  }}
 >
-  <DialogTitle sx={{ bgcolor: '#ff9800', color: 'white', fontWeight: 'bold' }}>
-    Forgot Password Settings
+  <DialogTitle sx={premiumDialogTitleSx}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+      <Box
+        sx={{
+          width: 38,
+          height: 38,
+          borderRadius: '14px',
+          bgcolor: 'rgba(255,255,255,0.18)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <People fontSize="small" />
+      </Box>
+
+      <Box>
+        <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1.15 }}>
+          {selectedManagerInfo
+            ? `${selectedManagerInfo.managerName || 'Manager'}'s Users`
+            : 'Manager Users'}
+        </Typography>
+
+        <Typography variant="caption" sx={{ opacity: 0.9, fontWeight: 600 }}>
+          {selectedManagerInfo
+            ? `${
+                selectedManagerInfo.managerLevel === 'SAMBHAG'
+                  ? 'Division'
+                  : selectedManagerInfo.managerLevel === 'DISTRICT'
+                  ? 'District'
+                  : selectedManagerInfo.managerLevel === 'BLOCK'
+                  ? 'Block'
+                  : selectedManagerInfo.managerLevel || ''
+              } Manager • ${managerUsers.length} users found`
+            : `${managerUsers.length} users found`}
+        </Typography>
+      </Box>
+    </Box>
+
+    <IconButton
+      size="small"
+      onClick={() => setManagerUsersDialog(false)}
+      sx={{
+        color: '#fff',
+        bgcolor: 'rgba(255,255,255,0.14)',
+        '&:hover': {
+          bgcolor: 'rgba(255,255,255,0.24)',
+        },
+      }}
+    >
+      <Close fontSize="small" />
+    </IconButton>
   </DialogTitle>
 
-  <DialogContent sx={{ pt: 3 }}>
-    {settingsLoading ? (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-        <CircularProgress />
-      </Box>
-    ) : (
-      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-  <Box>
-    <FormControlLabel
-      control={
-        <Switch
-          checked={mobileOtpEnabled}
-          onChange={(e) => setMobileOtpEnabled(e.target.checked)}
-          color="warning"
-        />
-      }
-      label="Enable Mobile OTP for Forgot Password"
-    />
+  <DialogContent sx={premiumDialogContentSx}>
+    <Paper
+      elevation={0}
+      sx={{
+        p: 2.25,
+        mb: 2.5,
+        borderRadius: 3,
+        bgcolor: '#fff',
+        border: '1px solid rgba(226, 232, 240, 0.95)',
+        boxShadow: '0 12px 30px rgba(15, 23, 42, 0.05)',
+      }}
+    >
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: { xs: 'flex-start', sm: 'center' },
+          justifyContent: 'space-between',
+          gap: 2,
+          flexWrap: 'wrap',
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box
+            sx={{
+              width: 42,
+              height: 42,
+              borderRadius: '15px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              bgcolor: 'rgba(37, 99, 235, 0.10)',
+              color: '#2563eb',
+              flexShrink: 0,
+            }}
+          >
+            <ManageAccounts fontSize="small" />
+          </Box>
 
-    <Typography variant="body2" sx={{ mt: 1, color: '#666' }}>
-      {mobileOtpEnabled
-        ? 'Users will reset password using mobile number and OTP.'
-        : 'Users will reset password using email and OTP.'}
-    </Typography>
-  </Box>
+          <Box>
+            <Typography variant="subtitle1" sx={{ fontWeight: 900, color: '#0f172a' }}>
+              Assigned User List
+            </Typography>
 
-  <Box>
-    <FormControlLabel
-      control={
-        <Switch
-          checked={exportMobileNumberEnabled}
-          onChange={(e) => setExportMobileNumberEnabled(e.target.checked)}
-          color="warning"
-        />
-      }
-      label="Enable Mobile Number in Export Reports"
-    />
+            <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+              Users visible under the selected manager’s assigned area.
+            </Typography>
+          </Box>
+        </Box>
 
-    <Typography variant="body2" sx={{ mt: 1, color: '#666' }}>
-      {exportMobileNumberEnabled
-        ? 'Mobile numbers will be included in exported reports.'
-        : 'Mobile numbers will be hidden in exported reports.'}
-    </Typography>
-  </Box>
-  <Box>
-  <FormControlLabel
-    control={
-      <Switch
-        checked={selfDonationVisible}
-        onChange={(e) => setSelfDonationVisible(e.target.checked)}
-        color="warning"
-      />
-    }
-    label="Show Sanstha Sahyog Section"
-  />
-  <FormControlLabel
-  control={
-    <Switch
-      checked={districtManagerExportMobileEnabled}
-      onChange={(e) => setDistrictManagerExportMobileEnabled(e.target.checked)}
-      color="primary"
-    />
-  }
-  label="District Manager can export mobile numbers"
-/>
-
-<FormControlLabel
-  control={
-    <Switch
-      checked={blockManagerExportMobileEnabled}
-      onChange={(e) => setBlockManagerExportMobileEnabled(e.target.checked)}
-      color="primary"
-    />
-  }
-  label="Block Manager can export mobile numbers"
-/>
-
-  <Typography variant="body2" sx={{ mt: 1, color: '#666', mb: 2 }}>
-    {selfDonationVisible
-      ? 'Sanstha Sahyog section will be visible on website.'
-      : 'Sanstha Sahyog section will be hidden from website.'}
-  </Typography>
-  <Box sx={{ mt: 3 }}>
-  <Paper
-    elevation={0}
-    sx={{
-      p: 2,
-      borderRadius: 2,
-      border: '1px solid #e0e0e0',
-      bgcolor: '#fafafa',
-    }}
-  >
-    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2, color: '#1a237e' }}>
-      Profile Field Lock Settings
-    </Typography>
-
-    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-      Admin can lock specific profile fields so users cannot edit them on their profile screen.
-    </Typography>
-
-    <Grid container spacing={2}>
-      <Grid item xs={12} md={6}>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={profileFieldLocks.fullName}
-              onChange={(e) =>
-                handleProfileFieldLockChange('fullName', e.target.checked)
-              }
-              color="primary"
-            />
-          }
-          label="Lock Full Name"
-        />
-      </Grid>
-
-      <Grid item xs={12} md={6}>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={profileFieldLocks.dateOfBirth}
-              onChange={(e) =>
-                handleProfileFieldLockChange('dateOfBirth', e.target.checked)
-              }
-              color="primary"
-            />
-          }
-          label="Lock जन्मतिथि"
-        />
-      </Grid>
-
-      <Grid item xs={12} md={6}>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={profileFieldLocks.mobileNumber}
-              onChange={(e) =>
-                handleProfileFieldLockChange('mobileNumber', e.target.checked)
-              }
-              color="primary"
-            />
-          }
-          label="Lock Mobile Number"
-        />
-      </Grid>
-
-      <Grid item xs={12} md={6}>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={profileFieldLocks.email}
-              onChange={(e) =>
-                handleProfileFieldLockChange('email', e.target.checked)
-              }
-              color="primary"
-            />
-          }
-          label="Lock Email"
-        />
-      </Grid>
-
-      <Grid item xs={12} md={6}>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={profileFieldLocks.departmentUniqueId}
-              onChange={(e) =>
-                handleProfileFieldLockChange('departmentUniqueId', e.target.checked)
-              }
-              color="primary"
-            />
-          }
-          label="Lock विभाग आईडी (Department Unique ID)"
-        />
-      </Grid>
-    </Grid>
-  </Paper>
-</Box>
-
-  <Box sx={{ mt: 2 }}>
-    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>
-      Upload / Change QR Code
-    </Typography>
-
-    {selfDonationQrUrl && (
-      <Box sx={{ mb: 2 }}>
-        <img
-       src={
-  selfDonationQrUrl?.startsWith('http')
-    ? selfDonationQrUrl
-    : `${FILE_BASE_URL}${selfDonationQrUrl}`
-}
-          alt="Current QR"
-          style={{
-            width: 180,
-            height: 180,
-            objectFit: 'contain',
-            border: '1px solid #ddd',
-            borderRadius: '8px',
-            padding: '8px',
-            background: '#fff'
+        <Chip
+          label={`${managerUsers.length} Users`}
+          size="small"
+          variant="outlined"
+          sx={{
+            bgcolor: 'rgba(37, 99, 235, 0.10)',
+            color: '#1d4ed8',
+            border: '1px solid rgba(37, 99, 235, 0.18)',
+            fontWeight: 900,
+            borderRadius: '10px',
           }}
         />
       </Box>
-    )}
+    </Paper>
 
-    <Button
-      variant="outlined"
-      component="label"
-      sx={{ borderRadius: 2 }}
-      disabled={settingsSaving}
-    >
-      {selfDonationQrFile ? selfDonationQrFile.name : 'Choose QR Code Image'}
-      <input
-        type="file"
-        hidden
-        accept="image/*"
-        onChange={(e) => setSelfDonationQrFile(e.target.files?.[0] || null)}
-      />
-    </Button>
+    {managerUsers.length === 0 ? (
+      <Paper
+        elevation={0}
+        sx={{
+          p: 6,
+          textAlign: 'center',
+          borderRadius: 3,
+          bgcolor: '#fff',
+          border: '1px solid rgba(226, 232, 240, 0.95)',
+        }}
+      >
+        <People sx={{ fontSize: 52, color: '#cbd5e1', mb: 1 }} />
 
-    <Typography variant="caption" display="block" sx={{ mt: 1, color: '#777' }}>
-      Upload a single image file for the Sanstha Sahyog QR code.
-    </Typography>
-  </Box>
-</Box>
-</Box>
+        <Typography variant="h6" sx={{ color: '#475569', fontWeight: 900 }}>
+          No User found
+        </Typography>
+
+        <Typography variant="body2" sx={{ color: '#94a3b8', mt: 0.75, fontWeight: 600 }}>
+          No users are currently available under this manager assignment.
+        </Typography>
+      </Paper>
+    ) : (
+      <TableContainer
+        sx={{
+          maxWidth: '100%',
+          overflowX: 'auto',
+          bgcolor: '#fff',
+          borderRadius: 3,
+          border: '1px solid rgba(226, 232, 240, 0.95)',
+          boxShadow: '0 12px 30px rgba(15, 23, 42, 0.05)',
+        }}
+      >
+        <Table
+          sx={{
+            minWidth: 1050,
+            '& .MuiTableCell-root': {
+              whiteSpace: 'nowrap',
+            },
+          }}
+        >
+          <TableHead>
+            <TableRow>
+              <TableCell sx={tableHeaderCellSx}>Name</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Email</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Mobile</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Department</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Location</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Role</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Status</TableCell>
+            </TableRow>
+          </TableHead>
+
+          <TableBody>
+            {managerUsers.map((user) => (
+              <TableRow
+                key={user.id}
+                hover
+                sx={{
+                  transition: 'all 0.18s ease',
+                  '&:hover': {
+                    bgcolor: 'rgba(239, 246, 255, 0.72)',
+                  },
+                }}
+              >
+                <TableCell sx={tableBodyCellSx}>
+                  <Typography variant="body2" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                    {[user.name, user.surname].filter(Boolean).join(' ') || '-'}
+                  </Typography>
+
+                  {user.fatherName && (
+                    <Typography
+                      variant="caption"
+                      sx={{ display: 'block', color: '#94a3b8', fontWeight: 600 }}
+                    >
+                      Father: {user.fatherName}
+                    </Typography>
+                  )}
+                </TableCell>
+
+                <TableCell sx={tableBodyCellSx}>
+                  <Typography variant="body2" sx={{ color: '#334155', fontWeight: 700 }}>
+                    {user.email || '-'}
+                  </Typography>
+                </TableCell>
+
+                <TableCell sx={tableBodyCellSx}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.6 }}>
+                    <Phone sx={{ fontSize: 16, color: '#64748b' }} />
+                    <Typography variant="body2" sx={{ color: '#334155', fontWeight: 700 }}>
+                      {user.mobileNumber || '-'}
+                    </Typography>
+                  </Box>
+                </TableCell>
+
+                <TableCell sx={tableBodyCellSx}>
+                  <Typography variant="body2" sx={{ color: '#334155', fontWeight: 800 }}>
+                    {user.department || '-'}
+                  </Typography>
+
+                  {user.schoolOfficeName && (
+                    <Typography
+                      variant="caption"
+                      sx={{ display: 'block', color: '#94a3b8', fontWeight: 600 }}
+                    >
+                      {user.schoolOfficeName}
+                    </Typography>
+                  )}
+                </TableCell>
+
+                <TableCell sx={tableBodyCellSx}>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.75 }}>
+                    <LocationOn sx={{ fontSize: 16, color: '#2563eb', mt: 0.15 }} />
+
+                    <Typography
+                      variant="caption"
+                      sx={{ color: '#475569', fontWeight: 700, lineHeight: 1.5 }}
+                    >
+                      {[
+                        user.departmentBlock,
+                        user.departmentDistrict,
+                        user.departmentSambhag,
+                      ]
+                        .filter(Boolean)
+                        .join(', ') || '-'}
+                    </Typography>
+                  </Box>
+                </TableCell>
+
+                <TableCell sx={tableBodyCellSx}>
+                  <Chip
+                    label={
+                      user.role === 'ROLE_ADMIN'
+                        ? 'Admin'
+                        : user.role === 'ROLE_SAMBHAG_MANAGER'
+                        ? 'Division Manager'
+                        : user.role === 'ROLE_DISTRICT_MANAGER'
+                        ? 'District Manager'
+                        : user.role === 'ROLE_BLOCK_MANAGER'
+                        ? 'Block Manager'
+                        : 'User'
+                    }
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      ...getRoleChipSx(user.role),
+                      fontWeight: 900,
+                      borderRadius: '10px',
+                    }}
+                  />
+                </TableCell>
+
+                <TableCell sx={tableBodyCellSx}>
+                  <Chip
+                    label={
+                      user.status === 'ACTIVE'
+                        ? 'Active'
+                        : user.status === 'BLOCKED'
+                        ? 'Blocked'
+                        : 'Inactive'
+                    }
+                    size="small"
+                    variant="outlined"
+                    sx={{
+                      ...getStatusChipSx(user.status),
+                      fontWeight: 900,
+                      borderRadius: '10px',
+                    }}
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     )}
   </DialogContent>
 
-  <DialogActions sx={{ p: 2 }}>
-    <Button onClick={() => setSettingsDialogOpen(false)} disabled={settingsSaving}>
+  <DialogActions sx={premiumDialogActionsSx}>
+    <Button
+      onClick={() => setManagerUsersDialog(false)}
+      variant="outlined"
+      sx={premiumCancelButtonSx}
+    >
+      Close
+    </Button>
+  </DialogActions>
+</Dialog>
+
+        {/* Admin - View/Edit User Details Dialog */}
+        {/* User Details / Edit Dialog */}
+<Dialog
+  open={userDetailsOpen}
+  onClose={closeUserDetails}
+  maxWidth="md"
+  fullWidth
+  PaperProps={{
+    sx: premiumDialogPaperSx,
+  }}
+>
+  <DialogTitle
+    sx={{
+      ...premiumDialogTitleSx,
+      background: 'linear-gradient(135deg, #0284c7 0%, #2563eb 55%, #7c3aed 100%)',
+    }}
+  >
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+      <InfoOutlined />
+      <Box>
+        <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1.1 }}>
+          User Details
+        </Typography>
+
+        <Typography variant="caption" sx={{ opacity: 0.9, fontWeight: 600 }}>
+          {userDetailsUser?.id
+            ? `User ID: ${userDetailsUser.id}`
+            : 'View and update user profile information'}
+        </Typography>
+      </Box>
+    </Box>
+
+    <IconButton
+      onClick={closeUserDetails}
+      disabled={userDetailsSaving}
+      sx={{
+        color: '#fff',
+        bgcolor: 'rgba(255,255,255,0.14)',
+        '&:hover': {
+          bgcolor: 'rgba(255,255,255,0.22)',
+        },
+        '&.Mui-disabled': {
+          color: 'rgba(255,255,255,0.55)',
+        },
+      }}
+    >
+      <Close />
+    </IconButton>
+  </DialogTitle>
+
+  <DialogContent dividers sx={premiumDialogContentSx}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+      <Paper elevation={0} sx={settingsCardSx}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}>
+          <Box
+            sx={{
+              width: 42,
+              height: 42,
+              borderRadius: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'linear-gradient(135deg, #0284c7 0%, #2563eb 100%)',
+              color: '#fff',
+              boxShadow: '0 10px 20px rgba(2, 132, 199, 0.18)',
+              flexShrink: 0,
+            }}
+          >
+            <People fontSize="small" />
+          </Box>
+
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a' }}>
+              Personal Information
+            </Typography>
+
+            <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+              Basic member profile and contact details.
+            </Typography>
+          </Box>
+        </Box>
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Full Name"
+              value={userDetailsForm.fullName}
+              onChange={(e) =>
+                setUserDetailsForm((prev) => ({ ...prev, fullName: e.target.value }))
+              }
+              sx={premiumTextFieldSx}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Father Name"
+              value={userDetailsForm.fatherName}
+              onChange={(e) =>
+                setUserDetailsForm((prev) => ({ ...prev, fatherName: e.target.value }))
+              }
+              sx={premiumTextFieldSx}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              type="email"
+              label="Email"
+              value={userDetailsForm.email}
+              onChange={(e) =>
+                setUserDetailsForm((prev) => ({ ...prev, email: e.target.value }))
+              }
+              sx={premiumTextFieldSx}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={2}>
+            <TextField
+              fullWidth
+              label="Code"
+              value={userDetailsForm.countryCode}
+              onChange={(e) =>
+                setUserDetailsForm((prev) => ({ ...prev, countryCode: e.target.value }))
+              }
+              sx={premiumTextFieldSx}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={4}>
+            <TextField
+              fullWidth
+              label="Mobile Number"
+              value={userDetailsForm.mobileNumber}
+              onChange={(e) =>
+                setUserDetailsForm((prev) => ({ ...prev, mobileNumber: e.target.value }))
+              }
+              sx={premiumTextFieldSx}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Phone sx={{ color: '#64748b' }} />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Gender</InputLabel>
+              <Select
+                value={userDetailsForm.gender}
+                label="Gender"
+                onChange={(e) =>
+                  setUserDetailsForm((prev) => ({ ...prev, gender: e.target.value }))
+                }
+                sx={premiumSelectSx}
+              >
+                <MenuItem value="">Select Gender</MenuItem>
+                <MenuItem value="MALE">Male</MenuItem>
+                <MenuItem value="FEMALE">Female</MenuItem>
+                <MenuItem value="OTHER">Other</MenuItem>
+                <MenuItem value="male">Male</MenuItem>
+                <MenuItem value="female">Female</MenuItem>
+                <MenuItem value="other">Other</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Marital Status</InputLabel>
+              <Select
+                value={userDetailsForm.maritalStatus}
+                label="Marital Status"
+                onChange={(e) =>
+                  setUserDetailsForm((prev) => ({ ...prev, maritalStatus: e.target.value }))
+                }
+                sx={premiumSelectSx}
+              >
+                <MenuItem value="">Select Status</MenuItem>
+                <MenuItem value="UNMARRIED">Unmarried</MenuItem>
+                <MenuItem value="MARRIED">Married</MenuItem>
+                <MenuItem value="DIVORCED">Divorced</MenuItem>
+                <MenuItem value="WIDOWED">Widowed</MenuItem>
+                <MenuItem value="single">Single</MenuItem>
+                <MenuItem value="married">Married</MenuItem>
+                <MenuItem value="divorced">Divorced</MenuItem>
+                <MenuItem value="widowed">Widowed</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              type="date"
+              label="Date of Birth"
+              InputLabelProps={{ shrink: true }}
+              value={userDetailsForm.dateOfBirth}
+              onChange={(e) =>
+                setUserDetailsForm((prev) => ({ ...prev, dateOfBirth: e.target.value }))
+              }
+              sx={premiumTextFieldSx}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Pincode"
+              value={userDetailsForm.pincode}
+              onChange={(e) =>
+                setUserDetailsForm((prev) => ({ ...prev, pincode: e.target.value }))
+              }
+              sx={premiumTextFieldSx}
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              multiline
+              minRows={2}
+              label="Home Address"
+              value={userDetailsForm.homeAddress}
+              onChange={(e) =>
+                setUserDetailsForm((prev) => ({ ...prev, homeAddress: e.target.value }))
+              }
+              sx={premiumTextFieldSx}
+            />
+          </Grid>
+        </Grid>
+      </Paper>
+
+      <Paper elevation={0} sx={settingsCardSx}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}>
+          <Box
+            sx={{
+              width: 42,
+              height: 42,
+              borderRadius: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'linear-gradient(135deg, #f97316 0%, #dc2626 100%)',
+              color: '#fff',
+              boxShadow: '0 10px 20px rgba(249, 115, 22, 0.18)',
+              flexShrink: 0,
+            }}
+          >
+            <BusinessCenter fontSize="small" />
+          </Box>
+
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a' }}>
+              Department Information
+            </Typography>
+
+            <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+              Employment and department location details.
+            </Typography>
+          </Box>
+        </Box>
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              type="date"
+              label="Joining Date"
+              InputLabelProps={{ shrink: true }}
+              value={userDetailsForm.joiningDate}
+              onChange={(e) =>
+                setUserDetailsForm((prev) => ({ ...prev, joiningDate: e.target.value }))
+              }
+              sx={premiumTextFieldSx}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              type="date"
+              label="Retirement Date"
+              InputLabelProps={{ shrink: true }}
+              value={userDetailsForm.retirementDate}
+              onChange={(e) =>
+                setUserDetailsForm((prev) => ({ ...prev, retirementDate: e.target.value }))
+              }
+              sx={premiumTextFieldSx}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Department"
+              value={userDetailsForm.department}
+              onChange={(e) =>
+                setUserDetailsForm((prev) => ({ ...prev, department: e.target.value }))
+              }
+              sx={premiumTextFieldSx}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Department Unique ID"
+              value={userDetailsForm.departmentUniqueId}
+              onChange={(e) =>
+                setUserDetailsForm((prev) => ({ ...prev, departmentUniqueId: e.target.value }))
+              }
+              sx={premiumTextFieldSx}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="School / Office Name"
+              value={userDetailsForm.schoolOfficeName}
+              onChange={(e) =>
+                setUserDetailsForm((prev) => ({ ...prev, schoolOfficeName: e.target.value }))
+              }
+              sx={premiumTextFieldSx}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Sankul Name"
+              value={userDetailsForm.sankulName}
+              onChange={(e) =>
+                setUserDetailsForm((prev) => ({ ...prev, sankulName: e.target.value }))
+              }
+              sx={premiumTextFieldSx}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="State"
+              value={userDetailsForm.departmentState}
+              onChange={(e) =>
+                setUserDetailsForm((prev) => ({ ...prev, departmentState: e.target.value }))
+              }
+              sx={premiumTextFieldSx}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Sambhag / Division"
+              value={userDetailsForm.departmentSambhag}
+              onChange={(e) =>
+                setUserDetailsForm((prev) => ({ ...prev, departmentSambhag: e.target.value }))
+              }
+              sx={premiumTextFieldSx}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="District"
+              value={userDetailsForm.departmentDistrict}
+              onChange={(e) =>
+                setUserDetailsForm((prev) => ({ ...prev, departmentDistrict: e.target.value }))
+              }
+              sx={premiumTextFieldSx}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Block"
+              value={userDetailsForm.departmentBlock}
+              onChange={(e) =>
+                setUserDetailsForm((prev) => ({ ...prev, departmentBlock: e.target.value }))
+              }
+              sx={premiumTextFieldSx}
+            />
+          </Grid>
+        </Grid>
+      </Paper>
+
+      <Paper elevation={0} sx={settingsCardSx}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}>
+          <Box
+            sx={{
+              width: 42,
+              height: 42,
+              borderRadius: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+              color: '#fff',
+              boxShadow: '0 10px 20px rgba(22, 163, 74, 0.18)',
+              flexShrink: 0,
+            }}
+          >
+            <People fontSize="small" />
+          </Box>
+
+          <Box>
+            <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a' }}>
+              Nominee Information
+            </Typography>
+
+            <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+              First and second nominee details.
+            </Typography>
+          </Box>
+        </Box>
+
+        <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Nominee 1 Name"
+              value={userDetailsForm.nominee1Name}
+              onChange={(e) =>
+                setUserDetailsForm((prev) => ({ ...prev, nominee1Name: e.target.value }))
+              }
+              sx={premiumTextFieldSx}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Nominee 1 Relation"
+              value={userDetailsForm.nominee1Relation}
+              onChange={(e) =>
+                setUserDetailsForm((prev) => ({ ...prev, nominee1Relation: e.target.value }))
+              }
+              sx={premiumTextFieldSx}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Nominee 2 Name"
+              value={userDetailsForm.nominee2Name}
+              onChange={(e) =>
+                setUserDetailsForm((prev) => ({ ...prev, nominee2Name: e.target.value }))
+              }
+              sx={premiumTextFieldSx}
+            />
+          </Grid>
+
+          <Grid item xs={12} sm={6}>
+            <TextField
+              fullWidth
+              label="Nominee 2 Relation"
+              value={userDetailsForm.nominee2Relation}
+              onChange={(e) =>
+                setUserDetailsForm((prev) => ({ ...prev, nominee2Relation: e.target.value }))
+              }
+              sx={premiumTextFieldSx}
+            />
+          </Grid>
+        </Grid>
+      </Paper>
+    </Box>
+  </DialogContent>
+
+  <DialogActions sx={premiumDialogActionsSx}>
+    <Button
+      variant="outlined"
+      onClick={closeUserDetails}
+      disabled={userDetailsSaving}
+      sx={premiumCancelButtonSx}
+    >
       Cancel
     </Button>
+
+    <Button
+      variant="contained"
+      onClick={saveUserDetails}
+      disabled={userDetailsSaving}
+      startIcon={
+        userDetailsSaving ? (
+          <CircularProgress size={18} color="inherit" />
+        ) : (
+          <Save />
+        )
+      }
+      sx={{
+        ...premiumPrimaryButtonSx,
+        background: 'linear-gradient(135deg, #0284c7 0%, #2563eb 55%, #7c3aed 100%)',
+        boxShadow: '0 10px 22px rgba(37, 99, 235, 0.24)',
+        '&:hover': {
+          background: 'linear-gradient(135deg, #0369a1 0%, #1d4ed8 55%, #6d28d9 100%)',
+          transform: 'translateY(-1px)',
+        },
+      }}
+    >
+      {userDetailsSaving ? 'Saving...' : 'Save Changes'}
+    </Button>
+  </DialogActions>
+</Dialog>
+<Dialog
+  open={settingsDialogOpen}
+  onClose={() => setSettingsDialogOpen(false)}
+  maxWidth="md"
+  fullWidth
+  PaperProps={{
+    sx: premiumDialogPaperSx,
+  }}
+>
+  <DialogTitle sx={premiumDialogTitleSx}>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+      <Settings />
+      <Box>
+        <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1.1 }}>
+          Admin Settings
+        </Typography>
+        <Typography variant="caption" sx={{ opacity: 0.9, fontWeight: 600 }}>
+          Control OTP, exports, public visibility and profile field locks
+        </Typography>
+      </Box>
+    </Box>
+
+    <IconButton
+      onClick={() => setSettingsDialogOpen(false)}
+      sx={{
+        color: '#fff',
+        bgcolor: 'rgba(255,255,255,0.14)',
+        '&:hover': { bgcolor: 'rgba(255,255,255,0.22)' },
+      }}
+    >
+      <Close />
+    </IconButton>
+  </DialogTitle>
+
+  <DialogContent dividers sx={premiumDialogContentSx}>
+    {settingsLoading ? (
+      <Box
+        sx={{
+          py: 6,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 1.5,
+        }}
+      >
+        <CircularProgress size={24} sx={{ color: '#dc2626' }} />
+        <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 700 }}>
+          Loading settings...
+        </Typography>
+      </Box>
+    ) : (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+        <Paper elevation={0} sx={settingsCardSx}>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}>
+            <Box
+              sx={{
+                width: 40,
+                height: 40,
+                borderRadius: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'linear-gradient(135deg, #dc2626 0%, #f97316 100%)',
+                color: '#fff',
+                boxShadow: '0 10px 20px rgba(220, 38, 38, 0.18)',
+                flexShrink: 0,
+              }}
+            >
+              <Lock fontSize="small" />
+            </Box>
+
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                Security & Public Controls
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+                Manage login verification and public page visibility.
+              </Typography>
+            </Box>
+          </Box>
+
+          <Grid container spacing={1.5}>
+            <Grid item xs={12}>
+              <Box sx={settingsSwitchRowSx}>
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                    Mobile OTP Verification
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
+                    Enable or disable mobile OTP requirement during login/verification.
+                  </Typography>
+                </Box>
+
+                <Switch
+                  checked={mobileOtpEnabled}
+                  onChange={(e) => setMobileOtpEnabled(e.target.checked)}
+                  color="success"
+                />
+              </Box>
+            </Grid>
+
+            <Grid item xs={12}>
+              <Box sx={settingsSwitchRowSx}>
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                    Self Donation Visible
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
+                    Show or hide self donation section on public pages.
+                  </Typography>
+                </Box>
+
+                <Switch
+                  checked={selfDonationVisible}
+                  onChange={(e) => setSelfDonationVisible(e.target.checked)}
+                  color="success"
+                />
+              </Box>
+            </Grid>
+          </Grid>
+        </Paper>
+
+        <Paper elevation={0} sx={settingsCardSx}>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}>
+            <Box
+              sx={{
+                width: 40,
+                height: 40,
+                borderRadius: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+                color: '#fff',
+                boxShadow: '0 10px 20px rgba(37, 99, 235, 0.18)',
+                flexShrink: 0,
+              }}
+            >
+              <Download fontSize="small" />
+            </Box>
+
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                Export Mobile Number Permissions
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+                Control whether mobile numbers are visible in exports.
+              </Typography>
+            </Box>
+          </Box>
+
+          <Grid container spacing={1.5}>
+            <Grid item xs={12}>
+              <Box sx={settingsSwitchRowSx}>
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                    Admin Export Mobile Number
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
+                    Allow mobile numbers in admin exports.
+                  </Typography>
+                </Box>
+
+                <Switch
+                  checked={exportMobileNumberEnabled}
+                  onChange={(e) => setExportMobileNumberEnabled(e.target.checked)}
+                  color="success"
+                />
+              </Box>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <Box sx={settingsSwitchRowSx}>
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                    District Manager Export
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
+                    Allow district managers to export mobile numbers.
+                  </Typography>
+                </Box>
+
+                <Switch
+                  checked={districtManagerExportMobileEnabled}
+                  onChange={(e) => setDistrictManagerExportMobileEnabled(e.target.checked)}
+                  color="success"
+                />
+              </Box>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <Box sx={settingsSwitchRowSx}>
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                    Block Manager Export
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
+                    Allow block managers to export mobile numbers.
+                  </Typography>
+                </Box>
+
+                <Switch
+                  checked={blockManagerExportMobileEnabled}
+                  onChange={(e) => setBlockManagerExportMobileEnabled(e.target.checked)}
+                  color="success"
+                />
+              </Box>
+            </Grid>
+          </Grid>
+        </Paper>
+
+        <Paper elevation={0} sx={settingsCardSx}>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}>
+            <Box
+              sx={{
+                width: 40,
+                height: 40,
+                borderRadius: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+                color: '#fff',
+                boxShadow: '0 10px 20px rgba(22, 163, 74, 0.18)',
+                flexShrink: 0,
+              }}
+            >
+              <LockReset fontSize="small" />
+            </Box>
+
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                Profile Field Locks
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+                Lock profile fields so users cannot edit sensitive details.
+              </Typography>
+            </Box>
+          </Box>
+
+          <Grid container spacing={1.5}>
+            {[
+              { key: 'fullName', label: 'Full Name' },
+              { key: 'dateOfBirth', label: 'Date of Birth' },
+              { key: 'mobileNumber', label: 'Mobile Number' },
+              { key: 'email', label: 'Email' },
+              { key: 'departmentUniqueId', label: 'Department Unique ID' },
+            ].map((field) => (
+              <Grid item xs={12} sm={6} key={field.key}>
+                <Box sx={settingsSwitchRowSx}>
+                  <Box>
+                    <Typography variant="body2" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                      {field.label}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
+                      {profileFieldLocks[field.key] ? 'Locked for users' : 'Editable by users'}
+                    </Typography>
+                  </Box>
+
+                  <Switch
+                    checked={!!profileFieldLocks[field.key]}
+                    onChange={(e) =>
+                      handleProfileFieldLockChange(field.key, e.target.checked)
+                    }
+                    color="success"
+                  />
+                </Box>
+              </Grid>
+            ))}
+          </Grid>
+        </Paper>
+
+        <Paper elevation={0} sx={settingsCardSx}>
+          <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}>
+            <Box
+              sx={{
+                width: 40,
+                height: 40,
+                borderRadius: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)',
+                color: '#fff',
+                boxShadow: '0 10px 20px rgba(245, 158, 11, 0.18)',
+                flexShrink: 0,
+              }}
+            >
+              <Payment fontSize="small" />
+            </Box>
+
+            <Box>
+              <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                Self Donation QR
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+                Upload or replace the QR image used in self donation.
+              </Typography>
+            </Box>
+          </Box>
+
+          <Grid container spacing={2} alignItems="center">
+            <Grid item xs={12} sm={4}>
+              <Box
+                sx={{
+                  height: 150,
+                  borderRadius: 3,
+                  bgcolor: '#f8fafc',
+                  border: '1px dashed #cbd5e1',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  overflow: 'hidden',
+                }}
+              >
+                {selfDonationQrFile ? (
+                  <Box
+                    component="img"
+                    src={URL.createObjectURL(selfDonationQrFile)}
+                    alt="Selected QR"
+                    sx={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                  />
+                ) : selfDonationQrUrl ? (
+                  <Box
+                    component="img"
+                    src={
+                      selfDonationQrUrl.startsWith('http')
+                        ? selfDonationQrUrl
+                        : `${FILE_BASE_URL}${selfDonationQrUrl}`
+                    }
+                    alt="Self Donation QR"
+                    sx={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                  />
+                ) : (
+                  <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 700 }}>
+                    No QR Uploaded
+                  </Typography>
+                )}
+              </Box>
+            </Grid>
+
+            <Grid item xs={12} sm={8}>
+              <Button
+                variant="outlined"
+                component="label"
+                startIcon={<Download />}
+                sx={{
+                  ...premiumCancelButtonSx,
+                  mb: 1,
+                }}
+              >
+                Select QR Image
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setSelfDonationQrFile(file);
+                    }
+                  }}
+                />
+              </Button>
+
+              <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+                Supported formats: PNG, JPG, JPEG. The selected image will upload when you click Save Settings.
+              </Typography>
+
+              {selfDonationQrUploading && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                  <CircularProgress size={18} sx={{ color: '#f97316' }} />
+                  <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 700 }}>
+                    Uploading QR...
+                  </Typography>
+                </Box>
+              )}
+            </Grid>
+          </Grid>
+        </Paper>
+      </Box>
+    )}
+  </DialogContent>
+
+  <DialogActions sx={premiumDialogActionsSx}>
+    <Button
+      variant="outlined"
+      onClick={() => setSettingsDialogOpen(false)}
+      sx={premiumCancelButtonSx}
+    >
+      Cancel
+    </Button>
+
     <Button
       variant="contained"
       onClick={handleSaveSettings}
-      disabled={settingsSaving || settingsLoading}
-      sx={{ bgcolor: '#ff9800', '&:hover': { bgcolor: '#f57c00' } }}
+      disabled={settingsSaving || settingsLoading || selfDonationQrUploading}
+      startIcon={
+        settingsSaving || selfDonationQrUploading ? (
+          <CircularProgress size={18} color="inherit" />
+        ) : (
+          <Save />
+        )
+      }
+      sx={premiumPrimaryButtonSx}
     >
-      {settingsSaving ? 'Saving...' : 'Save'}
+      {settingsSaving || selfDonationQrUploading ? 'Saving...' : 'Save Settings'}
     </Button>
   </DialogActions>
 </Dialog>
         {/* Admin - Reset Password Dialog */}
-        <Dialog
+      <Dialog
   open={passwordResetOpen}
   onClose={closePasswordReset}
   maxWidth="sm"
   fullWidth
+  PaperProps={{
+    sx: premiumDialogPaperSx,
+  }}
 >
-  <DialogTitle>
-    Reset Password
-    <Typography variant="caption" display="block" color="text.secondary">
-      {passwordResetUser?.id ? `User ID: ${passwordResetUser.id}` : ''}
-    </Typography>
+  <DialogTitle
+    sx={{
+      ...premiumDialogTitleSx,
+      background: 'linear-gradient(135deg, #7c3aed 0%, #9333ea 100%)',
+    }}
+  >
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+      <LockReset />
+      <Box>
+        <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1.1 }}>
+          Reset User Password
+        </Typography>
+
+        <Typography variant="caption" sx={{ opacity: 0.9, fontWeight: 600 }}>
+          {passwordResetUser?.id
+            ? `User ID: ${passwordResetUser.id}`
+            : 'Reset password to Date of Birth format'}
+        </Typography>
+      </Box>
+    </Box>
+
+    <IconButton
+      onClick={closePasswordReset}
+      disabled={passwordResetLoading}
+      sx={{
+        color: '#fff',
+        bgcolor: 'rgba(255,255,255,0.14)',
+        '&:hover': {
+          bgcolor: 'rgba(255,255,255,0.22)',
+        },
+        '&.Mui-disabled': {
+          color: 'rgba(255,255,255,0.55)',
+        },
+      }}
+    >
+      <Close />
+    </IconButton>
   </DialogTitle>
 
-  <DialogContent dividers>
-    <Grid container spacing={2}>
-      <Grid item xs={12}>
-        <Alert severity="warning" sx={{ borderRadius: 2 }}>
-          This will reset the user's password to their Date of Birth.
-        </Alert>
-      </Grid>
-
-      <Grid item xs={12}>
-        <Typography variant="body2" color="text.secondary">
-          New password format will be:
-          <strong> DDMMYYYY </strong>
-          without slash.
-        </Typography>
-      </Grid>
-
-      <Grid item xs={12}>
-        <Typography variant="body2" color="text.secondary">
-          Example: if DOB is 17 April 2002, password will be <strong>17042002</strong>.
-        </Typography>
-      </Grid>
-
-      {passwordResetUser?.dateOfBirth && (
+  <DialogContent dividers sx={premiumDialogContentSx}>
+    <Paper
+      elevation={0}
+      sx={{
+        p: { xs: 2, md: 2.5 },
+        borderRadius: 3,
+        bgcolor: '#fff',
+        border: '1px solid rgba(226, 232, 240, 0.95)',
+        boxShadow: '0 12px 30px rgba(15, 23, 42, 0.05)',
+      }}
+    >
+      <Grid container spacing={2}>
         <Grid item xs={12}>
-          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-            User DOB: {passwordResetUser.dateOfBirth}
-          </Typography>
+          <Alert
+            severity="warning"
+            sx={{
+              borderRadius: 3,
+              bgcolor: 'rgba(249, 115, 22, 0.08)',
+              border: '1px solid rgba(249, 115, 22, 0.16)',
+              '& .MuiAlert-icon': {
+                color: '#f97316',
+              },
+            }}
+          >
+            This will reset the user&apos;s password to their Date of Birth.
+          </Alert>
         </Grid>
-      )}
-    </Grid>
+
+        <Grid item xs={12}>
+          <Box
+            sx={{
+              p: 2,
+              borderRadius: 3,
+              bgcolor: '#f8fafc',
+              border: '1px solid rgba(226, 232, 240, 0.9)',
+            }}
+          >
+            <Typography
+              variant="body2"
+              sx={{
+                color: '#475569',
+                fontWeight: 700,
+                mb: 0.75,
+              }}
+            >
+              New password format
+            </Typography>
+
+            <Chip
+              label="DDMMYYYY"
+              variant="outlined"
+              sx={{
+                bgcolor: 'rgba(124, 58, 237, 0.10)',
+                color: '#6d28d9',
+                border: '1px solid rgba(124, 58, 237, 0.20)',
+                fontWeight: 900,
+                borderRadius: '10px',
+                letterSpacing: '0.04em',
+              }}
+            />
+
+            <Typography
+              variant="body2"
+              sx={{
+                color: '#64748b',
+                fontWeight: 600,
+                mt: 1,
+              }}
+            >
+              Password will be generated without slash, dash, or spaces.
+            </Typography>
+          </Box>
+        </Grid>
+
+        <Grid item xs={12}>
+          <Box
+            sx={{
+              p: 2,
+              borderRadius: 3,
+              bgcolor: 'rgba(239, 246, 255, 0.75)',
+              border: '1px solid rgba(37, 99, 235, 0.14)',
+            }}
+          >
+            <Typography
+              variant="body2"
+              sx={{
+                color: '#334155',
+                fontWeight: 700,
+              }}
+            >
+              Example
+            </Typography>
+
+            <Typography
+              variant="body2"
+              sx={{
+                color: '#64748b',
+                fontWeight: 600,
+                mt: 0.5,
+              }}
+            >
+              If DOB is <strong>17 April 2002</strong>, password will be{' '}
+              <strong>17042002</strong>.
+            </Typography>
+          </Box>
+        </Grid>
+
+        {passwordResetUser?.dateOfBirth && (
+          <Grid item xs={12}>
+            <Box
+              sx={{
+                p: 2,
+                borderRadius: 3,
+                bgcolor: 'rgba(22, 163, 74, 0.08)',
+                border: '1px solid rgba(22, 163, 74, 0.16)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 1,
+                flexWrap: 'wrap',
+              }}
+            >
+              <Typography
+                variant="body2"
+                sx={{
+                  color: '#0f172a',
+                  fontWeight: 900,
+                }}
+              >
+                User DOB
+              </Typography>
+
+              <Chip
+                label={passwordResetUser.dateOfBirth}
+                size="small"
+                variant="outlined"
+                sx={{
+                  bgcolor: '#fff',
+                  color: '#15803d',
+                  border: '1px solid rgba(22, 163, 74, 0.22)',
+                  fontWeight: 900,
+                  borderRadius: '10px',
+                }}
+              />
+            </Box>
+          </Grid>
+        )}
+
+        {passwordResetUser && (
+          <Grid item xs={12}>
+            <Box
+              sx={{
+                p: 2,
+                borderRadius: 3,
+                bgcolor: '#fff7ed',
+                border: '1px solid rgba(249, 115, 22, 0.16)',
+              }}
+            >
+              <Typography
+                variant="body2"
+                sx={{
+                  color: '#0f172a',
+                  fontWeight: 900,
+                  mb: 0.4,
+                }}
+              >
+                Selected User
+              </Typography>
+
+              <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 700 }}>
+                {combineFullName(passwordResetUser.name, passwordResetUser.surname) ||
+                  passwordResetUser.name ||
+                  '-'}
+              </Typography>
+
+              <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>
+                {passwordResetUser.email || passwordResetUser.mobileNumber || ''}
+              </Typography>
+            </Box>
+          </Grid>
+        )}
+      </Grid>
+    </Paper>
   </DialogContent>
 
-  <DialogActions sx={{ p: 2 }}>
-    <Button onClick={closePasswordReset} disabled={passwordResetLoading}>
+  <DialogActions sx={premiumDialogActionsSx}>
+    <Button
+      variant="outlined"
+      onClick={closePasswordReset}
+      disabled={passwordResetLoading}
+      sx={premiumCancelButtonSx}
+    >
       Cancel
     </Button>
+
     <Button
       variant="contained"
       onClick={submitPasswordReset}
       disabled={passwordResetLoading}
-      startIcon={passwordResetLoading ? <CircularProgress size={16} /> : <LockReset />}
+      startIcon={
+        passwordResetLoading ? (
+          <CircularProgress size={18} color="inherit" />
+        ) : (
+          <LockReset />
+        )
+      }
+      sx={{
+        ...premiumPrimaryButtonSx,
+        background: 'linear-gradient(135deg, #7c3aed 0%, #9333ea 100%)',
+        boxShadow: '0 10px 22px rgba(124, 58, 237, 0.24)',
+        '&:hover': {
+          background: 'linear-gradient(135deg, #6d28d9 0%, #7e22ce 100%)',
+          transform: 'translateY(-1px)',
+        },
+      }}
     >
-      Confirm Reset
+      {passwordResetLoading ? 'Resetting...' : 'Confirm Reset'}
     </Button>
   </DialogActions>
 </Dialog>
 
         {/* Admin - Trash (Deleted Users) Dialog */}
-        <Dialog
-          open={trashOpen}
-          onClose={closeTrash}
-          maxWidth="md"
-          fullWidth
-        >
-          <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Box>
-              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Trash</Typography>
-              <Typography variant="caption" color="text.secondary">
-                Deleted users (soft-deleted). You can restore or permanently delete.
-              </Typography>
-            </Box>
-            <Box
-  sx={{
-    display: 'flex',
-    gap: 1,
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    justifyContent: 'flex-end',
-   
+       {/* Admin - Trash (Deleted Users) Dialog */}
+<Dialog
+  open={trashOpen}
+  onClose={closeTrash}
+  maxWidth="md"
+  fullWidth
+  PaperProps={{
+    sx: premiumDialogPaperSx,
   }}
 >
-  <Button
-    variant="outlined"
-    color="success"
-    size="small"
-    startIcon={<RestoreFromTrash sx={{ fontSize: 18 }} />}
-    onClick={handleRestoreAllTrash}
-    disabled={!Array.isArray(trashUsers) || trashUsers.length === 0}
+  <DialogTitle
     sx={{
-      textTransform: 'none',
-      borderRadius: 2,
-      px: 1.5,
-      py: 0.75,
-      minWidth: 'auto',
-      fontSize: '0.85rem',
-      fontWeight: 600,
-      boxShadow: 'none',
+      ...premiumDialogTitleSx,
+      background: 'linear-gradient(135deg, #334155 0%, #dc2626 100%)',
     }}
   >
-    Restore All
-  </Button>
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+      <DeleteSweep />
+      <Box>
+        <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1.1 }}>
+          Trash
+        </Typography>
 
-  <Button
-    variant="contained"
-    color="error"
-    size="small"
-    startIcon={<DeleteSweep sx={{ fontSize: 18 }} />}
-    onClick={handleClearTrash}
-    disabled={!Array.isArray(trashUsers) || trashUsers.length === 0}
-    sx={{
-      textTransform: 'none',
-      borderRadius: 2,
-      px: 1.5,
-      py: 0.75,
-      minWidth: 'auto',
-      fontSize: '0.85rem',
-      fontWeight: 600,
-      boxShadow: 'none',
-    }}
-  >
-    Clear Trash
-  </Button>
-</Box>
-            {/* <Button onClick={closeTrash} variant="outlined" size="small" sx={{ borderRadius: 2 }}>
-              Close
-            </Button> */}
-          </DialogTitle>
+        <Typography variant="caption" sx={{ opacity: 0.9, fontWeight: 600 }}>
+          Deleted users can be restored or permanently removed
+        </Typography>
+      </Box>
+    </Box>
 
-          <DialogContent dividers>
-            {trashLoading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-                <CircularProgress />
-              </Box>
-            ) : trashUsers.length === 0 ? (
-              <Box sx={{ textAlign: 'center', p: 4 }}>
-                <Typography variant="body2" color="text.secondary">
-                  No deleted users found.
-                </Typography>
-              </Box>
-            ) : (
-              
-              <TableContainer component={Paper} elevation={0}>
-                <Table size="small">
-                  <TableHead>
-                    <TableRow sx={{ bgcolor: '#f5f5f5' }}>
-                      <TableCell><b>User</b></TableCell>
-                      <TableCell><b>Email</b></TableCell>
-                      <TableCell><b>Mobile</b></TableCell>
-                      <TableCell><b>Role</b></TableCell>
-                      <TableCell><b>Deleted At</b></TableCell>
-                      <TableCell align="right"><b>Actions</b></TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {(Array.isArray(trashUsers) ? trashUsers : []).map((u) => (
-                      <TableRow key={u.id} hover>
-                        <TableCell>
-                          <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {u.name} {u.surname}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {u.id}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>{u.email || '-'}</TableCell>
-                        <TableCell>{u.mobileNumber || '-'}</TableCell>
-                        <TableCell>
-                          <Chip
-                            label={u.role === 'ROLE_ADMIN' ? 'Admin' :
-                                   u.role === 'ROLE_SAMBHAG_MANAGER' ? 'Division Manager' :
-                                   u.role === 'ROLE_DISTRICT_MANAGER' ? 'District Manager' :
-                                   u.role === 'ROLE_BLOCK_MANAGER' ? 'Block Manager' : 
-                                   'User'}
-                            size="small"
-                          />
-                        </TableCell>
-<TableCell>{formatDate(u.deletedAt) || '-'}</TableCell>                        <TableCell align="right">
-                          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              onClick={() => handleRestoreUser(u.id)}
-                              startIcon={<RestoreFromTrash />}
-                              sx={{ borderRadius: 2 }}
-                            >
-                              Restore
-                            </Button>
-                            <Button
-                              size="small"
-                              variant="contained"
-                              color="error"
-                              onClick={() => handlePermanentDeleteFromTrash(u.id)}
-                              startIcon={<DeleteForever />}
-                              sx={{ borderRadius: 2 }}
-                            >
-                              Delete
-                            </Button>
-                          </Box>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            )}
+    <IconButton
+      onClick={closeTrash}
+      sx={{
+        color: '#fff',
+        bgcolor: 'rgba(255,255,255,0.14)',
+        '&:hover': {
+          bgcolor: 'rgba(255,255,255,0.22)',
+        },
+      }}
+    >
+      <Close />
+    </IconButton>
+  </DialogTitle>
 
-            <TablePagination
-              component="div"
-              count={trashTotalUsers}
-              page={trashPage}
-              onPageChange={(_, newPage) => setTrashPage(newPage)}
-              rowsPerPage={trashRowsPerPage}
-              onRowsPerPageChange={(e) => {
-                setTrashRowsPerPage(parseInt(e.target.value, 10));
-                setTrashPage(0);
-              }}
-              rowsPerPageOptions={[5, 10, 20, 50]}
-            />
-          </DialogContent>
+  <DialogContent dividers sx={premiumDialogContentSx}>
+    <Paper
+      elevation={0}
+      sx={{
+        borderRadius: 3,
+        bgcolor: '#fff',
+        border: '1px solid rgba(226, 232, 240, 0.95)',
+        overflow: 'hidden',
+      }}
+    >
+      <Box
+        sx={{
+          p: 2,
+          display: 'flex',
+          alignItems: { xs: 'flex-start', md: 'center' },
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 1.5,
+          background:
+            'linear-gradient(135deg, rgba(248,250,252,0.96) 0%, rgba(254,242,242,0.78) 100%)',
+          borderBottom: '1px solid rgba(226, 232, 240, 0.9)',
+        }}
+      >
+        <Box>
+          <Typography variant="subtitle1" sx={{ fontWeight: 900, color: '#0f172a' }}>
+            Deleted Users
+          </Typography>
 
-          <DialogActions>
-            <Button onClick={closeTrash}>Close</Button>
-          </DialogActions>
-        </Dialog>
+          <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+            {trashLoading
+              ? 'Loading deleted users...'
+              : `${trashUsers.length} deleted users visible`}
+          </Typography>
+        </Box>
+
+        <Box
+          sx={{
+            display: 'flex',
+            gap: 1,
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            justifyContent: 'flex-end',
+          }}
+        >
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<RestoreFromTrash sx={{ fontSize: 18 }} />}
+            onClick={handleRestoreAllTrash}
+            disabled={!Array.isArray(trashUsers) || trashUsers.length === 0}
+            sx={{
+              borderRadius: 3,
+              px: 2,
+              py: 0.9,
+              fontWeight: 800,
+              textTransform: 'none',
+              color: '#15803d',
+              borderColor: 'rgba(22, 163, 74, 0.30)',
+              bgcolor: '#fff',
+              '&:hover': {
+                borderColor: '#16a34a',
+                bgcolor: 'rgba(22, 163, 74, 0.08)',
+              },
+            }}
+          >
+            Restore All
+          </Button>
+
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<DeleteSweep sx={{ fontSize: 18 }} />}
+            onClick={handleClearTrash}
+            disabled={!Array.isArray(trashUsers) || trashUsers.length === 0}
+            sx={{
+              borderRadius: 3,
+              px: 2,
+              py: 0.9,
+              fontWeight: 800,
+              textTransform: 'none',
+              background: 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)',
+              boxShadow: '0 10px 20px rgba(220, 38, 38, 0.20)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%)',
+                transform: 'translateY(-1px)',
+              },
+              '&.Mui-disabled': {
+                color: 'rgba(255,255,255,0.75)',
+                opacity: 0.75,
+              },
+            }}
+          >
+            Clear Trash
+          </Button>
+        </Box>
+      </Box>
+
+      {trashLoading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 1.5, p: 6 }}>
+          <CircularProgress size={24} sx={{ color: '#dc2626' }} />
+          <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 700 }}>
+            Loading deleted users...
+          </Typography>
+        </Box>
+      ) : trashUsers.length === 0 ? (
+        <Box sx={{ textAlign: 'center', p: 6 }}>
+          <DeleteSweep sx={{ fontSize: 52, color: '#cbd5e1', mb: 1 }} />
+
+          <Typography variant="h6" sx={{ color: '#475569', fontWeight: 900 }}>
+            No deleted users found
+          </Typography>
+
+          <Typography variant="body2" sx={{ color: '#94a3b8', mt: 0.75, fontWeight: 600 }}>
+            Soft-deleted users will appear here.
+          </Typography>
+        </Box>
+      ) : (
+        <TableContainer
+          sx={{
+            maxWidth: '100%',
+            overflowX: 'auto',
+            bgcolor: '#fff',
+          }}
+        >
+          <Table
+            size="small"
+            sx={{
+              minWidth: 900,
+              '& .MuiTableCell-root': {
+                whiteSpace: 'nowrap',
+              },
+            }}
+          >
+            <TableHead>
+              <TableRow>
+                <TableCell sx={tableHeaderCellSx}>User</TableCell>
+                <TableCell sx={tableHeaderCellSx}>Email</TableCell>
+                <TableCell sx={tableHeaderCellSx}>Mobile</TableCell>
+                <TableCell sx={tableHeaderCellSx}>Role</TableCell>
+                <TableCell sx={tableHeaderCellSx}>Deleted At</TableCell>
+                <TableCell align="right" sx={tableHeaderCellSx}>Actions</TableCell>
+              </TableRow>
+            </TableHead>
+
+            <TableBody>
+              {(Array.isArray(trashUsers) ? trashUsers : []).map((u) => (
+                <TableRow
+                  key={u.id}
+                  hover
+                  sx={{
+                    transition: 'all 0.18s ease',
+                    '&:hover': {
+                      bgcolor: 'rgba(254, 242, 242, 0.65)',
+                    },
+                  }}
+                >
+                  <TableCell sx={tableBodyCellSx}>
+                    <Typography variant="body2" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                      {combineFullName(u.name, u.surname) || u.name || '-'}
+                    </Typography>
+
+                    <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>
+                      {u.id}
+                    </Typography>
+                  </TableCell>
+
+                  <TableCell sx={tableBodyCellSx}>
+                    <Typography variant="body2" sx={{ color: '#334155', fontWeight: 700 }}>
+                      {u.email || '-'}
+                    </Typography>
+                  </TableCell>
+
+                  <TableCell sx={tableBodyCellSx}>
+                    <Typography variant="body2" sx={{ color: '#334155', fontWeight: 700 }}>
+                      {u.mobileNumber || '-'}
+                    </Typography>
+                  </TableCell>
+
+                  <TableCell sx={tableBodyCellSx}>
+                    <Chip
+                      label={getRoleLabel(u.role)}
+                      size="small"
+                      variant="outlined"
+                      sx={{
+                        ...getRoleChipSx(u.role),
+                        fontWeight: 900,
+                        borderRadius: '10px',
+                      }}
+                    />
+                  </TableCell>
+
+                  <TableCell sx={tableBodyCellSx}>
+                    <Typography variant="body2" sx={{ color: '#475569', fontWeight: 800 }}>
+                      {formatDate(u.deletedAt) || '-'}
+                    </Typography>
+                  </TableCell>
+
+                  <TableCell align="right" sx={tableBodyCellSx}>
+                    <Box sx={{ display: 'flex', gap: 0.75, justifyContent: 'flex-end' }}>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => handleRestoreUser(u.id)}
+                        startIcon={<RestoreFromTrash />}
+                        sx={{
+                          borderRadius: 3,
+                          fontWeight: 800,
+                          textTransform: 'none',
+                          color: '#15803d',
+                          borderColor: 'rgba(22, 163, 74, 0.30)',
+                          '&:hover': {
+                            borderColor: '#16a34a',
+                            bgcolor: 'rgba(22, 163, 74, 0.08)',
+                          },
+                        }}
+                      >
+                        Restore
+                      </Button>
+
+                      <Button
+                        size="small"
+                        variant="contained"
+                        onClick={() => handlePermanentDeleteFromTrash(u.id)}
+                        startIcon={<DeleteForever />}
+                        sx={{
+                          borderRadius: 3,
+                          fontWeight: 800,
+                          textTransform: 'none',
+                          background: 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)',
+                          boxShadow: '0 8px 18px rgba(220, 38, 38, 0.18)',
+                          '&:hover': {
+                            background: 'linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%)',
+                          },
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      )}
+
+      <TablePagination
+        component="div"
+        count={trashTotalUsers}
+        page={trashPage}
+        onPageChange={(_, newPage) => setTrashPage(newPage)}
+        rowsPerPage={trashRowsPerPage}
+        onRowsPerPageChange={(e) => {
+          setTrashRowsPerPage(parseInt(e.target.value, 10));
+          setTrashPage(0);
+        }}
+        rowsPerPageOptions={[5, 10, 20, 50]}
+        labelDisplayedRows={({ from, to, count }) =>
+          `${from + 1}-${Math.min(to + 1, count)} of ${count}`
+        }
+        labelRowsPerPage="Rows per page:"
+        sx={{
+          borderTop: '1px solid rgba(226, 232, 240, 0.95)',
+          bgcolor: '#f8fafc',
+          color: '#475569',
+          '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+            fontWeight: 800,
+            color: '#64748b',
+          },
+        }}
+      />
+    </Paper>
+  </DialogContent>
+
+  <DialogActions sx={premiumDialogActionsSx}>
+    <Button
+      variant="outlined"
+      onClick={closeTrash}
+      sx={premiumCancelButtonSx}
+    >
+      Close
+    </Button>
+  </DialogActions>
+</Dialog>
 
       </Box>
     </Layout>

@@ -452,9 +452,20 @@ exportAllUsers: () => {
   // },
 
   //new endpoint to get all receipts with pagination and filters
-    getReceipts: (params = {}) => {
-    return api.get('/admin/receipts/all', { params });
-  },
+  // Get all receipts with pagination
+getReceipts: (params = {}) => {
+  return api.get('/admin/receipts/all', { params });
+},
+
+// Export all receipts to Excel
+exportReceipts: () => {
+  return api.get('/admin/receipts/export', {
+    responseType: 'blob',
+    headers: {
+      Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    },
+  });
+},
 
   // Get manager assignments
   getManagerAssignments: (params = {}) => {
