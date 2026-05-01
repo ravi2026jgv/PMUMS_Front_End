@@ -144,84 +144,85 @@ const ForgotPassword = () => {
   const fontFamily = 'Noto Sans Devanagari, Poppins, Arial, sans-serif';
 
   const theme = {
-    dark: '#3b0764',
-    main: '#6d28d9',
-    light: '#a855f7',
-    gold: '#facc15',
-    soft: '#f5f3ff',
-    soft2: '#faf5ff',
-    softGold: '#fffbeb',
-    text: '#4c1d95',
-    muted: '#5b5b6b',
-    green: '#16a34a',
-    red: '#dc2626',
-  };
+  dark: '#221b43',
+  main: '#6f5cc2',
+  light: '#b9a7ff',
+  accent: '#0f766e',
+  soft: '#f4f2fb',
+  soft2: '#ffffff',
+  softAccent: '#eef8f7',
+  text: '#221b43',
+  muted: '#4b5563',
+  green: '#0f766e',
+  red: '#b42318',
+  border: '#ded8f5',
+};
 
-  const inputSx = {
-    mb: 3,
-    '& .MuiOutlinedInput-root': {
-      borderRadius: '16px',
-      background: 'rgba(255,255,255,0.96)',
-      transition: 'all 0.25s ease',
-      '& fieldset': {
-        borderColor: 'rgba(124, 58, 237, 0.18)',
-      },
-      '&:hover fieldset': {
-        borderColor: 'rgba(124, 58, 237, 0.42)',
-      },
-      '&.Mui-focused fieldset': {
-        borderColor: theme.main,
-        borderWidth: '2px',
-      },
+ const inputSx = {
+  mb: 3,
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '16px',
+    background: '#ffffff',
+    transition: 'all 0.25s ease',
+    '& fieldset': {
+      borderColor: 'rgba(111, 92, 194, 0.18)',
     },
-    '& .MuiInputBase-input': {
-      color: theme.text,
-      fontWeight: 750,
-      fontFamily,
+    '&:hover fieldset': {
+      borderColor: 'rgba(111, 92, 194, 0.42)',
     },
-    '& .MuiFormHelperText-root': {
-      fontWeight: 750,
-      fontFamily,
+    '&.Mui-focused fieldset': {
+      borderColor: theme.main,
+      borderWidth: '2px',
     },
-  };
+  },
+  '& .MuiInputBase-input': {
+    color: theme.text,
+    fontWeight: 600,
+    fontFamily,
+  },
+  '& .MuiFormHelperText-root': {
+    fontWeight: 600,
+    fontFamily,
+  },
+};
 
   const primaryButtonSx = {
-    py: 1.25,
-    px: 4,
-    fontSize: '1rem',
-    fontWeight: 950,
-    borderRadius: '16px',
-    textTransform: 'none',
-    fontFamily,
+  py: 1.25,
+  px: 4,
+  fontSize: '1rem',
+  fontWeight: 700,
+  borderRadius: '16px',
+  textTransform: 'none',
+  fontFamily,
+  color: '#fff',
+  background: theme.accent,
+  boxShadow: '0 14px 32px rgba(15, 118, 110, 0.28)',
+  transition: 'all 0.25s ease',
+  '&:hover': {
+    background: '#0b5f59',
+    transform: 'translateY(-2px)',
+    boxShadow: '0 18px 42px rgba(15, 118, 110, 0.36)',
+  },
+  '&:disabled': {
+    background: '#9ca3af',
     color: '#fff',
-    background: `linear-gradient(135deg, ${theme.main}, ${theme.light})`,
-    boxShadow: '0 14px 32px rgba(109, 40, 217, 0.28)',
-    transition: 'all 0.25s ease',
-    '&:hover': {
-      background: `linear-gradient(135deg, ${theme.dark}, ${theme.main})`,
-      transform: 'translateY(-2px)',
-      boxShadow: '0 18px 42px rgba(109, 40, 217, 0.38)',
-    },
-    '&:disabled': {
-      background: '#c4b5fd',
-      color: '#fff',
-    },
-  };
+  },
+};
 
   const outlineButtonSx = {
-    py: 1.15,
-    px: 3,
-    fontWeight: 900,
-    borderRadius: '16px',
-    textTransform: 'none',
-    fontFamily,
-    color: theme.main,
-    borderColor: 'rgba(124, 58, 237, 0.35)',
-    '&:hover': {
-      borderColor: theme.main,
-      background: 'rgba(124, 58, 237, 0.07)',
-    },
-  };
+  py: 1.15,
+  px: 3,
+  fontWeight: 700,
+  borderRadius: '16px',
+  textTransform: 'none',
+  fontFamily,
+  color: theme.main,
+  borderColor: 'rgba(111, 92, 194, 0.35)',
+  '&:hover': {
+    borderColor: theme.main,
+    background: 'rgba(111, 92, 194, 0.08)',
+  },
+};
 
   if (loadingMode) {
     return (
@@ -232,9 +233,7 @@ const ForgotPassword = () => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background:
-              'radial-gradient(circle at top left, rgba(124,58,237,0.13), transparent 30%), radial-gradient(circle at bottom right, rgba(250,204,21,0.16), transparent 32%), linear-gradient(180deg, #ffffff 0%, #fbfaff 45%, #f5f3ff 100%)',
-          }}
+           background: theme.soft,  }}
         >
           <CircularProgress sx={{ color: theme.main }} />
         </Box>
@@ -247,40 +246,14 @@ const ForgotPassword = () => {
       <Box
         sx={{
           minHeight: 'calc(100vh - 200px)',
-          background:
-            'radial-gradient(circle at top left, rgba(124,58,237,0.13), transparent 30%), radial-gradient(circle at bottom right, rgba(250,204,21,0.16), transparent 32%), linear-gradient(180deg, #ffffff 0%, #fbfaff 45%, #f5f3ff 100%)',
-          display: 'flex',
+         background: theme.soft,  display: 'flex',
           alignItems: 'center',
           py: { xs: 5, md: 7 },
           position: 'relative',
           overflow: 'hidden',
         }}
       >
-        <Box
-          sx={{
-            position: 'absolute',
-            width: 360,
-            height: 360,
-            borderRadius: '50%',
-            top: -170,
-            left: -130,
-            background: 'rgba(124, 58, 237, 0.10)',
-            filter: 'blur(8px)',
-          }}
-        />
-
-        <Box
-          sx={{
-            position: 'absolute',
-            width: 320,
-            height: 320,
-            borderRadius: '50%',
-            right: -140,
-            bottom: -150,
-            background: 'rgba(250, 204, 21, 0.16)',
-            filter: 'blur(10px)',
-          }}
-        />
+        
 
         <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1 }}>
           <Paper
@@ -288,10 +261,9 @@ const ForgotPassword = () => {
             sx={{
               p: { xs: 2.5, md: 4 },
               borderRadius: { xs: '28px', md: '36px' },
-              background: 'rgba(255,255,255,0.84)',
-              backdropFilter: 'blur(16px)',
-              boxShadow: '0 30px 90px rgba(76, 29, 149, 0.16)',
-              border: '1px solid rgba(124, 58, 237, 0.16)',
+             background: '#ffffff',
+boxShadow: '0 30px 90px rgba(34, 27, 67, 0.12)',
+border: '1px solid rgba(111, 92, 194, 0.16)',
               position: 'relative',
               overflow: 'hidden',
               '&::before': {
@@ -301,8 +273,7 @@ const ForgotPassword = () => {
                 left: 0,
                 right: 0,
                 height: 8,
-                background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`,
-              },
+background: theme.main,              },
             }}
           >
             <Box sx={{ textAlign: 'center', mb: 4, position: 'relative', zIndex: 1 }}>
@@ -313,12 +284,11 @@ const ForgotPassword = () => {
                   mx: 'auto',
                   mb: 2,
                   borderRadius: '26px',
-                  background: `linear-gradient(135deg, ${theme.main}, ${theme.light})`,
-                  color: '#fff',
+background: theme.main,
+boxShadow: '0 16px 38px rgba(111, 92, 194, 0.28)',                  color: '#fff',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  boxShadow: '0 16px 38px rgba(109, 40, 217, 0.30)',
                 }}
               >
                 <PasswordRounded sx={{ fontSize: 40 }} />
@@ -419,9 +389,8 @@ const ForgotPassword = () => {
               sx={{
                 p: { xs: 1, md: 2 },
                 borderRadius: '26px',
-                background:
-                  'linear-gradient(135deg, rgba(245,243,255,0.78), rgba(255,255,255,0.88))',
-                border: '1px solid rgba(124, 58, 237, 0.10)',
+                background: theme.soft,
+border: '1px solid rgba(111, 92, 194, 0.14)',
                 position: 'relative',
                 zIndex: 1,
               }}

@@ -28,28 +28,29 @@ import Layout from '../components/Layout/Layout';
 import api from '../services/api';
 
 const theme = {
-  dark: '#3b0764',
-  main: '#6d28d9',
-  light: '#a855f7',
-  gold: '#facc15',
-  soft: '#f5f3ff',
-  softGold: '#fffbeb',
-  text: '#4c1d95',
-  muted: '#5b5b6b',
-  green: '#16a34a',
-  red: '#dc2626',
+  dark: '#221b43',
+  main: '#6f5cc2',
+  light: '#b9a7ff',
+  accent: '#0f766e',
+  soft: '#f4f2fb',
+  softAccent: '#eef8f7',
+  text: '#221b43',
+  muted: '#4b5563',
+  green: '#0f766e',
+  red: '#b42318',
+  border: '#ded8f5',
 };
 
 const inputSx = {
   '& .MuiOutlinedInput-root': {
     borderRadius: '14px',
-    background: 'rgba(255,255,255,0.92)',
+    background: '#ffffff',
     transition: 'all 0.25s ease',
     '& fieldset': {
-      borderColor: 'rgba(124, 58, 237, 0.18)',
+      borderColor: 'rgba(111, 92, 194, 0.22)',
     },
     '&:hover fieldset': {
-      borderColor: 'rgba(124, 58, 237, 0.40)',
+      borderColor: 'rgba(111, 92, 194, 0.48)',
     },
     '&.Mui-focused fieldset': {
       borderColor: theme.main,
@@ -57,8 +58,9 @@ const inputSx = {
     },
   },
   '& .MuiInputBase-input': {
-    fontWeight: 650,
+    fontWeight: 600,
     color: theme.text,
+    fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
   },
 };
 
@@ -234,40 +236,12 @@ const ZeroUtrList = () => {
         sx={{
           minHeight: '100vh',
           py: { xs: 6, md: 8 },
-          background: `
-            radial-gradient(circle at top left, rgba(124, 58, 237, 0.13), transparent 30%),
-            radial-gradient(circle at bottom right, rgba(250, 204, 21, 0.16), transparent 32%),
-            linear-gradient(180deg, #ffffff 0%, #fbfaff 45%, #f5f3ff 100%)
-          `,
+          background: theme.soft,
           position: 'relative',
           overflow: 'hidden',
         }}
       >
-        <Box
-          sx={{
-            position: 'absolute',
-            width: 360,
-            height: 360,
-            borderRadius: '50%',
-            top: -170,
-            left: -130,
-            background: 'rgba(124, 58, 237, 0.10)',
-            filter: 'blur(8px)',
-          }}
-        />
-
-        <Box
-          sx={{
-            position: 'absolute',
-            width: 310,
-            height: 310,
-            borderRadius: '50%',
-            right: -120,
-            bottom: -140,
-            background: 'rgba(250, 204, 21, 0.16)',
-            filter: 'blur(10px)',
-          }}
-        />
+        
 
         <Container maxWidth="xl" sx={{ position: 'relative', zIndex: 1 }}>
           <Card
@@ -275,11 +249,10 @@ const ZeroUtrList = () => {
             sx={{
               mb: 4,
               borderRadius: { xs: '28px', md: '38px' },
-              background:
-                'linear-gradient(135deg, rgba(76,29,149,0.96), rgba(124,58,237,0.92))',
-              color: '#fff',
+             background: 'linear-gradient(135deg, #221b43 0%, #30295c 48%, #3b3268 100%)',
+boxShadow: '0 30px 90px rgba(34, 27, 67, 0.22)',    color: '#fff',
               border: '1px solid rgba(255,255,255,0.18)',
-              boxShadow: '0 30px 90px rgba(76, 29, 149, 0.22)',
+            
               overflow: 'hidden',
               position: 'relative',
 
@@ -290,19 +263,9 @@ const ZeroUtrList = () => {
                 left: 0,
                 right: 0,
                 height: 7,
-                background: `linear-gradient(90deg, ${theme.gold}, #ffffff, ${theme.gold})`,
-              },
+background: theme.main,              },
 
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                width: 260,
-                height: 260,
-                borderRadius: '50%',
-                right: -110,
-                bottom: -130,
-                background: 'rgba(250, 204, 21, 0.14)',
-              },
+             
             }}
           >
             <CardContent
@@ -327,13 +290,13 @@ const ZeroUtrList = () => {
                   border: '1px solid rgba(255,255,255,0.25)',
                 }}
               >
-                <BlockRounded sx={{ fontSize: 38, color: theme.gold }} />
+                <BlockRounded sx={{ fontSize: 38, color: '#ffffff' }} />
               </Box>
 
               <Typography
                 variant="h3"
                 sx={{
-                  fontWeight: 950,
+                  fontWeight: 700,
                   mb: 1.3,
                   fontSize: { xs: '1.9rem', md: '3rem' },
                   fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
@@ -345,7 +308,7 @@ const ZeroUtrList = () => {
               <Typography
                 variant="h6"
                 sx={{
-                  fontWeight: 750,
+                  fontWeight: 600,
                   color: 'rgba(255,255,255,0.90)',
                   fontSize: { xs: '1rem', md: '1.2rem' },
                   fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
@@ -359,7 +322,7 @@ const ZeroUtrList = () => {
                 sx={{
                   mt: 2.5,
                   color: '#fff',
-                  fontWeight: 900,
+                  fontWeight: 700,
                   background: 'rgba(255,255,255,0.16)',
                   border: '1px solid rgba(255,255,255,0.24)',
                   fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
@@ -373,10 +336,9 @@ const ZeroUtrList = () => {
             sx={{
               mb: 4,
               borderRadius: { xs: '24px', md: '32px' },
-              background: 'rgba(255,255,255,0.84)',
-              backdropFilter: 'blur(16px)',
-              border: '1px solid rgba(124, 58, 237, 0.15)',
-              boxShadow: '0 24px 70px rgba(76, 29, 149, 0.12)',
+              background: '#ffffff',
+border: '1px solid rgba(111, 92, 194, 0.16)',
+boxShadow: '0 24px 70px rgba(34, 27, 67, 0.10)',
               overflow: 'hidden',
               position: 'relative',
 
@@ -387,8 +349,7 @@ const ZeroUtrList = () => {
                 left: 0,
                 right: 0,
                 height: 7,
-                background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`,
-              },
+background: theme.main,              },
             }}
           >
             <CardContent sx={{ p: { xs: 2.5, md: 3.5 }, position: 'relative', zIndex: 1 }}>
@@ -618,8 +579,8 @@ const ZeroUtrList = () => {
                   sx={{
                     mt: 2.5,
                     borderRadius: '16px',
-                    backgroundColor: 'rgba(124, 58, 237, 0.08)',
-                    border: '1px solid rgba(124, 58, 237, 0.16)',
+                   backgroundColor: theme.softAccent,
+border: '1px solid rgba(15, 118, 110, 0.18)',
                     color: theme.text,
                     fontWeight: 750,
                     fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
@@ -641,10 +602,8 @@ const ZeroUtrList = () => {
             elevation={0}
             sx={{
               borderRadius: { xs: '24px', md: '32px' },
-              background: 'rgba(255,255,255,0.88)',
-              backdropFilter: 'blur(16px)',
-              border: '1px solid rgba(124, 58, 237, 0.15)',
-              boxShadow: '0 28px 80px rgba(76, 29, 149, 0.13)',
+             backgroundColor: theme.softAccent,
+border: '1px solid rgba(15, 118, 110, 0.18)',
               overflow: 'hidden',
             }}
           >
@@ -703,9 +662,9 @@ const ZeroUtrList = () => {
                       <TableRow
                         sx={{
                           '& th': {
-                            background: `linear-gradient(135deg, ${theme.dark}, ${theme.main})`,
-                            color: 'white',
-                            fontWeight: 950,
+background: theme.dark,
+fontWeight: 700,                            color: 'white',
+                           
                             fontSize: '0.92rem',
                             whiteSpace: 'nowrap',
                             fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
@@ -747,15 +706,15 @@ const ZeroUtrList = () => {
                             },
                           }}
                         >
-                          <TableCell sx={{ fontWeight: '900 !important', color: `${theme.main} !important` }}>
+                          <TableCell sx={{ fontWeight: '700 !important', color: `${theme.dark} !important` }}>
                             {page * pageSize + index + 1}
                           </TableCell>
 
-                          <TableCell sx={{ color: `${theme.main} !important`, fontWeight: '900 !important' }}>
+                          <TableCell sx={{ color: `${theme.dark} !important`, fontWeight: '700 !important' }}>
                             {getDisplayValue(user.registrationNumber || user.id)}
                           </TableCell>
 
-                          <TableCell sx={{ fontWeight: '900 !important', color: `${theme.dark} !important` }}>
+                          <TableCell sx={{ fontWeight: '700 !important', color: `${theme.dark} !important` }}>
                             {getDisplayValue(
                               [user.name, user.surname].filter(Boolean).join(' ') || user.name
                             )}

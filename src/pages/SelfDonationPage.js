@@ -18,14 +18,19 @@ import Layout from "../components/Layout/Layout";
 import { adminAPI, FILE_BASE_URL } from "../services/api";
 
 const theme = {
-  dark: "#3b0764",
-  main: "#6d28d9",
-  light: "#a855f7",
-  gold: "#facc15",
-  soft: "#f5f3ff",
-  softGold: "#fffbeb",
-  text: "#4c1d95",
-  muted: "#5b5b6b",
+  dark: "#221b43",
+  main: "#6f5cc2",
+  light: "#b9a7ff",
+  accent: "#0f766e",
+  soft: "#f4f2fb",
+  softAccent: "#eef8f7",
+  text: "#221b43",
+  muted: "#4b5563",
+  border: "#ded8f5",
+  warningBg: "#fff7ed",
+  warningBorder: "#fed7aa",
+  warningText: "#7c2d12",
+  warningIcon: "#c2410c",
 };
 
 const SelfDonationPage = () => {
@@ -60,41 +65,12 @@ const SelfDonationPage = () => {
         sx={{
           minHeight: "100vh",
           py: { xs: 6, md: 9 },
-          background: `
-            radial-gradient(circle at top left, rgba(124, 58, 237, 0.13), transparent 30%),
-            radial-gradient(circle at bottom right, rgba(250, 204, 21, 0.16), transparent 32%),
-            linear-gradient(180deg, #ffffff 0%, #fbfaff 45%, #f5f3ff 100%)
-          `,
+          background: "#eef8f7",
           position: "relative",
           overflow: "hidden",
+         
         }}
       >
-        <Box
-          sx={{
-            position: "absolute",
-            width: 360,
-            height: 360,
-            borderRadius: "50%",
-            top: -170,
-            left: -130,
-            background: "rgba(124, 58, 237, 0.10)",
-            filter: "blur(8px)",
-          }}
-        />
-
-        <Box
-          sx={{
-            position: "absolute",
-            width: 310,
-            height: 310,
-            borderRadius: "50%",
-            right: -120,
-            bottom: -140,
-            background: "rgba(250, 204, 21, 0.16)",
-            filter: "blur(10px)",
-          }}
-        />
-
         <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
           <Paper
             elevation={0}
@@ -102,10 +78,9 @@ const SelfDonationPage = () => {
               width: "100%",
               borderRadius: { xs: "28px", md: "38px" },
               p: { xs: 2.5, sm: 3.5, md: 5 },
-              background: "rgba(255,255,255,0.82)",
-              backdropFilter: "blur(16px)",
-              border: "1px solid rgba(124, 58, 237, 0.15)",
-              boxShadow: "0 28px 80px rgba(76, 29, 149, 0.13)",
+              background: "#ffffff",
+              border: "1px solid rgba(15, 118, 110, 0.18)",
+              boxShadow: "0 28px 80px rgba(34, 27, 67, 0.12)",
               position: "relative",
               overflow: "hidden",
 
@@ -116,7 +91,7 @@ const SelfDonationPage = () => {
                 left: 0,
                 right: 0,
                 height: 7,
-                background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`,
+                background: theme.accent,
               },
 
               "&::after": {
@@ -127,7 +102,7 @@ const SelfDonationPage = () => {
                 borderRadius: "50%",
                 right: -110,
                 bottom: -130,
-                background: "rgba(250, 204, 21, 0.14)",
+                background: "rgba(15, 118, 110, 0.08)",
               },
             }}
           >
@@ -136,10 +111,11 @@ const SelfDonationPage = () => {
                 <Typography
                   variant="overline"
                   sx={{
-                    color: theme.main,
+                    color: theme.accent,
                     fontWeight: 900,
                     letterSpacing: "1.5px",
                     fontSize: "0.82rem",
+                    fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
                   }}
                 >
                   PMUMS ORGANIZATION SUPPORT
@@ -152,7 +128,7 @@ const SelfDonationPage = () => {
                     mt: 0.7,
                     color: theme.dark,
                     fontWeight: 950,
-                    fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+                    fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
                     fontSize: { xs: "1.9rem", md: "3rem" },
                     lineHeight: 1.25,
                   }}
@@ -167,7 +143,7 @@ const SelfDonationPage = () => {
                     borderRadius: 99,
                     mx: "auto",
                     mt: 2,
-                    background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`,
+                    background: theme.accent,
                   }}
                 />
               </Box>
@@ -177,9 +153,8 @@ const SelfDonationPage = () => {
                   mb: 4,
                   p: { xs: 2, md: 2.4 },
                   borderRadius: "22px",
-                  background:
-                    "linear-gradient(135deg, rgba(255,251,235,0.92), rgba(255,255,255,0.88))",
-                  border: "1px solid rgba(250, 204, 21, 0.35)",
+                  background: theme.warningBg,
+                  border: `1px solid ${theme.warningBorder}`,
                   display: "flex",
                   gap: 1.5,
                   alignItems: "flex-start",
@@ -187,7 +162,7 @@ const SelfDonationPage = () => {
               >
                 <WarningAmberRounded
                   sx={{
-                    color: "#d97706",
+                    color: theme.warningIcon,
                     fontSize: 30,
                     mt: 0.2,
                   }}
@@ -195,11 +170,11 @@ const SelfDonationPage = () => {
 
                 <Typography
                   sx={{
-                    color: theme.dark,
+                    color: theme.warningText,
                     fontWeight: 850,
                     fontSize: { xs: "0.96rem", md: "1.05rem" },
                     lineHeight: 1.8,
-                    fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+                    fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
                   }}
                 >
                   कृपया ध्यान दें: यहाँ प्रदर्शित QR कोड अथवा “Pay” बटन के माध्यम से किया गया सहयोग केवल संस्था के लिए मान्य होगा,
@@ -214,7 +189,7 @@ const SelfDonationPage = () => {
                   fontSize: { xs: "0.98rem", md: "1.05rem" },
                   lineHeight: 1.9,
                   fontWeight: 650,
-                  fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+                  fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
                   textAlign: { xs: "left", md: "center" },
                   maxWidth: 980,
                   mx: "auto",
@@ -237,9 +212,9 @@ const SelfDonationPage = () => {
                       minHeight: 350,
                       borderRadius: "28px",
                       p: { xs: 2.3, md: 3 },
-                      background: "linear-gradient(180deg, #ffffff 0%, #f5f3ff 100%)",
-                      border: "1px solid rgba(124, 58, 237, 0.16)",
-                      boxShadow: "0 18px 44px rgba(76, 29, 149, 0.10)",
+                      background: "#ffffff",
+                      border: "1px solid rgba(111, 92, 194, 0.16)",
+                      boxShadow: "0 18px 44px rgba(34, 27, 67, 0.10)",
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "center",
@@ -250,10 +225,11 @@ const SelfDonationPage = () => {
                       label="Scan QR Code"
                       sx={{
                         mb: 2,
-                        color: theme.dark,
+                        color: "#ffffff",
                         fontWeight: 900,
-                        background: "#fffbeb",
-                        border: "1px solid rgba(250, 204, 21, 0.35)",
+                        background: theme.main,
+                        border: "1px solid rgba(111, 92, 194, 0.25)",
+                        fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
                       }}
                     />
 
@@ -261,9 +237,9 @@ const SelfDonationPage = () => {
                       sx={{
                         p: 1.5,
                         borderRadius: "24px",
-                        background: "#fff",
-                        border: "1px solid rgba(124, 58, 237, 0.14)",
-                        boxShadow: "0 12px 32px rgba(76, 29, 149, 0.10)",
+                        background: theme.soft,
+                        border: "1px solid rgba(111, 92, 194, 0.14)",
+                        boxShadow: "0 12px 32px rgba(34, 27, 67, 0.10)",
                         minWidth: { xs: 250, md: 290 },
                         minHeight: { xs: 250, md: 290 },
                         display: "flex",
@@ -284,6 +260,7 @@ const SelfDonationPage = () => {
                             objectFit: "contain",
                             borderRadius: "18px",
                             display: "block",
+                            background: "#ffffff",
                           }}
                         />
                       )}
@@ -299,10 +276,9 @@ const SelfDonationPage = () => {
                       minHeight: 350,
                       borderRadius: "28px",
                       p: { xs: 2.6, md: 4 },
-                      background:
-                        "linear-gradient(135deg, rgba(245,243,255,0.96), rgba(255,255,255,0.96))",
-                      border: "1px solid rgba(124, 58, 237, 0.16)",
-                      boxShadow: "0 18px 44px rgba(76, 29, 149, 0.10)",
+                      background: theme.softAccent,
+                      border: "1px solid rgba(15, 118, 110, 0.16)",
+                      boxShadow: "0 18px 44px rgba(34, 27, 67, 0.10)",
                       display: "flex",
                       flexDirection: "column",
                       justifyContent: "center",
@@ -318,7 +294,7 @@ const SelfDonationPage = () => {
                         borderRadius: "50%",
                         right: -70,
                         top: -70,
-                        background: "rgba(168, 85, 247, 0.12)",
+                        background: "rgba(15, 118, 110, 0.10)",
                       },
                     }}
                   >
@@ -333,9 +309,9 @@ const SelfDonationPage = () => {
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
-                          background: `linear-gradient(135deg, ${theme.main}, ${theme.light})`,
-                          color: "#fff",
-                          boxShadow: "0 14px 32px rgba(124, 58, 237, 0.25)",
+                          background: theme.accent,
+                          color: "#ffffff",
+                          boxShadow: "0 14px 32px rgba(15, 118, 110, 0.25)",
                         }}
                       >
                         <VolunteerActivismRounded sx={{ fontSize: 36 }} />
@@ -348,7 +324,7 @@ const SelfDonationPage = () => {
                           color: theme.dark,
                           mb: 1.5,
                           fontSize: { xs: "1.45rem", md: "1.85rem" },
-                          fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+                          fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
                         }}
                       >
                         भुगतान करें
@@ -378,19 +354,19 @@ const SelfDonationPage = () => {
                           borderRadius: "15px",
                           px: 4,
                           py: 1.25,
-                          color: "#fff",
+                          color: "#ffffff",
                           fontWeight: 950,
                           fontSize: "1rem",
                           textTransform: "none",
                           fontFamily:
-                            "Noto Sans Devanagari, Poppins, Arial, sans-serif",
-                          background: `linear-gradient(135deg, ${theme.main}, ${theme.light})`,
-                          boxShadow: "0 14px 32px rgba(109, 40, 217, 0.30)",
+                            "Poppins, Noto Sans Devanagari, Arial, sans-serif",
+                          background: theme.accent,
+                          boxShadow: "0 14px 32px rgba(15, 118, 110, 0.30)",
                           transition: "all 0.3s ease",
                           "&:hover": {
-                            background: `linear-gradient(135deg, ${theme.dark}, ${theme.main})`,
+                            background: "#0b5f59",
                             transform: "translateY(-2px)",
-                            boxShadow: "0 18px 42px rgba(109, 40, 217, 0.40)",
+                            boxShadow: "0 18px 42px rgba(15, 118, 110, 0.40)",
                           },
                         }}
                       >

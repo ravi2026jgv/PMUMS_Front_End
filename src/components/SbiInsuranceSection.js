@@ -22,14 +22,43 @@ import ContactPhoneRoundedIcon from "@mui/icons-material/ContactPhoneRounded";
 import { publicAPI } from "../services/api";
 
 const theme = {
-  dark: "#3b0764",
-  main: "#6d28d9",
-  light: "#a855f7",
-  gold: "#facc15",
-  soft: "#f5f3ff",
-  softGold: "#fffbeb",
-  text: "#4c1d95",
-  muted: "#5b5b6b",
+  dark: "#221b43",
+  main: "#6f5cc2",
+  light: "#b9a7ff",
+  accent: "#0f766e",
+  soft: "#f4f2fb",
+  softAccent: "#eef8f7",
+  text: "#221b43",
+  muted: "#4b5563",
+  border: "#ded8f5",
+};
+
+const inputSx = {
+  "& .MuiOutlinedInput-root": {
+    borderRadius: 3,
+    background: "#ffffff",
+    transition: "all 0.25s ease",
+    "& fieldset": {
+      borderColor: "rgba(111, 92, 194, 0.22)",
+      borderWidth: "1px",
+    },
+    "&:hover fieldset": {
+      borderColor: "rgba(111, 92, 194, 0.48)",
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: theme.main,
+      borderWidth: "2px",
+    },
+  },
+  "& .MuiInputBase-input": {
+    fontWeight: 600,
+    color: theme.text,
+    fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
+  },
+  "& .MuiInputLabel-root": {
+    fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
+    fontWeight: 600,
+  },
 };
 
 const SbiInsuranceSection = () => {
@@ -128,10 +157,9 @@ const SbiInsuranceSection = () => {
           sx={{
             borderRadius: { xs: "28px", md: "38px" },
             overflow: "hidden",
-            border: "1px solid rgba(124, 58, 237, 0.15)",
-            boxShadow: "0 28px 80px rgba(76, 29, 149, 0.13)",
-            background: "rgba(255,255,255,0.82)",
-            backdropFilter: "blur(16px)",
+            border: "1px solid rgba(111, 92, 194, 0.16)",
+            boxShadow: "0 28px 80px rgba(34, 27, 67, 0.12)",
+            background: "#ffffff",
             position: "relative",
 
             "&::before": {
@@ -141,7 +169,7 @@ const SbiInsuranceSection = () => {
               left: 0,
               right: 0,
               height: 7,
-              background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`,
+              background: theme.main,
             },
 
             "&::after": {
@@ -152,7 +180,7 @@ const SbiInsuranceSection = () => {
               borderRadius: "50%",
               right: -120,
               bottom: -140,
-              background: "rgba(250, 204, 21, 0.14)",
+              background: "rgba(111, 92, 194, 0.08)",
             },
           }}
         >
@@ -171,6 +199,7 @@ const SbiInsuranceSection = () => {
                   fontWeight: 900,
                   letterSpacing: "1.5px",
                   fontSize: "0.82rem",
+                  fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
                 }}
               >
                 SBI LIFE INSURANCE
@@ -183,7 +212,7 @@ const SbiInsuranceSection = () => {
                   mt: 0.7,
                   color: theme.dark,
                   fontWeight: 950,
-                  fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+                  fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
                   fontSize: { xs: "1.75rem", md: "2.45rem" },
                   lineHeight: 1.3,
                 }}
@@ -198,7 +227,7 @@ const SbiInsuranceSection = () => {
                   borderRadius: 99,
                   mx: "auto",
                   mt: 2,
-                  background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`,
+                  background: theme.main,
                 }}
               />
             </Box>
@@ -211,10 +240,9 @@ const SbiInsuranceSection = () => {
                     height: "100%",
                     borderRadius: "28px",
                     p: { xs: 2, md: 2.5 },
-                    background:
-                      "linear-gradient(180deg, #ffffff 0%, #f5f3ff 100%)",
-                    border: "1px solid rgba(124, 58, 237, 0.16)",
-                    boxShadow: "0 18px 44px rgba(76, 29, 149, 0.10)",
+                    background: "#ffffff",
+                    border: "1px solid rgba(111, 92, 194, 0.16)",
+                    boxShadow: "0 18px 44px rgba(34, 27, 67, 0.10)",
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "center",
@@ -229,9 +257,9 @@ const SbiInsuranceSection = () => {
                       height: { xs: 240, sm: 310, md: 360 },
                       objectFit: "cover",
                       borderRadius: "24px",
-                      border: "1px solid rgba(124, 58, 237, 0.14)",
-                      boxShadow: "0 14px 34px rgba(76, 29, 149, 0.12)",
-                      background: "#fff",
+                      border: "1px solid rgba(111, 92, 194, 0.14)",
+                      boxShadow: "0 14px 34px rgba(34, 27, 67, 0.12)",
+                      background: "#ffffff",
                     }}
                   />
                 </Paper>
@@ -244,10 +272,9 @@ const SbiInsuranceSection = () => {
                     height: "100%",
                     borderRadius: "28px",
                     p: { xs: 2.6, md: 4 },
-                    background:
-                      "linear-gradient(135deg, rgba(245,243,255,0.96), rgba(255,255,255,0.96))",
-                    border: "1px solid rgba(124, 58, 237, 0.16)",
-                    boxShadow: "0 18px 44px rgba(76, 29, 149, 0.10)",
+                    background: theme.softAccent,
+                    border: "1px solid rgba(15, 118, 110, 0.16)",
+                    boxShadow: "0 18px 44px rgba(34, 27, 67, 0.10)",
                     display: "flex",
                     flexDirection: "column",
                     justifyContent: "center",
@@ -263,7 +290,7 @@ const SbiInsuranceSection = () => {
                       borderRadius: "50%",
                       right: -75,
                       top: -75,
-                      background: "rgba(168, 85, 247, 0.12)",
+                      background: "rgba(15, 118, 110, 0.10)",
                     },
                   }}
                 >
@@ -278,9 +305,9 @@ const SbiInsuranceSection = () => {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        background: `linear-gradient(135deg, ${theme.main}, ${theme.light})`,
-                        color: "#fff",
-                        boxShadow: "0 14px 32px rgba(124, 58, 237, 0.25)",
+                        background: theme.accent,
+                        color: "#ffffff",
+                        boxShadow: "0 14px 32px rgba(15, 118, 110, 0.25)",
                       }}
                     >
                       <ShieldRoundedIcon sx={{ fontSize: 36 }} />
@@ -290,10 +317,11 @@ const SbiInsuranceSection = () => {
                       label="Family Protection"
                       sx={{
                         mb: 2,
-                        color: theme.dark,
-                        fontWeight: 900,
-                        background: "#fffbeb",
-                        border: "1px solid rgba(250, 204, 21, 0.35)",
+                        color: "#ffffff",
+                        fontWeight: 700,
+                        background: theme.main,
+                        border: "1px solid rgba(111, 92, 194, 0.25)",
+                        fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
                       }}
                     />
 
@@ -307,7 +335,7 @@ const SbiInsuranceSection = () => {
                         maxWidth: 560,
                         mx: "auto",
                         fontFamily:
-                          "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+                          "Poppins, Noto Sans Devanagari, Arial, sans-serif",
                       }}
                     >
                       अपने और अपने परिवार के भविष्य को सुरक्षित बनाने के लिए SBI
@@ -323,20 +351,20 @@ const SbiInsuranceSection = () => {
                         px: 4,
                         py: 1.25,
                         borderRadius: "15px",
-                        background: `linear-gradient(135deg, ${theme.main}, ${theme.light})`,
-                        color: "#fff",
+                        background:  '#0f7633',
+                        color: "#ffffff",
                         fontSize: "1rem",
-                        fontWeight: 950,
+                        fontWeight: 600,
                         textTransform: "none",
-                        boxShadow: "0 14px 32px rgba(109, 40, 217, 0.30)",
+                        boxShadow: "0 14px 32px rgba(15, 118, 110, 0.30)",
                         fontFamily:
-                          "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+                          "Poppins, Noto Sans Devanagari, Arial, sans-serif",
                         transition: "all 0.3s ease",
                         "&:hover": {
-                          background: `linear-gradient(135deg, ${theme.dark}, ${theme.main})`,
+                          background: "#0b5f59",
                           transform: "translateY(-2px)",
                           boxShadow:
-                            "0 18px 42px rgba(109, 40, 217, 0.40)",
+                            "0 18px 42px rgba(15, 118, 110, 0.40)",
                         },
                       }}
                     >
@@ -359,8 +387,8 @@ const SbiInsuranceSection = () => {
           sx: {
             borderRadius: "28px",
             overflow: "hidden",
-            border: "1px solid rgba(124, 58, 237, 0.16)",
-            boxShadow: "0 28px 80px rgba(76, 29, 149, 0.22)",
+            border: "1px solid rgba(111, 92, 194, 0.16)",
+            boxShadow: "0 28px 80px rgba(34, 27, 67, 0.22)",
           },
         }}
       >
@@ -369,12 +397,11 @@ const SbiInsuranceSection = () => {
             textAlign: "center",
             fontWeight: 950,
             color: theme.dark,
-            fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+            fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
             position: "relative",
             pt: 3,
             pb: 1,
-            background:
-              "linear-gradient(180deg, rgba(245,243,255,0.95), rgba(255,255,255,1))",
+            background: theme.soft,
           }}
         >
           बीमा जानकारी फॉर्म
@@ -386,9 +413,9 @@ const SbiInsuranceSection = () => {
               right: 12,
               top: 12,
               color: theme.text,
-              background: "rgba(124, 58, 237, 0.08)",
+              background: "rgba(111, 92, 194, 0.10)",
               "&:hover": {
-                background: "rgba(124, 58, 237, 0.14)",
+                background: "rgba(111, 92, 194, 0.16)",
               },
             }}
           >
@@ -407,9 +434,10 @@ const SbiInsuranceSection = () => {
               textAlign: "center",
               color: theme.muted,
               mb: 3,
+              mt: 1,
               fontSize: "0.96rem",
               fontWeight: 700,
-              fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+              fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
             }}
           >
             हमारी टीम जल्द ही आपसे सम्पर्क करेगी।
@@ -443,11 +471,7 @@ const SbiInsuranceSection = () => {
               onChange={handleChange}
               margin="normal"
               required
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 3,
-                },
-              }}
+              sx={inputSx}
             />
 
             <TextField
@@ -458,11 +482,7 @@ const SbiInsuranceSection = () => {
               onChange={handleChange}
               margin="normal"
               required
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 3,
-                },
-              }}
+              sx={inputSx}
             />
 
             <TextField
@@ -474,11 +494,7 @@ const SbiInsuranceSection = () => {
               margin="normal"
               required
               inputProps={{ maxLength: 10 }}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 3,
-                },
-              }}
+              sx={inputSx}
             />
 
             <Button
@@ -490,15 +506,20 @@ const SbiInsuranceSection = () => {
                 mt: 3,
                 py: 1.35,
                 borderRadius: "15px",
-                background: `linear-gradient(135deg, ${theme.main}, ${theme.light})`,
+                background:  '#0f7633',
                 fontSize: "1rem",
-                fontWeight: 950,
+                fontWeight: 700,
                 textTransform: "none",
-                boxShadow: "0 12px 28px rgba(109, 40, 217, 0.28)",
+                color: "#ffffff",
+                boxShadow: "0 12px 28px rgba(15, 118, 110, 0.28)",
                 fontFamily:
-                  "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+                  "Poppins, Noto Sans Devanagari, Arial, sans-serif",
                 "&:hover": {
-                  background: `linear-gradient(135deg, ${theme.dark}, ${theme.main})`,
+                  background: "#0b5f59",
+                },
+                "&:disabled": {
+                  background: "#9ca3af",
+                  color: "#ffffff",
                 },
               }}
             >

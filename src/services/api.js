@@ -322,6 +322,22 @@ getSelfDonationQr: () => {
   return api.get('/admin/settings/self-donation-qr');
 },
 
+// Admin Report Table APIs
+getUsersByJoiningDateReport: (params = {}) => {
+  return api.get('/admin/reports/users-by-joining-date', { params });
+},
+
+getUsersByRetirementDateReport: (params = {}) => {
+  return api.get('/admin/reports/users-by-retirement-date', { params });
+},
+
+getNoLoginThreeMonthsReport: (params = {}) => {
+  return api.get('/admin/reports/no-login-three-months', { params });
+},
+
+getNoSahyogTwoMonthsReport: (params = {}) => {
+  return api.get('/admin/reports/no-sahyog-two-months', { params });
+},
 uploadSelfDonationQr: (file) => {
   const formData = new FormData();
   formData.append('file', file);
@@ -360,8 +376,8 @@ updateExportMobileNumberSetting: (enabled) => {
     return api.put('/admin/settings/mobile-otp', { enabled });
   },
 // Admin password reset (no current password required)
-resetUserPassword: (id) => api.put(`/admin/users/${id}/password-reset`),
-
+resetUserPassword: (id, payload) =>
+  api.put(`/admin/users/${id}/password-reset`, payload),
 // Permanent delete user (NEW API)
 permanentDeleteUser: (id) => {
   // backend should expose: DELETE /api/admin/users/{id}/permanent

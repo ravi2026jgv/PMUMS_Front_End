@@ -14,20 +14,20 @@ import { useAuth } from '../context/AuthContext';
 
 const HeroBanner = () => {
   const { isAuthenticated } = useAuth();
+
   return (
     <Box
       sx={{
-background: `
-  radial-gradient(circle at 20% 30%, rgba(255,255,255,0.12), transparent 40%),
-  radial-gradient(circle at 80% 70%, rgba(255,255,255,0.08), transparent 40%),
-  linear-gradient(135deg, #3b0764 0%, #6d28d9 40%, #9333ea 70%, #c084fc 100%)
+        background: `
+  linear-gradient(135deg, #221b43 0%, #30295c 48%, #3b3268 100%)
 `,
-color: 'white',        py: { xs: 6, md: 8 },
+        color: 'white',
+        py: { xs: 6, md: 8 },
         position: 'relative',
         overflow: 'hidden'
       }}
     >
-      <Container maxWidth="lg">
+      <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
         {/* User Icon */}
         <Box
           sx={{
@@ -41,18 +41,20 @@ color: 'white',        py: { xs: 6, md: 8 },
               width: 60,
               height: 60,
               borderRadius: '50%',
-              background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
+            background: '#ffffff',
+border: '3px solid #c8bfff',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(255, 152, 0, 0.3)'
+              boxShadow: '0 6px 18px rgba(0, 0, 0, 0.25)',
+              border: '1px solid rgba(255, 255, 255, 0.25)'
             }}
           >
-            <AccountCircle 
-              sx={{ 
-                fontSize: 36, 
-                color: 'white' 
-              }} 
+            <AccountCircle
+              sx={{
+                fontSize: 36,
+              color: '#221b43'
+              }}
             />
           </Box>
         </Box>
@@ -61,12 +63,12 @@ color: 'white',        py: { xs: 6, md: 8 },
         <Typography
           variant="h3"
           sx={{
-            fontWeight: 'bold',
+            fontWeight: 700,
             color: '#ffffff',
             mb: 1,
             fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
             lineHeight: 1.2,
-            fontFamily: 'Noto Sans Devanagari, Arial, sans-serif',
+            fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
             textAlign: 'center'
           }}
         >
@@ -78,10 +80,11 @@ color: 'white',        py: { xs: 6, md: 8 },
           variant="h5"
           sx={{
             fontWeight: 600,
-            color: '#facc15', // soft gold
+          color: '#ffffff',
+textShadow: '0 2px 8px rgba(0, 0, 0, 0.35)',
             mb: 3,
             fontSize: { xs: '1.2rem', sm: '1.5rem', md: '1.8rem' },
-            fontFamily: 'Noto Sans Devanagari, Arial, sans-serif',
+            fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
             textAlign: 'center'
           }}
         >
@@ -93,29 +96,31 @@ color: 'white',        py: { xs: 6, md: 8 },
           variant="h6"
           sx={{
             fontStyle: 'italic',
-           color: 'rgba(255,255,255,0.85)',
-
+          color: '#f2f0ff',
+textShadow: '0 2px 8px rgba(0, 0, 0, 0.30)',
             mb: 4,
             fontSize: { xs: '1rem', md: '1.2rem' },
             fontWeight: 500,
-            fontFamily: 'Noto Sans Devanagari, Arial, sans-serif',
+            fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
             textAlign: 'center',
             position: 'relative',
+            display: 'inline-block',
+            left: '50%',
+            transform: 'translateX(-50%)',
             '&::before, &::after': {
               content: '""',
               position: 'absolute',
               top: '50%',
-              width: 40,
+              width: { xs: 24, md: 40 },
               height: 1,
-                backgroundColor: 'rgba(255,255,255,0.3)',
-
+            backgroundColor: '#c8bfff',
               transform: 'translateY(-50%)'
             },
             '&::before': {
-              left: -60
+              left: { xs: -36, md: -60 }
             },
             '&::after': {
-              right: -60
+              right: { xs: -36, md: -60 }
             }
           }}
         >
@@ -126,22 +131,22 @@ color: 'white',        py: { xs: 6, md: 8 },
         <Paper
           elevation={0}
           sx={{
-background: 'rgba(255, 255, 255, 0.1)',
-border: '1px solid rgba(255,255,255,0.2)',
-backdropFilter: 'blur(12px)',            borderRadius: 4,
+            background: '#ffffff',
+            border: '1px solid rgba(255, 255, 255, 0.25)',
+            borderRadius: 4,
             p: { xs: 3, md: 4 },
             mb: 4,
-            backdropFilter: 'blur(10px)',
-            color: 'rgba(255,255,255,0.9)',
+            color: '#2f2f3a',
+            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.18)'
           }}
         >
           <Typography
             variant="body1"
             sx={{
-              color: '#ffff',
+              color: '#3d3d48',
               fontSize: { xs: '0.95rem', md: '1.1rem' },
               lineHeight: 1.8,
-              fontFamily: 'Noto Sans Devanagari, Arial, sans-serif',
+              fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
               textAlign: 'center'
             }}
           >
@@ -161,57 +166,64 @@ backdropFilter: 'blur(12px)',            borderRadius: 4,
               flexWrap: 'wrap'
             }}
           >
-              <Button
-                component={Link}
-                to="/login"
-                variant="contained"
-                size="large"
-                sx={{
-background: 'linear-gradient(135deg, #7c3aed, #a855f7)',                  color: 'white',
-                  fontWeight: 'bold',
-                  fontSize: '1.1rem',
-                  px: 4,
-                  py: 1.5,
-                  borderRadius: 3,
-                  textTransform: 'none',
-                  boxShadow: '0 4px 15px rgba(25, 118, 210, 0.3)',
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #1565c0 0%, #0d47a1 100%)',
-                    boxShadow: '0 6px 20px rgba(25, 118, 210, 0.4)',
-                    transform: 'translateY(-2px)'
-                  },
-                  transition: 'all 0.3s ease'
-                }}
-              >
-                Login
-              </Button>
+            <Button
+              component={Link}
+              to="/login"
+              variant="contained"
+              size="large"
+              sx={{
+  background: '#0f7633',
+  color: '#ffffff',
+  fontWeight: 800,
+  fontSize: '1.1rem',
+  px: 4.5,
+  py: 1.5,
+  minWidth: 150,
+  borderRadius: 3,
+  textTransform: 'none',
+  border: '2px solid #0f766e',
+  boxShadow: '0 8px 20px rgba(15, 118, 110, 0.35)',
+  '&:hover': {
+    background: '#0b5f59',
+    borderColor: '#0b5f59',
+    boxShadow: '0 10px 24px rgba(15, 118, 110, 0.45)',
+    transform: 'translateY(-2px)'
+  },
+  transition: 'all 0.3s ease'
+}}
+            >
+              Login
+            </Button>
 
-              <Button
-                component={Link}
-                to="/register"
-                variant="contained"
-                size="large"
-                sx={{
-                  background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
-                  color: 'white',
-                  fontWeight: 'bold',
-                  fontSize: '1.1rem',
-                  px: 4,
-                  py: 1.5,
-                  borderRadius: 3,
-                  textTransform: 'none',
-                  boxShadow: '0 4px 15px rgba(255, 152, 0, 0.3)',
-                  '&:hover': {
-                    background: 'linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)',
-                    boxShadow: '0 6px 20px rgba(255, 152, 0, 0.4)',
-                    transform: 'translateY(-2px)'
-                  },
-                  transition: 'all 0.3s ease'
-                }}
-              >
-                Registration
-              </Button>
-            </Box>
+            <Button
+              component={Link}
+              to="/register"
+              variant="contained"
+              size="large"
+             sx={{
+  background: '#ffffff',
+  color: '#221b43',
+  border: '2px solid #ffffff',
+  fontWeight: 800,
+  fontSize: '1.1rem',
+  px: 4.5,
+  py: 1.5,
+  minWidth: 170,
+  borderRadius: 3,
+  textTransform: 'none',
+  boxShadow: '0 8px 20px rgba(255, 255, 255, 0.18)',
+  '&:hover': {
+    background: '#f2f0ff',
+    borderColor: '#f2f0ff',
+    boxShadow: '0 10px 24px rgba(255, 255, 255, 0.25)',
+    transform: 'translateY(-2px)'
+  },
+  transition: 'all 0.3s ease'
+}}
+            >
+              Registration
+            </Button>
+          </Box>
         )}
       </Container>
 
@@ -219,23 +231,25 @@ background: 'linear-gradient(135deg, #7c3aed, #a855f7)',                  color:
       <Box
         sx={{
           position: 'absolute',
-          top: '20%',
-          left: -100,
-          width: 200,
-          height: 200,
+          top: '12%',
+          left: -120,
+          width: 260,
+          height: 260,
           borderRadius: '50%',
-background: 'rgba(255,255,255,0.08)'    ,      zIndex: 0
+          background: 'rgba(255, 255, 255, 0.05)',
+          zIndex: 0
         }}
       />
+
       <Box
         sx={{
           position: 'absolute',
-          bottom: '20%',
+          bottom: '10%',
           right: -100,
-          width: 150,
-          height: 150,
+          width: 220,
+          height: 220,
           borderRadius: '50%',
-          background: 'rgba(255, 152, 0, 0.05)',
+         background: 'rgba(242, 214, 139, 0.08)',
           zIndex: 0
         }}
       />

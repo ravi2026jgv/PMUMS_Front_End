@@ -10,14 +10,16 @@ import {
 } from '@mui/material';
 
 const theme = {
-  dark: '#3b0764',
-  main: '#6d28d9',
-  light: '#a855f7',
-  gold: '#facc15',
-  soft: '#f5f3ff',
-  soft2: '#faf5ff',
-  text: '#4c1d95',
-  muted: '#5b5b6b'
+  dark: '#221b43',
+  main: '#6f5cc2',
+  light: '#b9a7ff',
+  accent: '#0f766e',
+  soft: '#f4f2fb',
+  soft2: '#ffffff',
+  softAccent: '#eef8f7',
+  text: '#221b43',
+  muted: '#4b5563',
+  border: '#ded8f5'
 };
 
 const foundersData = [
@@ -53,14 +55,14 @@ const FounderCard = ({ founder, index }) => (
         borderRadius: { xs: '26px', md: '32px' },
         overflow: 'hidden',
         position: 'relative',
-        background: 'rgba(255,255,255,0.9)',
-        border: '1px solid rgba(124, 58, 237, 0.16)',
-        boxShadow: '0 20px 52px rgba(76, 29, 149, 0.12)',
+        background: '#ffffff',
+        border: '1px solid rgba(111, 92, 194, 0.16)',
+        boxShadow: '0 20px 52px rgba(34, 27, 67, 0.10)',
         transition: 'all 0.35s ease',
         '&:hover': {
           transform: 'translateY(-8px)',
-          boxShadow: '0 30px 76px rgba(76, 29, 149, 0.2)',
-          borderColor: 'rgba(124, 58, 237, 0.35)'
+          boxShadow: '0 30px 76px rgba(34, 27, 67, 0.16)',
+          borderColor: 'rgba(111, 92, 194, 0.35)'
         },
         '&::before': {
           content: '""',
@@ -69,7 +71,7 @@ const FounderCard = ({ founder, index }) => (
           left: 0,
           right: 0,
           height: '7px',
-          background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`
+          background: index === 0 ? theme.accent : theme.main
         },
         '&::after': {
           content: '""',
@@ -81,8 +83,8 @@ const FounderCard = ({ founder, index }) => (
           bottom: -80,
           background:
             index === 0
-              ? 'rgba(250, 204, 21, 0.12)'
-              : 'rgba(168, 85, 247, 0.12)'
+              ? 'rgba(15, 118, 110, 0.08)'
+              : 'rgba(111, 92, 194, 0.10)'
         }
       }}
     >
@@ -90,8 +92,7 @@ const FounderCard = ({ founder, index }) => (
         sx={{
           p: { xs: 2, md: 2.4 },
           pb: 0,
-          background:
-            'linear-gradient(180deg, rgba(245,243,255,0.96) 0%, rgba(255,255,255,0) 100%)',
+          background: theme.soft,
           position: 'relative',
           zIndex: 1
         }}
@@ -102,9 +103,9 @@ const FounderCard = ({ founder, index }) => (
             height: { xs: 275, sm: 285, md: 300 },
             borderRadius: '24px',
             overflow: 'hidden',
-            background: '#fff',
-            border: '1px solid rgba(124, 58, 237, 0.14)',
-            boxShadow: '0 14px 34px rgba(76, 29, 149, 0.11)'
+            background: '#ffffff',
+            border: '1px solid rgba(111, 92, 194, 0.14)',
+            boxShadow: '0 14px 34px rgba(34, 27, 67, 0.10)'
           }}
         >
           <Box
@@ -140,7 +141,7 @@ const FounderCard = ({ founder, index }) => (
             fontWeight: 950,
             color: theme.text,
             mb: 1.4,
-            fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+            fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
             fontSize: { xs: '1.18rem', md: '1.3rem' },
             lineHeight: 1.35
           }}
@@ -153,12 +154,14 @@ const FounderCard = ({ founder, index }) => (
           sx={{
             px: 1.5,
             height: 36,
-            fontWeight: 900,
-            color: theme.main,
-            fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
-            background: 'linear-gradient(135deg, #f5f3ff, #fffbeb)',
-            border: '1px solid rgba(124, 58, 237, 0.18)',
-            boxShadow: '0 8px 20px rgba(76, 29, 149, 0.08)'
+            fontWeight: 600,
+            color: index === 0 ? '#ffffff' : theme.dark,
+            fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
+            background: index === 0 ? theme.accent : theme.soft,
+            border: index === 0
+              ? '1px solid rgba(15, 118, 110, 0.25)'
+              : '1px solid rgba(111, 92, 194, 0.18)',
+            boxShadow: '0 8px 20px rgba(34, 27, 67, 0.08)'
           }}
         />
       </CardContent>
@@ -171,26 +174,19 @@ const Founders = () => {
     <Box
       sx={{
         py: { xs: 6, md: 9 },
-        background: `
-          radial-gradient(circle at top left, rgba(124, 58, 237, 0.12), transparent 30%),
-          radial-gradient(circle at bottom right, rgba(250, 204, 21, 0.15), transparent 34%),
-          linear-gradient(180deg, #f5f3ff 0%, #fbfaff 42%, #ffffff 100%)
-        `,
+        background: '#342c60',
         position: 'relative',
         overflow: 'hidden'
       }}
     >
-   
-
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
         <Box
           sx={{
             borderRadius: { xs: '28px', md: '38px' },
             p: { xs: 2.4, sm: 3.5, md: 5 },
-            background: 'rgba(255,255,255,0.78)',
-            backdropFilter: 'blur(16px)',
-            border: '1px solid rgba(124, 58, 237, 0.15)',
-            boxShadow: '0 28px 80px rgba(76, 29, 149, 0.13)',
+            background: '#ffffff',
+            border: '1px solid rgba(111, 92, 194, 0.16)',
+            boxShadow: '0 28px 80px rgba(34, 27, 67, 0.12)',
             position: 'relative',
             overflow: 'hidden'
           }}
@@ -202,7 +198,7 @@ const Founders = () => {
               left: 0,
               right: 0,
               height: 7,
-              background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`
+              background: theme.main
             }}
           />
 
@@ -219,7 +215,8 @@ const Founders = () => {
                   color: theme.main,
                   fontWeight: 900,
                   letterSpacing: '1.5px',
-                  fontSize: '0.82rem'
+                  fontSize: '0.82rem',
+                  fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif'
                 }}
               >
                 PMUMS LEADERSHIP
@@ -232,7 +229,7 @@ const Founders = () => {
                   mt: 0.6,
                   color: theme.dark,
                   fontWeight: 950,
-                  fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                  fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
                   fontSize: { xs: '1.8rem', md: '2.45rem' },
                   lineHeight: 1.25
                 }}
@@ -247,7 +244,7 @@ const Founders = () => {
                   borderRadius: 99,
                   mx: 'auto',
                   mt: 2,
-                  background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`
+                  background: theme.main
                 }}
               />
             </Box>

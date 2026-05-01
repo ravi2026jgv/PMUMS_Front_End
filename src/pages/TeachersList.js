@@ -42,29 +42,30 @@ import Layout from '../components/Layout/Layout';
 import { publicApi, receiptAPI, FILE_BASE_URL } from '../services/api';
 
 const theme = {
-  dark: '#3b0764',
-  main: '#6d28d9',
-  light: '#a855f7',
-  gold: '#facc15',
-  soft: '#f5f3ff',
-  softGold: '#fffbeb',
-  text: '#4c1d95',
-  muted: '#5b5b6b',
-  green: '#16a34a',
-  red: '#dc2626'
+  dark: '#221b43',
+  main: '#6f5cc2',
+  light: '#b9a7ff',
+  accent: '#0f766e',
+  soft: '#f4f2fb',
+  softAccent: '#eef8f7',
+  text: '#221b43',
+  muted: '#4b5563',
+  green: '#0f766e',
+  red: '#b42318',
+  border: '#ded8f5'
 };
 
 const inputSx = {
   '& .MuiOutlinedInput-root': {
     borderRadius: '14px',
-    background: 'rgba(255,255,255,0.92)',
+   background: '#ffffff',
     transition: 'all 0.25s ease',
     '& fieldset': {
-      borderColor: 'rgba(124, 58, 237, 0.18)',
+      borderColor: 'rgba(111, 92, 194, 0.18)',
       borderWidth: '1px'
     },
     '&:hover fieldset': {
-      borderColor: 'rgba(124, 58, 237, 0.40)'
+      borderColor: 'rgba(111, 92, 194, 0.40)'
     },
     '&.Mui-focused fieldset': {
       borderColor: theme.main,
@@ -72,7 +73,7 @@ const inputSx = {
     }
   },
   '& .MuiInputBase-input': {
-    fontWeight: 650,
+    fontWeight: 600,
     color: theme.text
   }
 };
@@ -85,7 +86,8 @@ const TeachersList = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const [pageSize] = useState(200);
-
+const [activePoolAvailable, setActivePoolAvailable] = useState(false);
+const [activePoolLoading, setActivePoolLoading] = useState(true);
   const [locationHierarchy, setLocationHierarchy] = useState(null);
   const [sambhagOptions, setSambhagOptions] = useState([]);
   const [districtOptions, setDistrictOptions] = useState([]);
@@ -155,6 +157,21 @@ const TeachersList = () => {
       };
     }
   };
+const fetchActivePools = async () => {
+  try {
+    setActivePoolLoading(true);
+
+    const response = await publicApi.get("/death-cases/public");
+    const activePools = Array.isArray(response?.data) ? response.data : [];
+
+    setActivePoolAvailable(activePools.length > 0);
+  } catch (err) {
+    console.error("Error fetching active pools:", err);
+    setActivePoolAvailable(false);
+  } finally {
+    setActivePoolLoading(false);
+  }
+};
 
   const fetchLocationData = async () => {
     if (locationAbortControllerRef.current) {
@@ -308,18 +325,20 @@ const TeachersList = () => {
   };
 
   useEffect(() => {
-    fetchLocationData();
-    fetchTeachers(0, filters).then(() => {
-      isInitialMount.current = false;
-    });
+  fetchLocationData();
+  fetchActivePools();
 
-    return () => {
-      if (locationAbortControllerRef.current) {
-        locationAbortControllerRef.current.abort();
-      }
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  fetchTeachers(0, filters).then(() => {
+    isInitialMount.current = false;
+  });
+
+  return () => {
+    if (locationAbortControllerRef.current) {
+      locationAbortControllerRef.current.abort();
+    }
+  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
 
   useEffect(() => {
     updateFiltersActive();
@@ -398,6 +417,10 @@ const TeachersList = () => {
   };
 
   const openUtrDialog = (teacher) => {
+     if (!activePoolAvailable) {
+    setError("अभी कोई सक्रिय मृत्यु सहायता पूल उपलब्ध नहीं है।");
+    return;
+  }
     setSelectedTeacher(teacher);
     setUtrForm({
       amount: '',
@@ -464,7 +487,9 @@ const TeachersList = () => {
     return `${FILE_BASE_URL}${qrPath.startsWith('/') ? qrPath : `/${qrPath}`}`;
   };
 
-  const showUtrColumns = filters.mobileNumber.length === 10;
+const showUtrColumns =
+  activePoolAvailable &&
+  filters.mobileNumber.length === 10;
 
   const startRecord = totalElements === 0 ? 0 : currentPage * pageSize + 1;
   const endRecord = Math.min((currentPage + 1) * pageSize, totalElements);
@@ -475,11 +500,7 @@ const TeachersList = () => {
         sx={{
           py: { xs: 6, md: 8 },
           minHeight: '100vh',
-          background: `
-            radial-gradient(circle at top left, rgba(124, 58, 237, 0.13), transparent 30%),
-            radial-gradient(circle at bottom right, rgba(250, 204, 21, 0.16), transparent 32%),
-            linear-gradient(180deg, #ffffff 0%, #fbfaff 45%, #f5f3ff 100%)
-          `,
+          background: theme.soft,
           position: 'relative',
           overflow: 'hidden'
         }}
@@ -492,7 +513,7 @@ const TeachersList = () => {
             borderRadius: '50%',
             top: -170,
             left: -130,
-            background: 'rgba(124, 58, 237, 0.10)',
+            background: 'rgba(111, 92, 194, 0.10)',
             filter: 'blur(8px)'
           }}
         />
@@ -505,7 +526,7 @@ const TeachersList = () => {
             borderRadius: '50%',
             right: -120,
             bottom: -140,
-            background: 'rgba(250, 204, 21, 0.16)',
+           background: 'rgba(15, 118, 110, 0.08)',
             filter: 'blur(10px)'
           }}
         />
@@ -516,11 +537,9 @@ const TeachersList = () => {
             sx={{
               mb: 4,
               borderRadius: { xs: '28px', md: '38px' },
-              background:
-                'linear-gradient(135deg, rgba(76,29,149,0.96), rgba(124,58,237,0.92))',
-              color: '#fff',
+background: 'linear-gradient(135deg, #221b43 0%, #30295c 48%, #3b3268 100%)',              color: '#fff',
               border: '1px solid rgba(255,255,255,0.18)',
-              boxShadow: '0 30px 90px rgba(76, 29, 149, 0.22)',
+             boxShadow: '0 30px 90px rgba(34, 27, 67, 0.22)',
               overflow: 'hidden',
               position: 'relative',
               '&::before': {
@@ -530,18 +549,8 @@ const TeachersList = () => {
                 left: 0,
                 right: 0,
                 height: 7,
-                background: `linear-gradient(90deg, ${theme.gold}, #ffffff, ${theme.gold})`
-              },
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                width: 260,
-                height: 260,
-                borderRadius: '50%',
-                right: -110,
-                bottom: -130,
-                background: 'rgba(250, 204, 21, 0.14)'
-              }
+background: theme.main              },
+              
             }}
           >
             <CardContent
@@ -566,13 +575,12 @@ const TeachersList = () => {
                   border: '1px solid rgba(255,255,255,0.25)'
                 }}
               >
-                <GroupsRounded sx={{ fontSize: 38, color: theme.gold }} />
-              </Box>
+<GroupsRounded sx={{ fontSize: 38, color: '#ffffff' }} />              </Box>
 
               <Typography
                 variant="h3"
                 sx={{
-                  fontWeight: 950,
+                  fontWeight: 800,
                   mb: 1.3,
                   fontSize: { xs: '2rem', md: '3rem' },
                   fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif'
@@ -584,7 +592,7 @@ const TeachersList = () => {
               <Typography
                 variant="h6"
                 sx={{
-                  fontWeight: 750,
+                  fontWeight: 600,
                   color: 'rgba(255,255,255,0.90)',
                   fontSize: { xs: '1rem', md: '1.2rem' },
                   fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif'
@@ -598,7 +606,7 @@ const TeachersList = () => {
                 sx={{
                   mt: 2.5,
                   color: '#fff',
-                  fontWeight: 900,
+                  fontWeight: 700,
                   background: 'rgba(255,255,255,0.16)',
                   border: '1px solid rgba(255,255,255,0.24)',
                   fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif'
@@ -612,10 +620,9 @@ const TeachersList = () => {
             sx={{
               mb: 4,
               borderRadius: { xs: '24px', md: '32px' },
-              background: 'rgba(255,255,255,0.84)',
-              backdropFilter: 'blur(16px)',
-              border: '1px solid rgba(124, 58, 237, 0.15)',
-              boxShadow: '0 24px 70px rgba(76, 29, 149, 0.12)',
+             background: '#ffffff',
+border: '1px solid rgba(111, 92, 194, 0.16)',
+boxShadow: '0 24px 70px rgba(34, 27, 67, 0.10)',
               overflow: 'hidden',
               position: 'relative',
               '&::before': {
@@ -625,8 +632,7 @@ const TeachersList = () => {
                 left: 0,
                 right: 0,
                 height: 7,
-                background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`
-              }
+background: theme.main              }
             }}
           >
             <CardContent sx={{ p: { xs: 2.5, md: 3.5 }, position: 'relative', zIndex: 1 }}>
@@ -655,7 +661,7 @@ const TeachersList = () => {
                   <Typography
                     sx={{
                       color: theme.muted,
-                      fontWeight: 650,
+                      fontWeight: 600,
                       mt: 0.5,
                       fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif'
                     }}
@@ -674,10 +680,10 @@ const TeachersList = () => {
                       fontWeight: 900,
                       textTransform: 'none',
                       color: theme.main,
-                      borderColor: 'rgba(124, 58, 237, 0.35)',
+                      borderColor: 'rgba(111, 92, 194, 0.35)',
                       '&:hover': {
                         borderColor: theme.main,
-                        background: 'rgba(124, 58, 237, 0.06)'
+                        background: 'rgba(111, 92, 194, 0.06)'
                       }
                     }}
                   >
@@ -829,7 +835,7 @@ const TeachersList = () => {
                       color: theme.main,
                       fontWeight: 900,
                       background: theme.soft,
-                      border: '1px solid rgba(124, 58, 237, 0.18)'
+                      border: '1px solid rgba(111, 92, 194, 0.18)'
                     }}
                   />
                 )}
@@ -840,10 +846,10 @@ const TeachersList = () => {
                     label="UTR Mode Active"
                     size="small"
                     sx={{
-                      color: theme.dark,
-                      fontWeight: 900,
-                      background: theme.softGold,
-                      border: '1px solid rgba(250, 204, 21, 0.35)'
+                      color: '#ffffff',
+fontWeight: 700,
+background: theme.accent,
+border: '1px solid rgba(15, 118, 110, 0.25)'
                     }}
                   />
                 )}
@@ -858,7 +864,7 @@ const TeachersList = () => {
                 py: 6,
                 borderRadius: '28px',
                 background: 'rgba(255,255,255,0.82)',
-                border: '1px solid rgba(124, 58, 237, 0.15)',
+                border: '1px solid rgba(111, 92, 194, 0.15)',
                 textAlign: 'center'
               }}
             >
@@ -887,10 +893,9 @@ const TeachersList = () => {
               elevation={0}
               sx={{
                 borderRadius: { xs: '24px', md: '32px' },
-                background: 'rgba(255,255,255,0.88)',
-                backdropFilter: 'blur(16px)',
-                border: '1px solid rgba(124, 58, 237, 0.15)',
-                boxShadow: '0 28px 80px rgba(76, 29, 149, 0.13)',
+              background: '#ffffff',
+border: '1px solid rgba(111, 92, 194, 0.16)',
+boxShadow: '0 28px 80px rgba(34, 27, 67, 0.12)',
                 overflow: 'hidden'
               }}
             >
@@ -900,9 +905,8 @@ const TeachersList = () => {
                     <TableRow
                       sx={{
                         '& th': {
-                          background: `linear-gradient(135deg, ${theme.dark}, ${theme.main})`,
-                          color: 'white',
-                          fontWeight: 950,
+background: theme.dark,                          color: 'white',
+                          fontWeight: 700,
                           fontSize: '0.92rem',
                           whiteSpace: 'nowrap',
                           fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
@@ -952,9 +956,9 @@ const TeachersList = () => {
                                 : 'rgba(245, 243, 255, 0.78)'
                             },
                             '& td': {
-                              borderBottom: '1px solid rgba(124, 58, 237, 0.10)',
+                              borderBottom: '1px solid rgba(111, 92, 194, 0.10)',
                               color: '#374151',
-                              fontWeight: 650,
+                              fontWeight: 600,
                               fontSize: '0.9rem',
                               fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif'
                             }
@@ -964,7 +968,7 @@ const TeachersList = () => {
                             align="center"
                             sx={{
                               fontWeight: '950 !important',
-                              color: `${theme.main} !important`,
+                              color: `${theme.dark} !important`,
                               fontFamily: 'monospace !important'
                             }}
                           >
@@ -1013,7 +1017,7 @@ const TeachersList = () => {
                                       width: 74,
                                       height: 74,
                                       objectFit: 'contain',
-                                      border: '1px solid rgba(124, 58, 237, 0.18)',
+                                      border: '1px solid rgba(111, 92, 194, 0.18)',
                                       borderRadius: '12px',
                                       background: '#fff',
                                       p: 0.7,
@@ -1114,7 +1118,7 @@ const TeachersList = () => {
                     alignItems: 'center',
                     gap: 2,
                     p: 3,
-                    borderTop: '1px solid rgba(124, 58, 237, 0.12)',
+                    borderTop: '1px solid rgba(111, 92, 194, 0.12)',
                     background: 'rgba(245,243,255,0.45)'
                   }}
                 >
@@ -1137,7 +1141,7 @@ const TeachersList = () => {
                       '& .Mui-selected': {
                         background: `${theme.main} !important`,
                         color: '#fff',
-                        boxShadow: '0 8px 20px rgba(124, 58, 237, 0.25)'
+                        boxShadow: '0 8px 20px rgba(111, 92, 194, 0.25)'
                       }
                     }}
                   />
@@ -1159,7 +1163,7 @@ const TeachersList = () => {
                 sx={{
                   textAlign: 'center',
                   p: 2.2,
-                  borderTop: '1px solid rgba(124, 58, 237, 0.12)',
+                  borderTop: '1px solid rgba(111, 92, 194, 0.12)',
                   background: 'rgba(255,255,255,0.75)'
                 }}
               >
@@ -1188,7 +1192,7 @@ const TeachersList = () => {
     sx: {
       borderRadius: '28px',
       overflow: 'hidden',
-      border: '1px solid rgba(124, 58, 237, 0.16)',
+      border: '1px solid rgba(111, 92, 194, 0.16)',
       boxShadow: '0 28px 80px rgba(76, 29, 149, 0.22)',
       background: 'rgba(255,255,255,0.96)',
       position: 'relative'
@@ -1256,7 +1260,7 @@ const TeachersList = () => {
         sx={{
           mt: 0.8,
           color: 'rgba(255,255,255,0.86)',
-          fontWeight: 650,
+          fontWeight: 600,
           fontSize: '0.92rem',
           fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif'
         }}

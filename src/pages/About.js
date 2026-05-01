@@ -18,21 +18,21 @@ import {
   Security,
   Visibility,
   VolunteerActivismRounded,
-  GroupsRounded,
   HandshakeRounded
 } from '@mui/icons-material';
 import Layout from '../components/Layout/Layout';
 import SelfDonation from '../components/SelfDonation';
 
 const theme = {
-  dark: '#3b0764',
-  main: '#6d28d9',
-  light: '#a855f7',
-  gold: '#facc15',
-  soft: '#f5f3ff',
-  softGold: '#fffbeb',
-  text: '#4c1d95',
-  muted: '#5b5b6b',
+  dark: '#221b43',
+  main: '#6f5cc2',
+  light: '#b9a7ff',
+  accent: '#0f766e',
+  soft: '#f4f2fb',
+  softAccent: '#eef8f7',
+  text: '#221b43',
+  muted: '#4b5563',
+  border: '#ded8f5'
 };
 
 const SectionHeading = ({ eyebrow, title, center = true }) => (
@@ -42,9 +42,10 @@ const SectionHeading = ({ eyebrow, title, center = true }) => (
         variant="overline"
         sx={{
           color: theme.main,
-          fontWeight: 900,
+          fontWeight: 700,
           letterSpacing: '1.5px',
           fontSize: '0.8rem',
+          fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
         }}
       >
         {eyebrow}
@@ -55,9 +56,9 @@ const SectionHeading = ({ eyebrow, title, center = true }) => (
       variant="h4"
       sx={{
         mt: eyebrow ? 0.6 : 0,
-        fontWeight: 950,
+        fontWeight: 700,
         color: theme.dark,
-        fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+        fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
         fontSize: { xs: '1.55rem', md: '2.15rem' },
         lineHeight: 1.3,
       }}
@@ -72,7 +73,7 @@ const SectionHeading = ({ eyebrow, title, center = true }) => (
         borderRadius: 99,
         mt: 2,
         mx: center ? 'auto' : 0,
-        background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`,
+        background: theme.main,
       }}
     />
   </Box>
@@ -85,14 +86,11 @@ const GlassCard = ({ children, sx = {}, highlight = false }) => (
       mb: 4,
       borderRadius: { xs: '24px', md: '32px' },
       p: { xs: 2.5, sm: 3.5, md: 5 },
-      background: highlight
-        ? 'linear-gradient(135deg, rgba(255,251,235,0.92), rgba(255,255,255,0.88))'
-        : 'rgba(255,255,255,0.82)',
-      backdropFilter: 'blur(16px)',
+      background: highlight ? theme.softAccent : '#ffffff',
       border: highlight
-        ? '1px solid rgba(250, 204, 21, 0.35)'
-        : '1px solid rgba(124, 58, 237, 0.15)',
-      boxShadow: '0 24px 70px rgba(76, 29, 149, 0.12)',
+        ? '1px solid rgba(15, 118, 110, 0.18)'
+        : '1px solid rgba(111, 92, 194, 0.16)',
+      boxShadow: '0 24px 70px rgba(34, 27, 67, 0.10)',
       position: 'relative',
       overflow: 'hidden',
 
@@ -103,7 +101,7 @@ const GlassCard = ({ children, sx = {}, highlight = false }) => (
         left: 0,
         right: 0,
         height: 7,
-        background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`,
+        background: highlight ? theme.accent : theme.main,
       },
 
       ...sx,
@@ -113,7 +111,7 @@ const GlassCard = ({ children, sx = {}, highlight = false }) => (
   </Paper>
 );
 
-const StyledList = ({ items, small = false, gold = false }) => (
+const StyledList = ({ items, small = false, accent = false }) => (
   <List sx={{ p: 0 }}>
     {items.map((item, index) => (
       <ListItem
@@ -127,7 +125,7 @@ const StyledList = ({ items, small = false, gold = false }) => (
         <ListItemIcon sx={{ minWidth: 38, mt: 0.2 }}>
           <CheckCircle
             sx={{
-              color: gold ? theme.gold : theme.main,
+              color: accent ? theme.accent : theme.main,
               fontSize: small ? 20 : 24,
             }}
           />
@@ -141,8 +139,8 @@ const StyledList = ({ items, small = false, gold = false }) => (
               color: theme.muted,
               fontSize: small ? '0.96rem' : '1.05rem',
               lineHeight: 1.75,
-              fontWeight: 650,
-              fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+              fontWeight: 600,
+              fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
             },
           }}
         />
@@ -191,54 +189,29 @@ const About = () => {
         sx={{
           minHeight: '100vh',
           py: { xs: 5, md: 8 },
-          background: `
-            radial-gradient(circle at top left, rgba(124, 58, 237, 0.13), transparent 30%),
-            radial-gradient(circle at bottom right, rgba(250, 204, 21, 0.16), transparent 32%),
-            linear-gradient(180deg, #ffffff 0%, #fbfaff 45%, #f5f3ff 100%)
-          `,
+          background: theme.soft,
           position: 'relative',
           overflow: 'hidden',
+
+        
+
+         
         }}
       >
-        <Box
-          sx={{
-            position: 'absolute',
-            width: 360,
-            height: 360,
-            borderRadius: '50%',
-            top: -170,
-            left: -130,
-            background: 'rgba(124, 58, 237, 0.10)',
-            filter: 'blur(8px)',
-          }}
-        />
-
-        <Box
-          sx={{
-            position: 'absolute',
-            width: 310,
-            height: 310,
-            borderRadius: '50%',
-            right: -120,
-            bottom: -140,
-            background: 'rgba(250, 204, 21, 0.16)',
-            filter: 'blur(10px)',
-          }}
-        />
-
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
           {/* Header Section */}
           <GlassCard
             sx={{
               textAlign: 'center',
-              background:
-                'linear-gradient(135deg, rgba(76,29,149,0.96), rgba(124,58,237,0.92))',
-              color: '#fff',
+              background: `
+                linear-gradient(135deg, #221b43 0%, #30295c 48%, #3b3268 100%)
+              `,
+              color: '#ffffff',
               border: '1px solid rgba(255,255,255,0.18)',
-              boxShadow: '0 30px 90px rgba(76, 29, 149, 0.22)',
+              boxShadow: '0 30px 90px rgba(34, 27, 67, 0.22)',
 
               '&::before': {
-                background: `linear-gradient(90deg, ${theme.gold}, #ffffff, ${theme.gold})`,
+                background: theme.main,
               },
 
               '&::after': {
@@ -249,7 +222,7 @@ const About = () => {
                 borderRadius: '50%',
                 right: -110,
                 bottom: -130,
-                background: 'rgba(250, 204, 21, 0.14)',
+                background: 'rgba(185, 167, 255, 0.12)',
               },
             }}
           >
@@ -257,7 +230,7 @@ const About = () => {
               variant="h2"
               component="h1"
               sx={{
-                fontWeight: 950,
+                fontWeight: 700,
                 mb: 1.5,
                 fontSize: { xs: '2.2rem', md: '3.6rem' },
                 fontFamily: 'Poppins, Arial, sans-serif',
@@ -272,9 +245,9 @@ const About = () => {
               sx={{
                 mb: 3,
                 fontSize: { xs: '1.1rem', md: '1.45rem' },
-                fontWeight: 800,
+                fontWeight: 700,
                 lineHeight: 1.6,
-                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
               }}
             >
               प्राथमिक-माध्यमिक-उच्च-माध्यमिक शिक्षक संघ, मध्यप्रदेश
@@ -284,14 +257,14 @@ const About = () => {
               label="गैर-लाभकारी • सेवा-आधारित • पूर्णतः स्वैच्छिक संगठन"
               sx={{
                 background: 'rgba(255,255,255,0.16)',
-                color: '#fff',
+                color: '#ffffff',
                 fontSize: { xs: '0.82rem', md: '1rem' },
-                fontWeight: 900,
+                fontWeight: 700,
                 px: { xs: 1, md: 2 },
                 py: 1,
                 height: 'auto',
                 border: '1px solid rgba(255,255,255,0.24)',
-                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
                 '& .MuiChip-label': {
                   whiteSpace: 'normal',
                   lineHeight: 1.6,
@@ -311,8 +284,8 @@ const About = () => {
                 textAlign: 'justify',
                 fontSize: { xs: '1rem', md: '1.08rem' },
                 color: theme.muted,
-                fontWeight: 650,
-                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                fontWeight: 600,
+                fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
               }}
             >
               प्राथमिक-माध्यमिक-उच्च-माध्यमिक शिक्षक संघ, मध्यप्रदेश (PMUMS) एक गैर-लाभकारी, सेवा-आधारित एवं पूर्णतः स्वैच्छिक संगठन है, जिसकी स्थापना मध्यप्रदेश राज्य के शिक्षा विभाग एवं जनजातीय कार्य विभाग में कार्यरत शासकीय शिक्षकों एवं कर्मचारियों के कल्याण, एकता तथा पारस्परिक सहयोग के उद्देश्य से की गई है।
@@ -324,8 +297,8 @@ const About = () => {
                 textAlign: 'justify',
                 fontSize: { xs: '1rem', md: '1.08rem' },
                 color: theme.muted,
-                fontWeight: 650,
-                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                fontWeight: 600,
+                fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
               }}
             >
               PMUMS का गठन इस मूल भावना के साथ किया गया है कि किसी भी शिक्षक अथवा कर्मचारी की आकस्मिक एवं दुःखद मृत्यु की स्थिति में उसका परिवार स्वयं को अकेला न महसूस करे। संगठन निरंतर यह प्रयास करता है कि ऐसी विषम परिस्थितियों में दिवंगत सदस्य के नामिनी अथवा परिजनों को निःशुल्क, निष्पक्ष, पारदर्शी एवं समयबद्ध सहयोग उपलब्ध कराया जा सके, जिससे उन्हें आर्थिक एवं मानसिक संबल प्राप्त हो सके।
@@ -341,8 +314,8 @@ const About = () => {
                 mb: 2,
                 color: theme.text,
                 fontSize: { xs: '1rem', md: '1.1rem' },
-                fontWeight: 850,
-                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                fontWeight: 700,
+                fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
               }}
             >
               PMUMS का प्रमुख उद्देश्य है —
@@ -356,23 +329,23 @@ const About = () => {
                 mt: 3,
                 p: { xs: 2, md: 2.5 },
                 borderRadius: '22px',
-                background: 'linear-gradient(135deg, rgba(255,251,235,0.9), rgba(255,255,255,0.9))',
-                border: '1px solid rgba(250, 204, 21, 0.32)',
+                background: theme.softAccent,
+                border: '1px solid rgba(15, 118, 110, 0.18)',
               }}
             >
               <Typography
                 sx={{
                   mb: 1.5,
                   color: theme.dark,
-                  fontWeight: 900,
+                  fontWeight: 700,
                   fontSize: { xs: '1rem', md: '1.08rem' },
-                  fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                  fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
                 }}
               >
                 परिजनों को प्रशासनिक मार्गदर्शन देना, जैसे:
               </Typography>
 
-              <StyledList items={adminGuidance} small gold />
+              <StyledList items={adminGuidance} small accent />
             </Paper>
           </GlassCard>
 
@@ -387,8 +360,8 @@ const About = () => {
                 textAlign: 'justify',
                 fontSize: { xs: '1rem', md: '1.08rem' },
                 color: theme.muted,
-                fontWeight: 650,
-                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                fontWeight: 600,
+                fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
               }}
             >
               PMUMS राज्य स्तर से लेकर संभाग, जिला और ब्लॉक स्तर तक संगठित ढांचे के माध्यम से कार्य करता है। प्रत्येक स्तर पर समन्वय बनाकर यह सुनिश्चित किया जाता है कि:
@@ -403,8 +376,8 @@ const About = () => {
                 textAlign: 'justify',
                 fontSize: { xs: '1rem', md: '1.08rem' },
                 color: theme.muted,
-                fontWeight: 650,
-                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                fontWeight: 600,
+                fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
               }}
             >
               संगठन द्वारा की जाने वाली सभी गतिविधियाँ सेवा-भाव से प्रेरित होती हैं और इनका उद्देश्य केवल शिक्षक-परिवार का कल्याण होता है।
@@ -422,15 +395,15 @@ const About = () => {
                 textAlign: 'justify',
                 fontSize: { xs: '1rem', md: '1.08rem' },
                 color: theme.muted,
-                fontWeight: 650,
-                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                fontWeight: 600,
+                fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
               }}
             >
               PMUMS किसी भी प्रकार की बीमा योजना, निवेश योजना या लाभ-आधारित स्कीम नहीं है।
               यह स्पष्ट रूप से एक मानवीय एवं सहयोगात्मक संगठन है, जिसमें:
             </Typography>
 
-            <StyledList items={notInsurance} gold />
+            <StyledList items={notInsurance} accent />
           </GlassCard>
 
           {/* Core Values */}
@@ -448,19 +421,19 @@ const About = () => {
                       borderRadius: '22px',
                       background:
                         index % 2 === 0
-                          ? 'linear-gradient(135deg, rgba(245,243,255,0.92), rgba(255,255,255,0.9))'
-                          : 'linear-gradient(135deg, rgba(255,251,235,0.92), rgba(255,255,255,0.9))',
+                          ? theme.soft
+                          : theme.softAccent,
                       border:
                         index % 2 === 0
-                          ? '1px solid rgba(124, 58, 237, 0.14)'
-                          : '1px solid rgba(250, 204, 21, 0.30)',
+                          ? '1px solid rgba(111, 92, 194, 0.16)'
+                          : '1px solid rgba(15, 118, 110, 0.18)',
                       display: 'flex',
                       gap: 2,
                       alignItems: 'flex-start',
                       transition: 'all 0.3s ease',
                       '&:hover': {
                         transform: 'translateY(-4px)',
-                        boxShadow: '0 18px 45px rgba(76, 29, 149, 0.12)',
+                        boxShadow: '0 18px 45px rgba(34, 27, 67, 0.12)',
                       },
                     }}
                   >
@@ -473,9 +446,12 @@ const About = () => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        color: '#fff',
-                        background: `linear-gradient(135deg, ${theme.main}, ${theme.light})`,
-                        boxShadow: '0 12px 26px rgba(124, 58, 237, 0.22)',
+                        color: '#ffffff',
+                        background: index % 2 === 0 ? theme.main : theme.accent,
+                        boxShadow:
+                          index % 2 === 0
+                            ? '0 12px 26px rgba(111, 92, 194, 0.22)'
+                            : '0 12px 26px rgba(15, 118, 110, 0.22)',
                       }}
                     >
                       {value.icon}
@@ -485,10 +461,10 @@ const About = () => {
                       <Typography
                         sx={{
                           color: theme.dark,
-                          fontWeight: 900,
+                          fontWeight: 700,
                           fontSize: '1.08rem',
                           mb: 0.5,
-                          fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                          fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
                         }}
                       >
                         {value.title}
@@ -497,9 +473,9 @@ const About = () => {
                       <Typography
                         sx={{
                           color: theme.muted,
-                          fontWeight: 650,
+                          fontWeight: 600,
                           lineHeight: 1.7,
-                          fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                          fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
                         }}
                       >
                         {value.desc}
@@ -515,13 +491,14 @@ const About = () => {
           <GlassCard
             sx={{
               textAlign: 'center',
-              background:
-                'linear-gradient(135deg, rgba(76,29,149,0.96), rgba(124,58,237,0.92))',
-              color: '#fff',
+              background: `
+                linear-gradient(135deg, #221b43 0%, #30295c 48%, #3b3268 100%)
+              `,
+              color: '#ffffff',
               border: '1px solid rgba(255,255,255,0.18)',
 
               '&::before': {
-                background: `linear-gradient(90deg, ${theme.gold}, #ffffff, ${theme.gold})`,
+                background: theme.main,
               },
             }}
           >
@@ -539,15 +516,15 @@ const About = () => {
                 border: '1px solid rgba(255,255,255,0.25)',
               }}
             >
-              <HandshakeRounded sx={{ fontSize: 38, color: theme.gold }} />
+              <HandshakeRounded sx={{ fontSize: 38, color: '#ffffff' }} />
             </Box>
 
             <Typography
               variant="h4"
               sx={{
-                fontWeight: 950,
+                fontWeight: 700,
                 mb: 2,
-                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
                 fontSize: { xs: '1.6rem', md: '2.2rem' },
               }}
             >
@@ -557,11 +534,11 @@ const About = () => {
             <Typography
               variant="h5"
               sx={{
-                fontWeight: 850,
+                fontWeight: 700,
                 mb: 3,
-                color: theme.gold,
+                color: '#f2f0ff',
                 fontSize: { xs: '1.05rem', md: '1.35rem' },
-                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
               }}
             >
               सेवा, सहयोग और शिक्षक-कल्याण — यही PMUMS की पहचान है।
@@ -574,8 +551,8 @@ const About = () => {
                 maxWidth: 900,
                 mx: 'auto',
                 fontSize: { xs: '1rem', md: '1.08rem' },
-                fontWeight: 650,
-                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                fontWeight: 600,
+                fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
               }}
             >
               PMUMS का विश्वास है कि जब शिक्षक एक-दूसरे के साथ खड़े होते हैं, तब कोई भी परिवार असहाय नहीं रहता। संगठन निरंतर इस दिशा में कार्यरत है कि शिक्षक समाज सुरक्षित, संगठित और समर्थ बने।
@@ -586,10 +563,7 @@ const About = () => {
 
       <Box
         sx={{
-          background: `
-            radial-gradient(circle at top right, rgba(124, 58, 237, 0.10), transparent 32%),
-            linear-gradient(180deg, #ffffff 0%, #fbfaff 45%, #f5f3ff 100%)
-          `,
+          background: theme.soft,
         }}
       >
         <SelfDonation />

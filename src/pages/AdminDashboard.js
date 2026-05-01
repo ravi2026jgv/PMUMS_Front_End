@@ -71,6 +71,10 @@ import {
    Article,
    Badge,
    Chat,
+   EventAvailable,
+EventBusy,
+NoAccounts,
+VolunteerActivism,
 } from '@mui/icons-material';
 import Layout from '../components/Layout/Layout';
 import { useAuth } from '../context/AuthContext';
@@ -158,6 +162,10 @@ const [blockManagerExportMobileEnabled, setBlockManagerExportMobileEnabled] = us
   const [passwordResetOpen, setPasswordResetOpen] = useState(false);
   const [passwordResetLoading, setPasswordResetLoading] = useState(false);
   const [passwordResetUser, setPasswordResetUser] = useState(null);
+  const [passwordResetForm, setPasswordResetForm] = useState({
+  newPassword: '',
+  confirmPassword: '',
+});
 const [showManualCreateSuccessPopup, setShowManualCreateSuccessPopup] = useState(false);
 const [manualCreateSuccessData, setManualCreateSuccessData] = useState(null);
   // Admin User Management - Trash (Deleted Users)
@@ -170,7 +178,18 @@ const [userMembershipCardData, setUserMembershipCardData] = useState(null);
   const [trashLoading, setTrashLoading] = useState(false);
   const [trashPage, setTrashPage] = useState(0);
   const [trashRowsPerPage, setTrashRowsPerPage] = useState(10);
+// Admin Report Table States
+const [reportRows, setReportRows] = useState([]);
+const [reportLoading, setReportLoading] = useState(false);
+const [reportTotal, setReportTotal] = useState(0);
+const [reportPage, setReportPage] = useState(0);
+const [reportRowsPerPage, setReportRowsPerPage] = useState(20);
 
+const [reportFilters, setReportFilters] = useState({
+  search: '',
+  fromDate: '',
+  toDate: '',
+});
   const [selectedDeathCase, setSelectedDeathCase] = useState(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogType, setDialogType] = useState('');
@@ -1254,6 +1273,54 @@ nominee2UpiLink: (deathCaseFormData.nominee2UpiLink || '').trim() || null,      
     );
   }
 };
+const fetchReportRows = async () => {
+  const config = reportTabConfig[activeTab];
+  if (!config) return;
+
+  try {
+    setReportLoading(true);
+
+    const params = {
+      page: reportPage,
+      size: reportRowsPerPage,
+      search: reportFilters.search || undefined,
+    };
+
+    if (config.key === 'joining' || config.key === 'retirement') {
+      params.fromDate = reportFilters.fromDate || undefined;
+      params.toDate = reportFilters.toDate || undefined;
+    }
+
+    let response;
+
+    if (config.key === 'joining') {
+      response = await adminAPI.getUsersByJoiningDateReport(params);
+    } else if (config.key === 'retirement') {
+      response = await adminAPI.getUsersByRetirementDateReport(params);
+    } else if (config.key === 'noLogin') {
+      response = await adminAPI.getNoLoginThreeMonthsReport(params);
+    } else if (config.key === 'noSahyog') {
+      response = await adminAPI.getNoSahyogTwoMonthsReport(params);
+    }
+
+    const data = response?.data || {};
+
+    setReportRows(data.content || []);
+    setReportTotal(data.totalElements || 0);
+  } catch (error) {
+    console.error('Error loading report rows:', error);
+    showSnackbar(
+      error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        'Failed to load report data!',
+      'error'
+    );
+    setReportRows([]);
+    setReportTotal(0);
+  } finally {
+    setReportLoading(false);
+  }
+};
 const fetchAuditLogs = async () => {
   try {
     setLogsLoading(true);
@@ -1279,6 +1346,23 @@ const fetchAuditLogs = async () => {
     setLogsLoading(false);
   }
 };
+useEffect(() => {
+  if (!isReportTab(activeTab)) return;
+
+  const timer = setTimeout(() => {
+    fetchReportRows();
+  }, 300);
+
+  return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [
+  activeTab,
+  reportPage,
+  reportRowsPerPage,
+  reportFilters.search,
+  reportFilters.fromDate,
+  reportFilters.toDate,
+]);
 useEffect(() => {
   if (activeTab === 4) {
     fetchAuditLogs();
@@ -1674,22 +1758,52 @@ const { name, surname } = splitFullName(userDetailsForm.fullName);
     }
   };
 
- const openPasswordReset = (user) => {
+const openPasswordReset = (user) => {
   setPasswordResetUser(user);
+  setPasswordResetForm({
+    newPassword: '',
+    confirmPassword: '',
+  });
   setPasswordResetOpen(true);
 };
 
 const closePasswordReset = () => {
   setPasswordResetOpen(false);
   setPasswordResetUser(null);
+  setPasswordResetForm({
+    newPassword: '',
+    confirmPassword: '',
+  });
 };
 
 const submitPasswordReset = async () => {
   if (!passwordResetUser?.id) return;
 
+  const newPassword = passwordResetForm.newPassword.trim();
+  const confirmPassword = passwordResetForm.confirmPassword.trim();
+
+  if (!newPassword || !confirmPassword) {
+    showSnackbar('Please enter new password and confirm password!', 'error');
+    return;
+  }
+
+  if (newPassword.length < 6) {
+    showSnackbar('Password must be at least 6 characters!', 'error');
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    showSnackbar('New password and confirm password do not match!', 'error');
+    return;
+  }
+
   try {
     setPasswordResetLoading(true);
-    await adminAPI.resetUserPassword(passwordResetUser.id);
+
+    await adminAPI.resetUserPassword(passwordResetUser.id, {
+      newPassword,
+    });
+
     showSnackbar('Password reset successfully!', 'success');
     closePasswordReset();
   } catch (error) {
@@ -3267,12 +3381,99 @@ const allowedRoles = ['ROLE_SUPERADMIN', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_SAM
   };
   return labels[role] || role;
 };
+const reportTabConfig = {
+  6: {
+    key: 'joining',
+    title: 'नियुक्ति तिथि Report',
+    subtitle: 'Joining date wise user list',
+    icon: <EventAvailable sx={{ fontSize: 26 }} />,
+    gradient: 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
+    exportAction: 'joining',
+  },
+  7: {
+    key: 'retirement',
+    title: 'सेवानिवृत्ति तिथि Report',
+    subtitle: 'Retirement date wise user list',
+    icon: <EventBusy sx={{ fontSize: 26 }} />,
+    gradient: 'linear-gradient(135deg, #795548 0%, #4e342e 100%)',
+    exportAction: 'retirement',
+  },
+  8: {
+    key: 'noLogin',
+    title: '3 महीने से Login नहीं',
+    subtitle: 'Users who have not logged in for the last 3 months',
+    icon: <NoAccounts sx={{ fontSize: 26 }} />,
+    gradient: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
+    exportAction: 'noLogin',
+  },
+  9: {
+    key: 'noSahyog',
+    title: '2 महीने से Sahyog नहीं',
+    subtitle: 'Users who have not contributed Sahyog in the last 2 months',
+    icon: <VolunteerActivism sx={{ fontSize: 26 }} />,
+    gradient: 'linear-gradient(135deg, #f43f5e 0%, #be123c 100%)',
+    exportAction: 'noSahyog',
+  },
+};
+
+const isReportTab = (tabIndex) => [6, 7, 8, 9].includes(tabIndex);
+
 
   // Event handlers
-  const handleTabChange = (event, newValue) => {
-    setActiveTab(newValue);
-    setPage(0);
-  };
+ const handleTabChange = (event, newValue) => {
+  setActiveTab(newValue);
+  setPage(0);
+
+  if (isReportTab(newValue)) {
+    setReportPage(0);
+  }
+};
+
+const handleCurrentReportExport = async () => {
+  const config = reportTabConfig[activeTab];
+  if (!config) return;
+
+  try {
+    setExportLoading(true);
+
+    const params = {
+      search: reportFilters.search || undefined,
+    };
+
+    if (config.key === 'joining' || config.key === 'retirement') {
+      params.fromDate = reportFilters.fromDate || undefined;
+      params.toDate = reportFilters.toDate || undefined;
+    }
+
+    let response;
+    let fileName;
+
+    if (config.key === 'joining') {
+      response = await adminAPI.exportUsersByJoiningDate(params);
+      fileName = 'joining_date_users.csv';
+    } else if (config.key === 'retirement') {
+      response = await adminAPI.exportUsersByRetirementDate(params);
+      fileName = 'retirement_date_users.csv';
+    } else if (config.key === 'noLogin') {
+      response = await adminAPI.exportNoLoginThreeMonths(params);
+      fileName = 'no_login_3_months_users.csv';
+    } else if (config.key === 'noSahyog') {
+      response = await adminAPI.exportNoSahyogTwoMonths(params);
+      fileName = 'no_sahyog_2_months_users.csv';
+    }
+
+    downloadBlobFile(response.data, fileName);
+    showSnackbar('Report exported successfully!', 'success');
+  } catch (error) {
+    console.error('Report export error:', error);
+    showSnackbar(
+      error?.response?.data?.message || 'Report export failed!',
+      'error'
+    );
+  } finally {
+    setExportLoading(false);
+  }
+};
 
   const handleOpenDialog = (type, item = null) => {
     setDialogType(type);
@@ -4117,6 +4318,417 @@ const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
   });
 
   setUserMembershipCardOpen(true);
+};
+
+const renderReportTableTab = () => {
+  const config = reportTabConfig[activeTab];
+
+  if (!config) return null;
+
+  const showDateFilters = config.key === 'joining' || config.key === 'retirement';
+
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        borderRadius: 4,
+        overflow: 'hidden',
+        background: 'rgba(255,255,255,0.96)',
+        border: '1px solid rgba(226, 232, 240, 0.95)',
+        boxShadow: '0 18px 44px rgba(15, 23, 42, 0.08)',
+      }}
+    >
+      <Box
+        sx={{
+          p: { xs: 2.5, md: 3 },
+          background:
+            'linear-gradient(135deg, rgba(248,250,252,0.96) 0%, rgba(255,247,237,0.92) 100%)',
+          borderBottom: '1px solid rgba(226, 232, 240, 0.9)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: { xs: 'flex-start', md: 'center' },
+          flexWrap: 'wrap',
+          gap: 2,
+        }}
+      >
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+          <Box
+            sx={{
+              width: 46,
+              height: 46,
+              borderRadius: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              background: config.gradient,
+              color: '#fff',
+              boxShadow: '0 12px 24px rgba(15, 23, 42, 0.18)',
+            }}
+          >
+            {config.icon}
+          </Box>
+
+          <Box>
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 900,
+                color: '#0f172a',
+                letterSpacing: '-0.02em',
+              }}
+            >
+              {config.title}
+            </Typography>
+
+            <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+              {reportLoading
+                ? 'Loading report data...'
+                : `${reportTotal} records found • ${reportRows.length} visible`}
+            </Typography>
+          </Box>
+        </Box>
+
+        <Button
+          variant="outlined"
+          startIcon={exportLoading ? <CircularProgress size={18} /> : <Download />}
+          onClick={handleCurrentReportExport}
+          disabled={exportLoading || reportLoading}
+          sx={{
+            borderRadius: 3,
+            px: 2,
+            py: 1,
+            fontWeight: 800,
+            textTransform: 'none',
+            borderColor: '#cbd5e1',
+            color: '#334155',
+            bgcolor: '#fff',
+            '&:hover': {
+              borderColor: '#f97316',
+              bgcolor: 'rgba(255, 247, 237, 0.9)',
+              transform: 'translateY(-1px)',
+            },
+          }}
+        >
+          {exportLoading ? 'Exporting...' : 'Export'}
+        </Button>
+      </Box>
+
+      <Box
+        sx={{
+          p: { xs: 2.5, md: 3 },
+          bgcolor: '#fff',
+          borderBottom: '1px solid rgba(226, 232, 240, 0.95)',
+        }}
+      >
+        <Grid container spacing={2} alignItems="center">
+          <Grid item xs={12} md={showDateFilters ? 4 : 9}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Search by User ID, Name, Mobile, Email, Department ID"
+              value={reportFilters.search}
+              onChange={(e) => {
+                setReportFilters((prev) => ({
+                  ...prev,
+                  search: e.target.value,
+                }));
+                setReportPage(0);
+              }}
+              sx={premiumTextFieldSx}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search sx={{ color: '#64748b' }} />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Grid>
+
+          {showDateFilters && (
+            <>
+              <Grid item xs={12} sm={6} md={2.5}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  type="date"
+                  label="From Date"
+                  InputLabelProps={{ shrink: true }}
+                  value={reportFilters.fromDate}
+                  onChange={(e) => {
+                    setReportFilters((prev) => ({
+                      ...prev,
+                      fromDate: e.target.value,
+                    }));
+                    setReportPage(0);
+                  }}
+                  sx={premiumTextFieldSx}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6} md={2.5}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  type="date"
+                  label="To Date"
+                  InputLabelProps={{ shrink: true }}
+                  value={reportFilters.toDate}
+                  onChange={(e) => {
+                    setReportFilters((prev) => ({
+                      ...prev,
+                      toDate: e.target.value,
+                    }));
+                    setReportPage(0);
+                  }}
+                  sx={premiumTextFieldSx}
+                />
+              </Grid>
+            </>
+          )}
+
+          <Grid item xs={12} md={3}>
+            <Button
+              fullWidth
+              variant="outlined"
+              startIcon={<Clear />}
+              onClick={() => {
+                setReportFilters({
+                  search: '',
+                  fromDate: '',
+                  toDate: '',
+                });
+                setReportPage(0);
+              }}
+              disabled={
+                !reportFilters.search &&
+                !reportFilters.fromDate &&
+                !reportFilters.toDate
+              }
+              sx={{
+                height: 40,
+                borderRadius: 3,
+                fontWeight: 800,
+                textTransform: 'none',
+                borderColor: '#fecaca',
+                color: '#b91c1c',
+                bgcolor:
+                  reportFilters.search || reportFilters.fromDate || reportFilters.toDate
+                    ? 'rgba(254, 242, 242, 0.75)'
+                    : '#f8fafc',
+                '&:hover': {
+                  borderColor: '#dc2626',
+                  bgcolor: 'rgba(254, 226, 226, 0.9)',
+                },
+              }}
+            >
+              Clear Filters
+            </Button>
+          </Grid>
+        </Grid>
+      </Box>
+
+      {reportLoading ? (
+        <Box
+          sx={{
+            py: 6,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 1.5,
+            bgcolor: '#fff',
+          }}
+        >
+          <CircularProgress size={24} sx={{ color: '#dc2626' }} />
+          <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 700 }}>
+            Loading report data...
+          </Typography>
+        </Box>
+      ) : reportRows.length === 0 ? (
+        <Box
+          sx={{
+            p: 6,
+            textAlign: 'center',
+            bgcolor: '#fff',
+          }}
+        >
+          <Assignment sx={{ fontSize: 52, color: '#cbd5e1', mb: 1 }} />
+
+          <Typography variant="h6" sx={{ color: '#475569', fontWeight: 900 }}>
+            No records found
+          </Typography>
+
+          <Typography variant="body2" sx={{ color: '#94a3b8', mt: 0.75, fontWeight: 600 }}>
+            Try changing filters or clearing the search.
+          </Typography>
+        </Box>
+      ) : (
+        <>
+          <TableContainer
+            sx={{
+              maxWidth: '100%',
+              overflowX: 'auto',
+              bgcolor: '#fff',
+            }}
+          >
+            <Table
+              sx={{
+                minWidth: 1300,
+                '& .MuiTableCell-root': {
+                  whiteSpace: 'nowrap',
+                },
+              }}
+            >
+              <TableHead>
+                <TableRow>
+                  <TableCell sx={tableHeaderCellSx}>User ID</TableCell>
+                  <TableCell sx={tableHeaderCellSx}>Name</TableCell>
+                  <TableCell sx={tableHeaderCellSx}>Mobile / Email</TableCell>
+                  <TableCell sx={tableHeaderCellSx}>Department ID</TableCell>
+                  <TableCell sx={tableHeaderCellSx}>School / Office</TableCell>
+                  <TableCell sx={tableHeaderCellSx}>Location</TableCell>
+                  <TableCell sx={tableHeaderCellSx}>Joining Date</TableCell>
+                  <TableCell sx={tableHeaderCellSx}>Retirement Date</TableCell>
+                  <TableCell sx={tableHeaderCellSx}>Last Login</TableCell>
+                  <TableCell sx={tableHeaderCellSx}>Status</TableCell>
+                </TableRow>
+              </TableHead>
+
+              <TableBody>
+                {reportRows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    hover
+                    sx={{
+                      transition: 'all 0.18s ease',
+                      '&:hover': {
+                        bgcolor: 'rgba(255, 247, 237, 0.78)',
+                      },
+                    }}
+                  >
+                    <TableCell sx={tableBodyCellSx}>
+                      <Typography variant="body2" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                        {row.id || '-'}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell sx={tableBodyCellSx}>
+                      <Typography variant="body2" sx={{ fontWeight: 900, color: '#0f172a' }}>
+                        {row.fullName || combineFullName(row.name, row.surname) || '-'}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>
+                        Father: {row.fatherName || '-'}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell sx={tableBodyCellSx}>
+                      <Typography variant="body2" sx={{ color: '#334155', fontWeight: 700 }}>
+                        {row.mobileNumber || '-'}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
+                        {row.email || '-'}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell sx={tableBodyCellSx}>
+                      <Typography variant="body2" sx={{ color: '#334155', fontWeight: 800 }}>
+                        {row.departmentUniqueId || '-'}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>
+                        {row.department || '-'}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell sx={tableBodyCellSx}>
+                      <Typography variant="body2" sx={{ color: '#334155', fontWeight: 700 }}>
+                        {row.schoolOfficeName || '-'}
+                      </Typography>
+                      <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>
+                        {row.sankulName || '-'}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell sx={tableBodyCellSx}>
+                      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 0.75 }}>
+                        <LocationOn sx={{ fontSize: 16, color: '#f97316', mt: 0.15 }} />
+                        <Box>
+                          <Typography variant="caption" sx={{ display: 'block', color: '#334155', fontWeight: 800 }}>
+                            {row.departmentSambhag || '-'}
+                          </Typography>
+                          <Typography variant="caption" sx={{ display: 'block', color: '#64748b', fontWeight: 700 }}>
+                            {row.departmentDistrict || '-'} / {row.departmentBlock || '-'}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </TableCell>
+
+                    <TableCell sx={tableBodyCellSx}>
+                      <Typography variant="body2" sx={{ color: '#475569', fontWeight: 800 }}>
+                        {formatDate(row.joiningDate)}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell sx={tableBodyCellSx}>
+                      <Typography variant="body2" sx={{ color: '#475569', fontWeight: 800 }}>
+                        {formatDate(row.retirementDate)}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell sx={tableBodyCellSx}>
+                      <Typography variant="body2" sx={{ color: '#475569', fontWeight: 800 }}>
+                        {row.lastLoginAt
+                          ? new Date(row.lastLoginAt).toLocaleString('en-IN')
+                          : 'Never'}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell sx={tableBodyCellSx}>
+                      <Chip
+                        label={row.status || '-'}
+                        size="small"
+                        variant="outlined"
+                        sx={{
+                          ...getStatusChipSx(row.status),
+                          fontWeight: 900,
+                          borderRadius: '10px',
+                        }}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+
+          <TablePagination
+            component="div"
+            count={reportTotal}
+            page={reportPage}
+            onPageChange={(_, newPage) => setReportPage(newPage)}
+            rowsPerPage={reportRowsPerPage}
+            onRowsPerPageChange={(e) => {
+              setReportRowsPerPage(parseInt(e.target.value, 10));
+              setReportPage(0);
+            }}
+            rowsPerPageOptions={[10, 20, 50, 100]}
+            labelDisplayedRows={({ from, to, count }) =>
+              `${from + 1}-${Math.min(to + 1, count)} of ${count}`
+            }
+            labelRowsPerPage="Rows per page:"
+            sx={{
+              borderTop: '1px solid rgba(226, 232, 240, 0.95)',
+              bgcolor: '#f8fafc',
+              color: '#475569',
+              '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                fontWeight: 800,
+                color: '#64748b',
+              },
+            }}
+          />
+        </>
+      )}
+    </Paper>
+  );
 };
  const renderUsersTab = () => (
   <Paper
@@ -6253,21 +6865,53 @@ const getDeathCaseStatusChipSx = (status) => {
         label="Ticket System"
         sx={tabItemSx}
       />
+      <Tab
+  icon={<EventAvailable />}
+  iconPosition="start"
+  label="नियुक्ति तिथि"
+  sx={tabItemSx}
+/>
+
+<Tab
+  icon={<EventBusy />}
+  iconPosition="start"
+  label="सेवानिवृत्ति तिथि"
+  sx={tabItemSx}
+/>
+
+<Tab
+  icon={<NoAccounts />}
+  iconPosition="start"
+  label="3 महीने से Login नहीं"
+  sx={tabItemSx}
+/>
+
+<Tab
+  icon={<VolunteerActivism />}
+  iconPosition="start"
+  label="2 महीने से Sahyog नहीं"
+  sx={tabItemSx}
+/>
     </Tabs>
+    
   </Box>
 
   <Box sx={{ p: { xs: 2, md: 3 } }}>
-              {activeTab === 0 && renderUsersTab()}
-              {activeTab === 1 && renderDeathCasesTab()}
-               {activeTab === 2 && renderPoolTab()}
-              {activeTab === 3 && renderPaymentsTab()}
-             {activeTab === 4 && renderLogsTab()}
-             {activeTab === 5 && (
+             {activeTab === 0 && renderUsersTab()}
+{activeTab === 1 && renderDeathCasesTab()}
+{activeTab === 2 && renderPoolTab()}
+{activeTab === 3 && renderPaymentsTab()}
+{activeTab === 4 && renderLogsTab()}
+{activeTab === 5 && (
   <TicketSystemTab
     mode="admin"
     currentUser={currentUser}
   />
 )}
+{activeTab === 6 && renderReportTableTab()}
+{activeTab === 7 && renderReportTableTab()}
+{activeTab === 8 && renderReportTableTab()}
+{activeTab === 9 && renderReportTableTab()}
               {/* {activeTab === 3 && renderQueriesTab()}
               {activeTab === 4 && renderAssignmentsTab()}
               {activeTab === 5 && (
@@ -11593,9 +12237,9 @@ const getDeathCaseStatusChipSx = (status) => {
         </Typography>
 
         <Typography variant="caption" sx={{ opacity: 0.9, fontWeight: 600 }}>
-          {passwordResetUser?.id
-            ? `User ID: ${passwordResetUser.id}`
-            : 'Reset password to Date of Birth format'}
+     {passwordResetUser?.id
+  ? `User ID: ${passwordResetUser.id}`
+  : 'Set a custom password'}
         </Typography>
       </Box>
     </Box>
@@ -11630,141 +12274,68 @@ const getDeathCaseStatusChipSx = (status) => {
       }}
     >
       <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <Alert
-            severity="warning"
-            sx={{
-              borderRadius: 3,
-              bgcolor: 'rgba(249, 115, 22, 0.08)',
-              border: '1px solid rgba(249, 115, 22, 0.16)',
-              '& .MuiAlert-icon': {
-                color: '#f97316',
-              },
-            }}
-          >
-            This will reset the user&apos;s password to their Date of Birth.
-          </Alert>
-        </Grid>
+      <Grid item xs={12}>
+  <Alert
+    severity="info"
+    sx={{
+      borderRadius: 3,
+      bgcolor: 'rgba(124, 58, 237, 0.08)',
+      border: '1px solid rgba(124, 58, 237, 0.16)',
+      '& .MuiAlert-icon': {
+        color: '#7c3aed',
+      },
+    }}
+  >
+    Enter a custom password for this user. The user can login using this new password.
+  </Alert>
+</Grid>
 
-        <Grid item xs={12}>
-          <Box
-            sx={{
-              p: 2,
-              borderRadius: 3,
-              bgcolor: '#f8fafc',
-              border: '1px solid rgba(226, 232, 240, 0.9)',
-            }}
-          >
-            <Typography
-              variant="body2"
-              sx={{
-                color: '#475569',
-                fontWeight: 700,
-                mb: 0.75,
-              }}
-            >
-              New password format
-            </Typography>
+<Grid item xs={12}>
+  <TextField
+    fullWidth
+    label="New Password"
+    type="password"
+    value={passwordResetForm.newPassword}
+    onChange={(e) =>
+      setPasswordResetForm((prev) => ({
+        ...prev,
+        newPassword: e.target.value,
+      }))
+    }
+    disabled={passwordResetLoading}
+    helperText="Minimum 6 characters required"
+    sx={premiumTextFieldSx}
+  />
+</Grid>
 
-            <Chip
-              label="DDMMYYYY"
-              variant="outlined"
-              sx={{
-                bgcolor: 'rgba(124, 58, 237, 0.10)',
-                color: '#6d28d9',
-                border: '1px solid rgba(124, 58, 237, 0.20)',
-                fontWeight: 900,
-                borderRadius: '10px',
-                letterSpacing: '0.04em',
-              }}
-            />
+<Grid item xs={12}>
+  <TextField
+    fullWidth
+    label="Confirm Password"
+    type="password"
+    value={passwordResetForm.confirmPassword}
+    onChange={(e) =>
+      setPasswordResetForm((prev) => ({
+        ...prev,
+        confirmPassword: e.target.value,
+      }))
+    }
+    disabled={passwordResetLoading}
+    error={
+      passwordResetForm.confirmPassword.length > 0 &&
+      passwordResetForm.newPassword !== passwordResetForm.confirmPassword
+    }
+    helperText={
+      passwordResetForm.confirmPassword.length > 0 &&
+      passwordResetForm.newPassword !== passwordResetForm.confirmPassword
+        ? 'Passwords do not match'
+        : 'Re-enter the same password'
+    }
+    sx={premiumTextFieldSx}
+  />
+</Grid>
 
-            <Typography
-              variant="body2"
-              sx={{
-                color: '#64748b',
-                fontWeight: 600,
-                mt: 1,
-              }}
-            >
-              Password will be generated without slash, dash, or spaces.
-            </Typography>
-          </Box>
-        </Grid>
-
-        <Grid item xs={12}>
-          <Box
-            sx={{
-              p: 2,
-              borderRadius: 3,
-              bgcolor: 'rgba(239, 246, 255, 0.75)',
-              border: '1px solid rgba(37, 99, 235, 0.14)',
-            }}
-          >
-            <Typography
-              variant="body2"
-              sx={{
-                color: '#334155',
-                fontWeight: 700,
-              }}
-            >
-              Example
-            </Typography>
-
-            <Typography
-              variant="body2"
-              sx={{
-                color: '#64748b',
-                fontWeight: 600,
-                mt: 0.5,
-              }}
-            >
-              If DOB is <strong>17 April 2002</strong>, password will be{' '}
-              <strong>17042002</strong>.
-            </Typography>
-          </Box>
-        </Grid>
-
-        {passwordResetUser?.dateOfBirth && (
-          <Grid item xs={12}>
-            <Box
-              sx={{
-                p: 2,
-                borderRadius: 3,
-                bgcolor: 'rgba(22, 163, 74, 0.08)',
-                border: '1px solid rgba(22, 163, 74, 0.16)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 1,
-                flexWrap: 'wrap',
-              }}
-            >
-              <Typography
-                variant="body2"
-                sx={{
-                  color: '#0f172a',
-                  fontWeight: 900,
-                }}
-              >
-                User DOB
-              </Typography>
-
-              <Chip
-                label={passwordResetUser.dateOfBirth}
-                size="small"
-                variant="outlined"
-                sx={{
-                  bgcolor: '#fff',
-                  color: '#15803d',
-                  border: '1px solid rgba(22, 163, 74, 0.22)',
-                  fontWeight: 900,
-                  borderRadius: '10px',
-                }}
-              />
-            </Box>
-          </Grid>
-        )}
+      
 
         {passwordResetUser && (
           <Grid item xs={12}>
@@ -11834,12 +12405,12 @@ const getDeathCaseStatusChipSx = (status) => {
         },
       }}
     >
-      {passwordResetLoading ? 'Resetting...' : 'Confirm Reset'}
+     {passwordResetLoading ? 'Saving...' : 'Save Password'}
     </Button>
   </DialogActions>
 </Dialog>
 
-        {/* Admin - Trash (Deleted Users) Dialog */}
+        
        {/* Admin - Trash (Deleted Users) Dialog */}
 <Dialog
   open={trashOpen}

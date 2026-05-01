@@ -554,24 +554,25 @@ const response = await api.updateProfileById(userId, updatePayload);
   };
 
   const fontFamily = 'Noto Sans Devanagari, Poppins, Arial, sans-serif';
-
 const uiTheme = {
-  dark: '#3b0764',
-  main: '#6d28d9',
-  light: '#a855f7',
-  gold: '#facc15',
-  soft: '#f5f3ff',
-  soft2: '#faf5ff',
-  softGold: '#fffbeb',
-  text: '#4c1d95',
-  muted: '#5b5b6b',
-  green: '#16a34a',
-  red: '#dc2626',
+  dark: '#221b43',
+  main: '#6f5cc2',
+  light: '#b9a7ff',
+  accent: '#0f766e',
+  soft: '#f4f2fb',
+  soft2: '#ffffff',
+  softAccent: '#eef8f7',
+  text: '#221b43',
+  muted: '#4b5563',
+  green: '#0f766e',
+  red: '#b42318',
+  border: '#ded8f5',
 };
+
 
 const labelSx = {
   color: uiTheme.dark,
-  fontWeight: 900,
+  fontWeight: 700,
   mb: 0.8,
   display: 'block',
   fontSize: '0.94rem',
@@ -581,21 +582,20 @@ const labelSx = {
 const fieldSx = {
   '& .MuiOutlinedInput-root': {
     borderRadius: '14px',
-    background: 'rgba(255,255,255,0.96)',
+  background: '#ffffff',
     transition: 'all 0.25s ease',
     '& fieldset': {
-      borderColor: 'rgba(124, 58, 237, 0.18)',
+   borderColor: 'rgba(111, 92, 194, 0.18)',
     },
     '&:hover fieldset': {
-      borderColor: 'rgba(124, 58, 237, 0.42)',
+    borderColor: 'rgba(111, 92, 194, 0.42)',
     },
     '&.Mui-focused fieldset': {
       borderColor: uiTheme.main,
       borderWidth: '2px',
     },
     '&.Mui-disabled': {
-      background: 'linear-gradient(135deg, rgba(245,243,255,0.9), rgba(255,251,235,0.55))',
-    },
+background: uiTheme.soft,    },
     '& input::placeholder, & textarea::placeholder': {
       color: '#6b5d80',
       opacity: 1,
@@ -603,11 +603,11 @@ const fieldSx = {
   },
   '& .MuiInputBase-input': {
     color: uiTheme.text,
-    fontWeight: 700,
+    fontWeight: 600,
     fontFamily,
   },
   '& .MuiFormHelperText-root': {
-    fontWeight: 700,
+    fontWeight: 600,
     fontFamily,
   },
 };
@@ -618,10 +618,10 @@ const selectSx = {
     background: 'rgba(255,255,255,0.96)',
   },
   '& .MuiOutlinedInput-notchedOutline': {
-    borderColor: 'rgba(124, 58, 237, 0.18)',
+   borderColor: 'rgba(111, 92, 194, 0.18)',
   },
   '&:hover .MuiOutlinedInput-notchedOutline': {
-    borderColor: 'rgba(124, 58, 237, 0.42)',
+   borderColor: 'rgba(111, 92, 194, 0.42)',
   },
   '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
     borderColor: uiTheme.main,
@@ -639,18 +639,17 @@ const cardSx = {
   mb: 4,
   p: { xs: 2, md: 3 },
   borderRadius: '26px',
-  border: '1px solid rgba(124, 58, 237, 0.14)',
-  background: 'rgba(255,255,255,0.88)',
-  boxShadow: '0 18px 48px rgba(76, 29, 149, 0.08)',
+border: '1px solid rgba(111, 92, 194, 0.16)',
+background: '#ffffff',
+boxShadow: '0 18px 48px rgba(34, 27, 67, 0.08)',
   position: 'relative',
   overflow: 'hidden',
   '&::before': {
     content: '""',
     position: 'absolute',
     inset: 0,
-    background:
-      'linear-gradient(135deg, rgba(124,58,237,0.04), transparent 38%, rgba(250,204,21,0.07))',
-    pointerEvents: 'none',
+background:
+  'linear-gradient(135deg, rgba(111,92,194,0.04), transparent 42%, rgba(15,118,110,0.05))',    pointerEvents: 'none',
   },
 };
 
@@ -658,18 +657,19 @@ const primaryButtonSx = {
   borderRadius: '16px',
   px: 4,
   py: 1.35,
-  fontWeight: 950,
+fontWeight: 700,
+background: uiTheme.main,
+boxShadow: '0 14px 32px rgba(111, 92, 194, 0.28)',
+'&:hover': {
+  background: '#5a48ad',
+  transform: 'translateY(-2px)',
+  boxShadow: '0 18px 42px rgba(111, 92, 194, 0.34)',
+},
   textTransform: 'none',
   fontFamily,
   color: '#fff',
-  background: `linear-gradient(135deg, ${uiTheme.main}, ${uiTheme.light})`,
-  boxShadow: '0 14px 32px rgba(109, 40, 217, 0.28)',
   transition: 'all 0.25s ease',
-  '&:hover': {
-    background: `linear-gradient(135deg, ${uiTheme.dark}, ${uiTheme.main})`,
-    transform: 'translateY(-2px)',
-    boxShadow: '0 18px 42px rgba(109, 40, 217, 0.38)',
-  },
+ 
   '&:disabled': {
     background: '#c4b5fd',
     color: '#fff',
@@ -680,17 +680,17 @@ const orangeButtonSx = {
   borderRadius: '16px',
   px: 4,
   py: 1.35,
-  fontWeight: 950,
+  fontWeight: 700,
   textTransform: 'none',
   fontFamily,
   color: '#fff',
-  background: 'linear-gradient(135deg, #f59e0b, #f97316)',
-  boxShadow: '0 14px 32px rgba(249, 115, 22, 0.28)',
+  background: uiTheme.accent,
+  boxShadow: '0 14px 32px rgba(15, 118, 110, 0.28)',
   transition: 'all 0.25s ease',
   '&:hover': {
-    background: 'linear-gradient(135deg, #d97706, #ea580c)',
+    background: '#0b5f59',
     transform: 'translateY(-2px)',
-    boxShadow: '0 18px 42px rgba(249, 115, 22, 0.38)',
+    boxShadow: '0 18px 42px rgba(15, 118, 110, 0.36)',
   },
 };
 
@@ -698,16 +698,17 @@ const outlineButtonSx = {
   borderRadius: '16px',
   px: 4,
   py: 1.35,
-  fontWeight: 950,
+  fontWeight: 700,
+borderColor: 'rgba(111, 92, 194, 0.35)',
+'&:hover': {
+  borderColor: uiTheme.main,
+  background: 'rgba(111, 92, 194, 0.08)',
+},
   textTransform: 'none',
   fontFamily,
-  borderColor: 'rgba(124, 58, 237, 0.35)',
   color: uiTheme.main,
   transition: 'all 0.25s ease',
-  '&:hover': {
-    borderColor: uiTheme.main,
-    background: 'rgba(124, 58, 237, 0.07)',
-  },
+  
 };
 
 const menuProps = {
@@ -716,7 +717,7 @@ const menuProps = {
       maxHeight: 300,
       minWidth: { xs: 260, md: 360 },
       borderRadius: '16px',
-      boxShadow: '0 18px 50px rgba(76, 29, 149, 0.18)',
+     boxShadow: '0 18px 50px rgba(34, 27, 67, 0.16)',
       '& .MuiMenuItem-root': {
         py: 1.2,
         px: 2,
@@ -740,9 +741,9 @@ const SectionHeader = ({ icon, number, title, subtitle }) => (
       mb: 2.5,
       p: { xs: 2, md: 2.3 },
       borderRadius: '22px',
-      background: `linear-gradient(135deg, ${uiTheme.dark}, ${uiTheme.main} 62%, ${uiTheme.light})`,
       color: '#fff',
-      boxShadow: '0 16px 34px rgba(76, 29, 149, 0.22)',
+      background: 'linear-gradient(135deg, #221b43 0%, #30295c 48%, #3b3268 100%)',
+boxShadow: '0 16px 34px rgba(34, 27, 67, 0.22)',
       display: 'flex',
       alignItems: { xs: 'flex-start', sm: 'center' },
       gap: 1.7,
@@ -813,9 +814,8 @@ const SectionHeader = ({ icon, number, title, subtitle }) => (
       sx={{
         minHeight: '100vh',
         py: { xs: 4, md: 6 },
-        background:
-          'radial-gradient(circle at top left, rgba(124,58,237,0.13), transparent 30%), radial-gradient(circle at bottom right, rgba(250,204,21,0.16), transparent 32%), linear-gradient(180deg, #ffffff 0%, #fbfaff 45%, #f5f3ff 100%)',
-        position: 'relative',
+        background: uiTheme.soft,
+         position: 'relative',
         overflow: 'hidden',
       }}
     >
@@ -827,7 +827,7 @@ const SectionHeader = ({ icon, number, title, subtitle }) => (
           borderRadius: '50%',
           top: -170,
           left: -130,
-          background: 'rgba(124, 58, 237, 0.10)',
+         background: 'rgba(111, 92, 194, 0.10)',
           filter: 'blur(8px)',
         }}
       />
@@ -853,10 +853,9 @@ const SectionHeader = ({ icon, number, title, subtitle }) => (
             mb: 4,
             p: { xs: 2.5, md: 4 },
             borderRadius: { xs: '28px', md: '36px' },
-            background: 'rgba(255,255,255,0.82)',
-            backdropFilter: 'blur(16px)',
-            border: '1px solid rgba(124, 58, 237, 0.16)',
-            boxShadow: '0 30px 90px rgba(76, 29, 149, 0.16)',
+           background: '#ffffff',
+border: '1px solid rgba(111, 92, 194, 0.16)',
+boxShadow: '0 30px 90px rgba(34, 27, 67, 0.12)',
             textAlign: 'center',
             position: 'relative',
             overflow: 'hidden',
@@ -867,8 +866,7 @@ const SectionHeader = ({ icon, number, title, subtitle }) => (
               left: 0,
               right: 0,
               height: 8,
-              background: `linear-gradient(90deg, ${uiTheme.main}, ${uiTheme.light}, ${uiTheme.gold})`,
-            },
+background: uiTheme.main,            },
           }}
         >
           <Avatar

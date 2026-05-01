@@ -26,27 +26,29 @@ import { useAuth } from "../../context/AuthContext";
 import Layout from "../../components/Layout/Layout";
 
 const theme = {
-  dark: "#3b0764",
-  main: "#6d28d9",
-  light: "#a855f7",
-  gold: "#facc15",
-  soft: "#f5f3ff",
-  softGold: "#fffbeb",
-  text: "#4c1d95",
-  muted: "#5b5b6b",
+  dark: "#221b43",
+  main: "#6f5cc2",
+  light: "#b9a7ff",
+  accent: "#0f766e",
+  soft: "#f4f2fb",
+  soft2: "#ffffff",
+  softAccent: "#eef8f7",
+  text: "#221b43",
+  muted: "#4b5563",
+  border: "#ded8f5",
 };
 
 const inputSx = {
   mb: 3,
   "& .MuiOutlinedInput-root": {
     borderRadius: "14px",
-    background: "rgba(255,255,255,0.92)",
+    background: "#ffffff",
     transition: "all 0.25s ease",
     "& fieldset": {
-      borderColor: "rgba(124, 58, 237, 0.18)",
+      borderColor: "rgba(111, 92, 194, 0.18)",
     },
     "&:hover fieldset": {
-      borderColor: "rgba(124, 58, 237, 0.40)",
+      borderColor: "rgba(111, 92, 194, 0.42)",
     },
     "&.Mui-focused fieldset": {
       borderColor: theme.main,
@@ -54,11 +56,13 @@ const inputSx = {
     },
   },
   "& .MuiInputBase-input": {
-    fontWeight: 650,
+    fontWeight: 600,
     color: theme.text,
+    fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
   },
   "& .MuiFormHelperText-root": {
     fontWeight: 600,
+    fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
   },
 };
 
@@ -120,40 +124,12 @@ const Login = () => {
           py: { xs: 6, md: 9 },
           display: "flex",
           alignItems: "center",
-          background: `
-            radial-gradient(circle at top left, rgba(124, 58, 237, 0.13), transparent 30%),
-            radial-gradient(circle at bottom right, rgba(250, 204, 21, 0.16), transparent 32%),
-            linear-gradient(180deg, #ffffff 0%, #fbfaff 45%, #f5f3ff 100%)
-          `,
+          background: theme.soft,
           position: "relative",
           overflow: "hidden",
         }}
       >
-        <Box
-          sx={{
-            position: "absolute",
-            width: 360,
-            height: 360,
-            borderRadius: "50%",
-            top: -170,
-            left: -130,
-            background: "rgba(124, 58, 237, 0.10)",
-            filter: "blur(8px)",
-          }}
-        />
-
-        <Box
-          sx={{
-            position: "absolute",
-            width: 310,
-            height: 310,
-            borderRadius: "50%",
-            right: -120,
-            bottom: -140,
-            background: "rgba(250, 204, 21, 0.16)",
-            filter: "blur(10px)",
-          }}
-        />
+        
 
         <Container maxWidth="sm" sx={{ position: "relative", zIndex: 1 }}>
           <Paper
@@ -161,10 +137,10 @@ const Login = () => {
             sx={{
               p: { xs: 3, sm: 4, md: 4.5 },
               borderRadius: { xs: "28px", md: "36px" },
-              background: "rgba(255,255,255,0.84)",
-              backdropFilter: "blur(16px)",
-              border: "1px solid rgba(124, 58, 237, 0.16)",
-              boxShadow: "0 30px 90px rgba(76, 29, 149, 0.16)",
+             background: "rgba(255,255,255,0.84)",
+backdropFilter: "blur(16px)",
+border: "1px solid rgba(124, 58, 237, 0.16)",
+boxShadow: "0 30px 90px rgba(76, 29, 149, 0.16)",
               position: "relative",
               overflow: "hidden",
 
@@ -175,19 +151,9 @@ const Login = () => {
                 left: 0,
                 right: 0,
                 height: 7,
-                background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`,
-              },
+background: theme.main,              },
 
-              "&::after": {
-                content: '""',
-                position: "absolute",
-                width: 220,
-                height: 220,
-                borderRadius: "50%",
-                right: -100,
-                bottom: -120,
-                background: "rgba(250, 204, 21, 0.14)",
-              },
+             
             }}
           >
             <Box sx={{ position: "relative", zIndex: 1 }}>
@@ -202,9 +168,8 @@ const Login = () => {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    background: `linear-gradient(135deg, ${theme.main}, ${theme.light})`,
-                    color: "#fff",
-                    boxShadow: "0 14px 32px rgba(124, 58, 237, 0.26)",
+background: theme.main,
+boxShadow: "0 14px 32px rgba(111, 92, 194, 0.26)",                    color: "#fff",
                   }}
                 >
                   <LoginRounded sx={{ fontSize: 38 }} />
@@ -244,8 +209,7 @@ const Login = () => {
                     borderRadius: 99,
                     mx: "auto",
                     mb: 2,
-                    background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`,
-                  }}
+background: theme.main,                  }}
                 />
 
                 <Typography
@@ -264,10 +228,10 @@ const Login = () => {
                   label="Registration Number required"
                   sx={{
                     mt: 2,
-                    color: theme.dark,
-                    fontWeight: 900,
-                    background: "#fffbeb",
-                    border: "1px solid rgba(250, 204, 21, 0.35)",
+                   color: "#ffffff",
+fontWeight: 700,
+background: theme.accent,
+border: "1px solid rgba(15, 118, 110, 0.25)",
                     fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
                   }}
                 />
@@ -391,19 +355,20 @@ const Login = () => {
                     py: 1.45,
                     mb: 3,
                     fontSize: "1.05rem",
-                    fontWeight: 950,
+                   
                     borderRadius: "15px",
                     textTransform: "none",
-                    background: `linear-gradient(135deg, ${theme.main}, ${theme.light})`,
-                    boxShadow: "0 14px 32px rgba(109, 40, 217, 0.30)",
-                    transition: "all 0.3s ease",
+fontWeight: 700,
+background: '#0f7633',
+boxShadow: "0 14px 32px rgba(15, 118, 110, 0.30)",
+"&:hover": {
+  background: "#0b5f59",
+  transform: "translateY(-2px)",
+  boxShadow: "0 18px 42px rgba(15, 118, 110, 0.38)",
+},                    transition: "all 0.3s ease",
                     fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
 
-                    "&:hover": {
-                      background: `linear-gradient(135deg, ${theme.dark}, ${theme.main})`,
-                      transform: "translateY(-2px)",
-                      boxShadow: "0 18px 42px rgba(109, 40, 217, 0.40)",
-                    },
+                   
 
                     "&:disabled": {
                       background: "#c4b5fd",
@@ -419,10 +384,8 @@ const Login = () => {
                     textAlign: "center",
                     p: 2,
                     borderRadius: "20px",
-                    background:
-                      "linear-gradient(135deg, rgba(245,243,255,0.85), rgba(255,255,255,0.88))",
-                    border: "1px solid rgba(124, 58, 237, 0.12)",
-                  }}
+background: theme.soft,
+border: "1px solid rgba(111, 92, 194, 0.14)",                  }}
                 >
                   <Link
                     component={RouterLink}
@@ -465,16 +428,18 @@ const Login = () => {
                     sx={{
                       py: 1.15,
                       fontSize: "1rem",
-                      fontWeight: 950,
+                     
                       borderRadius: "15px",
                       textTransform: "none",
-                      borderColor: "rgba(124, 58, 237, 0.35)",
-                      color: theme.main,
+                     fontWeight: 700,
+borderColor: "rgba(111, 92, 194, 0.35)",
+color: theme.main,
+"&:hover": {
+  borderColor: theme.main,
+  background: "rgba(111, 92, 194, 0.08)",
+},
                       fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
-                      "&:hover": {
-                        borderColor: theme.main,
-                        background: "rgba(124, 58, 237, 0.07)",
-                      },
+                     
                     }}
                   >
                     Registration

@@ -41,29 +41,29 @@ import SelfDonation from "../components/SelfDonation";
 import SbiInsuranceSection from "../components/SbiInsuranceSection";
 import { publicApi, receiptAPI, FILE_BASE_URL } from "../services/api";
 const theme = {
-  dark: "#3b0764",
-  main: "#6d28d9",
-  light: "#a855f7",
-  gold: "#facc15",
-  soft: "#f5f3ff",
-  soft2: "#faf5ff",
-  softGold: "#fffbeb",
-  text: "#4c1d95",
-  muted: "#5b5b6b",
-  green: "#16a34a",
-  red: "#dc2626"
+  dark: "#221b43",
+  main: "#6f5cc2",
+  light: "#b9a7ff",
+  accent: "#0f766e",
+  soft: "#f4f2fb",
+  soft2: "#ffffff",
+  softAccent: "#eef8f7",
+  text: "#221b43",
+  muted: "#374151",
+  green: "#0f766e",
+  red: "#b42318"
 };
 const inputSx = {
   "& .MuiOutlinedInput-root": {
     borderRadius: "14px",
-    background: "rgba(255,255,255,0.95)",
+    background: "#ffffff",
     transition: "all 0.25s ease",
     "& fieldset": {
-      borderColor: "rgba(124, 58, 237, 0.18)",
+      borderColor: "rgba(111, 92, 194, 0.22)",
       borderWidth: "1px"
     },
     "&:hover fieldset": {
-      borderColor: "rgba(124, 58, 237, 0.40)"
+      borderColor: "rgba(111, 92, 194, 0.48)"
     },
     "&.Mui-focused fieldset": {
       borderColor: theme.main,
@@ -71,8 +71,9 @@ const inputSx = {
     }
   },
   "& .MuiInputBase-input": {
-    fontWeight: 650,
-    color: theme.text
+    fontWeight: 700,
+    color: theme.text,
+    fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif"
   }
 };
 const Home = () => {
@@ -87,7 +88,8 @@ const [mobileSearch, setMobileSearch] = useState("");
 const [searchedMember, setSearchedMember] = useState(null);
 const [searchLoading, setSearchLoading] = useState(false);
 const [searchError, setSearchError] = useState("");
-
+const [activePoolAvailable, setActivePoolAvailable] = useState(false);
+const [activePoolLoading, setActivePoolLoading] = useState(true);
 const [utrDialogOpen, setUtrDialogOpen] = useState(false);
 const [utrForm, setUtrForm] = useState({
   amount: "",
@@ -114,6 +116,25 @@ const getQrImageUrl = (qrPath) => {
 
   return `${FILE_BASE_URL}${qrPath.startsWith("/") ? qrPath : `/${qrPath}`}`;
 };
+useEffect(() => {
+  const loadActivePools = async () => {
+    try {
+      setActivePoolLoading(true);
+
+      const response = await publicApi.get("/death-cases/public");
+      const activePools = Array.isArray(response?.data) ? response.data : [];
+
+      setActivePoolAvailable(activePools.length > 0);
+    } catch (error) {
+      console.error("Failed to load active death case pools:", error);
+      setActivePoolAvailable(false);
+    } finally {
+      setActivePoolLoading(false);
+    }
+  };
+
+  loadActivePools();
+}, []);
 
 const handleMobileSearchChange = async (event) => {
   const value = event.target.value.replace(/\D/g, "").slice(0, 10);
@@ -127,6 +148,10 @@ const handleMobileSearchChange = async (event) => {
   if (value.length !== 10) {
     return;
   }
+if (!activePoolAvailable) {
+  setSearchError("अभी कोई सक्रिय मृत्यु सहायता पूल उपलब्ध नहीं है।");
+  return;
+}
 
   try {
     setSearchLoading(true);
@@ -152,6 +177,10 @@ const handleMobileSearchChange = async (event) => {
 };
 
 const openUtrDialog = () => {
+   if (!activePoolAvailable) {
+    setUtrError("अभी कोई सक्रिय मृत्यु सहायता पूल उपलब्ध नहीं है।");
+    return;
+  }
   setUtrForm({
     amount: "",
     referenceName: "",
@@ -243,11 +272,7 @@ const handlePublicUtrSubmit = async () => {
         <Box
           sx={{
             py: { xs: 5, md: 7 },
-            background: `
-              radial-gradient(circle at top left, rgba(124, 58, 237, 0.12), transparent 30%),
-              radial-gradient(circle at bottom right, rgba(250, 204, 21, 0.14), transparent 34%),
-              linear-gradient(180deg, #f5f3ff 0%, #fbfaff 45%, #ffffff 100%)
-            `,
+            background: '#342c60',
             position: "relative",
             overflow: "hidden",
           }}
@@ -256,10 +281,9 @@ const handlePublicUtrSubmit = async () => {
             <Card
               sx={{
                 borderRadius: { xs: 4, md: 6 },
-                border: "1px solid rgba(124, 58, 237, 0.16)",
-                background: "rgba(255,255,255,0.92)",
-                backdropFilter: "blur(14px)",
-                boxShadow: "0 24px 70px rgba(76, 29, 149, 0.13)",
+              border: "1px solid rgba(200, 191, 255, 0.28)",
+background: "#ffffff",
+boxShadow: "0 28px 80px rgba(0, 0, 0, 0.22)",
                 overflow: "hidden",
                 position: "relative",
 
@@ -294,7 +318,7 @@ const handlePublicUtrSubmit = async () => {
                     borderRadius: 99,
                     mx: "auto",
                     mb: 3,
-                    background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`,
+                    background: '#6f5cc2',
                   }}
                 />
 
@@ -309,12 +333,12 @@ const handlePublicUtrSubmit = async () => {
                     mb: 3,
                     fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
 
-                    "& a": {
-                      color: theme.main,
-                      fontWeight: 800,
-                      textDecoration: "none",
-                      borderBottom: "1px solid rgba(109, 40, 217, 0.35)",
-                    },
+                   "& a": {
+  color: theme.accent,
+  fontWeight: 800,
+  textDecoration: "none",
+  borderBottom: "1px solid rgba(15, 118, 110, 0.35)",
+},
 
                     "& b, & strong": {
                       color: theme.dark,
@@ -325,6 +349,7 @@ const handlePublicUtrSubmit = async () => {
                     __html: homeDisplayContent.homeNoticeHtml || "",
                   }}
                 />
+    {!activePoolLoading && activePoolAvailable && (            
 <Paper
   elevation={0}
   sx={{
@@ -333,10 +358,9 @@ const handlePublicUtrSubmit = async () => {
     mb: 3,
     p: { xs: 2, md: 3 },
     borderRadius: 4,
-    background:
-      "linear-gradient(135deg, rgba(245,243,255,0.96), rgba(255,255,255,0.96))",
-    border: "1px solid rgba(124, 58, 237, 0.16)",
-    boxShadow: "0 18px 46px rgba(76, 29, 149, 0.10)"
+   background: theme.soft,
+border: "1px solid rgba(111, 92, 194, 0.18)",
+boxShadow: "0 18px 46px rgba(34, 27, 67, 0.10)"
   }}
 >
   <Typography
@@ -396,10 +420,9 @@ const handlePublicUtrSubmit = async () => {
       mt: 3,
       borderRadius: 5,
       overflow: "hidden",
-      border: "1px solid rgba(124, 58, 237, 0.16)",
-      background:
-        "linear-gradient(135deg, rgba(255,255,255,0.98), rgba(245,243,255,0.92))",
-      boxShadow: "0 22px 58px rgba(76, 29, 149, 0.14)",
+    border: "1px solid rgba(111, 92, 194, 0.16)",
+background: "#ffffff",
+boxShadow: "0 22px 58px rgba(34, 27, 67, 0.12)",
       position: "relative",
       "&::before": {
         content: '""',
@@ -408,8 +431,7 @@ const handlePublicUtrSubmit = async () => {
         left: 0,
         right: 0,
         height: 6,
-        background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`
-      }
+background: theme.main      }
     }}
   >
     <CardContent sx={{ p: { xs: 2.2, md: 3 } }}>
@@ -444,9 +466,9 @@ const handlePublicUtrSubmit = async () => {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    background: `linear-gradient(135deg, ${theme.main}, ${theme.light})`,
-                    color: "#fff",
-                    boxShadow: "0 12px 28px rgba(109, 40, 217, 0.25)"
+background: theme.main,
+boxShadow: "0 12px 28px rgba(111, 92, 194, 0.25)"
+,                    color: "#fff",
                   }}
                 >
                   <PersonSearchRounded sx={{ fontSize: 30 }} />
@@ -523,8 +545,7 @@ const handlePublicUtrSubmit = async () => {
                     p: 1.6,
                     borderRadius: 3,
                     background: theme.soft,
-                    border: "1px solid rgba(124, 58, 237, 0.10)"
-                  }}
+border: "1px solid rgba(111, 92, 194, 0.14)"                  }}
                 >
                   <Typography
                     sx={{
@@ -558,14 +579,13 @@ const handlePublicUtrSubmit = async () => {
                   sx={{
                     p: 1.6,
                     borderRadius: 3,
-                    background: theme.softGold,
-                    border: "1px solid rgba(250, 204, 21, 0.24)"
-                  }}
+background: theme.softAccent,
+border: "1px solid rgba(15, 118, 110, 0.16)"                  }}
                 >
                   <Typography
                     sx={{
                       color: theme.muted,
-                      fontWeight: 800,
+                      fontWeight: 600,
                       fontSize: "0.78rem",
                       mb: 0.4,
                       fontFamily:
@@ -578,7 +598,7 @@ const handlePublicUtrSubmit = async () => {
                   <Typography
                     sx={{
                       color: theme.dark,
-                      fontWeight: 950,
+                      fontWeight: 500,
                       fontSize: "0.98rem",
                       fontFamily:
                         "Noto Sans Devanagari, Poppins, Arial, sans-serif"
@@ -594,10 +614,9 @@ const handlePublicUtrSubmit = async () => {
                   sx={{
                     p: 1.6,
                     borderRadius: 3,
-                    background:
-                      "linear-gradient(135deg, rgba(245,243,255,0.95), rgba(255,255,255,0.95))",
-                    border: "1px solid rgba(124, 58, 237, 0.12)"
-                  }}
+                  background: theme.soft,
+border: "1px solid rgba(111, 92, 194, 0.14)"
+}}
                 >
                   <Typography
                     sx={{
@@ -649,13 +668,13 @@ const handlePublicUtrSubmit = async () => {
                     textTransform: "none",
                     fontFamily:
                       "Noto Sans Devanagari, Poppins, Arial, sans-serif",
-                    background: `linear-gradient(135deg, ${theme.red}, #ef4444)`,
-                    boxShadow: "0 14px 32px rgba(220, 38, 38, 0.25)",
-                    "&:hover": {
-                      background: "linear-gradient(135deg, #991b1b, #dc2626)",
-                      transform: "translateY(-1px)",
-                      boxShadow: "0 18px 42px rgba(220, 38, 38, 0.32)"
-                    }
+                   background: theme.red,
+boxShadow: "0 14px 32px rgba(180, 35, 24, 0.25)",
+"&:hover": {
+  background: "#8f1d14",
+  transform: "translateY(-1px)",
+  boxShadow: "0 18px 42px rgba(180, 35, 24, 0.32)"
+}
                   }}
                 >
                   UTR Upload करें
@@ -673,10 +692,8 @@ const handlePublicUtrSubmit = async () => {
               minHeight: 250,
               p: { xs: 2, md: 2.5 },
               borderRadius: 4,
-              background:
-                "radial-gradient(circle at top right, rgba(250,204,21,0.20), transparent 34%), linear-gradient(135deg, #ffffff, #f5f3ff)",
-              border: "1px solid rgba(124, 58, 237, 0.12)",
-              display: "flex",
+background: theme.softAccent,
+border: "1px solid rgba(15, 118, 110, 0.16)",              display: "flex",
               alignItems: "center",
               justifyContent: "center",
               textAlign: "center"
@@ -693,9 +710,8 @@ const handlePublicUtrSubmit = async () => {
                     p: 1.4,
                     borderRadius: "26px",
                     background: "#fff",
-                    border: "1px solid rgba(124, 58, 237, 0.16)",
-                    boxShadow: "0 18px 42px rgba(76, 29, 149, 0.14)"
-                  }}
+border: "1px solid rgba(111, 92, 194, 0.16)",
+boxShadow: "0 18px 42px rgba(34, 27, 67, 0.12)"                  }}
                 >
                   <Box
                     component="img"
@@ -714,16 +730,16 @@ const handlePublicUtrSubmit = async () => {
                   icon={<QrCode2Rounded />}
                   label="QR Scan करके भुगतान करें"
                   sx={{
-                    color: theme.dark,
-                    fontWeight: 900,
-                    background: "#fff",
-                    border: "1px solid rgba(124, 58, 237, 0.16)",
+                   color: "#ffffff",
+fontWeight: 900,
+background: theme.accent,
+border: "1px solid rgba(15, 118, 110, 0.25)",
                     borderRadius: "14px",
                     fontFamily:
                       "Noto Sans Devanagari, Poppins, Arial, sans-serif",
-                    "& .MuiChip-icon": {
-                      color: theme.main
-                    }
+                   "& .MuiChip-icon": {
+  color: "#ffffff"
+}
                   }}
                 />
               </Box>
@@ -739,8 +755,8 @@ const handlePublicUtrSubmit = async () => {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    background: "rgba(124, 58, 237, 0.10)",
-                    color: theme.main
+                    background: "rgba(15, 118, 110, 0.10)",
+color: theme.accent
                   }}
                 >
                   <QrCode2Rounded sx={{ fontSize: 48 }} />
@@ -779,6 +795,7 @@ const handlePublicUtrSubmit = async () => {
   </Card>
 )}
 </Paper>
+)}
                 <Box sx={{ display: "flex", justifyContent: "center" }}>
                   <Button
                     variant="contained"
@@ -791,15 +808,16 @@ const handlePublicUtrSubmit = async () => {
                       fontWeight: 900,
                       fontSize: "1rem",
                       textTransform: "none",
-                      background: `linear-gradient(135deg, ${theme.main}, ${theme.light})`,
+                      background: '#0f7633',
                       boxShadow: "0 12px 28px rgba(109, 40, 217, 0.28)",
                       transition: "all 0.3s ease",
 
-                      "&:hover": {
-                        background: `linear-gradient(135deg, ${theme.dark}, ${theme.main})`,
-                        transform: "translateY(-2px)",
-                        boxShadow: "0 16px 36px rgba(109, 40, 217, 0.36)",
-                      },
+                      '&:hover': {
+    background: '#0b5f59',
+    borderColor: '#0b5f59',
+    boxShadow: '0 10px 24px rgba(15, 118, 110, 0.45)',
+    transform: 'translateY(-2px)'
+  },
                     }}
                   >
                     सहयोग करें
@@ -818,10 +836,7 @@ const handlePublicUtrSubmit = async () => {
 
       <Box
         sx={{
-          background: `
-            radial-gradient(circle at top right, rgba(124, 58, 237, 0.10), transparent 32%),
-            linear-gradient(180deg, #ffffff 0%, #fbfaff 45%, #f5f3ff 100%)
-          `,
+          background:'#eef8f7',
         }}
       >
         <SelfDonation />
@@ -829,11 +844,7 @@ const handlePublicUtrSubmit = async () => {
 
             <Box
         sx={{
-          background: `
-            radial-gradient(circle at bottom left, rgba(250, 204, 21, 0.14), transparent 34%),
-            radial-gradient(circle at top right, rgba(168, 85, 247, 0.13), transparent 30%),
-            linear-gradient(180deg, #f5f3ff 0%, #fbfaff 45%, #ffffff 100%)
-          `,
+          background: '#eef8f7',
           position: "relative",
           overflow: "hidden",
         }}

@@ -14,14 +14,15 @@ import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import { publicApi } from '../services/api';
 
 const theme = {
-  dark: '#3b0764',
-  main: '#6d28d9',
-  light: '#a855f7',
-  gold: '#facc15',
-  soft: '#f5f3ff',
-  softGold: '#fffbeb',
-  text: '#4c1d95',
-  muted: '#5b5b6b',
+  dark: '#221b43',
+  main: '#6f5cc2',
+  light: '#b9a7ff',
+  accent: '#0f766e',
+  soft: '#f4f2fb',
+  softAccent: '#eef8f7',
+  text: '#221b43',
+  muted: '#4b5563',
+  border: '#ded8f5',
 };
 
 const rulePoints = [
@@ -33,7 +34,7 @@ const rulePoints = [
 ];
 
 const StatCard = ({ icon, value, label, variant = 'purple' }) => {
-  const isGold = variant === 'gold';
+  const isAccent = variant === 'accent';
 
   return (
     <Paper
@@ -41,19 +42,17 @@ const StatCard = ({ icon, value, label, variant = 'purple' }) => {
       sx={{
         borderRadius: '28px',
         p: { xs: 3, md: 3.5 },
-        background: isGold
-          ? 'linear-gradient(135deg, rgba(255,251,235,0.95) 0%, rgba(255,255,255,0.96) 100%)'
-          : 'linear-gradient(135deg, rgba(245,243,255,0.96) 0%, rgba(255,255,255,0.96) 100%)',
-        border: isGold
-          ? '1px solid rgba(250, 204, 21, 0.35)'
-          : '1px solid rgba(124, 58, 237, 0.18)',
-        boxShadow: '0 18px 48px rgba(76, 29, 149, 0.12)',
+        background: isAccent ? '#eef8f7' : '#ffffff',
+        border: isAccent
+          ? '1px solid rgba(15, 118, 110, 0.22)'
+          : '1px solid rgba(111, 92, 194, 0.18)',
+        boxShadow: '0 18px 48px rgba(34, 27, 67, 0.10)',
         position: 'relative',
         overflow: 'hidden',
         transition: 'all 0.35s ease',
         '&:hover': {
           transform: 'translateY(-6px)',
-          boxShadow: '0 26px 70px rgba(76, 29, 149, 0.18)',
+          boxShadow: '0 26px 70px rgba(34, 27, 67, 0.16)',
         },
         '&::before': {
           content: '""',
@@ -63,9 +62,9 @@ const StatCard = ({ icon, value, label, variant = 'purple' }) => {
           width: 170,
           height: 170,
           borderRadius: '50%',
-          background: isGold
-            ? 'rgba(250, 204, 21, 0.18)'
-            : 'rgba(168, 85, 247, 0.16)',
+          background: isAccent
+            ? 'rgba(15, 118, 110, 0.10)'
+            : 'rgba(111, 92, 194, 0.12)',
         },
       }}
     >
@@ -79,13 +78,11 @@ const StatCard = ({ icon, value, label, variant = 'purple' }) => {
             alignItems: 'center',
             justifyContent: 'center',
             mb: 2.4,
-            background: isGold
-              ? 'linear-gradient(135deg, #facc15, #a855f7)'
-              : 'linear-gradient(135deg, #6d28d9, #a855f7)',
-            color: '#fff',
-            boxShadow: isGold
-              ? '0 14px 32px rgba(250, 204, 21, 0.28)'
-              : '0 14px 32px rgba(124, 58, 237, 0.25)',
+            background: isAccent ? '#0f766e' : '#6f5cc2',
+            color: '#ffffff',
+            boxShadow: isAccent
+              ? '0 14px 32px rgba(15, 118, 110, 0.24)'
+              : '0 14px 32px rgba(111, 92, 194, 0.24)',
           }}
         >
           {icon}
@@ -95,11 +92,7 @@ const StatCard = ({ icon, value, label, variant = 'purple' }) => {
           variant="h2"
           sx={{
             fontWeight: 950,
-            background: isGold
-              ? 'linear-gradient(135deg, #3b0764, #7c3aed, #facc15)'
-              : 'linear-gradient(135deg, #3b0764, #7c3aed, #a855f7)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
+            color: isAccent ? '#0f766e' : '#221b43',
             mb: 1,
             fontSize: { xs: '2.45rem', sm: '3rem', md: '3.45rem' },
             lineHeight: 1,
@@ -113,7 +106,7 @@ const StatCard = ({ icon, value, label, variant = 'purple' }) => {
           sx={{
             color: theme.text,
             fontWeight: 800,
-            fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+            fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
             fontSize: { xs: '1rem', md: '1.08rem' },
             lineHeight: 1.5,
           }}
@@ -145,17 +138,11 @@ const Statistics = () => {
     <Box
       sx={{
         py: { xs: 6, md: 9 },
-        background: `
-          radial-gradient(circle at top left, rgba(124, 58, 237, 0.13), transparent 30%),
-          radial-gradient(circle at bottom right, rgba(250, 204, 21, 0.16), transparent 32%),
-          linear-gradient(135deg, #ffffff 0%, #fbfaff 42%, #f5f3ff 100%)
-        `,
+        background: '#eef8f7',
         position: 'relative',
         overflow: 'hidden',
       }}
     >
-     
-
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
         <Box
           sx={{
@@ -170,6 +157,7 @@ const Statistics = () => {
               fontWeight: 900,
               letterSpacing: '1.5px',
               fontSize: '0.82rem',
+              fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
             }}
           >
             PMUMS SUPPORT SYSTEM
@@ -182,7 +170,7 @@ const Statistics = () => {
               mt: 0.6,
               color: theme.dark,
               fontWeight: 950,
-              fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+              fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
               fontSize: { xs: '1.8rem', md: '2.45rem' },
               lineHeight: 1.25,
             }}
@@ -197,7 +185,7 @@ const Statistics = () => {
               borderRadius: 99,
               mx: 'auto',
               mt: 2,
-              background: 'linear-gradient(90deg, #7c3aed, #a855f7, #facc15)',
+              background: '#6f5cc2',
             }}
           />
         </Box>
@@ -206,10 +194,9 @@ const Statistics = () => {
           sx={{
             borderRadius: { xs: '28px', md: '38px' },
             p: { xs: 2.4, sm: 3.5, md: 5 },
-            background: 'rgba(255, 255, 255, 0.78)',
-            border: '1px solid rgba(124, 58, 237, 0.15)',
-            boxShadow: '0 28px 80px rgba(76, 29, 149, 0.13)',
-            backdropFilter: 'blur(16px)',
+            background: '#ffffff',
+            border: '1px solid rgba(111, 92, 194, 0.16)',
+            boxShadow: '0 28px 80px rgba(34, 27, 67, 0.12)',
             position: 'relative',
             overflow: 'hidden',
           }}
@@ -221,7 +208,7 @@ const Statistics = () => {
               left: 0,
               right: 0,
               height: 7,
-              background: 'linear-gradient(90deg, #6d28d9, #a855f7, #facc15)',
+              background: '#6f5cc2',
             }}
           />
 
@@ -238,7 +225,7 @@ const Statistics = () => {
                     color: theme.muted,
                     fontSize: { xs: '0.98rem', md: '1.05rem' },
                     lineHeight: 1.9,
-                    fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                    fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
                     mb: statisticsContentHtml ? 3 : 0,
                     '& b, & strong': {
                       fontWeight: 850,
@@ -249,10 +236,10 @@ const Statistics = () => {
                       marginBottom: '14px',
                     },
                     '& a': {
-                      color: theme.main,
+                      color: '#0f766e',
                       fontWeight: 800,
                       textDecoration: 'none',
-                      borderBottom: '1px solid rgba(124, 58, 237, 0.35)',
+                      borderBottom: '1px solid rgba(15, 118, 110, 0.35)',
                     },
                   }}
                   dangerouslySetInnerHTML={{
@@ -272,12 +259,12 @@ const Statistics = () => {
                         borderRadius: '18px',
                         background:
                           index % 2 === 0
-                            ? 'rgba(245, 243, 255, 0.72)'
-                            : 'rgba(255, 251, 235, 0.72)',
+                            ? '#f4f2fb'
+                            : '#eef8f7',
                         border:
                           index % 2 === 0
-                            ? '1px solid rgba(124, 58, 237, 0.12)'
-                            : '1px solid rgba(250, 204, 21, 0.25)',
+                            ? '1px solid rgba(111, 92, 194, 0.14)'
+                            : '1px solid rgba(15, 118, 110, 0.16)',
                       }}
                     >
                       <Box
@@ -289,8 +276,8 @@ const Statistics = () => {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          background: 'linear-gradient(135deg, #7c3aed, #a855f7)',
-                          color: '#fff',
+                          background: index % 2 === 0 ? '#6f5cc2' : '#0f766e',
+                          color: '#ffffff',
                           fontWeight: 900,
                           fontSize: '0.85rem',
                           mt: 0.2,
@@ -301,11 +288,11 @@ const Statistics = () => {
 
                       <Typography
                         sx={{
-                          color: '#4b5563',
+                          color: '#374151',
                           fontSize: { xs: '0.94rem', md: '1rem' },
                           lineHeight: 1.75,
                           fontWeight: 600,
-                          fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                          fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
                         }}
                       >
                         {item}
@@ -322,16 +309,17 @@ const Statistics = () => {
                     display: 'flex',
                     alignItems: 'center',
                     gap: 1.5,
-                    background: 'linear-gradient(135deg, rgba(34,197,94,0.10), rgba(255,255,255,0.9))',
-                    border: '1px solid rgba(34,197,94,0.20)',
+                    background: '#eef8f7',
+                    border: '1px solid rgba(15, 118, 110, 0.22)',
                   }}
                 >
-                  <WhatsAppIcon sx={{ color: '#16a34a', fontSize: 30 }} />
+                  <WhatsAppIcon sx={{ color: '#0f766e', fontSize: 30 }} />
+
                   <Typography
                     sx={{
                       color: theme.dark,
                       fontWeight: 900,
-                      fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                      fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
                       fontSize: { xs: '0.98rem', md: '1.05rem' },
                     }}
                   >
@@ -346,7 +334,7 @@ const Statistics = () => {
                 sx={{
                   height: '100%',
                   pl: { md: 2 },
-                  borderLeft: { md: '1px solid rgba(124, 58, 237, 0.12)' },
+                  borderLeft: { md: '1px solid rgba(111, 92, 194, 0.16)' },
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'center',
@@ -363,28 +351,30 @@ const Statistics = () => {
                   icon={<VolunteerActivismRoundedIcon sx={{ fontSize: 32 }} />}
                   value="10000000+"
                   label="आकस्मिक मदद"
-                  variant="gold"
+                  variant="accent"
                 />
 
                 <Box
                   sx={{
                     p: 2.2,
                     borderRadius: '22px',
-                    background: 'linear-gradient(135deg, rgba(76,29,149,0.96), rgba(124,58,237,0.92))',
-                    color: '#fff',
+                    background: '#221b43',
+                    color: '#ffffff',
                     display: 'flex',
                     alignItems: 'center',
                     gap: 1.5,
-                    boxShadow: '0 18px 45px rgba(76, 29, 149, 0.22)',
+                    boxShadow: '0 18px 45px rgba(34, 27, 67, 0.22)',
                   }}
                 >
-                  <CheckCircleRoundedIcon sx={{ color: theme.gold, fontSize: 30 }} />
+                  <CheckCircleRoundedIcon sx={{ color: '#b9a7ff', fontSize: 30 }} />
+
                   <Typography
                     sx={{
-                      fontWeight: 800,
-                      fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                      fontWeight: 600,
+                      fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
                       fontSize: { xs: '0.96rem', md: '1.03rem' },
                       lineHeight: 1.6,
+                      color:"#ffffff"
                     }}
                   >
                     सामूहिक सहयोग से शिक्षक परिवारों को समय पर आर्थिक संबल प्रदान करने का प्रयास।

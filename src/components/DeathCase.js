@@ -26,14 +26,16 @@ import ReceiptUpload from './ReceiptUpload';
 import api, { publicApi } from '../services/api';
 
 const theme = {
-  dark: '#3b0764',
-  main: '#6d28d9',
-  light: '#a855f7',
-  gold: '#facc15',
-  soft: '#f5f3ff',
-  soft2: '#faf5ff',
-  text: '#4c1d95',
-  muted: '#5b5b6b'
+  dark: '#221b43',
+  main: '#6f5cc2',
+  light: '#b9a7ff',
+  accent: '#0f766e',
+  soft: '#f4f2fb',
+  soft2: '#ffffff',
+  softAccent: '#eef8f7',
+  text: '#221b43',
+  muted: '#4b5563',
+  border: '#ded8f5'
 };
 
 const SectionTitle = ({ title, subtitle }) => (
@@ -41,10 +43,11 @@ const SectionTitle = ({ title, subtitle }) => (
     <Typography
       variant="overline"
       sx={{
-        color: theme.main,
+        color: theme.soft2,
         fontWeight: 900,
         letterSpacing: '1.5px',
-        fontSize: '0.82rem'
+        fontSize: '0.82rem',
+        fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif'
       }}
     >
       NOMINEE SUPPORT
@@ -55,8 +58,8 @@ const SectionTitle = ({ title, subtitle }) => (
       sx={{
         mt: 0.6,
         fontWeight: 950,
-        color: theme.dark,
-        fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+        color: theme.soft,
+        fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
         fontSize: { xs: '1.75rem', md: '2.45rem' },
         lineHeight: 1.25
       }}
@@ -72,20 +75,20 @@ const SectionTitle = ({ title, subtitle }) => (
         mx: 'auto',
         mt: 2,
         mb: subtitle ? 2.5 : 0,
-        background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`
+        background: theme.accent
       }}
     />
 
     {subtitle && (
       <Box
         sx={{
-          color: theme.muted,
+          color: theme.soft,
           lineHeight: 1.9,
           fontWeight: 700,
           fontSize: { xs: '0.98rem', md: '1.08rem' },
           maxWidth: 900,
           mx: 'auto',
-          fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+          fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
           '& p': {
             mt: 0,
             mb: 1.5
@@ -95,10 +98,10 @@ const SectionTitle = ({ title, subtitle }) => (
             fontWeight: 900
           },
           '& a': {
-            color: theme.main,
+            color: theme.accent,
             fontWeight: 800,
             textDecoration: 'none',
-            borderBottom: '1px solid rgba(109, 40, 217, 0.35)'
+            borderBottom: '1px solid rgba(15, 118, 110, 0.35)'
           }
         }}
         dangerouslySetInnerHTML={{ __html: subtitle || '' }}
@@ -113,9 +116,9 @@ const InfoBox = ({ children, sx = {} }) => (
     sx={{
       borderRadius: '24px',
       p: { xs: 2.2, md: 2.8 },
-      background: 'rgba(255,255,255,0.86)',
-      border: '1px solid rgba(124, 58, 237, 0.14)',
-      boxShadow: '0 14px 38px rgba(76, 29, 149, 0.10)',
+      background: '#ffffff',
+      border: '1px solid rgba(111, 92, 194, 0.16)',
+      boxShadow: '0 14px 38px rgba(34, 27, 67, 0.10)',
       ...sx
     }}
   >
@@ -131,16 +134,16 @@ const ActionButton = ({ children, sx = {}, ...props }) => (
       borderRadius: '14px',
       px: 3.2,
       py: 1.1,
-      color: '#fff',
-      fontWeight: 900,
+      color: '#ffffff',
+      fontWeight: 600,
       textTransform: 'none',
-      background: `linear-gradient(135deg, ${theme.main}, ${theme.light})`,
-      boxShadow: '0 12px 28px rgba(109, 40, 217, 0.26)',
+      background: '#0f7633',
+      boxShadow: '0 12px 28px rgba(15, 118, 110, 0.26)',
       transition: 'all 0.3s ease',
       '&:hover': {
-        background: `linear-gradient(135deg, ${theme.dark}, ${theme.main})`,
+        background: '#0b5f59',
         transform: 'translateY(-2px)',
-        boxShadow: '0 16px 36px rgba(109, 40, 217, 0.36)'
+        boxShadow: '0 16px 36px rgba(15, 118, 110, 0.36)'
       },
       ...sx
     }}
@@ -157,15 +160,15 @@ const QrCard = ({ qrCode, label, onDownload }) => (
       borderRadius: '28px',
       p: 2.2,
       textAlign: 'center',
-      background: 'linear-gradient(180deg, #ffffff 0%, #f5f3ff 100%)',
-      border: '1px solid rgba(124, 58, 237, 0.16)',
-      boxShadow: '0 18px 44px rgba(76, 29, 149, 0.12)',
+      background: '#ffffff',
+      border: '1px solid rgba(111, 92, 194, 0.16)',
+      boxShadow: '0 18px 44px rgba(34, 27, 67, 0.10)',
       position: 'relative',
       overflow: 'hidden',
       transition: 'all 0.35s ease',
       '&:hover': {
         transform: 'translateY(-5px)',
-        boxShadow: '0 24px 62px rgba(76, 29, 149, 0.18)'
+        boxShadow: '0 24px 62px rgba(34, 27, 67, 0.16)'
       },
       '&::before': {
         content: '""',
@@ -174,7 +177,7 @@ const QrCard = ({ qrCode, label, onDownload }) => (
         left: 0,
         right: 0,
         height: 6,
-        background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`
+        background: theme.main
       }
     }}
   >
@@ -184,8 +187,8 @@ const QrCard = ({ qrCode, label, onDownload }) => (
         mb: 1.8,
         p: 1.2,
         borderRadius: '22px',
-        background: '#fff',
-        border: '1px solid rgba(124, 58, 237, 0.14)'
+        background: theme.soft,
+        border: '1px solid rgba(111, 92, 194, 0.14)'
       }}
     >
       {qrCode ? (
@@ -197,7 +200,8 @@ const QrCard = ({ qrCode, label, onDownload }) => (
             width: '100%',
             height: 230,
             objectFit: 'contain',
-            borderRadius: '18px'
+            borderRadius: '18px',
+            background: '#ffffff'
           }}
         />
       ) : (
@@ -205,8 +209,8 @@ const QrCard = ({ qrCode, label, onDownload }) => (
           sx={{
             height: 230,
             borderRadius: '18px',
-            background: '#f5f3ff',
-            border: '1px dashed rgba(124, 58, 237, 0.35)',
+            background: '#ffffff',
+            border: '1px dashed rgba(111, 92, 194, 0.35)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center'
@@ -226,9 +230,9 @@ const QrCard = ({ qrCode, label, onDownload }) => (
         maxWidth: '100%',
         color: theme.dark,
         fontWeight: 900,
-        background: '#fffbeb',
-        border: '1px solid rgba(250, 204, 21, 0.38)',
-        fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif'
+        background: theme.soft,
+        border: '1px solid rgba(111, 92, 194, 0.20)',
+        fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif'
       }}
     />
 
@@ -246,9 +250,9 @@ const BankDetailsCard = ({ title, account, fallbackName, onCopy }) => (
       minHeight: 270,
       borderRadius: '28px',
       p: 2.5,
-      background: 'linear-gradient(180deg, #ffffff 0%, #faf5ff 100%)',
-      border: '1px solid rgba(124, 58, 237, 0.16)',
-      boxShadow: '0 18px 44px rgba(76, 29, 149, 0.10)',
+      background: '#ffffff',
+      border: '1px solid rgba(111, 92, 194, 0.16)',
+      boxShadow: '0 18px 44px rgba(34, 27, 67, 0.10)',
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'space-between',
@@ -257,7 +261,7 @@ const BankDetailsCard = ({ title, account, fallbackName, onCopy }) => (
       transition: 'all 0.35s ease',
       '&:hover': {
         transform: 'translateY(-5px)',
-        boxShadow: '0 24px 62px rgba(76, 29, 149, 0.16)'
+        boxShadow: '0 24px 62px rgba(34, 27, 67, 0.16)'
       },
       '&::before': {
         content: '""',
@@ -266,7 +270,7 @@ const BankDetailsCard = ({ title, account, fallbackName, onCopy }) => (
         top: 0,
         bottom: 0,
         width: 6,
-        background: `linear-gradient(180deg, ${theme.main}, ${theme.light}, ${theme.gold})`
+        background: theme.accent
       }
     }}
   >
@@ -277,7 +281,8 @@ const BankDetailsCard = ({ title, account, fallbackName, onCopy }) => (
           color: theme.dark,
           mb: 2,
           fontSize: '1rem',
-          textAlign: 'center'
+          textAlign: 'center',
+          fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif'
         }}
       >
         {title}
@@ -296,7 +301,7 @@ const BankDetailsCard = ({ title, account, fallbackName, onCopy }) => (
             justifyContent: 'space-between',
             gap: 2,
             py: 0.9,
-            borderBottom: '1px solid rgba(124, 58, 237, 0.10)'
+            borderBottom: '1px solid rgba(111, 92, 194, 0.12)'
           }}
         >
           <Typography sx={{ fontSize: '0.82rem', fontWeight: 950, color: theme.text }}>
@@ -307,7 +312,7 @@ const BankDetailsCard = ({ title, account, fallbackName, onCopy }) => (
             sx={{
               fontSize: '0.84rem',
               fontWeight: 700,
-              color: '#4b5563',
+              color: theme.muted,
               textAlign: 'right',
               wordBreak: 'break-word'
             }}
@@ -485,11 +490,7 @@ IFSC: ${account?.ifscCode || 'IFSC CODE'}`;
       <Box
         sx={{
           py: { xs: 6, md: 8 },
-          background: `
-            radial-gradient(circle at top left, rgba(124, 58, 237, 0.12), transparent 32%),
-            radial-gradient(circle at bottom right, rgba(250, 204, 21, 0.13), transparent 34%),
-            linear-gradient(180deg, #ffffff 0%, #fbfaff 45%, #f5f3ff 100%)
-          `
+          background: theme.soft
         }}
       >
         <Container maxWidth="lg">
@@ -512,17 +513,11 @@ IFSC: ${account?.ifscCode || 'IFSC CODE'}`;
     <Box
       sx={{
         py: { xs: 6, md: 9 },
-        background: `
-          radial-gradient(circle at top left, rgba(124, 58, 237, 0.12), transparent 30%),
-          radial-gradient(circle at bottom right, rgba(250, 204, 21, 0.15), transparent 34%),
-          linear-gradient(180deg, #ffffff 0%, #fbfaff 42%, #f5f3ff 100%)
-        `,
+        background: '#342c60',
         position: 'relative',
         overflow: 'hidden'
       }}
     >
-     
-
       <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
         <SectionTitle title="नोमिनी सहयोग हेतु अपील" subtitle={homeNoticeHtml} />
 
@@ -561,10 +556,9 @@ IFSC: ${account?.ifscCode || 'IFSC CODE'}`;
                 <Card
                   sx={{
                     borderRadius: { xs: '28px', md: '38px' },
-                    background: 'rgba(255,255,255,0.88)',
-                    backdropFilter: 'blur(16px)',
-                    border: '1px solid rgba(124, 58, 237, 0.16)',
-                    boxShadow: '0 28px 80px rgba(76, 29, 149, 0.14)',
+                    background: '#ffffff',
+                    border: '1px solid rgba(111, 92, 194, 0.16)',
+                    boxShadow: '0 28px 80px #221b431f',
                     overflow: 'hidden',
                     position: 'relative',
                     '&::before': {
@@ -574,7 +568,7 @@ IFSC: ${account?.ifscCode || 'IFSC CODE'}`;
                       left: 0,
                       right: 0,
                       height: 7,
-                      background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`
+                      background: theme.main
                     }
                   }}
                 >
@@ -588,8 +582,8 @@ IFSC: ${account?.ifscCode || 'IFSC CODE'}`;
                         mb: 4,
                         p: { xs: 2, md: 2.5 },
                         borderRadius: '26px',
-                        background: 'linear-gradient(135deg, rgba(245,243,255,0.95), rgba(255,255,255,0.92))',
-                        border: '1px solid rgba(124, 58, 237, 0.12)'
+                        background: theme.soft,
+                        border: '1px solid rgba(111, 92, 194, 0.14)'
                       }}
                     >
                       <Stack
@@ -606,8 +600,8 @@ IFSC: ${account?.ifscCode || 'IFSC CODE'}`;
                               width: 96,
                               height: 96,
                               borderRadius: '50%',
-                              border: '4px solid #fff',
-                              boxShadow: '0 12px 30px rgba(76, 29, 149, 0.20)'
+                              border: '4px solid #ffffff',
+                              boxShadow: '0 12px 30px rgba(34, 27, 67, 0.20)'
                             }}
                           />
                         ) : (
@@ -615,10 +609,10 @@ IFSC: ${account?.ifscCode || 'IFSC CODE'}`;
                             sx={{
                               width: 96,
                               height: 96,
-                              background: `linear-gradient(135deg, ${theme.main}, ${theme.light})`,
+                              background: theme.main,
                               fontWeight: 950,
                               fontSize: '1.6rem',
-                              boxShadow: '0 12px 30px rgba(76, 29, 149, 0.20)'
+                              boxShadow: '0 12px 30px rgba(34, 27, 67, 0.20)'
                             }}
                           >
                             {dc.deceasedName?.charAt(0) || 'श्री'}
@@ -631,17 +625,17 @@ IFSC: ${account?.ifscCode || 'IFSC CODE'}`;
                               fontWeight: 950,
                               color: theme.dark,
                               fontSize: { xs: '1.28rem', md: '1.58rem' },
-                              fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif'
+                              fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif'
                             }}
                           >
                             {dc.deceasedName}
                           </Typography>
 
-                          <Typography sx={{ color: theme.muted, fontWeight: 800, mt: 0.5 }}>
+                          <Typography sx={{ color: theme.muted, fontWeight: 600, mt: 0.5 }}>
                             पंजीयन क्रमांक : {dc.employeeCode}
                           </Typography>
 
-                          <Typography sx={{ color: theme.muted, fontWeight: 800 }}>
+                          <Typography sx={{ color: theme.muted, fontWeight: 600 }}>
                             मृत्यु दिनांक : {formatDate(dc.caseDate)}
                           </Typography>
                         </Box>
@@ -650,10 +644,11 @@ IFSC: ${account?.ifscCode || 'IFSC CODE'}`;
                       <Chip
                         label="Assigned Support Case"
                         sx={{
-                          color: theme.dark,
-                          fontWeight: 900,
-                          background: '#fffbeb',
-                          border: '1px solid rgba(250, 204, 21, 0.35)'
+                          color: '#ffffff',
+                          fontWeight: 700,
+                          background: theme.accent,
+                          border: '1px solid rgba(15, 118, 110, 0.25)',
+                          fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif'
                         }}
                       />
                     </Stack>
@@ -665,7 +660,7 @@ IFSC: ${account?.ifscCode || 'IFSC CODE'}`;
                             color: theme.muted,
                             lineHeight: 1.9,
                             fontWeight: 650,
-                            fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif'
+                            fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif'
                           }}
                         >
                           {dc.description}
@@ -698,9 +693,9 @@ IFSC: ${account?.ifscCode || 'IFSC CODE'}`;
                               maxHeight: 350,
                               objectFit: 'contain',
                               borderRadius: '22px',
-                              border: '1px solid rgba(124, 58, 237, 0.18)',
-                              boxShadow: '0 16px 42px rgba(76, 29, 149, 0.16)',
-                              background: '#fff',
+                              border: '1px solid rgba(111, 92, 194, 0.18)',
+                              boxShadow: '0 16px 42px rgba(34, 27, 67, 0.14)',
+                              background: '#ffffff',
                               p: 1.2
                             }}
                           />
@@ -708,7 +703,7 @@ IFSC: ${account?.ifscCode || 'IFSC CODE'}`;
                       </Box>
                     )}
 
-                    <Divider sx={{ my: 4, borderColor: 'rgba(124, 58, 237, 0.12)' }} />
+                    <Divider sx={{ my: 4, borderColor: 'rgba(111, 92, 194, 0.14)' }} />
 
                     <Box>
                       <Typography
@@ -717,7 +712,8 @@ IFSC: ${account?.ifscCode || 'IFSC CODE'}`;
                           textAlign: 'center',
                           mb: 3,
                           fontSize: { xs: '1.22rem', md: '1.42rem' },
-                          color: theme.dark
+                          color: theme.dark,
+                          fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif'
                         }}
                       >
                         PAYMENT DETAILS
@@ -794,7 +790,7 @@ IFSC: ${account?.ifscCode || 'IFSC CODE'}`;
               sx={{
                 color: theme.text,
                 fontWeight: 900,
-                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif'
+                fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif'
               }}
             >
               कोई सहायता अनुरोध उपलब्ध नहीं है।

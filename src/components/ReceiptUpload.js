@@ -28,27 +28,28 @@ import {
 import api from "../services/api";
 
 const theme = {
-  dark: "#3b0764",
-  main: "#6d28d9",
-  light: "#a855f7",
-  gold: "#facc15",
-  soft: "#f5f3ff",
-  softGold: "#fffbeb",
-  text: "#4c1d95",
-  muted: "#5b5b6b",
-  green: "#16a34a",
+  dark: "#221b43",
+  main: "#6f5cc2",
+  light: "#b9a7ff",
+  accent: "#0f766e",
+  soft: "#f4f2fb",
+  softAccent: "#eef8f7",
+  text: "#221b43",
+  muted: "#4b5563",
+  green: "#0f766e",
+  border: "#ded8f5",
 };
 
 const inputSx = {
   "& .MuiOutlinedInput-root": {
     borderRadius: "14px",
-    background: "rgba(255,255,255,0.96)",
+    background: "#ffffff",
     transition: "all 0.25s ease",
     "& fieldset": {
-      borderColor: "rgba(124, 58, 237, 0.18)",
+      borderColor: "rgba(111, 92, 194, 0.22)",
     },
     "&:hover fieldset": {
-      borderColor: "rgba(124, 58, 237, 0.40)",
+      borderColor: "rgba(111, 92, 194, 0.48)",
     },
     "&.Mui-focused fieldset": {
       borderColor: theme.main,
@@ -56,8 +57,9 @@ const inputSx = {
     },
   },
   "& .MuiInputBase-input": {
-    fontWeight: 650,
+    fontWeight: 700,
     color: theme.text,
+    fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
   },
 };
 
@@ -66,11 +68,11 @@ const FieldLabel = ({ children }) => (
     variant="body2"
     sx={{
       color: theme.dark,
-      fontWeight: 900,
+      fontWeight: 700,
       mb: 0.8,
       display: "block",
       fontSize: "0.94rem",
-      fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+      fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
     }}
   >
     {children}
@@ -187,9 +189,9 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
         sx: {
           borderRadius: "28px",
           overflow: "hidden",
-          border: "1px solid rgba(124, 58, 237, 0.16)",
-          boxShadow: "0 28px 80px rgba(76, 29, 149, 0.22)",
-          background: "rgba(255,255,255,0.96)",
+          border: "1px solid rgba(111, 92, 194, 0.16)",
+          boxShadow: "0 28px 80px rgba(34, 27, 67, 0.22)",
+          background: "#ffffff",
           position: "relative",
         },
       }}
@@ -198,8 +200,8 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
         sx={{
           p: 0,
           position: "relative",
-          background: `linear-gradient(135deg, ${theme.dark}, ${theme.main})`,
-          color: "#fff",
+          background: theme.dark,
+          color: "#ffffff",
           overflow: "hidden",
         }}
       >
@@ -211,8 +213,7 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
             width: 180,
             height: 180,
             borderRadius: "50%",
-            background: "rgba(250, 204, 21, 0.16)",
-           
+            background: "rgba(185, 167, 255, 0.16)",
           }}
         />
 
@@ -236,7 +237,7 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
               justifyContent: "center",
               background: "rgba(255,255,255,0.16)",
               border: "1px solid rgba(255,255,255,0.25)",
-              color: theme.gold,
+              color: "#ffffff",
             }}
           >
             <PaymentsRounded sx={{ fontSize: 36 }} />
@@ -244,9 +245,10 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
 
           <Typography
             sx={{
-              fontWeight: 950,
+              fontWeight: 800,
+              color:"#fff",
               fontSize: { xs: "1.25rem", md: "1.45rem" },
-              fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+              fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
             }}
           >
             पेमेंट की जानकारी दर्ज करें
@@ -255,16 +257,15 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
           <Typography
             sx={{
               mt: 0.8,
-              color: "rgba(255,255,255,0.86)",
-              fontWeight: 650,
+              color: "rgba(255,255,255,0.88)",
+              fontWeight: 500,
               fontSize: "0.92rem",
-              fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+              fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
             }}
           >
             कृपया Amount और UTR Number सही भरें
           </Typography>
         </Box>
-
 
         <IconButton
           onClick={handleClose}
@@ -273,7 +274,7 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
             position: "absolute",
             right: 12,
             top: 12,
-            color: "#fff",
+            color: "#ffffff",
             background: "rgba(255,255,255,0.14)",
             zIndex: 2,
             "&:hover": {
@@ -287,13 +288,10 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
 
       <DialogContent
         sx={{
-          marginTop:2,
+          marginTop: 2,
           px: { xs: 2.5, md: 3.5 },
           py: { xs: 3, md: 3.5 },
-          background: `
-            radial-gradient(circle at bottom right, rgba(250, 204, 21, 0.10), transparent 32%),
-            linear-gradient(180deg, #ffffff 0%, #fbfaff 100%)
-          `,
+          background: "#ffffff",
         }}
       >
         {uploadSuccess ? (
@@ -308,9 +306,9 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                color: "#fff",
-                background: `linear-gradient(135deg, ${theme.green}, #22c55e)`,
-                boxShadow: "0 16px 38px rgba(22, 163, 74, 0.28)",
+                color: "#ffffff",
+                background: theme.accent,
+                boxShadow: "0 16px 38px rgba(15, 118, 110, 0.28)",
               }}
             >
               <CheckCircle sx={{ fontSize: 48 }} />
@@ -321,7 +319,7 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
               sx={{
                 color: theme.dark,
                 fontWeight: 950,
-                fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+                fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
               }}
             >
               पेमेंट की जानकारी सफलतापूर्वक दर्ज हो गई!
@@ -333,7 +331,7 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
                 mt: 1,
                 color: theme.muted,
                 fontWeight: 700,
-                fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+                fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
               }}
             >
               धन्यवाद! आपका योगदान दर्ज हो गया है।
@@ -344,10 +342,10 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
             <Grid item xs={12}>
               <Typography
                 sx={{
-                  fontWeight: 950,
+                  fontWeight: 700,
                   mb: 1.5,
                   color: theme.dark,
-                  fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+                  fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
                 }}
               >
                 पेमेंट की जानकारी
@@ -360,9 +358,8 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
                     mb: 2.5,
                     p: 2,
                     borderRadius: "18px",
-                    background:
-                      "linear-gradient(135deg, rgba(255,251,235,0.92), rgba(255,255,255,0.90))",
-                    border: "1px solid rgba(250, 204, 21, 0.35)",
+                    background: theme.soft,
+                    border: "1px solid rgba(111, 92, 194, 0.16)",
                   }}
                 >
                   <Chip
@@ -370,10 +367,11 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
                     size="small"
                     sx={{
                       mb: 1.2,
-                      color: theme.dark,
-                      fontWeight: 900,
-                      background: "#fffbeb",
-                      border: "1px solid rgba(250, 204, 21, 0.35)",
+                      color: "#ffffff",
+                      fontWeight: 700,
+                      background: theme.main,
+                      border: "1px solid rgba(111, 92, 194, 0.25)",
+                      fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
                     }}
                   />
 
@@ -382,7 +380,7 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
                       color: theme.text,
                       fontWeight: 800,
                       lineHeight: 1.7,
-                      fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+                      fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
                     }}
                   >
                     {displayCaseId ? (
@@ -487,7 +485,7 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
           px: { xs: 2.5, md: 3.5 },
           pb: 3,
           pt: 0,
-          background: "#fbfaff",
+          background: "#ffffff",
         }}
       >
         {!uploadSuccess && (
@@ -497,11 +495,11 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
               disabled={uploading}
               sx={{
                 color: theme.muted,
-                fontWeight: 900,
+                fontWeight: 700,
                 borderRadius: "14px",
                 px: 2.5,
                 textTransform: "none",
-                fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+                fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
               }}
             >
               रद्द करें
@@ -515,18 +513,18 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
                 borderRadius: "14px",
                 px: 3,
                 py: 1,
-                fontWeight: 950,
+                fontWeight: 700,
                 textTransform: "none",
-                fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
-                background: `linear-gradient(135deg, ${theme.main}, ${theme.light})`,
-                boxShadow: "0 12px 28px rgba(109, 40, 217, 0.28)",
+                fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
+                background:  '#0f7633',
+                boxShadow: "0 12px 28px rgba(15, 118, 110, 0.28)",
                 "&:hover": {
-                  background: `linear-gradient(135deg, ${theme.dark}, ${theme.main})`,
+                  background: "#0b5f59",
                   transform: "translateY(-1px)",
                 },
                 "&:disabled": {
-                  background: "#c4b5fd",
-                  color: "#fff",
+                  background: "#9ca3af",
+                  color: "#ffffff",
                 },
               }}
             >

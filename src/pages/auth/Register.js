@@ -46,16 +46,18 @@ const API_BASE_URL =
   process.env.REACT_APP_API_URL || "https://backend.pmums.com/api";
 
 const theme = {
-  dark: "#3b0764",
-  main: "#6d28d9",
-  light: "#a855f7",
-  gold: "#facc15",
-  soft: "#f5f3ff",
-  softGold: "#fffbeb",
-  text: "#4c1d95",
-  muted: "#5b5b6b",
-  danger: "#dc2626",
-  success: "#16a34a",
+  dark: "#221b43",
+  main: "#6f5cc2",
+  light: "#b9a7ff",
+  accent: "#0f766e",
+  soft: "#f4f2fb",
+  soft2: "#ffffff",
+  softAccent: "#eef8f7",
+  text: "#221b43",
+  muted: "#4b5563",
+  danger: "#b42318",
+  success: "#0f766e",
+  border: "#ded8f5",
 };
 
 const fontFamily = "Noto Sans Devanagari, Poppins, Arial, sans-serif";
@@ -66,8 +68,8 @@ const menuProps = {
       mt: 1,
       maxHeight: 320,
       borderRadius: "16px",
-      boxShadow: "0 18px 45px rgba(76, 29, 149, 0.18)",
-      border: "1px solid rgba(124, 58, 237, 0.12)",
+      boxShadow: "0 18px 45px rgba(34, 27, 67, 0.16)",
+border: "1px solid rgba(111, 92, 194, 0.14)",
       "& .MuiMenuItem-root": {
         px: 2,
         py: 1.3,
@@ -92,34 +94,34 @@ const labelSx = {
 const inputSx = {
   "& .MuiOutlinedInput-root": {
     borderRadius: "15px",
-    background: "rgba(255,255,255,0.94)",
+   background: "#ffffff",
     transition: "all 0.25s ease",
     "& fieldset": {
-      borderColor: "rgba(124, 58, 237, 0.18)",
+     borderColor: "rgba(111, 92, 194, 0.18)",
     },
     "&:hover fieldset": {
-      borderColor: "rgba(124, 58, 237, 0.42)",
+borderColor: "rgba(111, 92, 194, 0.42)",
     },
     "&.Mui-focused fieldset": {
       borderColor: theme.main,
       borderWidth: "2px",
     },
     "&.Mui-disabled": {
-      background: "rgba(245,243,255,0.85)",
+     background: theme.soft,
     },
   },
   "& .MuiInputBase-input": {
     color: theme.text,
-    fontWeight: 750,
+    fontWeight: 600,
     fontFamily,
   },
   "& input::placeholder": {
     color: "rgba(76, 29, 149, 0.55)",
     opacity: 1,
-    fontWeight: 650,
+    fontWeight: 600,
   },
   "& .MuiFormHelperText-root": {
-    fontWeight: 700,
+    fontWeight: 600,
     fontFamily,
     mx: 0.5,
   },
@@ -128,29 +130,29 @@ const inputSx = {
 const selectSx = {
   "& .MuiOutlinedInput-root": {
     borderRadius: "15px",
-    background: "rgba(255,255,255,0.94)",
+    background: "#ffffff",
     transition: "all 0.25s ease",
     "& fieldset": {
-      borderColor: "rgba(124, 58, 237, 0.18)",
+      borderColor: "rgba(111, 92, 194, 0.18)",
     },
     "&:hover fieldset": {
-      borderColor: "rgba(124, 58, 237, 0.42)",
+      borderColor: "rgba(111, 92, 194, 0.42)",
     },
     "&.Mui-focused fieldset": {
       borderColor: theme.main,
       borderWidth: "2px",
     },
     "&.Mui-disabled": {
-      background: "rgba(245,243,255,0.70)",
+      background: theme.soft,
     },
   },
   "& .MuiSelect-select": {
     color: theme.text,
-    fontWeight: 750,
+    fontWeight: 600,
     fontFamily,
   },
   "& .MuiFormHelperText-root": {
-    fontWeight: 700,
+    fontWeight: 600,
     fontFamily,
     mx: 0.5,
   },
@@ -160,9 +162,9 @@ const sectionCardSx = {
   mb: 4,
   p: { xs: 2, md: 3 },
   borderRadius: "24px",
-  background: "rgba(255,255,255,0.82)",
-  border: "1px solid rgba(124, 58, 237, 0.13)",
-  boxShadow: "0 18px 55px rgba(76, 29, 149, 0.08)",
+background: "#ffffff",
+border: "1px solid rgba(111, 92, 194, 0.16)",
+boxShadow: "0 18px 55px rgba(34, 27, 67, 0.08)",
 };
 
 const SectionHeader = ({ icon, title, subtitle }) => (
@@ -172,23 +174,13 @@ const SectionHeader = ({ icon, title, subtitle }) => (
       p: { xs: 1.8, md: 2.2 },
       borderRadius: "22px",
       color: "#fff",
-      background: `linear-gradient(135deg, ${theme.dark}, ${theme.main}, ${theme.light})`,
-      boxShadow: "0 16px 36px rgba(109, 40, 217, 0.22)",
-      display: "flex",
+background: "linear-gradient(135deg, #221b43 0%, #30295c 48%, #3b3268 100%)",
+boxShadow: "0 16px 36px rgba(34, 27, 67, 0.22)",      display: "flex",
       alignItems: "center",
       gap: 1.6,
       position: "relative",
       overflow: "hidden",
-      "&::after": {
-        content: '""',
-        position: "absolute",
-        width: 120,
-        height: 120,
-        borderRadius: "50%",
-        right: -45,
-        top: -45,
-        background: "rgba(250, 204, 21, 0.18)",
-      },
+      
     }}
   >
     <Box
@@ -689,40 +681,12 @@ showNotification(errorMessage, "error");
         sx={{
           minHeight: "calc(100vh - 160px)",
           py: { xs: 4, md: 7 },
-          background: `
-            radial-gradient(circle at top left, rgba(124, 58, 237, 0.14), transparent 30%),
-            radial-gradient(circle at bottom right, rgba(250, 204, 21, 0.18), transparent 34%),
-            linear-gradient(180deg, #ffffff 0%, #fbfaff 44%, #f5f3ff 100%)
-          `,
+        background: theme.soft,
           position: "relative",
           overflow: "hidden",
         }}
       >
-        <Box
-          sx={{
-            position: "absolute",
-            width: 380,
-            height: 380,
-            borderRadius: "50%",
-            top: -170,
-            left: -135,
-            background: "rgba(124, 58, 237, 0.10)",
-            filter: "blur(8px)",
-          }}
-        />
-
-        <Box
-          sx={{
-            position: "absolute",
-            width: 340,
-            height: 340,
-            borderRadius: "50%",
-            right: -140,
-            bottom: -145,
-            background: "rgba(250, 204, 21, 0.18)",
-            filter: "blur(10px)",
-          }}
-        />
+        
 
         <Container maxWidth="lg" sx={{ position: "relative", zIndex: 1 }}>
           <Paper
@@ -730,10 +694,9 @@ showNotification(errorMessage, "error");
             sx={{
               p: { xs: 2.2, sm: 3, md: 4 },
               borderRadius: { xs: "28px", md: "38px" },
-              background: "rgba(255,255,255,0.82)",
-              backdropFilter: "blur(16px)",
-              border: "1px solid rgba(124, 58, 237, 0.16)",
-              boxShadow: "0 30px 90px rgba(76, 29, 149, 0.16)",
+             background: "#ffffff",
+border: "1px solid rgba(111, 92, 194, 0.16)",
+boxShadow: "0 30px 90px rgba(34, 27, 67, 0.12)",
               position: "relative",
               overflow: "hidden",
               "&::before": {
@@ -743,18 +706,8 @@ showNotification(errorMessage, "error");
                 left: 0,
                 right: 0,
                 height: 7,
-                background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`,
-              },
-              "&::after": {
-                content: '""',
-                position: "absolute",
-                width: 260,
-                height: 260,
-                borderRadius: "50%",
-                right: -115,
-                top: -130,
-                background: "rgba(250, 204, 21, 0.12)",
-              },
+background: theme.main,              },
+             
             }}
           >
             <Box sx={{ position: "relative", zIndex: 1 }}>
@@ -769,9 +722,9 @@ showNotification(errorMessage, "error");
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    background: `linear-gradient(135deg, ${theme.main}, ${theme.light})`,
-                    color: "#fff",
-                    boxShadow: "0 16px 36px rgba(124, 58, 237, 0.28)",
+background: theme.main,
+boxShadow: "0 16px 36px rgba(111, 92, 194, 0.28)",                    color: "#fff",
+                  
                   }}
                 >
                   <PersonAdd sx={{ fontSize: 40 }} />
@@ -812,8 +765,7 @@ showNotification(errorMessage, "error");
                     borderRadius: 99,
                     mx: "auto",
                     mb: 2,
-                    background: `linear-gradient(90deg, ${theme.main}, ${theme.light}, ${theme.gold})`,
-                  }}
+background: theme.main,                  }}
                 />
 
                 <Typography
@@ -836,9 +788,9 @@ showNotification(errorMessage, "error");
                   sx={{
                     mt: 2,
                     color: theme.dark,
-                    fontWeight: 900,
-                    background: "#fffbeb",
-                    border: "1px solid rgba(250, 204, 21, 0.38)",
+                    fontWeight: 700,
+                    background:theme.softAccent,
+                    border: "1px solid  rgba(185, 167, 255, 0.10)",
                     fontFamily,
                   }}
                 />
@@ -1533,9 +1485,8 @@ showNotification(errorMessage, "error");
                     mb: 3,
                     p: { xs: 2, md: 2.5 },
                     borderRadius: "24px",
-                    background:
-                      "linear-gradient(135deg, rgba(255,251,235,0.90), rgba(255,255,255,0.90))",
-                    border: "1px solid rgba(250, 204, 21, 0.32)",
+                  background: theme.softAccent,
+border: "1px solid rgba(15, 118, 110, 0.18)",
                   }}
                 >
                   <FormControlLabel
@@ -1604,19 +1555,21 @@ showNotification(errorMessage, "error");
                       px: { xs: 3, md: 5 },
                       py: 1.45,
                       fontSize: "1.05rem",
-                      fontWeight: 950,
+                     
                       borderRadius: "16px",
                       textTransform: "none",
                       minWidth: { xs: "100%", sm: 285 },
-                      background: `linear-gradient(135deg, ${theme.main}, ${theme.light})`,
-                      boxShadow: "0 16px 36px rgba(109, 40, 217, 0.30)",
+                     fontWeight: 700,
+background: theme.accent,
+boxShadow: "0 16px 36px rgba(15, 118, 110, 0.30)",
+"&:hover": {
+  background: "#0b5f59",
+  transform: "translateY(-2px)",
+  boxShadow: "0 20px 45px rgba(15, 118, 110, 0.38)",
+},
                       transition: "all 0.3s ease",
                       fontFamily,
-                      "&:hover": {
-                        background: `linear-gradient(135deg, ${theme.dark}, ${theme.main})`,
-                        transform: "translateY(-2px)",
-                        boxShadow: "0 20px 45px rgba(109, 40, 217, 0.40)",
-                      },
+                      
                       "&:disabled": {
                         background: "#c4b5fd",
                         color: "#fff",
@@ -1642,17 +1595,18 @@ showNotification(errorMessage, "error");
                       px: { xs: 3, md: 5 },
                       py: 1.45,
                       fontSize: "1.05rem",
-                      fontWeight: 950,
                       borderRadius: "16px",
                       textTransform: "none",
                       minWidth: { xs: "100%", sm: 220 },
-                      borderColor: "rgba(124, 58, 237, 0.35)",
-                      color: theme.main,
+                     
                       fontFamily,
-                      "&:hover": {
-                        borderColor: theme.main,
-                        background: "rgba(124, 58, 237, 0.07)",
-                      },
+                     fontWeight: 700,
+borderColor: "rgba(111, 92, 194, 0.35)",
+color: theme.main,
+"&:hover": {
+  borderColor: theme.main,
+  background: "rgba(111, 92, 194, 0.08)",
+},
                     }}
                     onClick={() => navigate("/login")}
                   >
@@ -1714,8 +1668,8 @@ showNotification(errorMessage, "error");
     sx: {
       borderRadius: "34px",
       overflow: "hidden",
-      boxShadow: "0 35px 100px rgba(22, 163, 74, 0.22)",
-      background: "rgba(255,255,255,0.96)",
+     boxShadow: "0 35px 100px rgba(15, 118, 110, 0.22)",
+background: "#ffffff",
       position: "relative",
     },
   }}
@@ -1724,7 +1678,7 @@ showNotification(errorMessage, "error");
     sx={{
       position: "relative",
       overflow: "hidden",
-      background: `linear-gradient(135deg, ${theme.success}, #22c55e, #86efac)`,
+background: theme.accent,
       px: { xs: 2.5, md: 4 },
       pt: 4,
       pb: 5,
@@ -1863,11 +1817,11 @@ showNotification(errorMessage, "error");
         mx: "auto",
         p: 2.5,
         borderRadius: "24px",
-        background:
-          "linear-gradient(135deg, rgba(255,251,235,0.98), rgba(255,255,255,0.98))",
-        border: "1px solid rgba(250, 204, 21, 0.45)",
+       background: theme.soft,
+border: "1px solid rgba(111, 92, 194, 0.18)",
+boxShadow: "0 16px 40px rgba(34, 27, 67, 0.08)",
         maxWidth: 390,
-        boxShadow: "0 16px 40px rgba(250, 204, 21, 0.16)",
+       
       }}
     >
       <Typography
@@ -1995,17 +1949,19 @@ showNotification(errorMessage, "error");
       sx={{
         px: 3,
         py: 1.25,
-        fontWeight: 950,
+       
         borderRadius: "16px",
         textTransform: "none",
         fontFamily,
         minWidth: { xs: "100%", sm: 220 },
-        background: `linear-gradient(135deg, ${theme.main}, ${theme.light})`,
-        boxShadow: "0 14px 30px rgba(109, 40, 217, 0.28)",
-        "&:hover": {
-          background: `linear-gradient(135deg, ${theme.dark}, ${theme.main})`,
-          transform: "translateY(-1px)",
-        },
+      fontWeight: 700,
+background: theme.accent,
+boxShadow: "0 16px 36px rgba(15, 118, 110, 0.30)",
+"&:hover": {
+  background: "#0b5f59",
+  transform: "translateY(-2px)",
+  boxShadow: "0 20px 45px rgba(15, 118, 110, 0.38)",
+},
       }}
     >
      लॉगिन पर जाएं
