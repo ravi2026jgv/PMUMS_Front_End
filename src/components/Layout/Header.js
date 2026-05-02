@@ -29,7 +29,6 @@ const Header = () => {
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [mobileMenuAnchor, setMobileMenuAnchor] = React.useState(null);
   const [listMenuAnchor, setListMenuAnchor] = React.useState(null);
-  const [mobileListMenuAnchor, setMobileListMenuAnchor] = React.useState(null);
   const [showSelfDonationNav, setShowSelfDonationNav] = React.useState(false);
 
   React.useEffect(() => {
@@ -60,7 +59,6 @@ const Header = () => {
 
   const handleMobileMenuClose = () => {
     setMobileMenuAnchor(null);
-    setMobileListMenuAnchor(null);
   };
 
   const handleListMenuOpen = (event) => {
@@ -71,13 +69,7 @@ const Header = () => {
     setListMenuAnchor(null);
   };
 
-  const handleMobileListMenuOpen = (event) => {
-    setMobileListMenuAnchor(event.currentTarget);
-  };
-
-  const handleMobileListMenuClose = () => {
-    setMobileListMenuAnchor(null);
-  };
+  
 
   const handleLogout = async () => {
     await logout();
@@ -517,69 +509,67 @@ color: Boolean(listMenuAnchor) ? '#dcd4ff' : '#ffffff'                }}
                   )
                 )}
 
-                <Divider />
+              <Divider />
 
-                <MenuItem
-                  onClick={handleMobileListMenuOpen}
-                  sx={{
-                    fontWeight: 700,
-                    color: '#252044'
-                  }}
-                >
-                  LISTS
-                  <KeyboardArrowDown sx={{ ml: 1 }} />
-                </MenuItem>
+<MenuItem
+  disabled
+  sx={{
+    fontWeight: 800,
+    color: '#6f5cc2 !important',
+    opacity: '1 !important',
+    fontSize: '0.78rem',
+    letterSpacing: '0.6px',
+    textTransform: 'uppercase',
+    fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
+    bgcolor: '#f4f2fb'
+  }}
+>
+  User Services
+</MenuItem>
 
-                <Menu
-                  anchorEl={mobileListMenuAnchor}
-                  open={Boolean(mobileListMenuAnchor)}
-                  onClose={handleMobileListMenuClose}
-                  anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'left'
-                  }}
-                  transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'left'
-                  }}
-                  PaperProps={{
-                    sx: {
-                      minWidth: 240,
-                      borderRadius: 2,
-                      border: '1px solid #ddd1b2'
-                    }
-                  }}
-                >
-                  {listNavigationItems.map((item) =>
-                    item.external ? (
-                      <MenuItem
-                        key={item.path}
-                        component="a"
-                        href={item.path}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => {
-                          handleMobileListMenuClose();
-                          handleMobileMenuClose();
-                        }}
-                      >
-                        {item.label}
-                      </MenuItem>
-                    ) : (
-                      <MenuItem
-                        key={item.path}
-                        component={Link}
-                        to={item.path}
-                        onClick={() => {
-                          handleMobileListMenuClose();
-                          handleMobileMenuClose();
-                        }}
-                      >
-                        {item.label}
-                      </MenuItem>
-                    )
-                  )}
-                </Menu>
+{listNavigationItems.map((item) =>
+  item.external ? (
+    <MenuItem
+      key={item.path}
+      component="a"
+      href={item.path}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={handleMobileMenuClose}
+      sx={{
+        pl: 3,
+        fontWeight: 600,
+        color: '#252044',
+        fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
+        '&:hover': {
+          backgroundColor: '#f4f2fb',
+          color: '#221b43'
+        }
+      }}
+    >
+      {item.label}
+    </MenuItem>
+  ) : (
+    <MenuItem
+      key={item.path}
+      component={Link}
+      to={item.path}
+      onClick={handleMobileMenuClose}
+      sx={{
+        pl: 3,
+        fontWeight: 600,
+        color: '#252044',
+        fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
+        '&:hover': {
+          backgroundColor: '#f4f2fb',
+          color: '#221b43'
+        }
+      }}
+    >
+      {item.label}
+    </MenuItem>
+  )
+)}
 
                 {isAuthenticated && (
                   <>

@@ -380,8 +380,7 @@ resetUserPassword: (id, payload) =>
   api.put(`/admin/users/${id}/password-reset`, payload),
 // Permanent delete user (NEW API)
 permanentDeleteUser: (id) => {
-  // backend should expose: DELETE /api/admin/users/{id}/permanent
-  return api.delete(`/admin/users/${id}/permanent`);
+  return api.post(`/delete-approval/users/${id}/permanent-delete`);
 },
 
   // Update user role

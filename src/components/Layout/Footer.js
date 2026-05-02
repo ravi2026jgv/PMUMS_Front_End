@@ -275,20 +275,42 @@ p: 1
         </Grid>
 
         {/* Copyright Section */}
-        <Box sx={{ 
-          borderTop: '1px solid rgba(200, 191, 255, 0.25)',
-          mt: 3,
-          pt: 2,
-          textAlign: 'center'
-        }}>
-          <Typography variant="body2" sx={{ 
-            color: '#cbc3f5',
-            fontSize: '0.85rem',
-            fontFamily: 'Arial, sans-serif'
-          }}>
-            © 2025 PMUMS | All Rights Reserved 
-          </Typography>
-        </Box>
+        <Box
+  sx={{
+    borderTop: '1px solid rgba(200, 191, 255, 0.25)',
+    mt: 3,
+    pt: 2,
+    textAlign: 'center'
+  }}
+>
+  <Typography
+    variant="body2"
+    sx={{
+      color: '#cbc3f5',
+      fontSize: '0.85rem',
+      fontFamily: 'Arial, sans-serif'
+    }}
+  >
+    © 2025 PMUMS | All Rights Reserved Managed by{' '}
+    <Box
+      component="a"
+      href="https://jyotiglobalventures.com/"
+      target="_blank"
+      rel="noopener noreferrer"
+      sx={{
+        color: '#ffffff',
+        fontWeight: 600,
+        textDecoration: 'none',
+        '&:hover': {
+          color: '#cbc3f5',
+          textDecoration: 'underline'
+        }
+      }}
+    >
+      Jyoti Global Ventures
+    </Box>
+  </Typography>
+</Box>
       </Container>
     </Box>
   );
