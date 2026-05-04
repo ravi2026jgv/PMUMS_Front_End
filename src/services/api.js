@@ -361,6 +361,22 @@ uploadSelfDonationQr: (file) => {
       }
     });
   },
+  // Export Mobile Permission APIs - New user-specific flow
+getExportMobilePermissions: (params = {}) => {
+  return api.get('/admin/export-mobile-permissions', { params });
+},
+
+checkExportMobilePermission: (userId) => {
+  return api.get(`/admin/export-mobile-permissions/check/${userId}`);
+},
+
+grantExportMobilePermission: (payload) => {
+  return api.post('/admin/export-mobile-permissions/grant', payload);
+},
+
+revokeExportMobilePermission: (payload) => {
+  return api.post('/admin/export-mobile-permissions/revoke', payload);
+},
 getPublicSelfDonationSettings: () => {
   return publicApi.get('/public/self-donation-settings');
 },
@@ -625,7 +641,7 @@ resolveQuery: (queryId, resolution) =>
 escalateQuery: (queryId) =>
   api.put(`/manager/queries/${queryId}/escalate`),
 exportPendingProfiles: (params = {}) => {
-  return api.get('/users/pending-profiles/export', {
+  return api.get('/admin/export/pending-profiles', {
     params,
     responseType: 'blob'
   });

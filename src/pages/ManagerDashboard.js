@@ -787,14 +787,16 @@ const fetchManagedLocationCounts = async (scope) => {
   const openExportDialog = async (type) => {
     setExportType(type);
 
-    const defaultMode =
-      type === "pending-profiles" ||
+   const defaultMode =
+  type === "sahyog" || type === "asahyog"
+    ? "month"
+    : type === "pending-profiles" ||
       type === "users" ||
       type === "zero-utr" ||
       type === "no-login-3-months" ||
       type === "no-sahyog-2-months"
-        ? "all"
-        : "beneficiary";
+    ? "all"
+    : "beneficiary";
 
     setExportMode(defaultMode);
     setExportBeneficiary("");
@@ -2688,7 +2690,7 @@ const renderUsersTab = () => (
               </Box>
 
               <Grid container spacing={2}>
-                {isSambhagManager && (
+                {/* {isSambhagManager && (
                   <Grid item xs={12} sm={6} md={3}>
                     <Button
                       fullWidth
@@ -2703,7 +2705,7 @@ const renderUsersTab = () => (
                       Settings
                     </Button>
                   </Grid>
-                )}
+                )} */}
 
                 <Grid item xs={12} sm={6} md={3}>
                   <Button

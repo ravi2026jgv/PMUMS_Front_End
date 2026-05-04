@@ -200,6 +200,14 @@ const [reportFilters, setReportFilters] = useState({
 const [dateExportType, setDateExportType] = useState('');
 const [dateExportFromDate, setDateExportFromDate] = useState('');
 const [dateExportToDate, setDateExportToDate] = useState('');
+const [exportPermissionUserId, setExportPermissionUserId] = useState('');
+const [exportPermissionRemarks, setExportPermissionRemarks] = useState('');
+const [exportPermissionResult, setExportPermissionResult] = useState(null);
+const [exportPermissionLoading, setExportPermissionLoading] = useState(false);
+const [exportPermissionRows, setExportPermissionRows] = useState([]);
+const [exportPermissionPage, setExportPermissionPage] = useState(0);
+const [exportPermissionRowsPerPage, setExportPermissionRowsPerPage] = useState(10);
+const [exportPermissionTotal, setExportPermissionTotal] = useState(0);
   // Death Cases specific state
     const [isDeathCaseEditMode, setIsDeathCaseEditMode] = useState(false);
   const [editingDeathCaseId, setEditingDeathCaseId] = useState(null);
@@ -1429,6 +1437,117 @@ const handleSaveContentSettings = async () => {
     setContentSaving(false);
   }
 };
+const fetchExportMobilePermissions = async (
+  page = exportPermissionPage,
+  size = exportPermissionRowsPerPage
+) => {
+  try {
+    const response = await adminAPI.getExportMobilePermissions({
+      page,
+      size,
+    });
+
+    setExportPermissionRows(response?.data?.content || []);
+    setExportPermissionTotal(response?.data?.totalElements || 0);
+  } catch (error) {
+    console.error('Error loading export mobile permissions:', error);
+    showSnackbar(
+      error?.response?.data?.message || 'Failed to load export mobile permissions!',
+      'error'
+    );
+    setExportPermissionRows([]);
+    setExportPermissionTotal(0);
+  }
+};
+
+const handleCheckExportMobilePermission = async () => {
+  const userId = exportPermissionUserId.trim();
+
+  if (!userId) {
+    showSnackbar('Please enter User ID!', 'error');
+    return;
+  }
+
+  try {
+    setExportPermissionLoading(true);
+
+    const response = await adminAPI.checkExportMobilePermission(userId);
+    setExportPermissionResult(response.data);
+
+    showSnackbar('Permission status loaded successfully!', 'success');
+  } catch (error) {
+    console.error('Error checking export mobile permission:', error);
+    setExportPermissionResult(null);
+    showSnackbar(
+      error?.response?.data?.message || 'Failed to check permission!',
+      'error'
+    );
+  } finally {
+    setExportPermissionLoading(false);
+  }
+};
+
+const handleGrantExportMobilePermission = async () => {
+  const userId = exportPermissionUserId.trim();
+
+  if (!userId) {
+    showSnackbar('Please enter User ID!', 'error');
+    return;
+  }
+
+  try {
+    setExportPermissionLoading(true);
+
+    const response = await adminAPI.grantExportMobilePermission({
+      userId,
+      remarks: exportPermissionRemarks || 'Granted from Admin Dashboard',
+    });
+
+    setExportPermissionResult(response.data);
+    await fetchExportMobilePermissions();
+
+    showSnackbar('Mobile export permission granted successfully!', 'success');
+  } catch (error) {
+    console.error('Error granting export mobile permission:', error);
+    showSnackbar(
+      error?.response?.data?.message || 'Failed to grant permission!',
+      'error'
+    );
+  } finally {
+    setExportPermissionLoading(false);
+  }
+};
+
+const handleRevokeExportMobilePermission = async () => {
+  const userId = exportPermissionUserId.trim();
+
+  if (!userId) {
+    showSnackbar('Please enter User ID!', 'error');
+    return;
+  }
+
+  try {
+    setExportPermissionLoading(true);
+
+    const response = await adminAPI.revokeExportMobilePermission({
+      userId,
+      remarks: exportPermissionRemarks || 'Revoked from Admin Dashboard',
+    });
+
+    setExportPermissionResult(response.data);
+    await fetchExportMobilePermissions();
+
+    showSnackbar('Mobile export permission revoked successfully!', 'success');
+  } catch (error) {
+    console.error('Error revoking export mobile permission:', error);
+    showSnackbar(
+      error?.response?.data?.message || 'Failed to revoke permission!',
+      'error'
+    );
+  } finally {
+    setExportPermissionLoading(false);
+  }
+};
 const handleContentFieldChange = (field, value) => {
   setHomeDisplayContent((prev) => ({
     ...prev,
@@ -1440,47 +1559,41 @@ const openSettingsDialog = async () => {
     setSettingsDialogOpen(true);
     setSettingsLoading(true);
 
-   const [
-  mobileOtpResponse,
-  exportMobileResponse,
-  selfDonationVisibleResponse,
-  selfDonationQrResponse,
-  districtManagerMobileResponse,
-  blockManagerMobileResponse,
-  profileFieldLocksResponse,
-] = await Promise.all([
-  adminAPI.getMobileOtpSetting(),
-  adminAPI.getExportMobileNumberSetting(),
-  adminAPI.getSelfDonationVisibleSetting(),
-  adminAPI.getSelfDonationQr(),
-  adminAPI.getDistrictManagerExportMobileSetting(),
-  adminAPI.getBlockManagerExportMobileSetting(),
-  adminAPI.getProfileFieldLocks(),
-]);
+    setExportPermissionUserId('');
+    setExportPermissionRemarks('');
+    setExportPermissionResult(null);
+    setExportPermissionPage(0);
+
+    const [
+      mobileOtpResponse,
+      selfDonationVisibleResponse,
+      selfDonationQrResponse,
+      profileFieldLocksResponse,
+    ] = await Promise.all([
+      adminAPI.getMobileOtpSetting(),
+      adminAPI.getSelfDonationVisibleSetting(),
+      adminAPI.getSelfDonationQr(),
+      adminAPI.getProfileFieldLocks(),
+    ]);
 
     setMobileOtpEnabled(mobileOtpResponse.data?.mobileOtpEnabled === true);
-    setExportMobileNumberEnabled(
-      exportMobileResponse.data?.exportMobileNumberEnabled === true
-    );
-    setDistrictManagerExportMobileEnabled(
-  districtManagerMobileResponse.data?.districtManagerExportMobileEnabled === true
-);
 
-setBlockManagerExportMobileEnabled(
-  blockManagerMobileResponse.data?.blockManagerExportMobileEnabled === true
-);
     setSelfDonationVisible(
       selfDonationVisibleResponse.data?.selfDonationVisible === true
     );
+
     setSelfDonationQrUrl(selfDonationQrResponse.data?.qrUrl || '');
     setSelfDonationQrFile(null);
+
     setProfileFieldLocks({
-  fullName: !!profileFieldLocksResponse.data?.fullName,
-  dateOfBirth: !!profileFieldLocksResponse.data?.dateOfBirth,
-  mobileNumber: !!profileFieldLocksResponse.data?.mobileNumber,
-  email: !!profileFieldLocksResponse.data?.email,
-  departmentUniqueId: !!profileFieldLocksResponse.data?.departmentUniqueId,
-});
+      fullName: !!profileFieldLocksResponse.data?.fullName,
+      dateOfBirth: !!profileFieldLocksResponse.data?.dateOfBirth,
+      mobileNumber: !!profileFieldLocksResponse.data?.mobileNumber,
+      email: !!profileFieldLocksResponse.data?.email,
+      departmentUniqueId: !!profileFieldLocksResponse.data?.departmentUniqueId,
+    });
+
+    await fetchExportMobilePermissions(0, exportPermissionRowsPerPage);
   } catch (error) {
     console.error('Error loading settings:', error);
     showSnackbar('Failed to load settings!', 'error');
@@ -1512,14 +1625,11 @@ const handleSaveSettings = async () => {
   try {
     setSettingsSaving(true);
 
-   await Promise.all([
-  adminAPI.updateMobileOtpSetting(mobileOtpEnabled),
-  adminAPI.updateExportMobileNumberSetting(exportMobileNumberEnabled),
-  adminAPI.updateSelfDonationVisibleSetting(selfDonationVisible),
-  adminAPI.updateDistrictManagerExportMobileSetting(districtManagerExportMobileEnabled),
-  adminAPI.updateBlockManagerExportMobileSetting(blockManagerExportMobileEnabled),
-  adminAPI.updateProfileFieldLocks(profileFieldLocks),
-]);
+    await Promise.all([
+      adminAPI.updateMobileOtpSetting(mobileOtpEnabled),
+      adminAPI.updateSelfDonationVisibleSetting(selfDonationVisible),
+      adminAPI.updateProfileFieldLocks(profileFieldLocks),
+    ]);
 
     if (selfDonationQrFile) {
       setSelfDonationQrUploading(true);
@@ -2300,27 +2410,28 @@ const openDashboardExportDialog = async (type) => {
 const handleExportUsers = async () => {
   try {
     setExportLoading(true);
-    const response = await adminAPI.exportUsers(exportMonth, exportYear);
 
-    const blob = new Blob(
-      [response.data],
-      { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }
+    const response = await adminAPI.exportUsers({
+      month: exportMonth,
+      year: exportYear,
+    });
+
+    downloadBlobFile(
+      response.data,
+      `users_export_${exportMonth}_${exportYear}.csv`
     );
-
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', `users_export_${exportMonth}_${exportYear}.xlsx`);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.URL.revokeObjectURL(url);
 
     setExportDialog(false);
     showSnackbar('User data exported successfully!', 'success');
   } catch (error) {
     console.error('Error exporting users:', error);
-    showSnackbar('Error exporting!', 'error');
+
+    showSnackbar(
+      error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        'Error exporting users!',
+      'error'
+    );
   } finally {
     setExportLoading(false);
   }
@@ -11925,7 +12036,7 @@ const getDeathCaseStatusChipSx = (status) => {
           </Grid>
         </Paper>
 
-        <Paper elevation={0} sx={settingsCardSx}>
+        {/* <Paper elevation={0} sx={settingsCardSx}>
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}>
             <Box
               sx={{
@@ -12012,7 +12123,7 @@ const getDeathCaseStatusChipSx = (status) => {
               </Box>
             </Grid>
           </Grid>
-        </Paper>
+        </Paper> */}
 
         <Paper elevation={0} sx={settingsCardSx}>
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}>
@@ -12074,6 +12185,202 @@ const getDeathCaseStatusChipSx = (status) => {
             ))}
           </Grid>
         </Paper>
+        <Paper elevation={0} sx={settingsCardSx}>
+  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}>
+    <Box
+      sx={{
+        width: 40,
+        height: 40,
+        borderRadius: '14px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #2563eb 0%, #1e40af 100%)',
+        color: '#fff',
+        boxShadow: '0 10px 20px rgba(37, 99, 235, 0.18)',
+        flexShrink: 0,
+      }}
+    >
+      <Download fontSize="small" />
+    </Box>
+
+    <Box>
+      <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a' }}>
+        Mobile Number Export Permission
+      </Typography>
+      <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+        Admin and Super Admin exports will always include mobile numbers. Other users/managers will get mobile numbers only when permission is granted by User ID.
+      </Typography>
+    </Box>
+  </Box>
+
+  <Grid container spacing={2}>
+    <Grid item xs={12} md={4}>
+      <TextField
+        fullWidth
+        size="small"
+        label="User ID"
+        placeholder="Example: PMUMS20240001"
+        value={exportPermissionUserId}
+        onChange={(e) => setExportPermissionUserId(e.target.value)}
+        sx={premiumTextFieldSx}
+      />
+    </Grid>
+
+    <Grid item xs={12} md={5}>
+      <TextField
+        fullWidth
+        size="small"
+        label="Remarks"
+        placeholder="Optional reason"
+        value={exportPermissionRemarks}
+        onChange={(e) => setExportPermissionRemarks(e.target.value)}
+        sx={premiumTextFieldSx}
+      />
+    </Grid>
+
+    <Grid item xs={12} md={3}>
+      <Button
+        fullWidth
+        variant="outlined"
+        disabled={exportPermissionLoading}
+        onClick={handleCheckExportMobilePermission}
+        sx={{
+          height: 40,
+          borderRadius: 3,
+          fontWeight: 800,
+          textTransform: 'none',
+        }}
+      >
+        Check
+      </Button>
+    </Grid>
+
+    <Grid item xs={12} md={6}>
+      <Button
+        fullWidth
+        variant="contained"
+        disabled={exportPermissionLoading}
+        onClick={handleGrantExportMobilePermission}
+        sx={premiumPrimaryButtonSx}
+      >
+        {exportPermissionLoading ? 'Processing...' : 'Grant Permission'}
+      </Button>
+    </Grid>
+
+    <Grid item xs={12} md={6}>
+      <Button
+        fullWidth
+        variant="outlined"
+        color="error"
+        disabled={exportPermissionLoading}
+        onClick={handleRevokeExportMobilePermission}
+        sx={{
+          borderRadius: 3,
+          py: 1,
+          fontWeight: 800,
+          textTransform: 'none',
+        }}
+      >
+        Revoke Permission
+      </Button>
+    </Grid>
+  </Grid>
+
+  {exportPermissionResult && (
+    <Alert
+      severity={exportPermissionResult.enabled ? 'success' : 'warning'}
+      sx={{ mt: 2, borderRadius: 3 }}
+    >
+      <strong>
+        {exportPermissionResult.userName || exportPermissionResult.userId}
+      </strong>
+      {' '}({exportPermissionResult.userRole || '-'}) - Mobile export permission is{' '}
+      <strong>{exportPermissionResult.enabled ? 'Enabled' : 'Disabled'}</strong>
+    </Alert>
+  )}
+
+  <Box sx={{ mt: 3 }}>
+    <Typography
+      variant="subtitle1"
+      sx={{
+        fontWeight: 900,
+        color: '#334155',
+        mb: 1,
+      }}
+    >
+      Permission History
+    </Typography>
+
+    <TableContainer sx={{ borderRadius: 3, border: '1px solid #e2e8f0' }}>
+      <Table size="small">
+        <TableHead>
+          <TableRow sx={{ bgcolor: '#f8fafc' }}>
+            <TableCell sx={{ fontWeight: 900 }}>User ID</TableCell>
+            <TableCell sx={{ fontWeight: 900 }}>Name</TableCell>
+            <TableCell sx={{ fontWeight: 900 }}>Role</TableCell>
+            <TableCell sx={{ fontWeight: 900 }}>Permission</TableCell>
+            <TableCell sx={{ fontWeight: 900 }}>Granted At</TableCell>
+            <TableCell sx={{ fontWeight: 900 }}>Revoked At</TableCell>
+            <TableCell sx={{ fontWeight: 900 }}>Remarks</TableCell>
+          </TableRow>
+        </TableHead>
+
+        <TableBody>
+          {exportPermissionRows.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                No permission records found
+              </TableCell>
+            </TableRow>
+          ) : (
+            exportPermissionRows.map((row) => (
+              <TableRow key={row.id || row.userId}>
+                <TableCell>{row.userId || '-'}</TableCell>
+                <TableCell>{row.userName || '-'}</TableCell>
+                <TableCell>{row.userRole || '-'}</TableCell>
+                <TableCell>
+                  <Chip
+                    size="small"
+                    label={row.enabled ? 'Enabled' : 'Disabled'}
+                    color={row.enabled ? 'success' : 'default'}
+                    variant="outlined"
+                    sx={{ fontWeight: 800 }}
+                  />
+                </TableCell>
+                <TableCell>
+                  {row.grantedAt ? new Date(row.grantedAt).toLocaleString('en-IN') : '-'}
+                </TableCell>
+                <TableCell>
+                  {row.revokedAt ? new Date(row.revokedAt).toLocaleString('en-IN') : '-'}
+                </TableCell>
+                <TableCell>{row.remarks || '-'}</TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
+
+    <TablePagination
+      component="div"
+      count={exportPermissionTotal}
+      page={exportPermissionPage}
+      rowsPerPage={exportPermissionRowsPerPage}
+      rowsPerPageOptions={[5, 10, 20, 50]}
+      onPageChange={async (_, newPage) => {
+        setExportPermissionPage(newPage);
+        await fetchExportMobilePermissions(newPage, exportPermissionRowsPerPage);
+      }}
+      onRowsPerPageChange={async (e) => {
+        const newSize = parseInt(e.target.value, 10);
+        setExportPermissionRowsPerPage(newSize);
+        setExportPermissionPage(0);
+        await fetchExportMobilePermissions(0, newSize);
+      }}
+    />
+  </Box>
+</Paper>
 
         <Paper elevation={0} sx={settingsCardSx}>
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}>
