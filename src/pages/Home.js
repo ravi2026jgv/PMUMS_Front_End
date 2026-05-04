@@ -38,6 +38,7 @@ import Founders from "../components/Founders";
 import DeathCase from "../components/DeathCase";
 import { useAuth } from "../context/AuthContext";
 import SelfDonation from "../components/SelfDonation";
+import DeathCaseSupportView from "../components/DeathCaseSupportView";
 import SbiInsuranceSection from "../components/SbiInsuranceSection";
 import { publicApi, receiptAPI, FILE_BASE_URL } from "../services/api";
 const theme = {
@@ -91,6 +92,7 @@ const [searchError, setSearchError] = useState("");
 const [activePoolAvailable, setActivePoolAvailable] = useState(false);
 const [activePoolLoading, setActivePoolLoading] = useState(true);
 const [utrDialogOpen, setUtrDialogOpen] = useState(false);
+const [activePools, setActivePools] = useState([]);
 const [utrForm, setUtrForm] = useState({
   amount: "",
   referenceName: "",
@@ -121,14 +123,16 @@ useEffect(() => {
     try {
       setActivePoolLoading(true);
 
-      const response = await publicApi.get("/death-cases/public");
-      const activePools = Array.isArray(response?.data) ? response.data : [];
+const response = await publicApi.get("/death-cases/public");
+const pools = Array.isArray(response?.data) ? response.data : [];
 
-      setActivePoolAvailable(activePools.length > 0);
-    } catch (error) {
-      console.error("Failed to load active death case pools:", error);
-      setActivePoolAvailable(false);
-    } finally {
+setActivePools(pools);
+setActivePoolAvailable(pools.length > 0);
+} catch (error) {
+  console.error("Failed to load active death case pools:", error);
+  setActivePools([]);
+  setActivePoolAvailable(false);
+} finally {
       setActivePoolLoading(false);
     }
   };
@@ -201,7 +205,11 @@ const closeUtrDialog = () => {
     utrNumber: ""
   });
 };
-
+const searchedDeathCase = searchedMember?.assignedDeathCaseId
+  ? activePools.find(
+      (pool) => String(pool.id) === String(searchedMember.assignedDeathCaseId)
+    )
+  : null;
 const handlePublicUtrSubmit = async () => {
   if (!searchedMember?.id) {
     setUtrError("कृपया पहले मोबाइल नंबर से सदस्य खोजें।");
@@ -413,386 +421,27 @@ boxShadow: "0 18px 46px rgba(34, 27, 67, 0.10)"
     </Alert>
   )}
 
- {searchedMember && (
-  <Card
-    elevation={0}
-    sx={{
-      mt: 3,
-      borderRadius: 5,
-      overflow: "hidden",
-    border: "1px solid rgba(111, 92, 194, 0.16)",
-background: "#ffffff",
-boxShadow: "0 22px 58px rgba(34, 27, 67, 0.12)",
-      position: "relative",
-      "&::before": {
-        content: '""',
-        position: "absolute",
-        top: 0,
-        left: 0,
-        right: 0,
-        height: 6,
-background: theme.main      }
-    }}
-  >
-    <CardContent sx={{ p: { xs: 2.2, md: 3 } }}>
-      <Grid container spacing={3} alignItems="stretch">
-        {/* LEFT MEMBER DETAILS */}
-        <Grid item xs={12} md={8}>
-          <Box
-            sx={{
-              height: "100%",
-              p: { xs: 2, md: 2.5 },
-              borderRadius: 4,
-              background: "rgba(255,255,255,0.88)",
-              border: "1px solid rgba(124, 58, 237, 0.12)"
-            }}
-          >
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "flex-start",
-                justifyContent: "space-between",
-                gap: 2,
-                flexWrap: "wrap",
-                mb: 2.2
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                <Box
-                  sx={{
-                    width: 52,
-                    height: 52,
-                    borderRadius: "18px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-background: theme.main,
-boxShadow: "0 12px 28px rgba(111, 92, 194, 0.25)"
-,                    color: "#fff",
-                  }}
-                >
-                  <PersonSearchRounded sx={{ fontSize: 30 }} />
-                </Box>
-
-                <Box>
-                  <Typography
-                    sx={{
-                      color: theme.dark,
-                      fontWeight: 950,
-                      fontSize: { xs: "1.15rem", md: "1.35rem" },
-                      lineHeight: 1.25,
-                      fontFamily:
-                        "Noto Sans Devanagari, Poppins, Arial, sans-serif"
-                    }}
-                  >
-                    {searchedMember.name || ""} {searchedMember.surname || ""}
-                  </Typography>
-
-                  <Typography
-                    sx={{
-                      color: theme.muted,
-                      fontWeight: 750,
-                      fontSize: "0.9rem",
-                      mt: 0.3,
-                      fontFamily:
-                        "Noto Sans Devanagari, Poppins, Arial, sans-serif"
-                    }}
-                  >
-                    सदस्य विवरण
-                  </Typography>
-                </Box>
-              </Box>
-
-              {searchedMember.utrUploaded ? (
-                <Chip
-                  label={`UTR जमा हो चुका है${
-                    searchedMember.latestUtrNumber
-                      ? ` - ${searchedMember.latestUtrNumber}`
-                      : ""
-                  }`}
-                  sx={{
-                    color: "#166534",
-                    fontWeight: 950,
-                    background: "rgba(22, 163, 74, 0.12)",
-                    border: "1px solid rgba(22, 163, 74, 0.24)",
-                    borderRadius: "12px",
-                    height: 34,
-                    fontFamily:
-                      "Noto Sans Devanagari, Poppins, Arial, sans-serif"
-                  }}
-                />
-              ) : (
-                <Chip
-                  label="UTR Pending"
-                  sx={{
-                    color: "#991b1b",
-                    fontWeight: 950,
-                    background: "rgba(220, 38, 38, 0.10)",
-                    border: "1px solid rgba(220, 38, 38, 0.20)",
-                    borderRadius: "12px",
-                    height: 34,
-                    fontFamily:
-                      "Noto Sans Devanagari, Poppins, Arial, sans-serif"
-                  }}
-                />
-              )}
-            </Box>
-
-            <Grid container spacing={1.5}>
-              <Grid item xs={12} sm={6}>
-                <Box
-                  sx={{
-                    p: 1.6,
-                    borderRadius: 3,
-                    background: theme.soft,
-border: "1px solid rgba(111, 92, 194, 0.14)"                  }}
-                >
-                  <Typography
-                    sx={{
-                      color: theme.muted,
-                      fontWeight: 800,
-                      fontSize: "0.78rem",
-                      mb: 0.4,
-                      fontFamily:
-                        "Noto Sans Devanagari, Poppins, Arial, sans-serif"
-                    }}
-                  >
-                    यूजर आईडी
-                  </Typography>
-
-                  <Typography
-                    sx={{
-                      color: theme.dark,
-                      fontWeight: 950,
-                      fontSize: "0.98rem",
-                      fontFamily:
-                        "Noto Sans Devanagari, Poppins, Arial, sans-serif"
-                    }}
-                  >
-                    {searchedMember.id || "N/A"}
-                  </Typography>
-                </Box>
-              </Grid>
-
-              <Grid item xs={12} sm={6}>
-                <Box
-                  sx={{
-                    p: 1.6,
-                    borderRadius: 3,
-background: theme.softAccent,
-border: "1px solid rgba(15, 118, 110, 0.16)"                  }}
-                >
-                  <Typography
-                    sx={{
-                      color: theme.muted,
-                      fontWeight: 600,
-                      fontSize: "0.78rem",
-                      mb: 0.4,
-                      fontFamily:
-                        "Noto Sans Devanagari, Poppins, Arial, sans-serif"
-                    }}
-                  >
-                    मोबाइल नंबर
-                  </Typography>
-
-                  <Typography
-                    sx={{
-                      color: theme.dark,
-                      fontWeight: 500,
-                      fontSize: "0.98rem",
-                      fontFamily:
-                        "Noto Sans Devanagari, Poppins, Arial, sans-serif"
-                    }}
-                  >
-                    {searchedMember.mobileNumber || mobileSearch}
-                  </Typography>
-                </Box>
-              </Grid>
-
-              <Grid item xs={12}>
-                <Box
-                  sx={{
-                    p: 1.6,
-                    borderRadius: 3,
-                  background: theme.soft,
-border: "1px solid rgba(111, 92, 194, 0.14)"
-}}
-                >
-                  <Typography
-                    sx={{
-                      color: theme.muted,
-                      fontWeight: 800,
-                      fontSize: "0.78rem",
-                      mb: 0.4,
-                      fontFamily:
-                        "Noto Sans Devanagari, Poppins, Arial, sans-serif"
-                    }}
-                  >
-                    मृत्यु प्रकरण
-                  </Typography>
-
-                  <Typography
-                    sx={{
-                      color: theme.dark,
-                      fontWeight: 950,
-                      fontSize: "0.98rem",
-                      lineHeight: 1.5,
-                      fontFamily:
-                        "Noto Sans Devanagari, Poppins, Arial, sans-serif"
-                    }}
-                  >
-                    {searchedMember.assignedDeathCaseName || "N/A"}
-                  </Typography>
-                </Box>
-              </Grid>
-            </Grid>
-
-            {!searchedMember.utrUploaded && (
-              <Box
-                sx={{
-                  mt: 2.5,
-                  display: "flex",
-                  justifyContent: { xs: "center", md: "flex-start" }
-                }}
-              >
-                <Button
-                  variant="contained"
-                  startIcon={<UploadFileRounded />}
-                  onClick={openUtrDialog}
-                  sx={{
-                    borderRadius: "16px",
-                    px: 3.2,
-                    py: 1.15,
-                    color: "#fff",
-                    fontWeight: 950,
-                    textTransform: "none",
-                    fontFamily:
-                      "Noto Sans Devanagari, Poppins, Arial, sans-serif",
-                   background: theme.red,
-boxShadow: "0 14px 32px rgba(180, 35, 24, 0.25)",
-"&:hover": {
-  background: "#8f1d14",
-  transform: "translateY(-1px)",
-  boxShadow: "0 18px 42px rgba(180, 35, 24, 0.32)"
-}
-                  }}
-                >
-                  UTR Upload करें
-                </Button>
-              </Box>
-            )}
-          </Box>
-        </Grid>
-
-        {/* RIGHT QR SECTION */}
-        <Grid item xs={12} md={4}>
-          <Box
-            sx={{
-              height: "100%",
-              minHeight: 250,
-              p: { xs: 2, md: 2.5 },
-              borderRadius: 4,
-background: theme.softAccent,
-border: "1px solid rgba(15, 118, 110, 0.16)",              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              textAlign: "center"
-            }}
-          >
-            {!searchedMember.utrUploaded && searchedMember.allocatedQrCode ? (
-              <Box>
-                <Box
-                  sx={{
-                    width: 184,
-                    height: 184,
-                    mx: "auto",
-                    mb: 1.6,
-                    p: 1.4,
-                    borderRadius: "26px",
-                    background: "#fff",
-border: "1px solid rgba(111, 92, 194, 0.16)",
-boxShadow: "0 18px 42px rgba(34, 27, 67, 0.12)"                  }}
-                >
-                  <Box
-                    component="img"
-                    src={getQrImageUrl(searchedMember.allocatedQrCode)}
-                    alt="Assigned QR"
-                    sx={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "contain",
-                      borderRadius: "18px"
-                    }}
-                  />
-                </Box>
-
-                <Chip
-                  icon={<QrCode2Rounded />}
-                  label="QR Scan करके भुगतान करें"
-                  sx={{
-                   color: "#ffffff",
-fontWeight: 900,
-background: theme.accent,
-border: "1px solid rgba(15, 118, 110, 0.25)",
-                    borderRadius: "14px",
-                    fontFamily:
-                      "Noto Sans Devanagari, Poppins, Arial, sans-serif",
-                   "& .MuiChip-icon": {
-  color: "#ffffff"
-}
-                  }}
-                />
-              </Box>
-            ) : (
-              <Box>
-                <Box
-                  sx={{
-                    width: 82,
-                    height: 82,
-                    mx: "auto",
-                    mb: 1.5,
-                    borderRadius: "26px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    background: "rgba(15, 118, 110, 0.10)",
-color: theme.accent
-                  }}
-                >
-                  <QrCode2Rounded sx={{ fontSize: 48 }} />
-                </Box>
-
-                <Typography
-                  sx={{
-                    color: theme.dark,
-                    fontWeight: 950,
-                    mb: 0.5,
-                    fontFamily:
-                      "Noto Sans Devanagari, Poppins, Arial, sans-serif"
-                  }}
-                >
-                  QR उपलब्ध नहीं
-                </Typography>
-
-                <Typography
-                  sx={{
-                    color: theme.muted,
-                    fontWeight: 700,
-                    fontSize: "0.86rem",
-                    lineHeight: 1.5,
-                    fontFamily:
-                      "Noto Sans Devanagari, Poppins, Arial, sans-serif"
-                  }}
-                >
-                  QR Code उपलब्ध होने पर यहाँ दिखाई देगा।
-                </Typography>
-              </Box>
-            )}
-          </Box>
-        </Grid>
-      </Grid>
-    </CardContent>
-  </Card>
+{searchedMember && (
+  <Box sx={{ mt: 3 }}>
+    {searchedMember.utrUploaded ? (
+      <Alert severity="success" sx={{ borderRadius: 3, fontWeight: 800 }}>
+        इस सदस्य का UTR पहले से जमा हो चुका है
+        {searchedMember.latestUtrNumber ? ` - ${searchedMember.latestUtrNumber}` : ""}.
+      </Alert>
+    ) : searchedDeathCase ? (
+      <DeathCaseSupportView
+        deathCase={searchedDeathCase}
+        showAssignedBadge={false}
+        uploadButtonText="UTR Upload करें"
+        onUploadClick={openUtrDialog}
+        onQrError={(message) => setUtrError(message)}
+      />
+    ) : (
+      <Alert severity="warning" sx={{ borderRadius: 3, fontWeight: 800 }}>
+        इस सदस्य के लिए मृत्यु सहायता प्रकरण मिला, लेकिन उसका पूरा विवरण लोड नहीं हो पाया।
+      </Alert>
+    )}
+  </Box>
 )}
 </Paper>
 )}
