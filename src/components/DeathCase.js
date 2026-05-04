@@ -450,6 +450,20 @@ IFSC: ${account?.ifscCode || 'IFSC CODE'}`;
 
     loadHomeNotice();
   }, []);
+  const getNomineeQrCodes = (dc, nomineeNumber) => {
+  const listField = nomineeNumber === 1 ? 'nominee1QrCodes' : 'nominee2QrCodes';
+  const singleField = nomineeNumber === 1 ? 'nominee1QrCode' : 'nominee2QrCode';
+
+  if (Array.isArray(dc?.[listField]) && dc[listField].length > 0) {
+    return dc[listField].filter(Boolean);
+  }
+
+  if (dc?.[singleField]) {
+    return [dc[singleField]];
+  }
+
+  return [];
+};
 
   useEffect(() => {
     const fetchAssignedOnly = async () => {
@@ -720,26 +734,46 @@ IFSC: ${account?.ifscCode || 'IFSC CODE'}`;
                       </Typography>
 
                       <Grid container spacing={3} justifyContent="center" sx={{ mb: 4 }}>
-                        <Grid item xs={12} sm={6} md={4}>
-                          <QrCard
-                            qrCode={dc.nominee1QrCode}
-                            label={dc.nominee1Name || dc.account1?.accountHolderName || 'Nominee 1'}
-                            onDownload={() =>
-                              downloadQRCode(dc.nominee1QrCode, `QR-Code-1-${dc.deceasedName || 'DeathCase'}.png`)
-                            }
-                          />
-                        </Grid>
+  {getNomineeQrCodes(dc, 1).map((qrCode, qrIndex) => (
+    <Grid item xs={12} sm={6} md={4} key={`nominee1-qr-${qrIndex}`}>
+      <QrCard
+        qrCode={qrCode}
+        label={`${dc.nominee1Name || dc.account1?.accountHolderName || 'Nominee 1'} - QR ${qrIndex + 1}`}
+        onDownload={() =>
+          downloadQRCode(
+            qrCode,
+            `QR-Code-Nominee-1-${qrIndex + 1}-${dc.deceasedName || 'DeathCase'}.png`
+          )
+        }
+      />
+    </Grid>
+  ))}
 
-                        <Grid item xs={12} sm={6} md={4}>
-                          <QrCard
-                            qrCode={dc.nominee2QrCode}
-                            label={dc.nominee2Name || dc.account2?.accountHolderName || 'Nominee 2'}
-                            onDownload={() =>
-                              downloadQRCode(dc.nominee2QrCode, `QR-Code-2-${dc.deceasedName || 'DeathCase'}.png`)
-                            }
-                          />
-                        </Grid>
-                      </Grid>
+  {getNomineeQrCodes(dc, 2).map((qrCode, qrIndex) => (
+    <Grid item xs={12} sm={6} md={4} key={`nominee2-qr-${qrIndex}`}>
+      <QrCard
+        qrCode={qrCode}
+        label={`${dc.nominee2Name || dc.account2?.accountHolderName || 'Nominee 2'} - QR ${qrIndex + 1}`}
+        onDownload={() =>
+          downloadQRCode(
+            qrCode,
+            `QR-Code-Nominee-2-${qrIndex + 1}-${dc.deceasedName || 'DeathCase'}.png`
+          )
+        }
+      />
+    </Grid>
+  ))}
+
+  {getNomineeQrCodes(dc, 1).length === 0 && getNomineeQrCodes(dc, 2).length === 0 && (
+    <Grid item xs={12} sm={6} md={4}>
+      <QrCard
+        qrCode={null}
+        label="QR Not Available"
+        onDownload={() => showPayErrorDialog('QR Code not available.')}
+      />
+    </Grid>
+  )}
+</Grid>
 
                       <Grid container spacing={3} justifyContent="center">
                         <Grid item xs={12} sm={6} md={4}>

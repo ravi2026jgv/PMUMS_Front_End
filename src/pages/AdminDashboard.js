@@ -75,6 +75,7 @@ import {
 EventBusy,
 NoAccounts,
 VolunteerActivism,
+CloudUpload,
 } from '@mui/icons-material';
 import Layout from '../components/Layout/Layout';
 import { useAuth } from '../context/AuthContext';
@@ -248,12 +249,12 @@ nominee2UpiLink: '',
     status: 'OPEN'
   });
   const [deathCaseFormLoading, setDeathCaseFormLoading] = useState(false);
-  const [deathCaseFiles, setDeathCaseFiles] = useState({
-    userImage: null,
-    nominee1QrCode: null,
-    nominee2QrCode: null,
-    certificate1: null
-  });
+ const [deathCaseFiles, setDeathCaseFiles] = useState({
+  userImage: null,
+  nominee1QrCodes: [],
+  nominee2QrCodes: [],
+  certificate1: null
+});
   
   // Section collapse/expand state for death case form
   const [sectionExpanded, setSectionExpanded] = useState({
@@ -453,11 +454,11 @@ nominee2UpiLink: '',
     });
 
     setDeathCaseFiles({
-      userImage: null,
-      nominee1QrCode: null,
-      nominee2QrCode: null,
-      certificate1: null
-    });
+  userImage: null,
+  nominee1QrCodes: [],
+  nominee2QrCodes: [],
+  certificate1: null
+});
 
     setSelectedSambhag('');
     setSelectedDistrict('');
@@ -937,11 +938,11 @@ nominee2UpiLink: deathCase.nominee2UpiLink || '',
       });
 
       setDeathCaseFiles({
-        userImage: null,
-        nominee1QrCode: null,
-        nominee2QrCode: null,
-        certificate1: null
-      });
+  userImage: null,
+  nominee1QrCodes: [],
+  nominee2QrCodes: [],
+  certificate1: null
+});
 
       if (locationHierarchy?.states?.length) {
         const allSambhags = locationHierarchy.states.flatMap((state) => state.sambhags || []);
@@ -1240,12 +1241,13 @@ nominee2UpiLink: (deathCaseFormData.nominee2UpiLink || '').trim() || null,      
       if (deathCaseFiles.userImage) {
         formData.append('userImage', deathCaseFiles.userImage);
       }
-      if (deathCaseFiles.nominee1QrCode) {
-        formData.append('nominee1QrCode', deathCaseFiles.nominee1QrCode);
-      }
-      if (deathCaseFiles.nominee2QrCode) {
-        formData.append('nominee2QrCode', deathCaseFiles.nominee2QrCode);
-      }
+      (deathCaseFiles.nominee1QrCodes || []).forEach((file) => {
+  formData.append('nominee1QrCodes', file);
+});
+
+(deathCaseFiles.nominee2QrCodes || []).forEach((file) => {
+  formData.append('nominee2QrCodes', file);
+});
       if (deathCaseFiles.certificate1) {
         formData.append('certificate1', deathCaseFiles.certificate1);
       }
@@ -2742,12 +2744,13 @@ nominee2UpiLink: (deathCaseFormData.nominee2UpiLink || '').trim() || null,      
       if (deathCaseFiles.userImage) {
         formData.append('userImage', deathCaseFiles.userImage);
       }
-      if (deathCaseFiles.nominee1QrCode) {
-        formData.append('nominee1QrCode', deathCaseFiles.nominee1QrCode);
-      }
-      if (deathCaseFiles.nominee2QrCode) {
-        formData.append('nominee2QrCode', deathCaseFiles.nominee2QrCode);
-      }
+     (deathCaseFiles.nominee1QrCodes || []).forEach((file) => {
+  formData.append('nominee1QrCodes', file);
+});
+
+(deathCaseFiles.nominee2QrCodes || []).forEach((file) => {
+  formData.append('nominee2QrCodes', file);
+});
       if (deathCaseFiles.certificate1) {
         formData.append('certificate1', deathCaseFiles.certificate1);
       }
@@ -2829,6 +2832,33 @@ nominee2UpiLink: '',
       [fieldName]: file
     }));
   };
+  const handleAddNomineeQrFile = (fieldName, file) => {
+  if (!file) return;
+
+  setDeathCaseFiles((prev) => ({
+    ...prev,
+    [fieldName]: [...(prev[fieldName] || []), file],
+  }));
+};
+
+const handleRemoveNomineeQrFile = (fieldName, indexToRemove) => {
+  setDeathCaseFiles((prev) => ({
+    ...prev,
+    [fieldName]: (prev[fieldName] || []).filter((_, index) => index !== indexToRemove),
+  }));
+};
+
+const getQrFileLabel = (files) => {
+  if (!files || files.length === 0) {
+    return 'No QR selected';
+  }
+
+  if (files.length === 1) {
+    return '1 QR selected';
+  }
+
+  return `${files.length} QR selected`;
+};
   
   // Handle section expand/collapse
   const handleSectionToggle = (section) => {
@@ -4386,6 +4416,118 @@ const renderLogsTab = () => (
     )}
   </Paper>
 );
+
+const renderNomineeQrUploader = (title, fieldName) => {
+  const files = deathCaseFiles[fieldName] || [];
+
+  return (
+    <Box>
+      <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1, color: '#666' }}>
+        {title}
+      </Typography>
+
+      <Paper
+        elevation={0}
+        sx={{
+          border: '1px dashed #9ca3af',
+          borderRadius: 2,
+          p: 1.5,
+          backgroundColor: '#fafafa',
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 1,
+            mb: files.length > 0 ? 1.5 : 0,
+          }}
+        >
+          <Typography variant="body2" sx={{ color: '#555', fontWeight: 600 }}>
+            {getQrFileLabel(files)}
+          </Typography>
+
+          <Button
+            variant="contained"
+            component="label"
+            size="small"
+            startIcon={<Add />}
+            sx={{
+              textTransform: 'none',
+              borderRadius: 2,
+              fontWeight: 700,
+              backgroundColor: '#16a34a',
+              '&:hover': {
+                backgroundColor: '#15803d',
+              },
+            }}
+          >
+            Add QR
+            <input
+              type="file"
+              hidden
+              accept="image/*,.pdf"
+              onChange={(e) => {
+                handleAddNomineeQrFile(fieldName, e.target.files?.[0]);
+                e.target.value = '';
+              }}
+            />
+          </Button>
+        </Box>
+
+        {files.length > 0 && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {files.map((file, index) => (
+              <Box
+                key={`${file.name}-${index}`}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 1,
+                  px: 1.25,
+                  py: 0.8,
+                  borderRadius: 1.5,
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #e5e7eb',
+                }}
+              >
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontWeight: 600,
+                      color: '#374151',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      maxWidth: { xs: 180, sm: 280, md: 360 },
+                    }}
+                  >
+                    QR {index + 1}: {file.name}
+                  </Typography>
+
+                  <Typography variant="caption" sx={{ color: '#6b7280' }}>
+                    {(file.size / 1024).toFixed(1)} KB
+                  </Typography>
+                </Box>
+
+                <IconButton
+                  size="small"
+                  color="error"
+                  onClick={() => handleRemoveNomineeQrFile(fieldName, index)}
+                >
+                  <Close fontSize="small" />
+                </IconButton>
+              </Box>
+            ))}
+          </Box>
+        )}
+      </Paper>
+    </Box>
+  );
+};
   // Check if any filter is active
   const hasActiveFilters = filters.userId || filters.name || filters.mobileNumber || filters.email;
 const selectableUsers = users.filter((u) => u.role !== 'ROLE_ADMIN');
@@ -10694,30 +10836,9 @@ const getDeathCaseStatusChipSx = (status) => {
                       />
                     </Grid>
                     
-                    <Grid item xs={12} md={6}>
-                      <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 0.5, color: '#666' }}>
-                        First Nominee QR Code
-                      </Typography>
-                      <Button
-                        variant="outlined"
-                        component="label"
-                        fullWidth
-                        sx={{ 
-                          height: 56,
-                          justifyContent: 'flex-start',
-                          textTransform: 'none',
-                          borderStyle: 'dashed'
-                        }}
-                      >
-                        {deathCaseFiles.nominee1QrCode ? deathCaseFiles.nominee1QrCode.name : 'Upload QR Code'}
-                        <input
-                          type="file"
-                          hidden
-                          accept="image/*,.pdf"
-                          onChange={(e) => handleFileUpload('nominee1QrCode', e.target.files[0])}
-                        />
-                      </Button>
-                    </Grid>
+                   <Grid item xs={12} md={6}>
+  {renderNomineeQrUploader('First Nominee QR Codes', 'nominee1QrCodes')}
+</Grid>
                     {/* <Grid item xs={12} md={6}>
   <TextField
     fullWidth
@@ -10729,7 +10850,7 @@ const getDeathCaseStatusChipSx = (status) => {
   />
 </Grid> */}
                     
-                    <Grid item xs={12} md={6} sx={{ mt: 3,mb: 3 }}>
+                 <Grid item xs={12} md={6} sx={{ mt: 3,mb: 3 }}>
                       <TextField
                         fullWidth
                         label="Second Nominee Name"
@@ -10741,29 +10862,8 @@ const getDeathCaseStatusChipSx = (status) => {
                     </Grid>
                     
                     <Grid item xs={12} md={6}>
-                      <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1, color: '#666' }}>
-                        Second Nominee QR Code
-                      </Typography>
-                      <Button
-                        variant="outlined"
-                        component="label"
-                        fullWidth
-                        sx={{ 
-                          height: 56,
-                          justifyContent: 'flex-start',
-                          textTransform: 'none',
-                          borderStyle: 'dashed'
-                        }}
-                      >
-                        {deathCaseFiles.nominee2QrCode ? deathCaseFiles.nominee2QrCode.name : 'Upload QR Code'}
-                        <input
-                          type="file"
-                          hidden
-                          accept="image/*,.pdf"
-                          onChange={(e) => handleFileUpload('nominee2QrCode', e.target.files[0])}
-                        />
-                      </Button>
-                    </Grid>
+  {renderNomineeQrUploader('Second Nominee QR Codes', 'nominee2QrCodes')}
+</Grid>
                     {/* <Grid item xs={12} md={6}>
   <TextField
     fullWidth
