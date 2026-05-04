@@ -78,6 +78,7 @@ const isFullNameLocked = Boolean(profileFieldLocks?.fullName);
 const isDateOfBirthLocked = Boolean(profileFieldLocks?.dateOfBirth);
 const isMobileNumberLocked = Boolean(profileFieldLocks?.mobileNumber);
 const isEmailLocked = Boolean(profileFieldLocks?.email);
+const isNomineeLocked = true;
 
 const isDepartmentUniqueIdLocked = Boolean(
   profileFieldLocks?.departmentUniqueId ||
@@ -523,10 +524,10 @@ const { name, surname } = splitFullName(data.fullName);
   departmentSambhag: sambhagName,
   departmentDistrict: districtName,
   departmentBlock: blockName,
-  nominee1Name: data.nominee1Name,
-  nominee1Relation: data.nominee1Relation,
-  nominee2Name: data.nominee2Name,
-  nominee2Relation: data.nominee2Relation,
+ nominee1Name: isNomineeLocked ? profileData?.nominee1Name : data.nominee1Name,
+nominee1Relation: isNomineeLocked ? profileData?.nominee1Relation : data.nominee1Relation,
+nominee2Name: isNomineeLocked ? profileData?.nominee2Name : data.nominee2Name,
+nominee2Relation: isNomineeLocked ? profileData?.nominee2Relation : data.nominee2Relation,
 };
 
 const response = await api.updateProfileById(userId, updatePayload);
@@ -1431,15 +1432,18 @@ background: uiTheme.main,            },
               <Grid container spacing={2.5}>
                 <Grid item xs={12} md={6}>
                   <FieldLabel>नामांकित का नाम</FieldLabel>
-                  <TextField
-                    fullWidth
-                    defaultValue={profileData?.nominee1Name || ''}
-                    {...register('nominee1Name', { required: 'पहले नामांकित का नाम आवश्यक है' })}
-                    disabled={!isEditing}
-                    error={!!errors.nominee1Name}
-                    helperText={errors.nominee1Name?.message}
-                    sx={fieldSx}
-                  />
+                 <TextField
+  fullWidth
+  defaultValue={profileData?.nominee1Name || ''}
+  {...register('nominee1Name', { required: 'पहले नामांकित का नाम आवश्यक है' })}
+  disabled={!isEditing || isNomineeLocked}
+  error={!!errors.nominee1Name}
+  helperText={
+    errors.nominee1Name?.message ||
+    (isNomineeLocked ? 'नामांकित व्यक्ति की जानकारी लॉक है, इसे बदला नहीं जा सकता' : '')
+  }
+  sx={fieldSx}
+/>
                 </Grid>
 
                 <Grid item xs={12} md={6}>
@@ -1450,8 +1454,12 @@ background: uiTheme.main,            },
                     defaultValue={profileData?.nominee1Relation || ''}
                     rules={{ required: 'पहले नामांकित का संबंध आवश्यक है' }}
                     render={({ field }) => (
-                      <FormControl fullWidth disabled={!isEditing} error={!!errors.nominee1Relation} sx={selectSx}>
-                        <Select {...field} displayEmpty MenuProps={menuProps}>
+<FormControl
+  fullWidth
+  disabled={!isEditing || isNomineeLocked}
+  error={!!errors.nominee1Relation}
+  sx={selectSx}
+>                        <Select {...field} displayEmpty MenuProps={menuProps}>
                           <MenuItem value="">संबंध चुनें</MenuItem>
                           <MenuItem value="पिता">पिता (Father)</MenuItem>
                           <MenuItem value="माता">माता (Mother)</MenuItem>
@@ -1470,6 +1478,11 @@ background: uiTheme.main,            },
                             {errors.nominee1Relation?.message}
                           </Typography>
                         )}
+                        {!errors.nominee1Relation && isNomineeLocked && (
+  <Typography variant="caption" sx={{ mt: 0.5, fontWeight: 700, color: uiTheme.muted }}>
+    नामांकित व्यक्ति की जानकारी लॉक है, इसे बदला नहीं जा सकता
+  </Typography>
+)}
                       </FormControl>
                     )}
                   />
@@ -1492,15 +1505,18 @@ background: uiTheme.main,            },
               <Grid container spacing={2.5}>
                 <Grid item xs={12} md={6}>
                   <FieldLabel>नामांकित का नाम</FieldLabel>
-                  <TextField
-                    fullWidth
-                    defaultValue={profileData?.nominee2Name || ''}
-                    {...register('nominee2Name', { required: 'दूसरे नामांकित का नाम आवश्यक है' })}
-                    disabled={!isEditing}
-                    error={!!errors.nominee2Name}
-                    helperText={errors.nominee2Name?.message}
-                    sx={fieldSx}
-                  />
+                 <TextField
+  fullWidth
+  defaultValue={profileData?.nominee2Name || ''}
+  {...register('nominee2Name', { required: 'दूसरे नामांकित का नाम आवश्यक है' })}
+  disabled={!isEditing || isNomineeLocked}
+  error={!!errors.nominee2Name}
+  helperText={
+    errors.nominee2Name?.message ||
+    (isNomineeLocked ? 'नामांकित व्यक्ति की जानकारी लॉक है, इसे बदला नहीं जा सकता' : '')
+  }
+  sx={fieldSx}
+/>
                 </Grid>
 
                 <Grid item xs={12} md={6}>
@@ -1511,8 +1527,12 @@ background: uiTheme.main,            },
                     defaultValue={profileData?.nominee2Relation || ''}
                     rules={{ required: 'दूसरे नामांकित का संबंध आवश्यक है' }}
                     render={({ field }) => (
-                      <FormControl fullWidth disabled={!isEditing} error={!!errors.nominee2Relation} sx={selectSx}>
-                        <Select {...field} displayEmpty MenuProps={menuProps}>
+<FormControl
+  fullWidth
+  disabled={!isEditing || isNomineeLocked}
+  error={!!errors.nominee2Relation}
+  sx={selectSx}
+>                        <Select {...field} displayEmpty MenuProps={menuProps}>
                           <MenuItem value="">संबंध चुनें</MenuItem>
                           <MenuItem value="पिता">पिता (Father)</MenuItem>
                           <MenuItem value="माता">माता (Mother)</MenuItem>
@@ -1531,6 +1551,11 @@ background: uiTheme.main,            },
                             {errors.nominee2Relation?.message}
                           </Typography>
                         )}
+                        {!errors.nominee2Relation && isNomineeLocked && (
+  <Typography variant="caption" sx={{ mt: 0.5, fontWeight: 700, color: uiTheme.muted }}>
+    नामांकित व्यक्ति की जानकारी लॉक है, इसे बदला नहीं जा सकता
+  </Typography>
+)}
                       </FormControl>
                     )}
                   />

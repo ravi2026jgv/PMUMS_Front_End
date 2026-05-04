@@ -71,6 +71,7 @@ import {
   Settings,
   DeleteForever,
   Chat,
+  Search,
 } from "@mui/icons-material";
 import { useAuth } from "../context/AuthContext";
 import { managerAPI, adminAPI, api } from "../services/api";
@@ -522,74 +523,63 @@ const fetchManagedLocationCounts = async (scope) => {
   }
 };
 
-  const loadManagerScopeAndLocations = async () => {
-    try {
-      const [scopeResponse, hierarchyResponse] = await Promise.all([
-        managerAPI.getManagerScope(),
-        api.get("/locations/hierarchy"),
-      ]);
+ const loadManagerScopeAndLocations = async () => {
+  try {
+    const [scopeResponse, hierarchyResponse] = await Promise.all([
+      managerAPI.getManagerScope(),
+      api.get("/locations/hierarchy"),
+    ]);
 
-      const scope = scopeResponse.data;
-      const hierarchy = normalizeHierarchy(hierarchyResponse.data);
+    const scope = scopeResponse.data;
+    const hierarchy = normalizeHierarchy(hierarchyResponse.data);
 
-      console.log("Manager Scope:", scope);
-      console.log("Normalized Hierarchy:", hierarchy);
+    console.log("Manager Scope:", scope);
+    console.log("Normalized Hierarchy:", hierarchy);
 
-      const filteredHierarchy = buildAssignedHierarchyFromScope(
-        hierarchy,
-        scope,
-      );
-      console.log("Filtered Hierarchy:", filteredHierarchy);
+    const filteredHierarchy = buildAssignedHierarchyFromScope(
+      hierarchy,
+      scope,
+    );
 
-      setManagerScope(scope);
-      fetchManagedLocationCounts(scope);
-      setLocationHierarchy(filteredHierarchy);
-      setSambhagOptions(filteredHierarchy);
+    console.log("Filtered Hierarchy:", filteredHierarchy);
 
-      const firstSambhag = filteredHierarchy[0] || null;
-      const firstDistrict = firstSambhag?.districts?.[0] || null;
-      const firstBlock = firstDistrict?.blocks?.[0] || null;
+    setManagerScope(scope);
+    fetchManagedLocationCounts(scope);
+    setLocationHierarchy(filteredHierarchy);
+    setSambhagOptions(filteredHierarchy);
 
-      setUserDistrictOptions(firstSambhag?.districts || []);
-      setUserBlockOptions(firstDistrict?.blocks || []);
+    const firstSambhag = filteredHierarchy[0] || null;
+    const firstDistrict = firstSambhag?.districts?.[0] || null;
 
-      setExportDistrictOptions(firstSambhag?.districts || []);
-      setExportBlockOptions(firstDistrict?.blocks || []);
+    setUserDistrictOptions(firstSambhag?.districts || []);
+    setUserBlockOptions(firstDistrict?.blocks || []);
 
-      if (user?.role === "ROLE_DISTRICT_MANAGER") {
-        const districtFilters = {
-          sambhagId: firstSambhag?.id || "",
-          districtId: firstDistrict?.id || "",
-          blockId: "",
-        };
+    setExportDistrictOptions(firstSambhag?.districts || []);
+    setExportBlockOptions(firstDistrict?.blocks || []);
 
-        setUserFilters((prev) => ({
-          ...prev,
-          ...districtFilters,
-        }));
+    /*
+      IMPORTANT:
+      Do not auto-select first district/block.
+      Empty filters mean:
+      "show all users inside manager assigned scope"
+    */
+    setUserFilters((prev) => ({
+      ...prev,
+      sambhagId: "",
+      districtId: "",
+      blockId: "",
+    }));
 
-        setExportLocationFilters(districtFilters);
-      }
-
-      if (user?.role === "ROLE_BLOCK_MANAGER") {
-        const blockFilters = {
-          sambhagId: firstSambhag?.id || "",
-          districtId: firstDistrict?.id || "",
-          blockId: firstBlock?.id || "",
-        };
-
-        setUserFilters((prev) => ({
-          ...prev,
-          ...blockFilters,
-        }));
-
-        setExportLocationFilters(blockFilters);
-      }
-    } catch (error) {
-      console.error("Error loading manager scope/location hierarchy:", error);
-      showSnackbar("Error loading area filters!", "error");
-    }
-  };
+    setExportLocationFilters({
+      sambhagId: "",
+      districtId: "",
+      blockId: "",
+    });
+  } catch (error) {
+    console.error("Error loading manager scope/location hierarchy:", error);
+    showSnackbar("Error loading area filters!", "error");
+  }
+};
 
   const getCurrentExportAreaParams = () => {
     const params = {};
@@ -647,16 +637,16 @@ const fetchManagedLocationCounts = async (scope) => {
   };
   const fetchAccessibleUsers = async () => {
     try {
-      const params = {
-        page: usersPage,
-        size: rowsPerPage,
-        status: userFilters.status,
-        role: userFilters.role,
-        name: userFilters.search || "",
-        sambhagId: userFilters.sambhagId,
-        districtId: userFilters.districtId,
-        blockId: userFilters.blockId,
-      };
+    const params = {
+  page: usersPage,
+  size: rowsPerPage,
+  status: userFilters.status || undefined,
+  role: userFilters.role || undefined,
+  search: userFilters.search || undefined,
+  sambhagId: userFilters.sambhagId || undefined,
+  districtId: userFilters.districtId || undefined,
+  blockId: userFilters.blockId || undefined,
+};
 
       const response = await managerAPI.getAccessibleUsers(params);
       setUsers(response.data.content || []);
@@ -666,25 +656,24 @@ const fetchManagedLocationCounts = async (scope) => {
       showSnackbar("Error loading users!", "error");
     }
   };
-  const handleUserSambhagChange = (event) => {
-    const sambhagId = event.target.value;
+ const handleUserSambhagChange = (event) => {
+  const sambhagId = event.target.value;
 
-    const selectedSambhag = locationHierarchy.find(
-      (item) => String(item.id) === String(sambhagId),
-    );
+  const selectedSambhag = locationHierarchy.find(
+    (item) => String(item.id) === String(sambhagId),
+  );
 
-    setUserFilters((prev) => ({
-      ...prev,
-      sambhagId,
-      districtId: "",
-      blockId: "",
-    }));
+  setUserFilters((prev) => ({
+    ...prev,
+    sambhagId,
+    districtId: "",
+    blockId: "",
+  }));
 
-    setUserDistrictOptions(selectedSambhag?.districts || []);
-    setUserBlockOptions([]);
-    setUsersPage(0);
-  };
-
+  setUserDistrictOptions(selectedSambhag?.districts || []);
+  setUserBlockOptions([]);
+  setUsersPage(0);
+};
   const handleUserDistrictChange = (event) => {
     const districtId = event.target.value;
 
@@ -1475,6 +1464,62 @@ const totalTickets =
   );
 };
 
+const combineFullName = (name, surname) =>
+  [name, surname].filter(Boolean).join(" ").trim();
+
+const getUserFullName = (user) =>
+  user?.fullName ||
+  combineFullName(user?.name, user?.surname) ||
+  user?.name ||
+  "-";
+
+const getUserIdValue = (user) =>
+  user?.id ||
+  user?.userId ||
+  user?.registrationNumber ||
+  user?.employeeId ||
+  "-";
+
+const getUserLastLogin = (user) => {
+  const value =
+    user?.lastLoginAt ||
+    user?.lastLogin ||
+    user?.lastLoginDate ||
+    user?.lastLoginTime ||
+    user?.lastLoginDateTime ||
+    user?.loginAt ||
+    user?.lastSeenAt;
+
+  if (!value) return "Never";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Never";
+  }
+
+  return date.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const managerTableHeaderCellSx = {
+  fontWeight: 900,
+  color: "#172554",
+  whiteSpace: "nowrap",
+  borderBottom: "1px solid rgba(148, 163, 184, 0.22)",
+  py: 1.7,
+};
+
+const managerTableBodyCellSx = {
+  borderBottom: "1px solid rgba(226, 232, 240, 0.9)",
+  py: 1.7,
+  whiteSpace: "nowrap",
+};
   // Users Management Tab
  // Users Management Tab
 const renderUsersTab = () => (
@@ -1604,7 +1649,7 @@ const renderUsersTab = () => (
             <FormControl
               size="small"
               sx={{ minWidth: { xs: '100%', sm: 170 }, ...premiumFieldSx }}
-              disabled={!userFilters.sambhagId}
+              disabled={sambhagOptions.length === 0}
             >
               <InputLabel>District</InputLabel>
               <Select
@@ -1645,306 +1690,383 @@ const renderUsersTab = () => (
       </Box>
     </Box>
 
-    <TableContainer
-      sx={{
-        bgcolor: '#fff',
-        '&::-webkit-scrollbar': {
-          height: 8,
-        },
-        '&::-webkit-scrollbar-thumb': {
-          bgcolor: 'rgba(148, 163, 184, 0.55)',
-          borderRadius: 8,
-        },
-      }}
-    >
-      <Table sx={{ minWidth: 980 }}>
-        <TableHead>
+   <TableContainer
+  sx={{
+    maxWidth: "100%",
+    overflowX: "auto",
+    bgcolor: "#fff",
+    "&::-webkit-scrollbar": {
+      height: 8,
+    },
+    "&::-webkit-scrollbar-thumb": {
+      bgcolor: "rgba(148, 163, 184, 0.55)",
+      borderRadius: 8,
+    },
+  }}
+>
+  <Table
+    sx={{
+      minWidth: 1150,
+      "& .MuiTableCell-root": {
+        whiteSpace: "nowrap",
+      },
+    }}
+  >
+    <TableHead>
+      <TableRow
+        sx={{
+          background: "linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%)",
+        }}
+      >
+        <TableCell sx={managerTableHeaderCellSx}>User ID</TableCell>
+        <TableCell sx={managerTableHeaderCellSx}>Name</TableCell>
+        <TableCell sx={managerTableHeaderCellSx}>Email / Phone</TableCell>
+        <TableCell sx={managerTableHeaderCellSx}>Role</TableCell>
+        <TableCell sx={managerTableHeaderCellSx}>Location</TableCell>
+        <TableCell sx={managerTableHeaderCellSx}>Status</TableCell>
+        <TableCell sx={managerTableHeaderCellSx}>Last Login</TableCell>
+        <TableCell sx={managerTableHeaderCellSx}>Actions</TableCell>
+      </TableRow>
+    </TableHead>
+
+    <TableBody>
+      {users.length === 0 ? (
+        <TableRow>
+          <TableCell colSpan={8} align="center" sx={{ py: 5 }}>
+            <Box sx={{ textAlign: "center" }}>
+              <People sx={{ fontSize: 44, color: "#cbd5e1", mb: 1 }} />
+              <Typography
+                variant="body1"
+                sx={{ color: "#475569", fontWeight: 800 }}
+              >
+                No User found
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{ color: "#94a3b8", mt: 0.5 }}
+              >
+                Try clearing filters or changing assigned area filters.
+              </Typography>
+            </Box>
+          </TableCell>
+        </TableRow>
+      ) : (
+        users.map((user) => (
           <TableRow
+            key={user.id}
+            hover
             sx={{
-              background: 'linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%)',
-              '& th': {
-                borderBottom: '1px solid rgba(148, 163, 184, 0.22)',
-                py: 1.7,
+              transition: "all 0.2s ease",
+              "&:hover": {
+                bgcolor: "#f8fafc",
               },
             }}
           >
-            <TableCell sx={{ fontWeight: 900, color: '#172554' }}>User</TableCell>
-            <TableCell sx={{ fontWeight: 900, color: '#172554' }}>Role</TableCell>
-            <TableCell sx={{ fontWeight: 900, color: '#172554' }}>Location</TableCell>
-            <TableCell sx={{ fontWeight: 900, color: '#172554' }}>Status</TableCell>
-            <TableCell sx={{ fontWeight: 900, color: '#172554' }}>Actions</TableCell>
-          </TableRow>
-        </TableHead>
+            <TableCell sx={managerTableBodyCellSx}>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontWeight: 900,
+                  color: "#0f172a",
+                  fontSize: "0.82rem",
+                }}
+              >
+                {getUserIdValue(user)}
+              </Typography>
+            </TableCell>
 
-        <TableBody>
-          {users.map((user) => (
-            <TableRow
-              key={user.id}
-              hover
-              sx={{
-                transition: 'all 0.2s ease',
-                '& td': {
-                  borderBottom: '1px solid rgba(226, 232, 240, 0.9)',
-                  py: 1.7,
-                },
-                '&:hover': {
-                  bgcolor: '#f8fafc',
-                },
-              }}
-            >
-              <TableCell>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.6 }}>
-                  <Avatar
-                    sx={{
-                      width: 44,
-                      height: 44,
-                      background: 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
-                      boxShadow: '0 10px 22px rgba(37, 99, 235, 0.22)',
-                      fontWeight: 900,
-                    }}
-                  >
-                    {user.name?.charAt(0) || 'U'}
-                  </Avatar>
-
-                  <Box sx={{ minWidth: 0 }}>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        fontWeight: 900,
-                        color: '#0f172a',
-                        lineHeight: 1.25,
-                      }}
-                    >
-                      {user.name || '-'}
-                    </Typography>
-
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: '#64748b',
-                        display: 'block',
-                        mt: 0.2,
-                      }}
-                    >
-                      {user.email || '-'}
-                    </Typography>
-
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: '#64748b',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: 0.3,
-                        mt: 0.2,
-                        px: 0.8,
-                        py: 0.2,
-                        borderRadius: '999px',
-                        bgcolor: 'rgba(37, 99, 235, 0.07)',
-                      }}
-                    >
-                      📱 {user.mobileNumber || '-'}
-                    </Typography>
-                  </Box>
-                </Box>
-              </TableCell>
-
-              <TableCell>
-                <Chip
-                  label={getRoleLabel(user.role)}
-                  size="small"
+            <TableCell sx={managerTableBodyCellSx}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.4 }}>
+                <Avatar
                   sx={{
+                    width: 38,
+                    height: 38,
+                    background:
+                      "linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)",
+                    boxShadow: "0 10px 22px rgba(37, 99, 235, 0.22)",
                     fontWeight: 900,
-                    color: user.role === 'ROLE_ADMIN' ? '#991b1b' : '#1e3a8a',
-                    bgcolor:
-                      user.role === 'ROLE_ADMIN'
-                        ? 'rgba(239, 68, 68, 0.10)'
-                        : 'rgba(37, 99, 235, 0.10)',
-                    border:
-                      user.role === 'ROLE_ADMIN'
-                        ? '1px solid rgba(239, 68, 68, 0.20)'
-                        : '1px solid rgba(37, 99, 235, 0.18)',
-                  }}
-                />
-              </TableCell>
-
-              <TableCell>
-                <Box
-                  sx={{
-                    display: 'inline-flex',
-                    flexDirection: 'column',
-                    gap: 0.4,
-                    px: 1.2,
-                    py: 0.8,
-                    borderRadius: '14px',
-                    bgcolor: '#f8fafc',
-                    border: '1px solid rgba(148, 163, 184, 0.18)',
+                    fontSize: "0.95rem",
                   }}
                 >
+                  {getUserFullName(user)?.charAt(0) || "U"}
+                </Avatar>
+
+                <Box>
                   <Typography
-                    variant="caption"
+                    variant="body2"
                     sx={{
-                      color: '#334155',
-                      fontWeight: 700,
-                      display: 'inline-flex',
-                      alignItems: 'center',
+                      fontWeight: 900,
+                      color: "#0f172a",
+                      lineHeight: 1.25,
                     }}
                   >
-                    <LocationOn sx={{ fontSize: 14, mr: 0.5, color: '#2563eb' }} />
-                    {user.departmentSambhag || 'N/A'} / {user.departmentDistrict || 'N/A'}
+                    {getUserFullName(user)}
                   </Typography>
 
-                  {user.departmentBlock && (
-                    <Typography variant="caption" sx={{ color: '#64748b', pl: 2.3 }}>
-                      Block: {user.departmentBlock}
+                  {user.departmentUniqueId && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: "#94a3b8",
+                        fontWeight: 700,
+                        display: "block",
+                        mt: 0.2,
+                      }}
+                    >
+                      Dept ID: {user.departmentUniqueId}
                     </Typography>
                   )}
                 </Box>
-              </TableCell>
+              </Box>
+            </TableCell>
 
-              <TableCell>
-                <Chip
-                  label={
-                    user.status === 'ACTIVE'
-                      ? 'Active'
-                      : user.status === 'BLOCKED'
-                        ? 'Blocked'
-                        : user.status
-                  }
-                  size="small"
+            <TableCell sx={managerTableBodyCellSx}>
+              <Box>
+                <Typography
+                  variant="body2"
+                  sx={{ color: "#334155", fontWeight: 800 }}
+                >
+                  {user.email || "-"}
+                </Typography>
+
+                <Typography
+                  variant="caption"
                   sx={{
-                    fontWeight: 900,
-                    color: user.status === 'ACTIVE' ? '#047857' : '#b91c1c',
-                    bgcolor:
-                      user.status === 'ACTIVE'
-                        ? 'rgba(16, 185, 129, 0.10)'
-                        : 'rgba(239, 68, 68, 0.10)',
-                    border:
-                      user.status === 'ACTIVE'
-                        ? '1px solid rgba(16, 185, 129, 0.20)'
-                        : '1px solid rgba(239, 68, 68, 0.20)',
+                    color: "#64748b",
+                    fontWeight: 700,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 0.3,
+                    mt: 0.3,
+                    px: 0.8,
+                    py: 0.2,
+                    borderRadius: "999px",
+                    bgcolor: "rgba(37, 99, 235, 0.07)",
                   }}
-                />
-              </TableCell>
+                >
+                  📱 {user.mobileNumber || "-"}
+                </Typography>
+              </Box>
+            </TableCell>
 
-              <TableCell>
-                {user.role === 'ROLE_ADMIN' ? (
+            <TableCell sx={managerTableBodyCellSx}>
+              <Chip
+                label={getRoleLabel(user.role)}
+                size="small"
+                sx={{
+                  fontWeight: 900,
+                  color:
+                    user.role === "ROLE_ADMIN" ? "#991b1b" : "#1e3a8a",
+                  bgcolor:
+                    user.role === "ROLE_ADMIN"
+                      ? "rgba(239, 68, 68, 0.10)"
+                      : "rgba(37, 99, 235, 0.10)",
+                  border:
+                    user.role === "ROLE_ADMIN"
+                      ? "1px solid rgba(239, 68, 68, 0.20)"
+                      : "1px solid rgba(37, 99, 235, 0.18)",
+                }}
+              />
+            </TableCell>
+
+            <TableCell sx={managerTableBodyCellSx}>
+              <Box
+                sx={{
+                  display: "inline-flex",
+                  flexDirection: "column",
+                  gap: 0.4,
+                  px: 1.2,
+                  py: 0.8,
+                  borderRadius: "14px",
+                  bgcolor: "#f8fafc",
+                  border: "1px solid rgba(148, 163, 184, 0.18)",
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: "#334155",
+                    fontWeight: 700,
+                    display: "inline-flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <LocationOn
+                    sx={{ fontSize: 14, mr: 0.5, color: "#2563eb" }}
+                  />
+                  {user.departmentSambhag || "N/A"} /{" "}
+                  {user.departmentDistrict || "N/A"}
+                </Typography>
+
+                {user.departmentBlock && (
                   <Typography
                     variant="caption"
+                    sx={{ color: "#64748b", pl: 2.3, fontWeight: 700 }}
+                  >
+                    Block: {user.departmentBlock}
+                  </Typography>
+                )}
+              </Box>
+            </TableCell>
+
+            <TableCell sx={managerTableBodyCellSx}>
+              <Chip
+                label={
+                  user.status === "ACTIVE"
+                    ? "Active"
+                    : user.status === "BLOCKED"
+                      ? "Blocked"
+                      : user.status || "-"
+                }
+                size="small"
+                sx={{
+                  fontWeight: 900,
+                  color: user.status === "ACTIVE" ? "#047857" : "#b91c1c",
+                  bgcolor:
+                    user.status === "ACTIVE"
+                      ? "rgba(16, 185, 129, 0.10)"
+                      : "rgba(239, 68, 68, 0.10)",
+                  border:
+                    user.status === "ACTIVE"
+                      ? "1px solid rgba(16, 185, 129, 0.20)"
+                      : "1px solid rgba(239, 68, 68, 0.20)",
+                }}
+              />
+            </TableCell>
+
+            <TableCell sx={managerTableBodyCellSx}>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: "#475569",
+                  fontWeight: 800,
+                  fontSize: "0.82rem",
+                }}
+              >
+                {getUserLastLogin(user)}
+              </Typography>
+            </TableCell>
+
+            <TableCell sx={managerTableBodyCellSx}>
+              {user.role === "ROLE_ADMIN" ? (
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: "#94a3b8",
+                    fontWeight: 700,
+                  }}
+                >
+                  No actions
+                </Typography>
+              ) : (
+                <Box sx={{ display: "flex", gap: 0.8, flexWrap: "wrap" }}>
+                  {/* <IconButton
+                    size="small"
+                    onClick={() =>
+                      user.status === "BLOCKED"
+                        ? handleUnblockUser(user.id)
+                        : handleBlockUser(user.id)
+                    }
+                    title={user.status === "BLOCKED" ? "Unblock" : "Block"}
                     sx={{
-                      color: '#94a3b8',
-                      fontWeight: 700,
+                      width: 34,
+                      height: 34,
+                      borderRadius: "12px",
+                      color:
+                        user.status === "BLOCKED" ? "#047857" : "#dc2626",
+                      bgcolor:
+                        user.status === "BLOCKED"
+                          ? "rgba(16, 185, 129, 0.10)"
+                          : "rgba(239, 68, 68, 0.10)",
+                      border:
+                        user.status === "BLOCKED"
+                          ? "1px solid rgba(16, 185, 129, 0.18)"
+                          : "1px solid rgba(239, 68, 68, 0.18)",
+                      "&:hover": {
+                        bgcolor:
+                          user.status === "BLOCKED"
+                            ? "rgba(16, 185, 129, 0.18)"
+                            : "rgba(239, 68, 68, 0.18)",
+                      },
                     }}
                   >
-                    No actions
-                  </Typography>
-                ) : (
-                  <Box sx={{ display: 'flex', gap: 0.8, flexWrap: 'wrap' }}>
-                    <IconButton
-                      size="small"
-                      onClick={() =>
-                        user.status === 'BLOCKED'
-                          ? handleUnblockUser(user.id)
-                          : handleBlockUser(user.id)
-                      }
-                      title={user.status === 'BLOCKED' ? 'Unblock' : 'Block'}
-                      sx={{
-                        width: 34,
-                        height: 34,
-                        borderRadius: '12px',
-                        color: user.status === 'BLOCKED' ? '#047857' : '#dc2626',
-                        bgcolor:
-                          user.status === 'BLOCKED'
-                            ? 'rgba(16, 185, 129, 0.10)'
-                            : 'rgba(239, 68, 68, 0.10)',
-                        border:
-                          user.status === 'BLOCKED'
-                            ? '1px solid rgba(16, 185, 129, 0.18)'
-                            : '1px solid rgba(239, 68, 68, 0.18)',
-                        '&:hover': {
-                          bgcolor:
-                            user.status === 'BLOCKED'
-                              ? 'rgba(16, 185, 129, 0.18)'
-                              : 'rgba(239, 68, 68, 0.18)',
-                        },
-                      }}
-                    >
-                      {user.status === 'BLOCKED' ? (
-                        <LockOpen fontSize="small" />
-                      ) : (
-                        <Block fontSize="small" />
-                      )}
-                    </IconButton>
-
-                    <IconButton
-                      size="small"
-                      onClick={() => openPasswordReset(user)}
-                      title="Reset Password"
-                      sx={{
-                        width: 34,
-                        height: 34,
-                        borderRadius: '12px',
-                        color: '#7c3aed',
-                        bgcolor: 'rgba(124, 58, 237, 0.10)',
-                        border: '1px solid rgba(124, 58, 237, 0.18)',
-                        '&:hover': {
-                          bgcolor: 'rgba(124, 58, 237, 0.18)',
-                        },
-                      }}
-                    >
-                      <LockReset fontSize="small" />
-                    </IconButton>
-
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        setSelectedItem(user);
-                        setCreateQueryOpen(true);
-                      }}
-                      title="Create Ticket for this User"
-                      sx={{
-                        width: 34,
-                        height: 34,
-                        borderRadius: '12px',
-                        color: '#2563eb',
-                        bgcolor: 'rgba(37, 99, 235, 0.10)',
-                        border: '1px solid rgba(37, 99, 235, 0.18)',
-                        '&:hover': {
-                          bgcolor: 'rgba(37, 99, 235, 0.18)',
-                        },
-                      }}
-                    >
-                      <Support fontSize="small" />
-                    </IconButton>
-
-                    {canDeleteUsers && (
-                      <IconButton
-                        size="small"
-                        onClick={() => handleDeleteUser(user)}
-                        title="Delete User"
-                        sx={{
-                          width: 34,
-                          height: 34,
-                          borderRadius: '12px',
-                          color: '#be123c',
-                          bgcolor: 'rgba(244, 63, 94, 0.10)',
-                          border: '1px solid rgba(244, 63, 94, 0.18)',
-                          '&:hover': {
-                            bgcolor: 'rgba(244, 63, 94, 0.18)',
-                          },
-                        }}
-                      >
-                        <Delete fontSize="small" />
-                      </IconButton>
+                    {user.status === "BLOCKED" ? (
+                      <LockOpen fontSize="small" />
+                    ) : (
+                      <Block fontSize="small" />
                     )}
-                  </Box>
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+                  </IconButton> */}
+
+                  <IconButton
+                    size="small"
+                    onClick={() => openPasswordReset(user)}
+                    title="Reset Password"
+                    sx={{
+                      width: 34,
+                      height: 34,
+                      borderRadius: "12px",
+                      color: "#7c3aed",
+                      bgcolor: "rgba(124, 58, 237, 0.10)",
+                      border: "1px solid rgba(124, 58, 237, 0.18)",
+                      "&:hover": {
+                        bgcolor: "rgba(124, 58, 237, 0.18)",
+                      },
+                    }}
+                  >
+                    <LockReset fontSize="small" />
+                  </IconButton>
+
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      setSelectedItem(user);
+                      setCreateQueryOpen(true);
+                    }}
+                    title="Create Ticket for this User"
+                    sx={{
+                      width: 34,
+                      height: 34,
+                      borderRadius: "12px",
+                      color: "#2563eb",
+                      bgcolor: "rgba(37, 99, 235, 0.10)",
+                      border: "1px solid rgba(37, 99, 235, 0.18)",
+                      "&:hover": {
+                        bgcolor: "rgba(37, 99, 235, 0.18)",
+                      },
+                    }}
+                  >
+                    <Support fontSize="small" />
+                  </IconButton>
+
+                  {/* {canDeleteUsers && (
+                    <IconButton
+                      size="small"
+                      onClick={() => handleDeleteUser(user)}
+                      title="Delete User"
+                      sx={{
+                        width: 34,
+                        height: 34,
+                        borderRadius: "12px",
+                        color: "#be123c",
+                        bgcolor: "rgba(244, 63, 94, 0.10)",
+                        border: "1px solid rgba(244, 63, 94, 0.18)",
+                        "&:hover": {
+                          bgcolor: "rgba(244, 63, 94, 0.18)",
+                        },
+                      }}
+                    >
+                      <Delete fontSize="small" />
+                    </IconButton>
+                  )} */}
+                </Box>
+              )}
+            </TableCell>
+          </TableRow>
+        ))
+      )}
+    </TableBody>
+  </Table>
+</TableContainer>
 
     <Box
       sx={{
