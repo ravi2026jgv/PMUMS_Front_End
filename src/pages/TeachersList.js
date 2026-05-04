@@ -24,7 +24,8 @@ import {
   DialogContent,
   DialogActions,
   Paper,
-  IconButton
+  IconButton,
+  Snackbar
 } from '@mui/material';
 import {
   Search,
@@ -102,7 +103,7 @@ const [activePoolLoading, setActivePoolLoading] = useState(true);
   });
   const [utrSubmitting, setUtrSubmitting] = useState(false);
   const [utrSuccess, setUtrSuccess] = useState('');
-
+const [successSnackbarOpen, setSuccessSnackbarOpen] = useState(false);
   const [filters, setFilters] = useState({
     sambhagId: '',
     sambhagName: '',
@@ -445,10 +446,10 @@ const fetchActivePools = async () => {
   };
 
   const handleUtrSubmit = async () => {
-    if (!utrForm.amount || !utrForm.referenceName || !utrForm.utrNumber) {
-      setError('कृपया सभी UTR विवरण भरें।');
-      return;
-    }
+   if (!utrForm.amount || !utrForm.utrNumber) {
+  setError('कृपया राशि और UTR Number भरें।');
+  return;
+}
 
     try {
       setUtrSubmitting(true);
@@ -459,16 +460,18 @@ const fetchActivePools = async () => {
   userId: selectedTeacher?.id,
   mobileNumber: selectedTeacher?.mobileNumber,
   amount: Number(utrForm.amount),
-  referenceName: utrForm.referenceName,
+referenceName: utrForm.referenceName?.trim() || '',
   utrNumber: utrForm.utrNumber
 });
 
       setUtrSuccess('UTR सफलतापूर्वक सबमिट हो गया।');
-      await fetchTeachers(currentPage, filters);
+setSuccessSnackbarOpen(true);
 
-      setTimeout(() => {
-        closeUtrDialog();
-      }, 800);
+await fetchTeachers(currentPage, filters);
+
+setTimeout(() => {
+  closeUtrDialog();
+}, 800);
     } catch (err) {
       console.error('UTR upload failed:', err);
       setError(err?.response?.data?.message || 'UTR सबमिट करने में त्रुटि हुई।');
@@ -1434,7 +1437,7 @@ background: theme.dark,                          color: 'white',
             fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif'
           }}
         >
-          Reference Name *
+         Reference Name (Optional)
         </Typography>
 
         <TextField
@@ -1566,6 +1569,27 @@ background: theme.dark,                          color: 'white',
     </Button>
   </DialogActions>
 </Dialog>
+<Snackbar
+  open={successSnackbarOpen}
+  autoHideDuration={3500}
+  onClose={() => setSuccessSnackbarOpen(false)}
+  anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+>
+  <Alert
+    onClose={() => setSuccessSnackbarOpen(false)}
+    severity="success"
+    variant="filled"
+    sx={{
+      width: '100%',
+      borderRadius: '14px',
+      fontWeight: 900,
+      boxShadow: '0 14px 34px rgba(22, 163, 74, 0.28)',
+      fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif'
+    }}
+  >
+    UTR successfully submitted.
+  </Alert>
+</Snackbar>
     </Layout>
   );
 };

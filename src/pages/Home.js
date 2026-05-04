@@ -17,7 +17,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  IconButton
+  IconButton,
+  Snackbar
 } from "@mui/material";
 import {
   Search,
@@ -93,6 +94,7 @@ const [activePoolAvailable, setActivePoolAvailable] = useState(false);
 const [activePoolLoading, setActivePoolLoading] = useState(true);
 const [utrDialogOpen, setUtrDialogOpen] = useState(false);
 const [activePools, setActivePools] = useState([]);
+const [successSnackbarOpen, setSuccessSnackbarOpen] = useState(false);
 const [utrForm, setUtrForm] = useState({
   amount: "",
   referenceName: "",
@@ -216,10 +218,10 @@ const handlePublicUtrSubmit = async () => {
     return;
   }
 
-  if (!utrForm.amount || !utrForm.referenceName || !utrForm.utrNumber) {
-    setUtrError("कृपया सभी UTR विवरण भरें।");
-    return;
-  }
+if (!utrForm.amount || !utrForm.utrNumber) {
+  setUtrError("कृपया राशि और UTR Number भरें।");
+  return;
+}
 
   try {
     setUtrSubmitting(true);
@@ -230,12 +232,12 @@ const handlePublicUtrSubmit = async () => {
       userId: searchedMember.id,
       mobileNumber: searchedMember.mobileNumber || mobileSearch,
       amount: Number(utrForm.amount),
-      referenceName: utrForm.referenceName,
+      referenceName: utrForm.referenceName?.trim() || "",
       utrNumber: utrForm.utrNumber
     });
 
-    setUtrSuccess("UTR सफलतापूर्वक सबमिट हो गया।");
-
+setUtrSuccess("UTR सफलतापूर्वक सबमिट हो गया।");
+setSuccessSnackbarOpen(true);
     setSearchedMember((prev) => ({
       ...prev,
       utrUploaded: true,
@@ -752,7 +754,7 @@ boxShadow: "0 18px 46px rgba(34, 27, 67, 0.10)"
             fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif"
           }}
         >
-          Reference Name *
+         Reference Name (Optional)
         </Typography>
 
         <TextField
@@ -884,6 +886,27 @@ boxShadow: "0 18px 46px rgba(34, 27, 67, 0.10)"
     </Button>
   </DialogActions>
 </Dialog>
+<Snackbar
+  open={successSnackbarOpen}
+  autoHideDuration={3500}
+  onClose={() => setSuccessSnackbarOpen(false)}
+  anchorOrigin={{ vertical: "top", horizontal: "left" }}
+>
+  <Alert
+    onClose={() => setSuccessSnackbarOpen(false)}
+    severity="success"
+    variant="filled"
+    sx={{
+      width: "100%",
+      borderRadius: "14px",
+      fontWeight: 900,
+      boxShadow: "0 14px 34px rgba(22, 163, 74, 0.28)",
+      fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif"
+    }}
+  >
+    UTR successfully submitted.
+  </Alert>
+</Snackbar>
     </Layout> );
 };
 
