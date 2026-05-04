@@ -16,6 +16,21 @@ const getTokenExpiryTime = (token) => {
     return null;
   }
 };
+const getNextMidnightTime = () => {
+  const now = new Date();
+
+  const nextMidnight = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + 1,
+    0,
+    0,
+    0,
+    0
+  );
+
+  return nextMidnight.getTime();
+};
 
 // Auth reducer for state management
 const authReducer = (state, action) => {
@@ -67,6 +82,7 @@ export const AuthProvider = ({ children }) => {
   const performAutoLogout = () => {
     clearLogoutTimer();
     authService.clearAllAuthData();
+    localStorage.removeItem('loginDate');
     dispatch({ type: 'LOGOUT' });
     toast.error('आपका सत्र समाप्त हो गया है। कृपया दोबारा लॉगिन करें।');
 
@@ -75,24 +91,30 @@ export const AuthProvider = ({ children }) => {
     }, 500);
   };
 
-  const setupAutoLogout = (token) => {
-    clearLogoutTimer();
+const setupAutoLogout = (token) => {
+  clearLogoutTimer();
 
-    const expiryTime = getTokenExpiryTime(token);
+  const tokenExpiryTime = getTokenExpiryTime(token);
+  const nextMidnightTime = getNextMidnightTime();
 
-    if (!expiryTime) return;
+  if (!tokenExpiryTime) return;
 
-    const timeLeft = expiryTime - Date.now();
+  // Logout should happen at whichever comes first:
+  // 1. Date change at 12:00 AM
+  // 2. JWT token expiry
+  const logoutTime = Math.min(tokenExpiryTime, nextMidnightTime);
 
-    if (timeLeft <= 0) {
-      performAutoLogout();
-      return;
-    }
+  const timeLeft = logoutTime - Date.now();
 
-    logoutTimerRef.current = setTimeout(() => {
-      performAutoLogout();
-    }, timeLeft);
-  };
+  if (timeLeft <= 0) {
+    performAutoLogout();
+    return;
+  }
+
+  logoutTimerRef.current = setTimeout(() => {
+    performAutoLogout();
+  }, timeLeft);
+};
 
   // Check for existing auth token on mount
   useEffect(() => {
@@ -103,11 +125,14 @@ export const AuthProvider = ({ children }) => {
       if (token && savedUser) {
         const expiryTime = getTokenExpiryTime(token);
 
-        if (!expiryTime || Date.now() >= expiryTime) {
-          authService.clearAllAuthData();
-          dispatch({ type: 'LOGIN_FAILURE' });
-          return;
-        }
+        const loginDate = localStorage.getItem('loginDate');
+const todayDate = new Date().toISOString().split('T')[0];
+
+if (!expiryTime || Date.now() >= expiryTime || loginDate !== todayDate) {
+  authService.clearAllAuthData();
+  dispatch({ type: 'LOGIN_FAILURE' });
+  return;
+}
 
         try {
           const user = await authService.getCurrentUser();
@@ -172,7 +197,8 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('user');
 
       localStorage.setItem('authToken', token);
-      localStorage.setItem('user', JSON.stringify(userData));
+localStorage.setItem('user', JSON.stringify(userData));
+localStorage.setItem('loginDate', new Date().toISOString().split('T')[0]);
 
       dispatch({ type: 'LOGIN_SUCCESS', payload: userData });
 
@@ -209,6 +235,7 @@ export const AuthProvider = ({ children }) => {
     try {
       clearLogoutTimer();
       await authService.logout();
+      localStorage.removeItem('loginDate');
       dispatch({ type: 'LOGOUT' });
       toast.success('आपका लॉगआउट सफल हुआ');
 
