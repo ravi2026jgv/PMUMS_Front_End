@@ -94,10 +94,14 @@ api.reAuthenticate = (password) => {
 // Response interceptor for error handling (apply to both instances)
 const authErrorHandler = (error) => {
   if (error.response?.status === 401) {
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('user');
+  sessionStorage.clear();
+
+  if (window.location.pathname !== '/login') {
     window.location.href = '/login';
   }
+}
   // Removed 403 and other error toasts to prevent unwanted popups
   
   return Promise.reject(error);
@@ -416,6 +420,13 @@ exportAllUsers: () => {
   return api.get('/admin/users/export-all', {
     responseType: 'blob'
   });
+},
+logoutAllUsers: () => {
+  return api.post('/admin/security/logout-all-users');
+},
+
+checkSessionStatus: () => {
+  return api.get('/admin/security/session-status');
 },
 
   // Get all death cases

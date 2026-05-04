@@ -77,6 +77,7 @@ NoAccounts,
 VolunteerActivism,
 CloudUpload,
 } from '@mui/icons-material';
+import LogoutIcon from '@mui/icons-material/Logout';
 import Layout from '../components/Layout/Layout';
 import { useAuth } from '../context/AuthContext';
 import MembershipCardPopup from '../components/MembershipCardPopup';
@@ -853,6 +854,21 @@ const handleManualBlockChange = (event) => {
     ...prev,
     departmentBlock: block?.name || '',
   }));
+};
+const handleLogoutAllUsers = async () => {
+  const confirmed = window.confirm(
+    'Are you sure you want to logout all users? All active users will be forced to login again.'
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await adminAPI.logoutAllUsers();
+    showSnackbar('All users have been logged out successfully!', 'success');
+  } catch (error) {
+    console.error('Error logging out all users:', error);
+    showSnackbar('Failed to logout all users!', 'error');
+  }
 };
 const handleCheckManualCreateMatch = async () => {
   try {
@@ -6839,6 +6855,18 @@ const getDeathCaseStatusChipSx = (status) => {
           Settings
         </Button>
       </Grid>
+      <Button
+  variant="contained"
+  color="error"
+  startIcon={<LogoutIcon />}
+  onClick={handleLogoutAllUsers}
+  sx={quickActionButtonSx(
+            'linear-gradient(135deg, #059669 0%, #047857 100%)',
+            'rgba(5, 150, 105, 0.22)'
+          )}
+>
+  Logout All Users
+</Button>
 
       <Grid item xs={12} sm={6} md={3}>
         <Button
