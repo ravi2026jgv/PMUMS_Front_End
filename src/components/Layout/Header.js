@@ -79,12 +79,14 @@ const Header = () => {
   };
 
   const mainNavigationItems = [
-    { label: 'HOME', path: '/' },
-    { label: 'ABOUT', path: '/about' },
-    { label: 'NIYAMAWALI', path: '/niyamawali' },
-    { label: 'SANSTHA SAHYOG', path: '/self-donation' },
-    { label: 'CONTACT US', path: '/contact-us' }
-  ];
+  { label: 'HOME', path: '/' },
+  { label: 'ABOUT', path: '/about' },
+  { label: 'NIYAMAWALI', path: '/niyamawali' },
+  ...(showSelfDonationNav
+    ? [{ label: 'SANSTHA SAHYOG', path: '/self-donation' }]
+    : []),
+  { label: 'CONTACT US', path: '/contact-us' }
+];
 
   const listNavigationItems = [
     { label: 'OUR MEMBERS', path: '/teachers-list' },
