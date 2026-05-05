@@ -74,17 +74,42 @@ const [showPasswordDialog, setShowPasswordDialog] = useState(false);  // const [
   const [availableDistricts, setAvailableDistricts] = useState([]);
   const [availableBlocks, setAvailableBlocks] = useState([]);
 // const isDepartmentUniqueIdLocked = false;
+const combineFullName = (name, surname) =>
+  [name, surname].filter(Boolean).join(' ').trim();
+
+const hasFieldValue = (value) =>
+  value !== null &&
+  value !== undefined &&
+  value.toString().trim() !== '';
 const isFullNameLocked = Boolean(profileFieldLocks?.fullName);
 const isDateOfBirthLocked = Boolean(profileFieldLocks?.dateOfBirth);
 const isMobileNumberLocked = Boolean(profileFieldLocks?.mobileNumber);
 const isEmailLocked = Boolean(profileFieldLocks?.email);
 const isNomineeLocked = true;
 
-const isDepartmentUniqueIdLocked = Boolean(
-  profileFieldLocks?.departmentUniqueId ||
-  (profileData?.departmentUniqueId || '').toString().trim()
-);
 
+
+const isFullNameValueLocked =
+  isFullNameLocked &&
+  hasFieldValue(combineFullName(profileData?.name, profileData?.surname));
+
+const isDateOfBirthValueLocked =
+  isDateOfBirthLocked &&
+  hasFieldValue(profileData?.dateOfBirth);
+
+const isMobileNumberValueLocked =
+  isMobileNumberLocked &&
+  hasFieldValue(profileData?.mobileNumber);
+
+const isEmailValueLocked =
+  isEmailLocked &&
+  hasFieldValue(profileData?.email);
+
+const isDepartmentUniqueIdValueLocked =
+  Boolean(profileFieldLocks?.departmentUniqueId) &&
+  hasFieldValue(profileData?.departmentUniqueId);
+
+  const isDepartmentUniqueIdLocked = isDepartmentUniqueIdValueLocked;
 const {
     register,
     handleSubmit,
@@ -428,8 +453,7 @@ const splitFullName = (fullName) => {
   };
 };
 
-const combineFullName = (name, surname) =>
-  [name, surname].filter(Boolean).join(' ').trim();
+
 
 const membershipCardData = {
   fullName: combineFullName(profileData?.name, profileData?.surname) || user?.name || 'शिक्षक',
@@ -499,27 +523,29 @@ const onInvalid = (formErrors) => {
       availableBlocks.find((b) => b.id === selectedBlock)?.name || '';
 const { name, surname } = splitFullName(data.fullName);
    const updatePayload = {
-  name: isFullNameLocked ? profileData?.name : name,
-  surname: isFullNameLocked ? profileData?.surname : surname,
+name: isFullNameValueLocked ? profileData?.name : name,
+surname: isFullNameValueLocked ? profileData?.surname : surname,
   fatherName: data.fatherName,
-  email: isEmailLocked ? profileData?.email : data.email,
+email: isEmailValueLocked ? profileData?.email : data.email,
   countryCode: data.countryCode,
-  mobileNumber: isMobileNumberLocked ? profileData?.mobileNumber : data.mobileNumber,
-  gender: data.gender,
+mobileNumber: isMobileNumberValueLocked
+  ? profileData?.mobileNumber
+  : data.mobileNumber,
+    gender: data.gender,
   maritalStatus: data.maritalStatus,
   homeAddress: data.homeAddress,
   pincode: data.pincode ? parseInt(data.pincode, 10) : null,
-  dateOfBirth: isDateOfBirthLocked
-    ? profileData?.dateOfBirth || null
-    : data.dateOfBirth || null,
+dateOfBirth: isDateOfBirthValueLocked
+  ? profileData?.dateOfBirth || null
+  : data.dateOfBirth || null,
   joiningDate: data.joiningDate || null,
   retirementDate: data.retirementDate || null,
   schoolOfficeName: data.schoolOfficeName,
   sankulName: data.sankulName,
   department: data.department,
-  departmentUniqueId: isDepartmentUniqueIdLocked
-    ? profileData?.departmentUniqueId
-    : data.departmentUniqueId,
+ departmentUniqueId: isDepartmentUniqueIdLocked
+  ? profileData?.departmentUniqueId
+  : data.departmentUniqueId,
   departmentState: stateName,
   departmentSambhag: sambhagName,
   departmentDistrict: districtName,
@@ -1025,12 +1051,11 @@ background: uiTheme.main,            },
                   fullWidth
                   defaultValue={combineFullName(profileData?.name, profileData?.surname)}
                   {...register('fullName', { required: 'पूरा नाम आवश्यक है' })}
-                  disabled={!isEditing || isFullNameLocked}
+                  disabled={!isEditing || isFullNameValueLocked}
                   error={!!errors.fullName}
                   helperText={
                     errors.fullName?.message ||
-                    (isFullNameLocked ? 'पूरा नाम एडमिन द्वारा लॉक किया गया है' : '')
-                  }
+(isFullNameValueLocked ? 'पूरा नाम एडमिन द्वारा लॉक किया गया है' : '')                  }
                   sx={fieldSx}
                 />
               </Grid>
@@ -1106,11 +1131,11 @@ background: uiTheme.main,            },
                   type="date"
                   defaultValue={profileData?.dateOfBirth || ''}
                   {...register('dateOfBirth', { required: 'जन्मतिथि आवश्यक है' })}
-                  disabled={!isEditing || isDateOfBirthLocked}
+                  disabled={!isEditing || isDateOfBirthValueLocked}
                   error={!!errors.dateOfBirth}
                   helperText={
                     errors.dateOfBirth?.message ||
-                    (isDateOfBirthLocked ? 'जन्मतिथि एडमिन द्वारा लॉक की गई है' : '')
+                    (isDateOfBirthValueLocked  ? 'जन्मतिथि एडमिन द्वारा लॉक की गई है' : '')
                   }
                   sx={fieldSx}
                 />
@@ -1150,11 +1175,11 @@ background: uiTheme.main,            },
                       message: 'मोबाइल नंबर 10 अंकों का होना चाहिए',
                     },
                   })}
-                  disabled={!isEditing || isMobileNumberLocked}
+                 disabled={!isEditing || isMobileNumberValueLocked}
                   error={!!errors.mobileNumber}
                   helperText={
                     errors.mobileNumber?.message ||
-                    (isMobileNumberLocked ? 'मोबाइल नंबर एडमिन द्वारा लॉक किया गया है' : '')
+                    (isMobileNumberValueLocked  ? 'मोबाइल नंबर एडमिन द्वारा लॉक किया गया है' : '')
                   }
                   inputProps={{ maxLength: 10, inputMode: 'numeric' }}
                   onInput={(e) => {
@@ -1177,11 +1202,11 @@ background: uiTheme.main,            },
                       message: 'कृपया सही ईमेल दर्ज करें',
                     },
                   })}
-                  disabled={!isEditing || isEmailLocked}
+                 disabled={!isEditing || isEmailValueLocked}
                   error={!!errors.email}
                   helperText={
                     errors.email?.message ||
-                    (isEmailLocked ? 'ईमेल एडमिन द्वारा लॉक किया गया है' : '')
+                    (isEmailValueLocked  ? 'ईमेल एडमिन द्वारा लॉक किया गया है' : '')
                   }
                   sx={fieldSx}
                 />

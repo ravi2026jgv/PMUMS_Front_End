@@ -107,9 +107,13 @@ const ManagerDashboard = () => {
   const [deleteRequestsOpen, setDeleteRequestsOpen] = useState(false);
   const [deleteRequests, setDeleteRequests] = useState([]);
   const [deleteRequestsLoading, setDeleteRequestsLoading] = useState(false);
-  const [passwordResetOpen, setPasswordResetOpen] = useState(false);
-  const [passwordResetLoading, setPasswordResetLoading] = useState(false);
-  const [passwordResetUser, setPasswordResetUser] = useState(null);
+const [passwordResetOpen, setPasswordResetOpen] = useState(false);
+const [passwordResetLoading, setPasswordResetLoading] = useState(false);
+const [passwordResetUser, setPasswordResetUser] = useState(null);
+const [passwordResetForm, setPasswordResetForm] = useState({
+  newPassword: "",
+  confirmPassword: "",
+});
   // Pagination states
   const [usersPage, setUsersPage] = useState(0);
   const [queriesPage, setQueriesPage] = useState(0);
@@ -1041,34 +1045,64 @@ const fetchManagedLocationCounts = async (scope) => {
       showSnackbar("Error loading assignments!", "error");
     }
   };
-  const openPasswordReset = (targetUser) => {
-    setPasswordResetUser(targetUser);
-    setPasswordResetOpen(true);
-  };
+const openPasswordReset = (targetUser) => {
+  setPasswordResetUser(targetUser);
+  setPasswordResetForm({
+    newPassword: "",
+    confirmPassword: "",
+  });
+  setPasswordResetOpen(true);
+};
 
-  const closePasswordReset = () => {
-    setPasswordResetOpen(false);
-    setPasswordResetUser(null);
-  };
+const closePasswordReset = () => {
+  setPasswordResetOpen(false);
+  setPasswordResetUser(null);
+  setPasswordResetForm({
+    newPassword: "",
+    confirmPassword: "",
+  });
+};
 
-  const submitPasswordReset = async () => {
-    if (!passwordResetUser?.id) return;
+const submitPasswordReset = async () => {
+  if (!passwordResetUser?.id) return;
 
-    try {
-      setPasswordResetLoading(true);
-      await managerAPI.resetUserPassword(passwordResetUser.id);
-      showSnackbar("Password reset successfully!", "success");
-      closePasswordReset();
-    } catch (error) {
-      console.error("Error resetting password:", error);
-      showSnackbar(
-        error?.response?.data?.message || "Failed to reset password!",
-        "error",
-      );
-    } finally {
-      setPasswordResetLoading(false);
-    }
-  };
+  const newPassword = passwordResetForm.newPassword.trim();
+  const confirmPassword = passwordResetForm.confirmPassword.trim();
+
+  if (!newPassword || !confirmPassword) {
+    showSnackbar("Please enter new password and confirm password!", "error");
+    return;
+  }
+
+  if (newPassword.length < 6) {
+    showSnackbar("Password must be at least 6 characters!", "error");
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    showSnackbar("New password and confirm password do not match!", "error");
+    return;
+  }
+
+  try {
+    setPasswordResetLoading(true);
+
+    await managerAPI.resetUserPassword(passwordResetUser.id, {
+      newPassword,
+    });
+
+    showSnackbar("Password reset successfully!", "success");
+    closePasswordReset();
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    showSnackbar(
+      error?.response?.data?.message || "Failed to reset password!",
+      "error",
+    );
+  } finally {
+    setPasswordResetLoading(false);
+  }
+};
 
   // Action Handlers
   const handleBlockUser = async (userId, reason = "Administrative action") => {
@@ -4364,7 +4398,7 @@ secondary={`${
                       Reset Password
                     </Typography>
                     <Typography variant="body2" sx={{ opacity: 0.86, mt: 0.4 }}>
-                      Reset user password securely using Date of Birth format.
+Set a manual password for the selected user.
                     </Typography>
                   </Box>
                 </Box>
@@ -4448,82 +4482,69 @@ secondary={`${
                   This will reset the user's password to their Date of Birth.
                 </Alert>
 
-                <Box
-                  sx={{
-                    p: 2,
-                    borderRadius: "20px",
-                    bgcolor: "#fff",
-                    border: "1px solid rgba(148, 163, 184, 0.20)",
-                    boxShadow: "0 12px 28px rgba(15, 23, 42, 0.05)",
-                  }}
-                >
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ fontWeight: 900, color: "#172554", mb: 1 }}
-                  >
-                    Password Format
-                  </Typography>
+               <Box
+  sx={{
+    p: 2,
+    borderRadius: "20px",
+    bgcolor: "#fff",
+    border: "1px solid rgba(148, 163, 184, 0.20)",
+    boxShadow: "0 12px 28px rgba(15, 23, 42, 0.05)",
+  }}
+>
+  <Typography
+    variant="subtitle2"
+    sx={{ fontWeight: 900, color: "#172554", mb: 1 }}
+  >
+    Manual Password
+  </Typography>
 
-                  <Box
-                    sx={{
-                      p: 1.6,
-                      borderRadius: "16px",
-                      background:
-                        "linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%)",
-                      border: "1px dashed rgba(37, 99, 235, 0.30)",
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "#475569", mb: 0.7 }}
-                    >
-                      New password format will be:
-                    </Typography>
+  <Grid container spacing={2}>
+    <Grid item xs={12}>
+      <TextField
+        fullWidth
+        label="New Password"
+        type="password"
+        value={passwordResetForm.newPassword}
+        onChange={(e) =>
+          setPasswordResetForm((prev) => ({
+            ...prev,
+            newPassword: e.target.value,
+          }))
+        }
+        disabled={passwordResetLoading}
+        helperText="Minimum 6 characters required"
+        sx={premiumFieldSx}
+      />
+    </Grid>
 
-                    <Typography
-                      sx={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        px: 1.4,
-                        py: 0.6,
-                        borderRadius: "12px",
-                        bgcolor: "#172554",
-                        color: "#fff",
-                        fontWeight: 900,
-                        letterSpacing: "0.08em",
-                      }}
-                    >
-                      DDMMYYYY
-                    </Typography>
-
-                    <Typography
-                      variant="body2"
-                      sx={{ color: "#64748b", mt: 1.2 }}
-                    >
-                      Example: if DOB is <strong>17 April 2002</strong>,
-                      password will be <strong>17042002</strong>.
-                    </Typography>
-                  </Box>
-
-                  {passwordResetUser?.dateOfBirth && (
-                    <Box
-                      sx={{
-                        mt: 1.5,
-                        p: 1.4,
-                        borderRadius: "14px",
-                        bgcolor: "rgba(16, 185, 129, 0.08)",
-                        border: "1px solid rgba(16, 185, 129, 0.18)",
-                      }}
-                    >
-                      <Typography
-                        variant="body2"
-                        sx={{ fontWeight: 800, color: "#047857" }}
-                      >
-                        User DOB: {passwordResetUser.dateOfBirth}
-                      </Typography>
-                    </Box>
-                  )}
-                </Box>
+    <Grid item xs={12}>
+      <TextField
+        fullWidth
+        label="Confirm Password"
+        type="password"
+        value={passwordResetForm.confirmPassword}
+        onChange={(e) =>
+          setPasswordResetForm((prev) => ({
+            ...prev,
+            confirmPassword: e.target.value,
+          }))
+        }
+        disabled={passwordResetLoading}
+        error={
+          passwordResetForm.confirmPassword.length > 0 &&
+          passwordResetForm.newPassword !== passwordResetForm.confirmPassword
+        }
+        helperText={
+          passwordResetForm.confirmPassword.length > 0 &&
+          passwordResetForm.newPassword !== passwordResetForm.confirmPassword
+            ? "Passwords do not match"
+            : "Re-enter the same password"
+        }
+        sx={premiumFieldSx}
+      />
+    </Grid>
+  </Grid>
+</Box>
               </Box>
             </DialogContent>
 
@@ -4550,7 +4571,7 @@ secondary={`${
                 }
                 sx={dialogDangerButtonSx}
               >
-                {passwordResetLoading ? "Resetting..." : "Confirm Reset"}
+{passwordResetLoading ? "Saving..." : "Save Password"}
               </Button>
             </DialogActions>
           </Dialog>

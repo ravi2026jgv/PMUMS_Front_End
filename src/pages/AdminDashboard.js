@@ -283,6 +283,7 @@ nominee2UpiLink: '',
     const [deleteRequestsOpen, setDeleteRequestsOpen] = useState(false);
   const [deleteRequests, setDeleteRequests] = useState([]);
   const [deleteRequestsLoading, setDeleteRequestsLoading] = useState(false);
+  const [deleteRequestsBulkLoading, setDeleteRequestsBulkLoading] = useState(false);
   // Role Assignment Dialog States
   const [roleAssignmentDialog, setRoleAssignmentDialog] = useState(false);
   const [selectedUserForRole, setSelectedUserForRole] = useState(null);
@@ -380,6 +381,7 @@ const [manualCheckLoading, setManualCheckLoading] = useState(false);
 const [manualCreateMatch, setManualCreateMatch] = useState(null);
 
 const [manualCreateForm, setManualCreateForm] = useState({
+  desiredUserIdSuffix: '',
 fullName: '',
   fatherName: '',
   email: '',
@@ -410,7 +412,6 @@ fullName: '',
   registrationDateOverride: '',
   createIfMatchFound: false,
   matchedExistingUserId: '',
-  supportEntryReference: '',
 });
 const [manualSelectedState, setManualSelectedState] = useState('');
 const [manualSelectedSambhag, setManualSelectedSambhag] = useState('');
@@ -481,8 +482,8 @@ nominee2UpiLink: '',
   };
   const resetManualCreateForm = () => {
   setManualCreateForm({
-    name: '',
-    surname: '',
+    desiredUserIdSuffix: '',
+fullName: '',
     fatherName: '',
     email: '',
     confirmEmail: '',
@@ -512,7 +513,6 @@ nominee2UpiLink: '',
     registrationDateOverride: '',
     createIfMatchFound: false,
     matchedExistingUserId: '',
-    supportEntryReference: '',
   });
 
   setManualCreateMatch(null);
@@ -875,11 +875,21 @@ const handleCheckManualCreateMatch = async () => {
     setManualCheckLoading(true);
     setManualCreateMatch(null);
 
-    const payload = {
-      departmentUniqueId: manualCreateForm.departmentUniqueId,
-      mobileNumber: manualCreateForm.mobileNumber,
-      email: manualCreateForm.email,
-    };
+  const { name, surname } = splitFullName(manualCreateForm.fullName);
+
+const desiredUserId =
+  manualCreateForm.desiredUserIdSuffix?.trim()
+    ? `PMUMS${manualCreateForm.desiredUserIdSuffix.trim().toUpperCase()}`
+    : null;
+
+const payload = {
+  desiredUserId,
+  name,
+  surname,
+  departmentUniqueId: manualCreateForm.departmentUniqueId,
+  mobileNumber: manualCreateForm.mobileNumber,
+  email: manualCreateForm.email,
+};
 
     const response = await adminAPI.checkManualCreateUserMatch(payload);
     setManualCreateMatch(response.data);
@@ -1123,9 +1133,21 @@ const handleManualCreateUser = async () => {
       widowed: 'WIDOWED',
     };
 const { name, surname } = splitFullName(manualCreateForm.fullName);
-    const payload = {
-      name: name,
-      surname: surname,
+
+const desiredUserId =
+  manualCreateForm.desiredUserIdSuffix?.trim()
+    ? `PMUMS${manualCreateForm.desiredUserIdSuffix.trim().toUpperCase()}`
+    : null;
+
+if (desiredUserId && !/^PMUMS[A-Z0-9]{1,30}$/.test(desiredUserId)) {
+  showSnackbar('User ID must start with PMUMS and contain only letters/numbers!', 'error');
+  return;
+}
+
+const payload = {
+  desiredUserId,
+  name: name,
+  surname: surname,
       fatherName: manualCreateForm.fatherName,
       email: manualCreateForm.email,
       countryCode: manualCreateForm.countryCode || '+91',
@@ -1153,7 +1175,6 @@ const { name, surname } = splitFullName(manualCreateForm.fullName);
       registrationDateOverride: manualCreateForm.registrationDateOverride || null,
       createIfMatchFound: Boolean(manualCreateForm.createIfMatchFound),
       matchedExistingUserId: manualCreateForm.matchedExistingUserId || '',
-      supportEntryReference: manualCreateForm.supportEntryReference || '',
     };
 
     const response = await adminAPI.manualCreateUser(payload);
@@ -1619,21 +1640,126 @@ const openSettingsDialog = async () => {
     setSettingsLoading(false);
   }
 };
-  const fetchPendingDeleteRequests = async () => {
-    if (!deleteRequestsOpen) return;
 
-    try {
-      setDeleteRequestsLoading(true);
-      const response = await adminAPI.getPendingDeleteRequests();
-      setDeleteRequests(response.data || []);
-    } catch (error) {
-      console.error('Error fetching delete requests:', error);
-      showSnackbar('Error loading delete requests!', 'error');
-      setDeleteRequests([]);
-    } finally {
-      setDeleteRequestsLoading(false);
+const getDeleteRequestTargetUserId = (request) => {
+  const targetUser =
+    request?.user ||
+    request?.targetUser ||
+    request?.deletedUser ||
+    request?.userDetails ||
+    request?.targetUserDetails ||
+    {};
+
+  return (
+    request?.userId ||
+    request?.targetUserId ||
+    request?.deletedUserId ||
+    request?.targetId ||
+    request?.entityId ||
+    targetUser?.id ||
+    targetUser?.userId ||
+    ''
+  );
+};
+
+const buildDeleteRequestTargetName = (request) => {
+  const targetUser =
+    request?.user ||
+    request?.targetUser ||
+    request?.deletedUser ||
+    request?.userDetails ||
+    request?.targetUserDetails ||
+    {};
+
+  const targetUserId = getDeleteRequestTargetUserId(request);
+
+  const rawName =
+    request?.userName ||
+    request?.targetUserName ||
+    request?.deletedUserName ||
+    request?.targetName ||
+    request?.fullName ||
+    combineFullName(targetUser?.name, targetUser?.surname) ||
+    targetUser?.fullName ||
+    targetUser?.name ||
+    '';
+
+  // Prevent PMUMS ID showing twice
+  if (!rawName || rawName === targetUserId) {
+    return '';
+  }
+
+  return rawName;
+};
+
+ const fetchPendingDeleteRequests = async () => {
+  if (!deleteRequestsOpen) return;
+
+  try {
+    setDeleteRequestsLoading(true);
+
+    const response = await adminAPI.getPendingDeleteRequests();
+
+    let data = [];
+
+    if (Array.isArray(response?.data)) {
+      data = response.data;
+    } else if (Array.isArray(response?.data?.content)) {
+      data = response.data.content;
+    } else if (Array.isArray(response?.data?.requests)) {
+      data = response.data.requests;
+    } else if (Array.isArray(response?.data?.data)) {
+      data = response.data.data;
     }
-  };
+
+    const enrichedData = await Promise.all(
+      data.map(async (request) => {
+        const existingName = buildDeleteRequestTargetName(request);
+        const targetUserId = getDeleteRequestTargetUserId(request);
+
+        if (existingName || !targetUserId) {
+          return {
+            ...request,
+            targetUserId,
+            targetUserDisplayName: existingName,
+          };
+        }
+
+        try {
+          const userResponse = await adminAPI.getUser(targetUserId);
+          const userData = userResponse?.data || {};
+
+          return {
+            ...request,
+            targetUserId,
+            targetUserDisplayName:
+              combineFullName(userData?.name, userData?.surname) ||
+              userData?.fullName ||
+              userData?.name ||
+              '',
+            targetUserDetails: userData,
+          };
+        } catch (userError) {
+          console.warn('Unable to load user details for delete request:', targetUserId, userError);
+
+          return {
+            ...request,
+            targetUserId,
+            targetUserDisplayName: '',
+          };
+        }
+      })
+    );
+
+    setDeleteRequests(enrichedData);
+  } catch (error) {
+    console.error('Error fetching delete requests:', error);
+    showSnackbar('Error loading delete requests!', 'error');
+    setDeleteRequests([]);
+  } finally {
+    setDeleteRequestsLoading(false);
+  }
+};
 
     useEffect(() => {
     fetchPendingDeleteRequests();
@@ -1733,8 +1859,10 @@ const handleSaveSettings = async () => {
         rejectionReason: rejectionReason || 'Delete request rejected'
       });
 
-      showSnackbar('Delete request rejected successfully!', 'success');
-      fetchPendingDeleteRequests();
+     showSnackbar('Delete request rejected successfully!', 'success');
+fetchUsers();
+fetchTrashUsers();
+fetchPendingDeleteRequests();
     } catch (error) {
       console.error('Error rejecting delete request:', error);
       showSnackbar(
@@ -1779,6 +1907,92 @@ showSnackbar('Delete request approved successfully. User is now available in tra
     }
   };
 
+  const handleApproveAllDeleteRequests = async () => {
+  const pendingRequests = (Array.isArray(deleteRequests) ? deleteRequests : []).filter(
+    (request) => String(request.status || 'PENDING').toUpperCase() === 'PENDING'
+  );
+
+  if (pendingRequests.length === 0) {
+    showSnackbar('No pending delete requests found!', 'warning');
+    return;
+  }
+
+  const ok = window.confirm(
+    `Are you sure you want to approve all ${pendingRequests.length} pending delete request(s)? Users will be moved to trash.`
+  );
+
+  if (!ok) return;
+
+  try {
+    setDeleteRequestsBulkLoading(true);
+
+    await Promise.all(
+      pendingRequests.map((request) => adminAPI.approveDeleteRequest(request.id))
+    );
+
+    showSnackbar(`${pendingRequests.length} delete request(s) approved successfully!`, 'success');
+
+    await fetchUsers();
+    await fetchTrashUsers();
+    await fetchPendingDeleteRequests();
+  } catch (error) {
+    console.error('Error approving all delete requests:', error);
+    showSnackbar(
+      error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        'Failed to approve all delete requests!',
+      'error'
+    );
+  } finally {
+    setDeleteRequestsBulkLoading(false);
+  }
+};
+
+const handleRejectAllDeleteRequests = async () => {
+  const pendingRequests = (Array.isArray(deleteRequests) ? deleteRequests : []).filter(
+    (request) => String(request.status || 'PENDING').toUpperCase() === 'PENDING'
+  );
+
+  if (pendingRequests.length === 0) {
+    showSnackbar('No pending delete requests found!', 'warning');
+    return;
+  }
+
+  const rejectionReason = window.prompt(
+    `Enter rejection reason for all ${pendingRequests.length} request(s):`,
+    'Bulk reject from admin dashboard'
+  );
+
+  if (rejectionReason === null) return;
+
+  try {
+    setDeleteRequestsBulkLoading(true);
+
+    await Promise.all(
+      pendingRequests.map((request) =>
+        adminAPI.rejectDeleteRequest(request.id, {
+          rejectionReason: rejectionReason || 'Bulk reject from admin dashboard',
+        })
+      )
+    );
+
+    showSnackbar(`${pendingRequests.length} delete request(s) rejected successfully!`, 'success');
+
+    await fetchUsers();
+    await fetchTrashUsers();
+    await fetchPendingDeleteRequests();
+  } catch (error) {
+    console.error('Error rejecting all delete requests:', error);
+    showSnackbar(
+      error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        'Failed to reject all delete requests!',
+      'error'
+    );
+  } finally {
+    setDeleteRequestsBulkLoading(false);
+  }
+};
   // Auto-load trash users when dialog is open / pagination changes
   useEffect(() => {
     fetchTrashUsers();
@@ -8273,6 +8487,7 @@ const getDeathCaseStatusChipSx = (status) => {
     </Grid>
 
     {/* 3. Professional Details */}
+   
   {manualCreateSectionHeader(
   3,
   'Department Information',
@@ -8433,7 +8648,7 @@ const getDeathCaseStatusChipSx = (status) => {
 )}
 
     <Grid container spacing={2.5} sx={{ mb: 4 }}>
-      <Grid item xs={12} md={4}>
+      <Grid item xs={12} md={6}>
         <TextField
           fullWidth
           type="date"
@@ -8444,16 +8659,32 @@ const getDeathCaseStatusChipSx = (status) => {
         />
       </Grid>
 
-      <Grid item xs={12} md={5}>
-        <TextField
-          fullWidth
-          label="Support Entry Reference"
-          value={manualCreateForm.supportEntryReference}
-          onChange={(e) => setManualCreateForm((p) => ({ ...p, supportEntryReference: e.target.value }))}
-        />
-      </Grid>
+      <Grid item xs={12} md={4}>
+  <TextField
+    fullWidth
+    label="यूजर आईडी / Registration ID"
+    value={manualCreateForm.desiredUserIdSuffix}
+    onChange={(e) =>
+      setManualCreateForm((p) => ({
+        ...p,
+        desiredUserIdSuffix: e.target.value
+          .toUpperCase()
+          .replace(/[^A-Z0-9]/g, '')
+          .slice(0, 30),
+      }))
+    }
+    InputProps={{
+      startAdornment: (
+        <InputAdornment position="start">
+          <strong>PMUMS</strong>
+        </InputAdornment>
+      ),
+    }}
+    helperText="Optional. Blank रखने पर ID automatically generate होगी."
+  />
+</Grid>
 
-      <Grid item xs={12} md={3} sx={{ display: 'flex', alignItems: 'center' }}>
+      <Grid item xs={12} md={6} sx={{ display: 'flex', alignItems: 'center' }}>
         <FormControlLabel
           control={
             <Checkbox
@@ -8680,18 +8911,75 @@ const getDeathCaseStatusChipSx = (status) => {
           </Typography>
         </Box>
 
-        <Chip
-          label="Approval Required"
-          size="small"
-          variant="outlined"
-          sx={{
-            bgcolor: 'rgba(220, 38, 38, 0.10)',
-            color: '#b91c1c',
-            border: '1px solid rgba(220, 38, 38, 0.20)',
-            fontWeight: 900,
-            borderRadius: '10px',
-          }}
-        />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+  <Chip
+    label="Approval Required"
+    size="small"
+    variant="outlined"
+    sx={{
+      bgcolor: 'rgba(220, 38, 38, 0.10)',
+      color: '#b91c1c',
+      border: '1px solid rgba(220, 38, 38, 0.20)',
+      fontWeight: 900,
+      borderRadius: '10px',
+    }}
+  />
+
+  {deleteRequests.length > 0 && (
+    <>
+      <Button
+        size="small"
+        variant="contained"
+        startIcon={
+          deleteRequestsBulkLoading ? (
+            <CircularProgress size={16} color="inherit" />
+          ) : (
+            <DeleteForever fontSize="small" />
+          )
+        }
+        onClick={handleApproveAllDeleteRequests}
+        disabled={deleteRequestsLoading || deleteRequestsBulkLoading}
+        sx={{
+          borderRadius: 3,
+          fontWeight: 900,
+          textTransform: 'none',
+          bgcolor: '#dc2626',
+          color: '#fff',
+          boxShadow: '0 8px 18px rgba(220, 38, 38, 0.22)',
+          '&:hover': {
+            bgcolor: '#b91c1c',
+            transform: 'translateY(-1px)',
+          },
+        }}
+      >
+        Approve All
+      </Button>
+
+      <Button
+        size="small"
+        variant="outlined"
+        startIcon={<Close fontSize="small" />}
+        onClick={handleRejectAllDeleteRequests}
+        disabled={deleteRequestsLoading || deleteRequestsBulkLoading}
+        sx={{
+          borderRadius: 3,
+          fontWeight: 900,
+          textTransform: 'none',
+          color: '#475569',
+          borderColor: '#cbd5e1',
+          bgcolor: '#fff',
+          '&:hover': {
+            borderColor: '#64748b',
+            bgcolor: '#f8fafc',
+            transform: 'translateY(-1px)',
+          },
+        }}
+      >
+        Reject All
+      </Button>
+    </>
+  )}
+</Box>
       </Box>
 
       {deleteRequestsLoading ? (
@@ -8751,31 +9039,42 @@ const getDeathCaseStatusChipSx = (status) => {
 
             <TableBody>
               {(Array.isArray(deleteRequests) ? deleteRequests : []).map((request) => {
-                const targetUser =
-                  request.user ||
-                  request.targetUser ||
-                  request.deletedUser ||
-                  {};
+             const targetUser =
+  request.user ||
+  request.targetUser ||
+  request.deletedUser ||
+  request.userDetails ||
+  request.targetUserDetails ||
+  {};
 
-                const requestedBy =
-                  request.requestedBy ||
-                  request.createdBy ||
-                  request.requestedByUser ||
-                  {};
+const requestedBy =
+  request.requestedBy ||
+  request.createdBy ||
+  request.requestedByUser ||
+  request.requestedByDetails ||
+  request.adminUser ||
+  {};
 
-                const targetName =
-                  request.userName ||
-                  request.targetUserName ||
-                  combineFullName(targetUser.name, targetUser.surname) ||
-                  targetUser.name ||
-                  '-';
+const targetUserId =
+  request.targetUserId ||
+  getDeleteRequestTargetUserId(request);
 
-                const requestedByName =
-                  request.requestedByName ||
-                  combineFullName(requestedBy.name, requestedBy.surname) ||
-                  requestedBy.name ||
-                  '-';
+const targetName =
+  request.targetUserDisplayName ||
+  buildDeleteRequestTargetName(request) ||
+  combineFullName(targetUser.name, targetUser.surname) ||
+  targetUser.fullName ||
+  targetUser.name ||
+  'Name not available';
 
+const requestedByName =
+  request.requestedByName ||
+  request.createdByName ||
+  request.performedByName ||
+  combineFullName(requestedBy.name, requestedBy.surname) ||
+  requestedBy.fullName ||
+  requestedBy.name ||
+  '-';
                 return (
                   <TableRow
                     key={request.id}
@@ -8787,15 +9086,15 @@ const getDeathCaseStatusChipSx = (status) => {
                       },
                     }}
                   >
-                    <TableCell sx={tableBodyCellSx}>
-                      <Typography variant="body2" sx={{ fontWeight: 900, color: '#0f172a' }}>
-                        {targetName}
-                      </Typography>
+                   <TableCell sx={tableBodyCellSx}>
+  <Typography variant="body2" sx={{ fontWeight: 900, color: '#0f172a' }}>
+    {targetName}
+  </Typography>
 
-                      <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>
-                        {request.userId || request.targetUserId || targetUser.id || '-'}
-                      </Typography>
-                    </TableCell>
+  <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>
+    {targetUserId || '-'}
+  </Typography>
+</TableCell>
 
                     <TableCell sx={tableBodyCellSx}>
                       <Typography variant="body2" sx={{ fontWeight: 800, color: '#334155' }}>
@@ -8803,7 +9102,7 @@ const getDeathCaseStatusChipSx = (status) => {
                       </Typography>
 
                       <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>
-                        {request.requestedByRole || requestedBy.role || '-'}
+{request.requestedByRole || request.createdByRole || request.performedByRole || requestedBy.role || '-'}
                       </Typography>
                     </TableCell>
 

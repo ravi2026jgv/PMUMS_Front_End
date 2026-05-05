@@ -72,6 +72,7 @@ const inputSx = {
     fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
   },
 };
+const OPEN_DEATH_CASES_VALUE = 'OPEN_DEATH_CASES';
 
 const SahyogList = () => {
   const [donors, setDonors] = useState([]);
@@ -84,15 +85,15 @@ const SahyogList = () => {
   const [totalElements, setTotalElements] = useState(0);
   const [pageSize] = useState(20);
 
-  const [filters, setFilters] = useState({
-    userId: '',
-    fullName: '',
-    mobileNumber: '',
-    sambhag: '',
-    district: '',
-    block: '',
-    beneficiaryId: '',
-  });
+ const [filters, setFilters] = useState({
+  userId: '',
+  fullName: '',
+  mobileNumber: '',
+  sambhag: '',
+  district: '',
+  block: '',
+  beneficiaryId: OPEN_DEATH_CASES_VALUE,
+});
 
   const abortControllerRef = useRef(null);
   const requestIdRef = useRef(0);
@@ -148,7 +149,13 @@ const SahyogList = () => {
           ...(filters.sambhag && { sambhag: filters.sambhag }),
           ...(filters.district && { district: filters.district }),
           ...(filters.block && { block: filters.block }),
-          ...(filters.beneficiaryId && { beneficiaryId: filters.beneficiaryId }),
+...(filters.beneficiaryId &&
+  filters.beneficiaryId !== OPEN_DEATH_CASES_VALUE && {
+    beneficiaryId: filters.beneficiaryId,
+  }),
+...(filters.beneficiaryId === OPEN_DEATH_CASES_VALUE && {
+  openOnly: true,
+}),
         },
         signal: abortControllerRef.current.signal,
       });
@@ -315,7 +322,13 @@ const SahyogList = () => {
           ...(filters.sambhag && { sambhag: filters.sambhag }),
           ...(filters.district && { district: filters.district }),
           ...(filters.block && { block: filters.block }),
-          ...(filters.beneficiaryId && { beneficiaryId: filters.beneficiaryId }),
+...(filters.beneficiaryId &&
+  filters.beneficiaryId !== OPEN_DEATH_CASES_VALUE && {
+    beneficiaryId: filters.beneficiaryId,
+  }),
+...(filters.beneficiaryId === OPEN_DEATH_CASES_VALUE && {
+  openOnly: true,
+}),
         },
         responseType: 'blob',
       });
@@ -735,9 +748,14 @@ boxShadow: '0 12px 28px rgba(15, 118, 110, 0.28)',
                       displayEmpty
                       sx={inputSx}
                     >
+                      <MenuItem value={OPEN_DEATH_CASES_VALUE}>
+  सभी चालू सहायता केस 
+</MenuItem>
                       <MenuItem value="">सभी लाभार्थी</MenuItem>
 
-                      {beneficiaryOptions.map((item) => (
+
+
+{beneficiaryOptions.map((item) => (
                         <MenuItem key={item.id} value={item.id}>
                           {item.name}
                         </MenuItem>

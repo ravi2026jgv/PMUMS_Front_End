@@ -626,7 +626,8 @@ exportNoSahyogTwoMonths: (params = {}) => {
     responseType: 'blob',
   });
 },
-
+resetUserPassword: (userId, payload) =>
+  api.put(`/manager/users/${userId}/password-reset`, payload),
 // Ticket / Query System
 getQueries: (params = {}) =>
   api.get('/manager/queries', { params }),
