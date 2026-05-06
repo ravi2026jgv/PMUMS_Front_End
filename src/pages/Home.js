@@ -273,9 +273,149 @@ setSuccessSnackbarOpen(true);
 
   return (
     <Layout>
-      <HeroBanner />
+  <HeroBanner />
 
-      <Statistics />
+  {!activePoolLoading && activePoolAvailable && (
+    <Box
+      sx={{
+        py: { xs: 4, md: 6 },
+         background: '#eef8f7',
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      <Container maxWidth="lg">
+        <Paper
+          elevation={0}
+          sx={{
+            maxWidth: 980,
+            mx: "auto",
+            p: { xs: 2.5, md: 4 },
+            borderRadius: { xs: 4, md: 6 },
+            background: "#ffffff",
+            border: "1px solid rgba(111, 92, 194, 0.18)",
+            boxShadow: "0 24px 40px rgba(34, 27, 67, 0.12)",
+            position: "relative",
+            overflow: "hidden",
+            "&::before": {
+              content: '""',
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: 7,
+              background: `linear-gradient(90deg, ${theme.main}, ${theme.accent})`,
+            },
+          }}
+        >
+          <Box sx={{ position: "relative", zIndex: 1 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+                mb: 2.5,
+                flexWrap: "wrap",
+              }}
+            >
+              <Box
+                sx={{
+                  width: 58,
+                  height: 58,
+                  borderRadius: "20px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  background: "rgba(111, 92, 194, 0.10)",
+                  border: "1px solid rgba(111, 92, 194, 0.18)",
+                }}
+              >
+                <PersonSearchRounded sx={{ color: theme.main, fontSize: 34 }} />
+              </Box>
+
+              <Box sx={{ flex: 1, minWidth: 240 }}>
+                <Typography
+                  sx={{
+                    color: theme.dark,
+                    fontWeight: 950,
+                    fontSize: { xs: "1.35rem", md: "1.75rem" },
+                    lineHeight: 1.25,
+                    fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+                  }}
+                >
+                  मोबाइल नंबर से सहयोग विवरण खोजें
+                </Typography>
+
+                <Typography
+                  sx={{
+                    color: theme.muted,
+                    fontWeight: 700,
+                    mt: 0.7,
+                    fontSize: { xs: "0.92rem", md: "1rem" },
+                    fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+                  }}
+                >
+                  10 अंकों का मोबाइल नंबर दर्ज करें। सदस्य विवरण, QR और UTR Upload विकल्प नीचे दिखाई देगा।
+                </Typography>
+              </Box>
+            </Box>
+
+            <TextField
+              fullWidth
+              value={mobileSearch}
+              onChange={handleMobileSearchChange}
+              placeholder="10 अंकों का मोबाइल नंबर दर्ज करें"
+              inputProps={{ maxLength: 10 }}
+              sx={inputSx}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search sx={{ color: theme.main }} />
+                  </InputAdornment>
+                ),
+                endAdornment: searchLoading ? (
+                  <InputAdornment position="end">
+                    <CircularProgress size={22} sx={{ color: theme.main }} />
+                  </InputAdornment>
+                ) : null,
+              }}
+            />
+
+            {searchError && (
+              <Alert severity="warning" sx={{ mt: 2, borderRadius: 3, fontWeight: 750 }}>
+                {searchError}
+              </Alert>
+            )}
+
+            {searchedMember && (
+              <Box sx={{ mt: 3 }}>
+                {searchedMember.utrUploaded ? (
+                  <Alert severity="success" sx={{ borderRadius: 3, fontWeight: 800 }}>
+                    इस सदस्य का UTR पहले से जमा हो चुका है
+                    {searchedMember.latestUtrNumber ? ` - ${searchedMember.latestUtrNumber}` : ""}.
+                  </Alert>
+                ) : searchedDeathCase ? (
+                  <DeathCaseSupportView
+                    deathCase={searchedDeathCase}
+                    showAssignedBadge={false}
+                    uploadButtonText="UTR Upload करें"
+                    onUploadClick={openUtrDialog}
+                    onQrError={(message) => setUtrError(message)}
+                  />
+                ) : (
+                  <Alert severity="warning" sx={{ borderRadius: 3, fontWeight: 800 }}>
+                    इस सदस्य के लिए मृत्यु सहायता प्रकरण मिला, लेकिन उसका पूरा विवरण लोड नहीं हो पाया।
+                  </Alert>
+                )}
+              </Box>
+            )}
+          </Box>
+        </Paper>
+      </Container>
+    </Box>
+  )}
+
+  <Statistics />
 
       {/* SAHYOG CARD: ONLY WHEN LOGGED OUT */}
       {!isAuthenticated && (
@@ -359,94 +499,7 @@ boxShadow: "0 28px 80px rgba(0, 0, 0, 0.22)",
                     __html: homeDisplayContent.homeNoticeHtml || "",
                   }}
                 />
-    {!activePoolLoading && activePoolAvailable && (            
-<Paper
-  elevation={0}
-  sx={{
-    maxWidth: 850,
-    mx: "auto",
-    mb: 3,
-    p: { xs: 2, md: 3 },
-    borderRadius: 4,
-   background: theme.soft,
-border: "1px solid rgba(111, 92, 194, 0.18)",
-boxShadow: "0 18px 46px rgba(34, 27, 67, 0.10)"
-  }}
->
-  <Typography
-    sx={{
-      color: theme.dark,
-      fontWeight: 950,
-      mb: 1,
-      fontSize: { xs: "1.05rem", md: "1.2rem" },
-      fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif"
-    }}
-  >
-    मोबाइल नंबर से सहयोग विवरण खोजें
-  </Typography>
-
-  <Typography
-    sx={{
-      color: theme.muted,
-      fontWeight: 700,
-      mb: 2,
-      fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif"
-    }}
-  >
-    10 अंकों का मोबाइल नंबर दर्ज करें। विवरण, QR और UTR Upload विकल्प नीचे दिखाई देगा।
-  </Typography>
-
-  <TextField
-    fullWidth
-    value={mobileSearch}
-    onChange={handleMobileSearchChange}
-    placeholder="10 अंकों का मोबाइल नंबर दर्ज करें"
-    inputProps={{ maxLength: 10 }}
-    sx={inputSx}
-    InputProps={{
-      startAdornment: (
-        <InputAdornment position="start">
-          <Search sx={{ color: theme.main }} />
-        </InputAdornment>
-      ),
-      endAdornment: searchLoading ? (
-        <InputAdornment position="end">
-          <CircularProgress size={22} sx={{ color: theme.main }} />
-        </InputAdornment>
-      ) : null
-    }}
-  />
-
-  {searchError && (
-    <Alert severity="warning" sx={{ mt: 2, borderRadius: 3 }}>
-      {searchError}
-    </Alert>
-  )}
-
-{searchedMember && (
-  <Box sx={{ mt: 3 }}>
-    {searchedMember.utrUploaded ? (
-      <Alert severity="success" sx={{ borderRadius: 3, fontWeight: 800 }}>
-        इस सदस्य का UTR पहले से जमा हो चुका है
-        {searchedMember.latestUtrNumber ? ` - ${searchedMember.latestUtrNumber}` : ""}.
-      </Alert>
-    ) : searchedDeathCase ? (
-      <DeathCaseSupportView
-        deathCase={searchedDeathCase}
-        showAssignedBadge={false}
-        uploadButtonText="UTR Upload करें"
-        onUploadClick={openUtrDialog}
-        onQrError={(message) => setUtrError(message)}
-      />
-    ) : (
-      <Alert severity="warning" sx={{ borderRadius: 3, fontWeight: 800 }}>
-        इस सदस्य के लिए मृत्यु सहायता प्रकरण मिला, लेकिन उसका पूरा विवरण लोड नहीं हो पाया।
-      </Alert>
-    )}
-  </Box>
-)}
-</Paper>
-)}
+ 
                 <Box sx={{ display: "flex", justifyContent: "center" }}>
                   <Button
                     variant="contained"
