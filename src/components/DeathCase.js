@@ -44,7 +44,7 @@ const SectionTitle = ({ title, subtitle }) => (
     <Typography
       variant="overline"
       sx={{
-        color: theme.soft2,
+        color: theme.main,
         fontWeight: 900,
         letterSpacing: '1.5px',
         fontSize: '0.82rem',
@@ -59,7 +59,7 @@ const SectionTitle = ({ title, subtitle }) => (
       sx={{
         mt: 0.6,
         fontWeight: 950,
-        color: theme.soft,
+        color: theme.dark,
         fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
         fontSize: { xs: '1.75rem', md: '2.45rem' },
         lineHeight: 1.25
@@ -83,7 +83,7 @@ const SectionTitle = ({ title, subtitle }) => (
     {subtitle && (
       <Box
         sx={{
-          color: theme.soft,
+          color: theme.text,
           lineHeight: 1.9,
           fontWeight: 700,
           fontSize: { xs: '0.98rem', md: '1.08rem' },
@@ -528,7 +528,7 @@ IFSC: ${account?.ifscCode || 'IFSC CODE'}`;
     <Box
       sx={{
         py: { xs: 6, md: 9 },
-        background: '#342c60',
+        background: '#eef8f7',
         position: 'relative',
         overflow: 'hidden'
       }}

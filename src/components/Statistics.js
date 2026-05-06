@@ -138,7 +138,7 @@ const Statistics = () => {
     <Box
       sx={{
         py: { xs: 6, md: 9 },
-        background: '#eef8f7',
+        background: '#342c60',
         position: 'relative',
         overflow: 'hidden',
       }}
@@ -153,7 +153,7 @@ const Statistics = () => {
           <Typography
             variant="overline"
             sx={{
-              color: theme.main,
+              color: theme.soft,
               fontWeight: 900,
               letterSpacing: '1.5px',
               fontSize: '0.82rem',
@@ -168,7 +168,7 @@ const Statistics = () => {
             component="h2"
             sx={{
               mt: 0.6,
-              color: theme.dark,
+              color: theme.soft,
               fontWeight: 950,
               fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
               fontSize: { xs: '1.8rem', md: '2.45rem' },
