@@ -85,7 +85,13 @@ const isFullNameLocked = Boolean(profileFieldLocks?.fullName);
 const isDateOfBirthLocked = Boolean(profileFieldLocks?.dateOfBirth);
 const isMobileNumberLocked = Boolean(profileFieldLocks?.mobileNumber);
 const isEmailLocked = Boolean(profileFieldLocks?.email);
-const isNomineeLocked = true;
+const isNominee1Locked =
+  hasFieldValue(profileData?.nominee1Name) ||
+  hasFieldValue(profileData?.nominee1Relation);
+
+const isNominee2Locked =
+  hasFieldValue(profileData?.nominee2Name) ||
+  hasFieldValue(profileData?.nominee2Relation);
 
 
 
@@ -550,10 +556,10 @@ dateOfBirth: isDateOfBirthValueLocked
   departmentSambhag: sambhagName,
   departmentDistrict: districtName,
   departmentBlock: blockName,
- nominee1Name: isNomineeLocked ? profileData?.nominee1Name : data.nominee1Name,
-nominee1Relation: isNomineeLocked ? profileData?.nominee1Relation : data.nominee1Relation,
-nominee2Name: isNomineeLocked ? profileData?.nominee2Name : data.nominee2Name,
-nominee2Relation: isNomineeLocked ? profileData?.nominee2Relation : data.nominee2Relation,
+nominee1Name: isNominee1Locked ? profileData?.nominee1Name : data.nominee1Name,
+nominee1Relation: isNominee1Locked ? profileData?.nominee1Relation : data.nominee1Relation,
+nominee2Name: isNominee2Locked ? profileData?.nominee2Name : data.nominee2Name,
+nominee2Relation: isNominee2Locked ? profileData?.nominee2Relation : data.nominee2Relation,
 };
 
 const response = await api.updateProfileById(userId, updatePayload);
@@ -1461,11 +1467,11 @@ background: uiTheme.main,            },
   fullWidth
   defaultValue={profileData?.nominee1Name || ''}
   {...register('nominee1Name', { required: 'पहले नामांकित का नाम आवश्यक है' })}
-  disabled={!isEditing || isNomineeLocked}
+  disabled={!isEditing || isNominee1Locked}
   error={!!errors.nominee1Name}
   helperText={
     errors.nominee1Name?.message ||
-    (isNomineeLocked ? 'नामांकित व्यक्ति की जानकारी लॉक है, इसे बदला नहीं जा सकता' : '')
+    (isNominee1Locked ? 'नामांकित व्यक्ति की जानकारी लॉक है, इसे बदला नहीं जा सकता' : '')
   }
   sx={fieldSx}
 />
@@ -1481,7 +1487,7 @@ background: uiTheme.main,            },
                     render={({ field }) => (
 <FormControl
   fullWidth
-  disabled={!isEditing || isNomineeLocked}
+  disabled={!isEditing || isNominee1Locked}
   error={!!errors.nominee1Relation}
   sx={selectSx}
 >                        <Select {...field} displayEmpty MenuProps={menuProps}>
@@ -1503,7 +1509,7 @@ background: uiTheme.main,            },
                             {errors.nominee1Relation?.message}
                           </Typography>
                         )}
-                        {!errors.nominee1Relation && isNomineeLocked && (
+                        {!errors.nominee1Relation && isNominee1Locked && (
   <Typography variant="caption" sx={{ mt: 0.5, fontWeight: 700, color: uiTheme.muted }}>
     नामांकित व्यक्ति की जानकारी लॉक है, इसे बदला नहीं जा सकता
   </Typography>
@@ -1534,11 +1540,11 @@ background: uiTheme.main,            },
   fullWidth
   defaultValue={profileData?.nominee2Name || ''}
   {...register('nominee2Name', { required: 'दूसरे नामांकित का नाम आवश्यक है' })}
-  disabled={!isEditing || isNomineeLocked}
+  disabled={!isEditing || isNominee1Locked}
   error={!!errors.nominee2Name}
   helperText={
     errors.nominee2Name?.message ||
-    (isNomineeLocked ? 'नामांकित व्यक्ति की जानकारी लॉक है, इसे बदला नहीं जा सकता' : '')
+    (isNominee1Locked ? 'नामांकित व्यक्ति की जानकारी लॉक है, इसे बदला नहीं जा सकता' : '')
   }
   sx={fieldSx}
 />
@@ -1554,7 +1560,7 @@ background: uiTheme.main,            },
                     render={({ field }) => (
 <FormControl
   fullWidth
-  disabled={!isEditing || isNomineeLocked}
+  disabled={!isEditing || isNominee1Locked}
   error={!!errors.nominee2Relation}
   sx={selectSx}
 >                        <Select {...field} displayEmpty MenuProps={menuProps}>
@@ -1576,7 +1582,7 @@ background: uiTheme.main,            },
                             {errors.nominee2Relation?.message}
                           </Typography>
                         )}
-                        {!errors.nominee2Relation && isNomineeLocked && (
+                        {!errors.nominee2Relation && isNominee1Locked && (
   <Typography variant="caption" sx={{ mt: 0.5, fontWeight: 700, color: uiTheme.muted }}>
     नामांकित व्यक्ति की जानकारी लॉक है, इसे बदला नहीं जा सकता
   </Typography>
