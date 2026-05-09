@@ -500,7 +500,7 @@ boxShadow: "0 18px 46px rgba(34, 27, 67, 0.10)"
           overflow: "hidden",
         }}
       >
-        <SbiInsuranceSection />
+        {/* <SbiInsuranceSection /> */}
       </Box>
 
      <Dialog
