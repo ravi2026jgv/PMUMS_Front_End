@@ -537,6 +537,18 @@ const handleBlockChange = (event) => {
     };
   };
 
+  // Checks uniqueness against the backend
+const checkUnique = async (field, value) => {
+  if (!value || !value.trim()) return true;
+  try {
+    const res = await axios.get(`${API_BASE_URL}/auth/check-unique`, {
+      params: { field, value: value.trim() },
+    });
+    return res.data.available;
+  } catch {
+    return true; // fail open — backend will catch it on submit anyway
+  }
+};
   const onSubmit = async (data) => {
     setLocationErrors({ state: "", sambhag: "", district: "", block: "" });
 
@@ -919,13 +931,18 @@ background: theme.main,                  }}
                       <TextField
                         fullWidth
                         placeholder="10 अंकों का नंबर"
-                        {...register("mobileNumber", {
-                          required: "Mobile number is required",
-                          pattern: {
-                            value: /^[0-9]{10}$/,
-                            message: "Only 10 digits allowed",
-                          },
-                        })}
+                       {...register("mobileNumber", {
+  required: "Mobile number is required",
+  pattern: {
+    value: /^[0-9]{10}$/,
+    message: "Only 10 digits allowed",
+  },
+  validate: async (value) => {
+    if (!/^[0-9]{10}$/.test(value)) return true; // skip if format invalid
+    const available = await checkUnique("mobile", value);
+    return available || "यह मोबाइल नंबर पहले से पंजीकृत है";
+  },
+})}
                         error={!!errors.mobileNumber}
                         helperText={errors.mobileNumber?.message}
                         inputProps={{
@@ -978,12 +995,17 @@ background: theme.main,                  }}
                         type="email"
                         placeholder="example@email.com"
                         {...register("email", {
-                          required: "ईमेल आवश्यक है",
-                          pattern: {
-                            value: /^\S+@\S+$/i,
-                            message: "कृपया सही ईमेल दर्ज करें",
-                          },
-                        })}
+  required: "ईमेल आवश्यक है",
+  pattern: {
+    value: /^\S+@\S+$/i,
+    message: "कृपया सही ईमेल दर्ज करें",
+  },
+  validate: async (value) => {
+    if (!/^\S+@\S+$/i.test(value)) return true; // skip if format invalid
+    const available = await checkUnique("email", value);
+    return available || "यह ईमेल पहले से पंजीकृत है";
+  },
+})}
                         error={!!errors.email}
                         helperText={errors.email?.message}
                         sx={inputSx}
@@ -1245,8 +1267,13 @@ background: theme.main,                  }}
                         fullWidth
                         placeholder="Unique ID"
                         {...register("departmentUniqueId", {
-                          required: "Department unique ID is required",
-                        })}
+  required: "Department unique ID is required",
+  validate: async (value) => {
+    if (!value?.trim()) return true;
+    const available = await checkUnique("departmentId", value);
+    return available || "यह विभाग ID पहले से पंजीकृत है";
+  },
+})}
                         error={!!errors.departmentUniqueId}
                         helperText={errors.departmentUniqueId?.message}
                         sx={inputSx}

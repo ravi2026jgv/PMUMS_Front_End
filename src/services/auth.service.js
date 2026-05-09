@@ -60,7 +60,7 @@ export const authService = {
       schoolOfficeName: userData.schoolOfficeName || '',
       sankulName: userData.sankulName || '', // संकుل का नाम
       department: userData.department || '',
-      departmentUniqueId: userData.departmentUniqueId || `DEPT_${userData.email.replace('@', '_').replace('.', '_')}_${Date.now()}`,
+      departmentUniqueId: userData.departmentUniqueId || '',
       // ✅ ADD LOCATION FIELDS - CRITICAL!
       departmentState: userData.departmentState || '',
       departmentSambhag: userData.departmentSambhag || '',
