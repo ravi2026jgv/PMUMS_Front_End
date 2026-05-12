@@ -1,0 +1,815 @@
+import React, { useEffect, useState } from "react";
+import {
+  Box,
+  Container,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  TextField,
+  InputAdornment,
+  CircularProgress,
+  Alert,
+  Chip,
+  Grid,
+  Paper,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  IconButton,
+  Snackbar
+} from "@mui/material";
+import {
+  Search,
+  Close,
+  UploadFileRounded,
+  PaymentsRounded,
+  CurrencyRupeeRounded,
+  ReceiptLongRounded,
+  PersonRounded
+} from "@mui/icons-material";
+import Layout from "../components/Layout/Layout";
+import DeathCaseSupportView from "../components/DeathCaseSupportView";
+import { publicApi, receiptAPI, FILE_BASE_URL } from "../services/api";
+
+const theme = {
+  dark: "#221b43",
+  main: "#6f5cc2",
+  light: "#b9a7ff",
+  accent: "#0f766e",
+  soft: "#f4f2fb",
+  softAccent: "#eef8f7",
+  text: "#221b43",
+  muted: "#374151",
+  green: "#0f766e",
+  red: "#b42318"
+};
+
+const inputSx = {
+  "& .MuiOutlinedInput-root": {
+    borderRadius: "14px",
+    background: "#ffffff",
+    transition: "all 0.25s ease",
+    "& fieldset": {
+      borderColor: "rgba(111, 92, 194, 0.22)",
+      borderWidth: "1px"
+    },
+    "&:hover fieldset": {
+      borderColor: "rgba(111, 92, 194, 0.48)"
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: theme.main,
+      borderWidth: "2px"
+    }
+  },
+  "& .MuiInputBase-input": {
+    fontWeight: 700,
+    color: theme.text,
+    fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif"
+  }
+};
+
+const NomineeSahyogPage = () => {
+  const [homeDisplayContent, setHomeDisplayContent] = useState({
+    homeNoticeHtml: "",
+    statisticsContentHtml: ""
+  });
+
+  const [mobileSearch, setMobileSearch] = useState("");
+  const [searchedMember, setSearchedMember] = useState(null);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState("");
+
+  const [activePoolAvailable, setActivePoolAvailable] = useState(false);
+  const [activePoolLoading, setActivePoolLoading] = useState(true);
+  const [activePools, setActivePools] = useState([]);
+
+  const [utrDialogOpen, setUtrDialogOpen] = useState(false);
+  const [successSnackbarOpen, setSuccessSnackbarOpen] = useState(false);
+  const [utrForm, setUtrForm] = useState({
+    amount: "",
+    referenceName: "",
+    utrNumber: ""
+  });
+  const [utrSubmitting, setUtrSubmitting] = useState(false);
+  const [utrSuccess, setUtrSuccess] = useState("");
+  const [utrError, setUtrError] = useState("");
+
+  const getQrImageUrl = (qrPath) => {
+    if (!qrPath) return "";
+
+    if (qrPath.startsWith("http://") || qrPath.startsWith("https://")) {
+      return qrPath;
+    }
+
+    return `${FILE_BASE_URL}${qrPath.startsWith("/") ? qrPath : `/${qrPath}`}`;
+  };
+
+  useEffect(() => {
+    const loadActivePools = async () => {
+      try {
+        setActivePoolLoading(true);
+
+        const response = await publicApi.get("/death-cases/public");
+        const pools = Array.isArray(response?.data) ? response.data : [];
+
+        setActivePools(pools);
+        setActivePoolAvailable(pools.length > 0);
+      } catch (error) {
+        console.error("Failed to load active death case pools:", error);
+        setActivePools([]);
+        setActivePoolAvailable(false);
+      } finally {
+        setActivePoolLoading(false);
+      }
+    };
+
+    loadActivePools();
+  }, []);
+
+  useEffect(() => {
+    const loadHomeDisplayContent = async () => {
+      try {
+        const response = await publicApi.getHomeDisplayContent();
+
+        setHomeDisplayContent({
+          homeNoticeHtml: response?.data?.homeNoticeHtml || "",
+          statisticsContentHtml: response?.data?.statisticsContentHtml || ""
+        });
+      } catch (error) {
+        console.error("Failed to load home display content:", error);
+      }
+    };
+
+    loadHomeDisplayContent();
+  }, []);
+
+  const handleMobileSearchChange = async (event) => {
+    const value = event.target.value.replace(/\D/g, "").slice(0, 10);
+
+    setMobileSearch(value);
+    setSearchedMember(null);
+    setSearchError("");
+    setUtrSuccess("");
+    setUtrError("");
+
+    if (value.length !== 10) {
+      return;
+    }
+
+    if (!activePoolAvailable) {
+      setSearchError("अभी कोई सक्रिय मृत्यु सहायता पूल उपलब्ध नहीं है।");
+      return;
+    }
+
+    try {
+      setSearchLoading(true);
+
+      const response = await publicApi.get(
+        `/users/filter?mobile=${value}&page=0&size=10`
+      );
+
+      const users = response?.data?.content || [];
+
+      if (!users.length) {
+        setSearchError("इस मोबाइल नंबर से कोई सदस्य नहीं मिला।");
+        return;
+      }
+
+      setSearchedMember(users[0]);
+    } catch (error) {
+      console.error("Mobile search failed:", error);
+      setSearchError("मोबाइल नंबर से विवरण लोड करने में समस्या हुई।");
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+
+  const searchedDeathCase = searchedMember?.assignedDeathCaseId
+    ? activePools.find(
+        (pool) => String(pool.id) === String(searchedMember.assignedDeathCaseId)
+      )
+    : null;
+
+  const openUtrDialog = () => {
+    if (!activePoolAvailable) {
+      setUtrError("अभी कोई सक्रिय मृत्यु सहायता पूल उपलब्ध नहीं है।");
+      return;
+    }
+
+    setUtrForm({
+      amount: "",
+      referenceName: "",
+      utrNumber: ""
+    });
+    setUtrSuccess("");
+    setUtrError("");
+    setUtrDialogOpen(true);
+  };
+
+  const closeUtrDialog = () => {
+    if (utrSubmitting) return;
+
+    setUtrDialogOpen(false);
+    setUtrForm({
+      amount: "",
+      referenceName: "",
+      utrNumber: ""
+    });
+  };
+
+  const handlePublicUtrSubmit = async () => {
+    if (!searchedMember?.id) {
+      setUtrError("कृपया पहले मोबाइल नंबर से सदस्य खोजें।");
+      return;
+    }
+
+    if (!utrForm.amount || !utrForm.utrNumber) {
+      setUtrError("कृपया राशि और UTR Number भरें।");
+      return;
+    }
+
+    try {
+      setUtrSubmitting(true);
+      setUtrError("");
+      setUtrSuccess("");
+
+      await receiptAPI.uploadPublicReceipt({
+        userId: searchedMember.id,
+        mobileNumber: searchedMember.mobileNumber || mobileSearch,
+        amount: Number(utrForm.amount),
+        referenceName: utrForm.referenceName?.trim() || "",
+        utrNumber: utrForm.utrNumber
+      });
+
+      setUtrSuccess("UTR सफलतापूर्वक सबमिट हो गया।");
+      setSuccessSnackbarOpen(true);
+
+      setSearchedMember((prev) => ({
+        ...prev,
+        utrUploaded: true,
+        latestUtrNumber: utrForm.utrNumber
+      }));
+
+      setTimeout(() => {
+        closeUtrDialog();
+      }, 900);
+    } catch (error) {
+      console.error("Public UTR upload failed:", error);
+      setUtrError(error?.response?.data?.message || "UTR सबमिट करने में त्रुटि हुई।");
+    } finally {
+      setUtrSubmitting(false);
+    }
+  };
+
+  return (
+    <Layout>
+      <Box
+        sx={{
+          minHeight: "100vh",
+          py: { xs: 4, md: 6 },
+          background:
+            "radial-gradient(circle at bottom right, rgba(15,118,110,0.12), transparent 32%), linear-gradient(180deg, #eef8f7 0%, #f7fbfb 100%)",
+          position: "relative",
+          overflow: "hidden",
+          display: "flex",
+          alignItems: "center"
+        }}
+      >
+        <Container maxWidth="lg">
+          <Card
+            sx={{
+              borderRadius: { xs: 4, md: 6 },
+              border: "1px solid rgba(200, 191, 255, 0.28)",
+              background: "#ffffff",
+              boxShadow: "0 28px 80px rgba(0, 0, 0, 0.18)",
+              overflow: "hidden",
+              position: "relative"
+            }}
+          >
+            <CardContent
+              sx={{
+                p: { xs: 3, md: 5 },
+                textAlign: "center",
+                position: "relative",
+                zIndex: 1
+              }}
+            >
+              <Typography
+                variant="h4"
+                sx={{
+                  fontWeight: 900,
+                  color: theme.dark,
+                  mb: 1.5,
+                  fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+                  fontSize: { xs: "1.7rem", md: "2.35rem" },
+                  lineHeight: 1.25
+                }}
+              >
+                नोमिनी के लिए सहयोग
+              </Typography>
+
+              <Box
+                sx={{
+                  width: 90,
+                  height: 5,
+                  borderRadius: 99,
+                  mx: "auto",
+                  mb: 3,
+                  background: theme.main
+                }}
+              />
+
+              <Box
+                sx={{
+                  color: theme.muted,
+                  lineHeight: 1.85,
+                  fontWeight: 700,
+                  fontSize: { xs: "1rem", md: "1.1rem" },
+                  maxWidth: 900,
+                  mx: "auto",
+                  mb: 3,
+                  fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+                  "& a": {
+                    color: theme.accent,
+                    fontWeight: 800,
+                    textDecoration: "none",
+                    borderBottom: "1px solid rgba(15, 118, 110, 0.35)"
+                  },
+                  "& b, & strong": {
+                    color: theme.dark,
+                    fontWeight: 900
+                  }
+                }}
+                dangerouslySetInnerHTML={{
+                  __html: homeDisplayContent.homeNoticeHtml || ""
+                }}
+              />
+
+              {activePoolLoading && (
+                <Box sx={{ py: 3 }}>
+                  <CircularProgress size={28} sx={{ color: theme.main }} />
+                  <Typography
+                    sx={{
+                      mt: 1,
+                      color: theme.muted,
+                      fontWeight: 800,
+                      fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif"
+                    }}
+                  >
+                    सहायता विवरण लोड हो रहा है...
+                  </Typography>
+                </Box>
+              )}
+
+              {!activePoolLoading && !activePoolAvailable && (
+                <Alert severity="warning" sx={{ maxWidth: 850, mx: "auto", borderRadius: 3 }}>
+                  अभी कोई सक्रिय मृत्यु सहायता पूल उपलब्ध नहीं है।
+                </Alert>
+              )}
+
+              {!activePoolLoading && activePoolAvailable && (
+                <Paper
+                  elevation={0}
+                  sx={{
+                    maxWidth: 850,
+                    mx: "auto",
+                    mb: 3,
+                    p: { xs: 2, md: 3 },
+                    borderRadius: 4,
+                    background: theme.soft,
+                    border: "1px solid rgba(111, 92, 194, 0.18)",
+                    boxShadow: "0 18px 46px rgba(34, 27, 67, 0.10)"
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      color: theme.dark,
+                      fontWeight: 950,
+                      mb: 1,
+                      fontSize: { xs: "1.05rem", md: "1.2rem" },
+                      fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif"
+                    }}
+                  >
+                    मोबाइल नंबर से सहयोग विवरण खोजें
+                  </Typography>
+
+                  <Typography
+                    sx={{
+                      color: theme.muted,
+                      fontWeight: 700,
+                      mb: 2,
+                      fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif"
+                    }}
+                  >
+                    10 अंकों का मोबाइल नंबर दर्ज करें। विवरण, QR और UTR Upload विकल्प नीचे दिखाई देगा।
+                  </Typography>
+
+                  <TextField
+                    fullWidth
+                    value={mobileSearch}
+                    onChange={handleMobileSearchChange}
+                    placeholder="10 अंकों का मोबाइल नंबर दर्ज करें"
+                    inputProps={{ maxLength: 10 }}
+                    sx={inputSx}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Search sx={{ color: theme.main }} />
+                        </InputAdornment>
+                      ),
+                      endAdornment: searchLoading ? (
+                        <InputAdornment position="end">
+                          <CircularProgress size={22} sx={{ color: theme.main }} />
+                        </InputAdornment>
+                      ) : null
+                    }}
+                  />
+
+                  {searchError && (
+                    <Alert severity="warning" sx={{ mt: 2, borderRadius: 3 }}>
+                      {searchError}
+                    </Alert>
+                  )}
+
+                  {searchedMember && (
+                    <Box sx={{ mt: 3 }}>
+                      {searchedMember.utrUploaded ? (
+                        <Alert severity="success" sx={{ borderRadius: 3, fontWeight: 800 }}>
+                          इस सदस्य का UTR पहले से जमा हो चुका है
+                          {searchedMember.latestUtrNumber
+                            ? ` - ${searchedMember.latestUtrNumber}`
+                            : ""}
+                          .
+                        </Alert>
+                      ) : searchedDeathCase ? (
+                        <DeathCaseSupportView
+                          deathCase={searchedDeathCase}
+                          showAssignedBadge={false}
+                          uploadButtonText="UTR Upload करें"
+                          onUploadClick={openUtrDialog}
+                          onQrError={(message) => setUtrError(message)}
+                        />
+                      ) : !searchedMember.assignedDeathCaseId ? (
+                        <Alert severity="warning" sx={{ borderRadius: 3, fontWeight: 800 }}>
+                          इस सदस्य को अभी कोई मृत्यु सहायता प्रकरण आवंटित नहीं है।
+                        </Alert>
+                      ) : (
+                        <Alert severity="warning" sx={{ borderRadius: 3, fontWeight: 800 }}>
+                          इस सदस्य के लिए मृत्यु सहायता प्रकरण मिला, लेकिन उसका पूरा विवरण लोड नहीं हो पाया।
+                        </Alert>
+                      )}
+                    </Box>
+                  )}
+                </Paper>
+              )}
+
+              <Box sx={{ display: "flex", justifyContent: "center" }}>
+                <Button
+                  variant="contained"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  sx={{
+                    borderRadius: 3,
+                    px: 4,
+                    py: 1.25,
+                    color: "#fff",
+                    fontWeight: 900,
+                    fontSize: "1rem",
+                    textTransform: "none",
+                    background: "#0f7633",
+                    boxShadow: "0 12px 28px rgba(15, 118, 51, 0.28)",
+                    transition: "all 0.3s ease",
+                    "&:hover": {
+                      background: "#0b5f59",
+                      boxShadow: "0 10px 24px rgba(15, 118, 110, 0.45)",
+                      transform: "translateY(-2px)"
+                    }
+                  }}
+                >
+                  सहयोग करें
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        </Container>
+      </Box>
+
+      <Dialog
+        open={utrDialogOpen}
+        onClose={utrSubmitting ? undefined : closeUtrDialog}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{
+          sx: {
+            borderRadius: "28px",
+            overflow: "hidden",
+            border: "1px solid rgba(124, 58, 237, 0.16)",
+            boxShadow: "0 28px 80px rgba(76, 29, 149, 0.22)",
+            background: "rgba(255,255,255,0.96)",
+            position: "relative"
+          }
+        }}
+      >
+        <DialogTitle
+          sx={{
+            p: 0,
+            position: "relative",
+            background: `linear-gradient(135deg, ${theme.dark}, ${theme.main})`,
+            color: "#fff",
+            overflow: "hidden"
+          }}
+        >
+          <Box
+            sx={{
+              p: { xs: 2.5, md: 3 },
+              textAlign: "center",
+              position: "relative",
+              zIndex: 1
+            }}
+          >
+            <Box
+              sx={{
+                width: 64,
+                height: 64,
+                borderRadius: "22px",
+                mx: "auto",
+                mb: 1.5,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "rgba(255,255,255,0.16)",
+                border: "1px solid rgba(255,255,255,0.25)"
+              }}
+            >
+              <PaymentsRounded sx={{ fontSize: 36 }} />
+            </Box>
+
+            <Typography
+              sx={{
+                fontWeight: 950,
+                fontSize: { xs: "1.25rem", md: "1.45rem" },
+                fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif"
+              }}
+            >
+              UTR विवरण जमा करें
+            </Typography>
+
+            <Typography
+              sx={{
+                mt: 0.8,
+                color: "rgba(255,255,255,0.86)",
+                fontWeight: 650,
+                fontSize: "0.92rem",
+                fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif"
+              }}
+            >
+              कृपया राशि, Reference Name और UTR Number सही भरें
+            </Typography>
+          </Box>
+
+          <IconButton
+            onClick={closeUtrDialog}
+            disabled={utrSubmitting}
+            sx={{
+              position: "absolute",
+              right: 12,
+              top: 12,
+              color: "#fff",
+              background: "rgba(255,255,255,0.14)",
+              zIndex: 2,
+              "&:hover": {
+                background: "rgba(255,255,255,0.22)"
+              }
+            }}
+          >
+            <Close />
+          </IconButton>
+        </DialogTitle>
+
+        <DialogContent
+          sx={{
+            marginTop: 2,
+            px: { xs: 2.5, md: 3.5 },
+            py: { xs: 3, md: 3.5 },
+            background:
+              "radial-gradient(circle at bottom right, rgba(250, 204, 21, 0.10), transparent 32%), linear-gradient(180deg, #ffffff 0%, #fbfaff 100%)"
+          }}
+        >
+          {searchedMember && (
+            <Paper
+              elevation={0}
+              sx={{
+                mb: 2.5,
+                p: 2,
+                borderRadius: "18px",
+                background:
+                  "linear-gradient(135deg, rgba(255,251,235,0.92), rgba(255,255,255,0.90))",
+                border: "1px solid rgba(250, 204, 21, 0.35)"
+              }}
+            >
+              <Chip
+                label="Member Details"
+                size="small"
+                sx={{
+                  mb: 1.2,
+                  color: theme.dark,
+                  fontWeight: 900,
+                  background: "#fffbeb",
+                  border: "1px solid rgba(250, 204, 21, 0.35)",
+                  fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif"
+                }}
+              />
+
+              <Typography variant="body2" sx={{ mb: 0.7, color: theme.muted, fontWeight: 750 }}>
+                <strong>यूजर:</strong> {searchedMember.name} {searchedMember.surname}
+              </Typography>
+
+              <Typography variant="body2" sx={{ mb: 0.7, color: theme.muted, fontWeight: 750 }}>
+                <strong>यूजर आईडी:</strong> {searchedMember.id || "N/A"}
+              </Typography>
+
+              <Typography variant="body2" sx={{ mb: 0.7, color: theme.muted, fontWeight: 750 }}>
+                <strong>मोबाइल:</strong> {searchedMember.mobileNumber || mobileSearch}
+              </Typography>
+
+              <Typography variant="body2" sx={{ color: theme.muted, fontWeight: 750 }}>
+                <strong>मृत्यु प्रकरण:</strong>{" "}
+                {searchedMember.assignedDeathCaseName || "N/A"}
+              </Typography>
+            </Paper>
+          )}
+
+          {utrError && (
+            <Alert severity="error" sx={{ mb: 2, borderRadius: "16px", fontWeight: 700 }}>
+              {utrError}
+            </Alert>
+          )}
+
+          <Grid container spacing={2.5}>
+            <Grid item xs={12} sm={6}>
+              <Typography sx={{ color: theme.dark, fontWeight: 900, mb: 0.8 }}>
+                राशि (₹) *
+              </Typography>
+
+              <TextField
+                fullWidth
+                type="number"
+                value={utrForm.amount}
+                onChange={(e) =>
+                  setUtrForm((prev) => ({ ...prev, amount: e.target.value }))
+                }
+                disabled={utrSubmitting}
+                sx={inputSx}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <CurrencyRupeeRounded sx={{ color: theme.main }} />
+                    </InputAdornment>
+                  )
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <Typography sx={{ color: theme.dark, fontWeight: 900, mb: 0.8 }}>
+                Reference Name (Optional)
+              </Typography>
+
+              <TextField
+                fullWidth
+                value={utrForm.referenceName}
+                onChange={(e) =>
+                  setUtrForm((prev) => ({
+                    ...prev,
+                    referenceName: e.target.value
+                  }))
+                }
+                disabled={utrSubmitting}
+                sx={inputSx}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PersonRounded sx={{ color: theme.main }} />
+                    </InputAdornment>
+                  )
+                }}
+              />
+            </Grid>
+
+            <Grid item xs={12}>
+              <Typography sx={{ color: theme.dark, fontWeight: 900, mb: 0.8 }}>
+                UTR Number *
+              </Typography>
+
+              <TextField
+                fullWidth
+                value={utrForm.utrNumber}
+                onChange={(e) =>
+                  setUtrForm((prev) => ({ ...prev, utrNumber: e.target.value }))
+                }
+                disabled={utrSubmitting}
+                sx={inputSx}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <ReceiptLongRounded sx={{ color: theme.main }} />
+                    </InputAdornment>
+                  )
+                }}
+              />
+            </Grid>
+          </Grid>
+
+          {utrSuccess && (
+            <Alert severity="success" sx={{ mt: 2.5, borderRadius: "16px", fontWeight: 700 }}>
+              {utrSuccess}
+            </Alert>
+          )}
+        </DialogContent>
+
+        <DialogActions
+          sx={{
+            px: { xs: 2.5, md: 3.5 },
+            pb: 3,
+            pt: 0,
+            background: "#fbfaff"
+          }}
+        >
+          <Button
+            onClick={closeUtrDialog}
+            disabled={utrSubmitting}
+            sx={{
+              color: theme.muted,
+              fontWeight: 900,
+              borderRadius: "14px",
+              px: 2.5,
+              textTransform: "none"
+            }}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            variant="contained"
+            onClick={handlePublicUtrSubmit}
+            disabled={utrSubmitting}
+            sx={{
+              borderRadius: "14px",
+              px: 3,
+              py: 1,
+              fontWeight: 950,
+              textTransform: "none",
+              background: `linear-gradient(135deg, ${theme.main}, ${theme.light})`,
+              boxShadow: "0 12px 28px rgba(109, 40, 217, 0.28)",
+              "&:hover": {
+                background: `linear-gradient(135deg, ${theme.dark}, ${theme.main})`,
+                transform: "translateY(-1px)"
+              },
+              "&:disabled": {
+                background: "#c4b5fd",
+                color: "#fff"
+              }
+            }}
+          >
+            {utrSubmitting ? (
+              <>
+                <CircularProgress size={20} sx={{ mr: 1, color: "white" }} />
+                Submitting...
+              </>
+            ) : (
+              <>
+                <UploadFileRounded sx={{ mr: 1 }} />
+                Submit UTR
+              </>
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={successSnackbarOpen}
+        autoHideDuration={3500}
+        onClose={() => setSuccessSnackbarOpen(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "left" }}
+      >
+        <Alert
+          onClose={() => setSuccessSnackbarOpen(false)}
+          severity="success"
+          variant="filled"
+          sx={{
+            width: "100%",
+            borderRadius: "14px",
+            fontWeight: 900,
+            boxShadow: "0 14px 34px rgba(22, 163, 74, 0.28)",
+            fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif"
+          }}
+        >
+          UTR successfully submitted.
+        </Alert>
+      </Snackbar>
+    </Layout>
+  );
+};
+
+export default NomineeSahyogPage;

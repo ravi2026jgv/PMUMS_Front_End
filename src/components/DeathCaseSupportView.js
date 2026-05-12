@@ -596,13 +596,31 @@ IFSC: ${account?.ifscCode || "IFSC CODE"}`;
           </Grid>
         </Box>
 
-        {onUploadClick && (
-          <Box textAlign="center" mt={5}>
-            <ActionButton onClick={onUploadClick} sx={{ px: 4, py: 1.2 }}>
-              {uploadButtonText}
-            </ActionButton>
-          </Box>
-        )}
+       {onUploadClick && (
+  <Box textAlign="center" mt={5}>
+    <ActionButton
+      onClick={onUploadClick}
+      sx={{
+        px: 4.5,
+        py: 1.25,
+        minWidth: 190,
+        borderRadius: "16px",
+        fontWeight: 950,
+        letterSpacing: "0.2px",
+        background: "#6f5cc2",
+        boxShadow: "0 14px 34px rgba(111, 92, 194, 0.32)",
+        border: "1px solid rgba(255,255,255,0.18)",
+        "&:hover": {
+          background: "#221b43",
+          transform: "translateY(-2px)",
+          boxShadow: "0 18px 42px rgba(34, 27, 67, 0.38)"
+        }
+      }}
+    >
+      {uploadButtonText}
+    </ActionButton>
+  </Box>
+)}
       </CardContent>
     </Card>
   );

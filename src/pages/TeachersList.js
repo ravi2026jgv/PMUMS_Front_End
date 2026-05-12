@@ -933,40 +933,37 @@ background: theme.dark,                          color: 'white',
 
                   <TableBody>
                     {teachers.map((teacher) => {
-                      const uploaded = teacher.utrUploaded;
+  const uploaded = Boolean(teacher.utrUploaded);
 
-                      return (
-                        <TableRow
-                          key={teacher.id}
-                          sx={{
-                            backgroundColor: showUtrColumns
-                              ? uploaded
-                                ? 'rgba(22, 163, 74, 0.08)'
-                                : 'rgba(220, 38, 38, 0.07)'
-                              : '#fff',
-                            '&:nth-of-type(odd)': {
-                              backgroundColor: showUtrColumns
-                                ? uploaded
-                                  ? 'rgba(22, 163, 74, 0.12)'
-                                  : 'rgba(220, 38, 38, 0.10)'
-                                : 'rgba(245, 243, 255, 0.38)'
-                            },
-                            '&:hover': {
-                              backgroundColor: showUtrColumns
-                                ? uploaded
-                                  ? 'rgba(22, 163, 74, 0.16)'
-                                  : 'rgba(220, 38, 38, 0.14)'
-                                : 'rgba(245, 243, 255, 0.78)'
-                            },
-                            '& td': {
-                              borderBottom: '1px solid rgba(111, 92, 194, 0.10)',
-                              color: '#374151',
-                              fontWeight: 600,
-                              fontSize: '0.9rem',
-                              fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif'
-                            }
-                          }}
-                        >
+  return (
+    <TableRow
+      key={teacher.id}
+      sx={{
+        backgroundColor: uploaded
+          ? 'rgba(22, 163, 74, 0.08)'
+          : 'rgba(220, 38, 38, 0.07)',
+
+        '&:nth-of-type(odd)': {
+          backgroundColor: uploaded
+            ? 'rgba(22, 163, 74, 0.12)'
+            : 'rgba(220, 38, 38, 0.10)'
+        },
+
+        '&:hover': {
+          backgroundColor: uploaded
+            ? 'rgba(22, 163, 74, 0.16)'
+            : 'rgba(220, 38, 38, 0.14)'
+        },
+
+        '& td': {
+          borderBottom: '1px solid rgba(111, 92, 194, 0.10)',
+          color: '#374151',
+          fontWeight: 600,
+          fontSize: '0.9rem',
+          fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif'
+        }
+      }}
+    >
                           <TableCell
                             align="center"
                             sx={{

@@ -12,6 +12,7 @@ import AnnouncementPopup from './components/AnnouncementPopup';
 import FloatingWhatsApp from './components/FloatingWhatsApp';
 
 // Pages
+import NomineeSahyogPage from './pages/NomineeSahyogPage';
 import Home from './pages/Home';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
@@ -61,6 +62,7 @@ function App() {
               <Route path="/sahyog-list" element={<SahyogList />} />
               <Route path="/asahyog-list" element={<AsahyogList />} />
               <Route path="/niyamawali" element={<NiyamawaliPage />} />
+              <Route path="/nominee-sahyog" element={<NomineeSahyogPage />} />
               <Route path="/contact-us" element={<ContactUs />} />
               <Route path="/zero-utr-list" element={<ZeroUtrList />} />
               <Route path="/self-donation" element={<SelfDonation />} />
