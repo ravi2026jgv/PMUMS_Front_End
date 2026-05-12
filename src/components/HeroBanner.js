@@ -11,6 +11,7 @@ import {
 } from '@mui/icons-material';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { red } from '@mui/material/colors';
 
 const HeroBanner = () => {
   const { isAuthenticated } = useAuth();
@@ -126,35 +127,36 @@ textShadow: '0 2px 8px rgba(0, 0, 0, 0.30)',
         >
           "शिक्षकों का संगठन, शिक्षकों के लिए, शिक्षकों द्वारा"
         </Typography>
-
+<Box
+  sx={{
+    display: 'flex',
+    justifyContent: 'center',
+    mb: 4,
+    mt: 1,
+  }}
+>
+  <Typography
+    sx={{
+      color: '#b91c1c',
+      background: '#fff1f2',
+      border: '1px solid #fecdd3',
+      borderRadius: '14px',
+      px: { xs: 2, sm: 3 },
+      py: { xs: 1.3, sm: 1.5 },
+      maxWidth: 850,
+      textAlign: 'center',
+      fontWeight: 800,
+      fontSize: { xs: '1rem', sm: '1.1rem', md: '1.25rem' },
+      lineHeight: 1.7,
+      fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
+      boxShadow: '0 8px 24px rgba(185, 28, 28, 0.18)',
+    }}
+  >
+    अभी सहयोग प्रक्रिया चालू है। कृपया दिवंगत शिक्षक साथी के परिवार को सहयोग प्रदान करें।
+  </Typography>
+</Box>
         {/* Description Box */}
-        <Paper
-          elevation={0}
-          sx={{
-            background: '#ffffff',
-            border: '1px solid rgba(255, 255, 255, 0.25)',
-            borderRadius: 4,
-            p: { xs: 3, md: 4 },
-            mb: 4,
-            color: '#2f2f3a',
-            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.18)'
-          }}
-        >
-          <Typography
-            variant="body1"
-            sx={{
-              color: '#3d3d48',
-              fontSize: { xs: '0.95rem', md: '1.1rem' },
-              lineHeight: 1.8,
-              fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
-              textAlign: 'center'
-            }}
-          >
-            PMUMS एक गैर-लाभकारी, सेवा-आधारित संगठन है, जो मध्यप्रदेश राज्य के शिक्षा विभाग एवं जनजातीय कार्य विभाग के अंतर्गत कार्यरत शासकीय शिक्षकों एवं कर्मचारियों के कल्याण, सम्मान, एकजुटता एवं पारस्परिक सहयोग के उद्देश्य से निरंतर सक्रिय है।
-            <br /><br />
-            इस संगठन का मूल संकल्प यह है कि किसी भी शिक्षक अथवा कर्मचारी के आकस्मिक निधन या कठिन परिस्थितियों में उनके परिवार को आर्थिक एवं सामाजिक रूप से अकेला न रहना पड़े, और सभी सदस्य सामूहिक सहयोग के माध्यम से एक-दूसरे का संबल बनें।
-          </Typography>
-        </Paper>
+       
 
         {/* Action Buttons - Only show when not authenticated */}
         {!isAuthenticated && (
@@ -162,6 +164,7 @@ textShadow: '0 2px 8px rgba(0, 0, 0, 0.30)',
             sx={{
               display: 'flex',
               gap: 3,
+              mb:4,
               justifyContent: 'center',
               flexWrap: 'wrap'
             }}
@@ -225,6 +228,33 @@ textShadow: '0 2px 8px rgba(0, 0, 0, 0.30)',
             </Button>
           </Box>
         )}
+         <Paper
+          elevation={0}
+          sx={{
+            background: '#ffffff',
+            border: '1px solid rgba(255, 255, 255, 0.25)',
+            borderRadius: 4,
+            p: { xs: 3, md: 4 },
+            mb: 4,
+            color: '#2f2f3a',
+            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.18)'
+          }}
+        >
+          <Typography
+            variant="body1"
+            sx={{
+              color: '#3d3d48',
+              fontSize: { xs: '0.95rem', md: '1.1rem' },
+              lineHeight: 1.8,
+              fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
+              textAlign: 'center'
+            }}
+          >
+            PMUMS एक गैर-लाभकारी, सेवा-आधारित संगठन है, जो मध्यप्रदेश राज्य के शिक्षा विभाग एवं जनजातीय कार्य विभाग के अंतर्गत कार्यरत शासकीय शिक्षकों एवं कर्मचारियों के कल्याण, सम्मान, एकजुटता एवं पारस्परिक सहयोग के उद्देश्य से निरंतर सक्रिय है।
+            <br /><br />
+            इस संगठन का मूल संकल्प यह है कि किसी भी शिक्षक अथवा कर्मचारी के आकस्मिक निधन या कठिन परिस्थितियों में उनके परिवार को आर्थिक एवं सामाजिक रूप से अकेला न रहना पड़े, और सभी सदस्य सामूहिक सहयोग के माध्यम से एक-दूसरे का संबल बनें।
+          </Typography>
+        </Paper>
       </Container>
 
       {/* Background decoration */}

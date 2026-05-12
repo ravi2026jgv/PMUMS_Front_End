@@ -307,59 +307,7 @@ boxShadow: "0 28px 80px rgba(0, 0, 0, 0.22)",
                   zIndex: 1,
                 }}
               >
-                <Typography
-                  variant="h4"
-                  sx={{
-                    fontWeight: 900,
-                    color: theme.dark,
-                    mb: 1.5,
-                    fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
-                    fontSize: { xs: "1.7rem", md: "2.25rem" },
-                    lineHeight: 1.25,
-                  }}
-                >
-                  नोमिनी के लिए सहयोग
-                </Typography>
-
-                <Box
-                  sx={{
-                    width: 90,
-                    height: 5,
-                    borderRadius: 99,
-                    mx: "auto",
-                    mb: 3,
-                    background: '#6f5cc2',
-                  }}
-                />
-
-                <Box
-                  sx={{
-                    color: theme.muted,
-                    lineHeight: 1.85,
-                    fontWeight: 700,
-                    fontSize: { xs: "1rem", md: "1.1rem" },
-                    maxWidth: 900,
-                    mx: "auto",
-                    mb: 3,
-                    fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
-
-                   "& a": {
-  color: theme.accent,
-  fontWeight: 800,
-  textDecoration: "none",
-  borderBottom: "1px solid rgba(15, 118, 110, 0.35)",
-},
-
-                    "& b, & strong": {
-                      color: theme.dark,
-                      fontWeight: 900,
-                    },
-                  }}
-                  dangerouslySetInnerHTML={{
-                    __html: homeDisplayContent.homeNoticeHtml || "",
-                  }}
-                />
-    {!activePoolLoading && activePoolAvailable && (            
+                 {!activePoolLoading && activePoolAvailable && (            
 <Paper
   elevation={0}
   sx={{
@@ -368,15 +316,15 @@ boxShadow: "0 28px 80px rgba(0, 0, 0, 0.22)",
     mb: 3,
     p: { xs: 2, md: 3 },
     borderRadius: 4,
-   background: theme.soft,
+   background: theme.dark,
 border: "1px solid rgba(111, 92, 194, 0.18)",
 boxShadow: "0 18px 46px rgba(34, 27, 67, 0.10)"
   }}
 >
   <Typography
     sx={{
-      color: theme.dark,
-      fontWeight: 950,
+      color: '#0f7633',
+      fontWeight: 800,
       mb: 1,
       fontSize: { xs: "1.05rem", md: "1.2rem" },
       fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif"
@@ -387,7 +335,7 @@ boxShadow: "0 18px 46px rgba(34, 27, 67, 0.10)"
 
   <Typography
     sx={{
-      color: theme.muted,
+      color: theme.soft,
       fontWeight: 700,
       mb: 2,
       fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif"
@@ -447,6 +395,59 @@ boxShadow: "0 18px 46px rgba(34, 27, 67, 0.10)"
 )}
 </Paper>
 )}
+                <Typography
+                  variant="h4"
+                  sx={{
+                    fontWeight: 900,
+                    color: theme.dark,
+                    mb: 1.5,
+                    fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+                    fontSize: { xs: "1.7rem", md: "2.25rem" },
+                    lineHeight: 1.25,
+                  }}
+                >
+                  नोमिनी के लिए सहयोग
+                </Typography>
+
+                <Box
+                  sx={{
+                    width: 90,
+                    height: 5,
+                    borderRadius: 99,
+                    mx: "auto",
+                    mb: 3,
+                    background: '#6f5cc2',
+                  }}
+                />
+
+                <Box
+                  sx={{
+                    color: theme.muted,
+                    lineHeight: 1.85,
+                    fontWeight: 700,
+                    fontSize: { xs: "1rem", md: "1.1rem" },
+                    maxWidth: 900,
+                    mx: "auto",
+                    mb: 3,
+                    fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+
+                   "& a": {
+  color: theme.accent,
+  fontWeight: 800,
+  textDecoration: "none",
+  borderBottom: "1px solid rgba(15, 118, 110, 0.35)",
+},
+
+                    "& b, & strong": {
+                      color: theme.dark,
+                      fontWeight: 900,
+                    },
+                  }}
+                  dangerouslySetInnerHTML={{
+                    __html: homeDisplayContent.homeNoticeHtml || "",
+                  }}
+                />
+   
                 <Box sx={{ display: "flex", justifyContent: "center" }}>
                   <Button
                     variant="contained"

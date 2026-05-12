@@ -937,33 +937,33 @@ background: theme.dark,                          color: 'white',
 
   return (
     <TableRow
-      key={teacher.id}
-      sx={{
-        backgroundColor: uploaded
-          ? 'rgba(22, 163, 74, 0.08)'
-          : 'rgba(220, 38, 38, 0.07)',
+  key={teacher.id}
+  sx={{
+    backgroundColor: uploaded
+      ? 'rgba(22, 163, 74, 0.10)'
+      : 'rgba(220, 38, 38, 0.08)',
 
-        '&:nth-of-type(odd)': {
-          backgroundColor: uploaded
-            ? 'rgba(22, 163, 74, 0.12)'
-            : 'rgba(220, 38, 38, 0.10)'
-        },
+    '&:nth-of-type(odd)': {
+      backgroundColor: uploaded
+        ? 'rgba(22, 163, 74, 0.10)'
+        : 'rgba(220, 38, 38, 0.08)',
+    },
 
-        '&:hover': {
-          backgroundColor: uploaded
-            ? 'rgba(22, 163, 74, 0.16)'
-            : 'rgba(220, 38, 38, 0.14)'
-        },
+    '&:hover': {
+      backgroundColor: uploaded
+        ? 'rgba(22, 163, 74, 0.10)'
+        : 'rgba(220, 38, 38, 0.08)',
+    },
 
-        '& td': {
-          borderBottom: '1px solid rgba(111, 92, 194, 0.10)',
-          color: '#374151',
-          fontWeight: 600,
-          fontSize: '0.9rem',
-          fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif'
-        }
-      }}
-    >
+    '& td': {
+      borderBottom: '1px solid rgba(111, 92, 194, 0.10)',
+      color: '#374151',
+      fontWeight: 600,
+      fontSize: '0.9rem',
+      fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+    },
+  }}
+>
                           <TableCell
                             align="center"
                             sx={{

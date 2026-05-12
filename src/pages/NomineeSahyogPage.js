@@ -296,6 +296,101 @@ const NomineeSahyogPage = () => {
                 zIndex: 1
               }}
             >
+              {!activePoolLoading && activePoolAvailable && (
+                <Paper
+                  elevation={0}
+                  sx={{
+                    maxWidth: 850,
+                    mx: "auto",
+                    mb: 3,
+                    p: { xs: 2, md: 3 },
+                    borderRadius: 4,
+                    background: theme.dark,
+                    border: "1px solid rgba(111, 92, 194, 0.18)",
+                    boxShadow: "0 18px 46px rgba(34, 27, 67, 0.10)"
+                  }}
+                >
+                  <Typography
+                    sx={{
+                       color: '#0f7633',
+                      fontWeight: 950,
+                      mb: 1,
+                      fontSize: { xs: "1.05rem", md: "1.2rem" },
+                      fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif"
+                    }}
+                  >
+                    मोबाइल नंबर से सहयोग विवरण खोजें
+                  </Typography>
+
+                  <Typography
+                    sx={{
+                      color: theme.soft,
+                      fontWeight: 700,
+                      mb: 2,
+                      fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif"
+                    }}
+                  >
+                    10 अंकों का मोबाइल नंबर दर्ज करें। विवरण, QR और UTR Upload विकल्प नीचे दिखाई देगा।
+                  </Typography>
+
+                  <TextField
+                    fullWidth
+                    value={mobileSearch}
+                    onChange={handleMobileSearchChange}
+                    placeholder="10 अंकों का मोबाइल नंबर दर्ज करें"
+                    inputProps={{ maxLength: 10 }}
+                    sx={inputSx}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <Search sx={{ color: theme.main }} />
+                        </InputAdornment>
+                      ),
+                      endAdornment: searchLoading ? (
+                        <InputAdornment position="end">
+                          <CircularProgress size={22} sx={{ color: theme.main }} />
+                        </InputAdornment>
+                      ) : null
+                    }}
+                  />
+
+                  {searchError && (
+                    <Alert severity="warning" sx={{ mt: 2, borderRadius: 3 }}>
+                      {searchError}
+                    </Alert>
+                  )}
+
+                  {searchedMember && (
+                    <Box sx={{ mt: 3 }}>
+                      {searchedMember.utrUploaded ? (
+                        <Alert severity="success" sx={{ borderRadius: 3, fontWeight: 800 }}>
+                          इस सदस्य का UTR पहले से जमा हो चुका है
+                          {searchedMember.latestUtrNumber
+                            ? ` - ${searchedMember.latestUtrNumber}`
+                            : ""}
+                          .
+                        </Alert>
+                      ) : searchedDeathCase ? (
+                        <DeathCaseSupportView
+                          deathCase={searchedDeathCase}
+                          showAssignedBadge={false}
+                          uploadButtonText="UTR Upload करें"
+                          onUploadClick={openUtrDialog}
+                          onQrError={(message) => setUtrError(message)}
+                        />
+                      ) : !searchedMember.assignedDeathCaseId ? (
+                        <Alert severity="warning" sx={{ borderRadius: 3, fontWeight: 800 }}>
+                          इस सदस्य को अभी कोई मृत्यु सहायता प्रकरण आवंटित नहीं है।
+                        </Alert>
+                      ) : (
+                        <Alert severity="warning" sx={{ borderRadius: 3, fontWeight: 800 }}>
+                          इस सदस्य के लिए मृत्यु सहायता प्रकरण मिला, लेकिन उसका पूरा विवरण लोड नहीं हो पाया।
+                        </Alert>
+                      )}
+                    </Box>
+                  )}
+                </Paper>
+              )}
               <Typography
                 variant="h4"
                 sx={{
@@ -369,101 +464,7 @@ const NomineeSahyogPage = () => {
                 </Alert>
               )}
 
-              {!activePoolLoading && activePoolAvailable && (
-                <Paper
-                  elevation={0}
-                  sx={{
-                    maxWidth: 850,
-                    mx: "auto",
-                    mb: 3,
-                    p: { xs: 2, md: 3 },
-                    borderRadius: 4,
-                    background: theme.soft,
-                    border: "1px solid rgba(111, 92, 194, 0.18)",
-                    boxShadow: "0 18px 46px rgba(34, 27, 67, 0.10)"
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      color: theme.dark,
-                      fontWeight: 950,
-                      mb: 1,
-                      fontSize: { xs: "1.05rem", md: "1.2rem" },
-                      fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif"
-                    }}
-                  >
-                    मोबाइल नंबर से सहयोग विवरण खोजें
-                  </Typography>
-
-                  <Typography
-                    sx={{
-                      color: theme.muted,
-                      fontWeight: 700,
-                      mb: 2,
-                      fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif"
-                    }}
-                  >
-                    10 अंकों का मोबाइल नंबर दर्ज करें। विवरण, QR और UTR Upload विकल्प नीचे दिखाई देगा।
-                  </Typography>
-
-                  <TextField
-                    fullWidth
-                    value={mobileSearch}
-                    onChange={handleMobileSearchChange}
-                    placeholder="10 अंकों का मोबाइल नंबर दर्ज करें"
-                    inputProps={{ maxLength: 10 }}
-                    sx={inputSx}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Search sx={{ color: theme.main }} />
-                        </InputAdornment>
-                      ),
-                      endAdornment: searchLoading ? (
-                        <InputAdornment position="end">
-                          <CircularProgress size={22} sx={{ color: theme.main }} />
-                        </InputAdornment>
-                      ) : null
-                    }}
-                  />
-
-                  {searchError && (
-                    <Alert severity="warning" sx={{ mt: 2, borderRadius: 3 }}>
-                      {searchError}
-                    </Alert>
-                  )}
-
-                  {searchedMember && (
-                    <Box sx={{ mt: 3 }}>
-                      {searchedMember.utrUploaded ? (
-                        <Alert severity="success" sx={{ borderRadius: 3, fontWeight: 800 }}>
-                          इस सदस्य का UTR पहले से जमा हो चुका है
-                          {searchedMember.latestUtrNumber
-                            ? ` - ${searchedMember.latestUtrNumber}`
-                            : ""}
-                          .
-                        </Alert>
-                      ) : searchedDeathCase ? (
-                        <DeathCaseSupportView
-                          deathCase={searchedDeathCase}
-                          showAssignedBadge={false}
-                          uploadButtonText="UTR Upload करें"
-                          onUploadClick={openUtrDialog}
-                          onQrError={(message) => setUtrError(message)}
-                        />
-                      ) : !searchedMember.assignedDeathCaseId ? (
-                        <Alert severity="warning" sx={{ borderRadius: 3, fontWeight: 800 }}>
-                          इस सदस्य को अभी कोई मृत्यु सहायता प्रकरण आवंटित नहीं है।
-                        </Alert>
-                      ) : (
-                        <Alert severity="warning" sx={{ borderRadius: 3, fontWeight: 800 }}>
-                          इस सदस्य के लिए मृत्यु सहायता प्रकरण मिला, लेकिन उसका पूरा विवरण लोड नहीं हो पाया।
-                        </Alert>
-                      )}
-                    </Box>
-                  )}
-                </Paper>
-              )}
+              
 
               <Box sx={{ display: "flex", justifyContent: "center" }}>
                 <Button
