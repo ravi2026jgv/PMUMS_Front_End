@@ -312,7 +312,7 @@ const NomineeSahyogPage = () => {
                 >
                   <Typography
                     sx={{
-                       color: '#0f7633',
+                       color: '#83b193',
                       fontWeight: 950,
                       mb: 1,
                       fontSize: { xs: "1.05rem", md: "1.2rem" },

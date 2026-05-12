@@ -323,7 +323,7 @@ boxShadow: "0 18px 46px rgba(34, 27, 67, 0.10)"
 >
   <Typography
     sx={{
-      color: '#0f7633',
+      color: '#83b193',
       fontWeight: 800,
       mb: 1,
       fontSize: { xs: "1.05rem", md: "1.2rem" },
