@@ -13,7 +13,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { red } from '@mui/material/colors';
 
-const HeroBanner = () => {
+const HeroBanner = ({ children }) => {
   const { isAuthenticated } = useAuth();
 
   return (
@@ -228,33 +228,17 @@ textShadow: '0 2px 8px rgba(0, 0, 0, 0.30)',
             </Button>
           </Box>
         )}
-         <Paper
-          elevation={0}
-          sx={{
-            background: '#ffffff',
-            border: '1px solid rgba(255, 255, 255, 0.25)',
-            borderRadius: 4,
-            p: { xs: 3, md: 4 },
-            mb: 4,
-            color: '#2f2f3a',
-            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.18)'
-          }}
-        >
-          <Typography
-            variant="body1"
-            sx={{
-              color: '#3d3d48',
-              fontSize: { xs: '0.95rem', md: '1.1rem' },
-              lineHeight: 1.8,
-              fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
-              textAlign: 'center'
-            }}
-          >
-            PMUMS एक गैर-लाभकारी, सेवा-आधारित संगठन है, जो मध्यप्रदेश राज्य के शिक्षा विभाग एवं जनजातीय कार्य विभाग के अंतर्गत कार्यरत शासकीय शिक्षकों एवं कर्मचारियों के कल्याण, सम्मान, एकजुटता एवं पारस्परिक सहयोग के उद्देश्य से निरंतर सक्रिय है।
-            <br /><br />
-            इस संगठन का मूल संकल्प यह है कि किसी भी शिक्षक अथवा कर्मचारी के आकस्मिक निधन या कठिन परिस्थितियों में उनके परिवार को आर्थिक एवं सामाजिक रूप से अकेला न रहना पड़े, और सभी सदस्य सामूहिक सहयोग के माध्यम से एक-दूसरे का संबल बनें।
-          </Typography>
-        </Paper>
+        {children && (
+  <Box
+    sx={{
+      mt: { xs: 1, md: 1 },
+      mb: 4,
+    }}
+  >
+    {children}
+  </Box>
+)}
+       
       </Container>
 
       {/* Background decoration */}

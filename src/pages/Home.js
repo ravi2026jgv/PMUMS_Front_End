@@ -273,8 +273,99 @@ setSuccessSnackbarOpen(true);
 
   return (
     <Layout>
-      <HeroBanner />
+      {/* <HeroBanner /> */}
+<HeroBanner>
+  {!isAuthenticated && !activePoolLoading && activePoolAvailable && (
+    <Paper
+      elevation={0}
+      sx={{
+        maxWidth: 850,
+        mx: "auto",
+        p: { xs: 2, md: 3 },
+        borderRadius: 4,
+        background: "rgba(34, 27, 67, 0.92)",
+        border: "1px solid rgba(200, 191, 255, 0.28)",
+        boxShadow: "0 18px 46px rgba(0, 0, 0, 0.28)",
+        backdropFilter: "blur(10px)",
+      }}
+    >
+      <Typography
+        sx={{
+          color: "#b9f6ca",
+          fontWeight: 800,
+          mb: 1,
+          fontSize: { xs: "1.05rem", md: "1.2rem" },
+          fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+          textAlign: "center",
+        }}
+      >
+        मोबाइल नंबर से सहयोग विवरण खोजें
+      </Typography>
 
+      <Typography
+        sx={{
+          color: "#f4f2fb",
+          fontWeight: 700,
+          mb: 2,
+          fontFamily: "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+          textAlign: "center",
+        }}
+      >
+        10 अंकों का मोबाइल नंबर दर्ज करें। विवरण, QR और UTR Upload विकल्प नीचे दिखाई देगा।
+      </Typography>
+
+      <TextField
+        fullWidth
+        value={mobileSearch}
+        onChange={handleMobileSearchChange}
+        placeholder="10 अंकों का मोबाइल नंबर दर्ज करें"
+        inputProps={{ maxLength: 10 }}
+        sx={inputSx}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <Search sx={{ color: theme.main }} />
+            </InputAdornment>
+          ),
+          endAdornment: searchLoading ? (
+            <InputAdornment position="end">
+              <CircularProgress size={22} sx={{ color: theme.main }} />
+            </InputAdornment>
+          ) : null,
+        }}
+      />
+
+      {searchError && (
+        <Alert severity="warning" sx={{ mt: 2, borderRadius: 3 }}>
+          {searchError}
+        </Alert>
+      )}
+
+      {searchedMember && (
+        <Box sx={{ mt: 3 }}>
+          {searchedMember.utrUploaded ? (
+            <Alert severity="success" sx={{ borderRadius: 3, fontWeight: 800 }}>
+              इस सदस्य का UTR पहले से जमा हो चुका है
+              {searchedMember.latestUtrNumber ? ` - ${searchedMember.latestUtrNumber}` : ""}.
+            </Alert>
+          ) : searchedDeathCase ? (
+            <DeathCaseSupportView
+              deathCase={searchedDeathCase}
+              showAssignedBadge={false}
+              uploadButtonText="UTR Upload करें"
+              onUploadClick={openUtrDialog}
+              onQrError={(message) => setUtrError(message)}
+            />
+          ) : (
+            <Alert severity="warning" sx={{ borderRadius: 3, fontWeight: 800 }}>
+              इस सदस्य के लिए मृत्यु सहायता प्रकरण मिला, लेकिन उसका पूरा विवरण लोड नहीं हो पाया।
+            </Alert>
+          )}
+        </Box>
+      )}
+    </Paper>
+  )}
+</HeroBanner>
      
 
       {/* SAHYOG CARD: ONLY WHEN LOGGED OUT */}
@@ -307,7 +398,7 @@ boxShadow: "0 28px 80px rgba(0, 0, 0, 0.22)",
                   zIndex: 1,
                 }}
               >
-                 {!activePoolLoading && activePoolAvailable && (            
+                 {/* {!activePoolLoading && activePoolAvailable && (            
 <Paper
   elevation={0}
   sx={{
@@ -394,7 +485,7 @@ boxShadow: "0 18px 46px rgba(34, 27, 67, 0.10)"
   </Box>
 )}
 </Paper>
-)}
+)} */}
                 <Typography
                   variant="h4"
                   sx={{
@@ -480,7 +571,115 @@ boxShadow: "0 18px 46px rgba(34, 27, 67, 0.10)"
           </Container>
         </Box>
       )}
+ <Box
+  sx={{
+    py: { xs: 5, md: 7 },
+    background: "#eef8f7",
+    position: "relative",
+    overflow: "hidden",
+  }}
+>
+  <Container maxWidth="lg">
+    <Paper
+      elevation={0}
+      sx={{
+        position: "relative",
+        overflow: "hidden",
+        background:
+          "linear-gradient(135deg, #ffffff 0%, #fbfaff 55%, #f4f2fb 100%)",
+        border: "1px solid rgba(111, 92, 194, 0.18)",
+        borderRadius: { xs: 4, md: 6 },
+        p: { xs: 3, sm: 4, md: 5 },
+        color: "#2f2f3a",
+        boxShadow: "0 24px 70px rgba(34, 27, 67, 0.12)",
 
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "7px",
+          background: "linear-gradient(90deg, #221b43, #6f5cc2, #b9a7ff)",
+        },
+
+        "&::after": {
+          content: '""',
+          position: "absolute",
+          width: 220,
+          height: 220,
+          borderRadius: "50%",
+          right: -90,
+          bottom: -100,
+          background: "rgba(111, 92, 194, 0.08)",
+        },
+      }}
+    >
+      <Box
+        sx={{
+          position: "relative",
+          zIndex: 1,
+          textAlign: "center",
+        }}
+      >
+        <Typography
+          sx={{
+            color: "#221b43",
+            fontWeight: 900,
+            mb: 1.5,
+            fontSize: { xs: "1.35rem", sm: "1.6rem", md: "2rem" },
+            lineHeight: 1.3,
+            fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
+          }}
+        >
+          संगठन का उद्देश्य
+        </Typography>
+
+        <Box
+          sx={{
+            width: 90,
+            height: 5,
+            borderRadius: 99,
+            mx: "auto",
+            mb: 3,
+            background: "linear-gradient(90deg, #221b43, #6f5cc2)",
+          }}
+        />
+
+        <Typography
+          variant="body1"
+          sx={{
+            color: "#374151",
+            fontSize: { xs: "1rem", md: "1.12rem" },
+            lineHeight: 1.9,
+            fontWeight: 650,
+            fontFamily: "Poppins, Noto Sans Devanagari, Arial, sans-serif",
+            textAlign: "center",
+            maxWidth: 980,
+            mx: "auto",
+
+            "& strong": {
+              color: "#221b43",
+              fontWeight: 900,
+            },
+          }}
+        >
+          <strong>PMUMS</strong> एक गैर-लाभकारी, सेवा-आधारित संगठन है, जो
+          मध्यप्रदेश राज्य के शिक्षा विभाग एवं जनजातीय कार्य विभाग के अंतर्गत
+          कार्यरत शासकीय शिक्षकों एवं कर्मचारियों के कल्याण, सम्मान, एकजुटता
+          एवं पारस्परिक सहयोग के उद्देश्य से निरंतर सक्रिय है।
+          <br />
+          <br />
+          इस संगठन का मूल संकल्प यह है कि किसी भी शिक्षक अथवा कर्मचारी के
+          आकस्मिक निधन या कठिन परिस्थितियों में उनके परिवार को आर्थिक एवं
+          सामाजिक रूप से अकेला न रहना पड़े, और सभी सदस्य सामूहिक सहयोग के
+          माध्यम से एक-दूसरे का संबल बनें।
+        </Typography>
+      </Box>
+    </Paper>
+  </Container>
+</Box>
+ 
       {/* ASSIGNED POOL SECTION: ONLY WHEN LOGGED IN */}
       {isAuthenticated && <DeathCase />}
  <Statistics />
