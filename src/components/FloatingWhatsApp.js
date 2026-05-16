@@ -328,7 +328,7 @@ const FloatingWhatsApp = () => {
           },
           transition: 'all 0.3s ease-in-out',
           boxShadow: '0 4px 20px rgba(37, 211, 102, 0.4)',
-          animation: 'pulse 2s infinite'
+         animation: 'pulse 1.6s ease-in-out infinite'
         }}
       >
         <WhatsApp sx={{ fontSize: { xs: 29, sm: 34 } }} />
@@ -337,20 +337,28 @@ const FloatingWhatsApp = () => {
   </Box>
 </Zoom>
 
-      {/* CSS Animation */}
-      <style jsx>{`
-        @keyframes pulse {
-          0% {
-            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
-          }
-          50% {
-            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.8);
-          }
-          100% {
-            box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
-          }
-        }
-      `}</style>
+     {/* CSS Animation */}
+<style jsx>{`
+  @keyframes pulse {
+    0% {
+      opacity: 0.72;
+      transform: scale(0.96);
+      box-shadow: 0 4px 14px rgba(37, 211, 102, 0.25);
+    }
+
+    50% {
+      opacity: 1;
+      transform: scale(1.06);
+      box-shadow: 0 6px 28px rgba(37, 211, 102, 0.75);
+    }
+
+    100% {
+      opacity: 0.72;
+      transform: scale(0.96);
+      box-shadow: 0 4px 14px rgba(37, 211, 102, 0.25);
+    }
+  }
+`}</style>
     </>
   );
 };
