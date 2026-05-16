@@ -1878,37 +1878,63 @@ boxShadow: "0 16px 40px rgba(34, 27, 67, 0.08)",
     </Box>
 
     <Box
-      sx={{
-        mt: 2.5,
-        p: 2,
-        borderRadius: "20px",
-        background: "rgba(245,243,255,0.88)",
-        border: "1px solid rgba(124, 58, 237, 0.14)",
-      }}
-    >
-      <Typography
-        sx={{
-          fontWeight: 900,
-          color: theme.dark,
-          fontFamily,
-          lineHeight: 1.7,
-        }}
-      >
-        आपका पासवर्ड आपकी जन्मतिथि ही है।
-      </Typography>
+  sx={{
+    mt: 2.5,
+    p: 2,
+    borderRadius: "20px",
+    background: "rgba(245,243,255,0.88)",
+    border: "1px solid rgba(124, 58, 237, 0.14)",
+  }}
+>
+  <Typography
+    sx={{
+      fontWeight: 900,
+      color: theme.dark,
+      fontFamily,
+      lineHeight: 1.7,
+    }}
+  >
+    आपका पासवर्ड आपकी जन्मतिथि ही है।
+  </Typography>
 
-      <Typography
-        sx={{
-          mt: 0.7,
-          color: theme.danger,
-          fontWeight: 850,
-          fontFamily,
-          fontSize: "0.9rem",
-        }}
-      >
-        कृपया अपनी पंजीकरण संख्या और पासवर्ड सुरक्षित रखें।
-      </Typography>
-    </Box>
+  <Typography
+    sx={{
+      mt: 0.5,
+      fontWeight: 900,
+      color: theme.main,
+      fontFamily,
+      lineHeight: 1.7,
+      fontSize: "1rem",
+    }}
+  >
+    पासवर्ड प्रारूप: DDMMYYYY
+  </Typography>
+
+  <Typography
+    sx={{
+      mt: 0.3,
+      color: theme.muted,
+      fontWeight: 750,
+      fontFamily,
+      fontSize: "0.88rem",
+      lineHeight: 1.6,
+    }}
+  >
+    उदाहरण: यदि जन्मतिथि 05/08/1995 है, तो पासवर्ड 05081995 होगा।
+  </Typography>
+
+  <Typography
+    sx={{
+      mt: 0.7,
+      color: theme.danger,
+      fontWeight: 850,
+      fontFamily,
+      fontSize: "0.9rem",
+    }}
+  >
+    कृपया अपनी पंजीकरण संख्या और पासवर्ड सुरक्षित रखें।
+  </Typography>
+</Box>
 
     <Typography
       sx={{

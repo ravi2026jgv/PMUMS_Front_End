@@ -255,36 +255,87 @@ const FloatingWhatsApp = () => {
       </Fade>
 
       {/* Floating Action Button */}
-      <Zoom in={true} timeout={300}>
-        <Tooltip
-          title="Join our WhatsApp Channel"
-          placement="left"
-          arrow
-        >
-          <Fab
-            onClick={handleChannelClick}
-            sx={{
-              position: 'fixed',
-              bottom: 20,
-              right: 20,
-              zIndex: 10000,
-              bgcolor: '#25D366',
-              color: 'white',
-              width: 60,
-              height: 60,
-              '&:hover': {
-                bgcolor: '#128C7E',
-                transform: 'scale(1.1)'
-              },
-              transition: 'all 0.3s ease-in-out',
-              boxShadow: '0 4px 20px rgba(37, 211, 102, 0.4)',
-              animation: 'pulse 2s infinite'
-            }}
-          >
-            <WhatsApp sx={{ fontSize: 32 }} />
-          </Fab>
-        </Tooltip>
-      </Zoom>
+     {/* Floating WhatsApp Channel Button */}
+<Zoom in={true} timeout={300}>
+  <Box
+    onClick={handleChannelClick}
+    sx={{
+      position: 'fixed',
+      bottom: { xs: 16, sm: 20 },
+      right: { xs: 10, sm: 20 },
+      zIndex: 10000,
+      display: 'flex',
+      alignItems: 'center',
+      gap: { xs: 0.8, sm: 1.2 },
+      cursor: 'pointer',
+      transition: 'all 0.3s ease-in-out',
+      maxWidth: { xs: 'calc(100vw - 20px)', sm: 'auto' },
+      '&:hover': {
+        transform: 'translateY(-3px)'
+      }
+    }}
+  >
+    <Box
+      sx={{
+        px: { xs: 1.1, sm: 1.8 },
+        py: { xs: 0.75, sm: 1 },
+        borderRadius: { xs: '14px', sm: '18px' },
+        bgcolor: '#ffffff',
+        color: '#1f2937',
+        border: '1px solid rgba(37, 211, 102, 0.25)',
+        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.16)',
+        fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
+        display: 'block',
+        maxWidth: { xs: 185, sm: 'none' }
+      }}
+    >
+      <Typography
+        sx={{
+          fontSize: { xs: '0.68rem', sm: '0.82rem' },
+          fontWeight: 800,
+          lineHeight: 1.25,
+          whiteSpace: 'normal'
+        }}
+      >
+        Join this WhatsApp Channel
+      </Typography>
+
+      <Typography
+        sx={{
+          fontSize: { xs: '0.62rem', sm: '0.72rem' },
+          fontWeight: 700,
+          color: '#128C7E',
+          lineHeight: 1.25,
+          whiteSpace: 'normal'
+        }}
+      >
+        पी एम यू एम कल्याण कोष
+      </Typography>
+    </Box>
+
+    <Tooltip title="Join our WhatsApp Channel" placement="left" arrow>
+      <Fab
+        sx={{
+          bgcolor: '#25D366',
+          color: 'white',
+          width: { xs: 54, sm: 64 },
+          height: { xs: 54, sm: 64 },
+          minHeight: { xs: 54, sm: 64 },
+          flexShrink: 0,
+          '&:hover': {
+            bgcolor: '#128C7E',
+            transform: 'scale(1.08)'
+          },
+          transition: 'all 0.3s ease-in-out',
+          boxShadow: '0 4px 20px rgba(37, 211, 102, 0.4)',
+          animation: 'pulse 2s infinite'
+        }}
+      >
+        <WhatsApp sx={{ fontSize: { xs: 29, sm: 34 } }} />
+      </Fab>
+    </Tooltip>
+  </Box>
+</Zoom>
 
       {/* CSS Animation */}
       <style jsx>{`

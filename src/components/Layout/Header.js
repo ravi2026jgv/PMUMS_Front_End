@@ -452,17 +452,28 @@ color: Boolean(listMenuAnchor) ? '#dcd4ff' : '#ffffff'                }}
             </Box>
 
             {/* Mobile Menu Button */}
-            <Box sx={{ display: { xs: 'flex', lg: 'none' } }}>
-              <IconButton
-                size="large"
-                aria-label="mobile menu"
-                aria-controls="mobile-menu"
-                aria-haspopup="true"
-                onClick={handleMobileMenu}
-                sx={{ color: '#ffffff' }}
-              >
-                <MenuIcon />
-              </IconButton>
+            {/* Mobile Menu Button */}
+<Box sx={{ display: { xs: 'flex', lg: 'none' } }}>
+  <IconButton
+    size="large"
+    aria-label="mobile menu"
+    aria-controls="mobile-menu"
+    aria-haspopup="true"
+    onClick={handleMobileMenu}
+    sx={{
+      color: '#ffffff',
+      width: 58,
+      height: 58,
+      borderRadius: '16px',
+      backgroundColor: 'rgba(255,255,255,0.10)',
+      border: '1px solid rgba(255,255,255,0.18)',
+      '&:hover': {
+        backgroundColor: 'rgba(255,255,255,0.18)'
+      }
+    }}
+  >
+    <MenuIcon sx={{ fontSize: 42 }} />
+  </IconButton>
 
               <Menu
                 id="mobile-menu"
