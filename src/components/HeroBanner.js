@@ -15,7 +15,11 @@ import { red } from '@mui/material/colors';
 
 const HeroBanner = ({ children }) => {
   const { isAuthenticated } = useAuth();
+const channelLink = 'https://whatsapp.com/channel/0029Vaw20ci5K3zZkmv3jV1g';
 
+const handleChannelClick = () => {
+  window.open(channelLink, '_blank');
+};
   return (
     <Box
       sx={{
@@ -37,27 +41,53 @@ const HeroBanner = ({ children }) => {
             mb: 3
           }}
         >
-          <Box
-            sx={{
-              width: 60,
-              height: 60,
-              borderRadius: '50%',
-            background: '#ffffff',
-border: '3px solid #c8bfff',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 6px 18px rgba(0, 0, 0, 0.25)',
-              border: '1px solid rgba(255, 255, 255, 0.25)'
-            }}
-          >
-            <AccountCircle
-              sx={{
-                fontSize: 36,
-              color: '#221b43'
-              }}
-            />
-          </Box>
+         <Box
+  onClick={handleChannelClick}
+  sx={{
+    px: { xs: 1.1, sm: 1.8 },
+    py: { xs: 0.75, sm: 1 },
+    borderRadius: { xs: '14px', sm: '18px' },
+    bgcolor: '#ffffff',
+    color: '#1f2937',
+    border: '1px solid rgba(37, 211, 102, 0.25)',
+    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.16)',
+    fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
+    display: 'block',
+    maxWidth: { xs: 185, sm: 'none' },
+    cursor: 'pointer',
+    transition: 'all 0.25s ease',
+    '&:hover': {
+      transform: 'translateY(-2px)',
+      boxShadow: '0 10px 28px rgba(27, 92, 51, 0.28)',
+      borderColor: '#25D366'
+    }
+  }}
+>
+  <Typography
+    sx={{
+      fontSize: { xs: '0.68rem', sm: '0.82rem' },
+      fontWeight: 800,
+      lineHeight: 1.25,
+      whiteSpace: 'normal'
+
+    }}
+  >
+    Join this WhatsApp Channel
+  </Typography>
+
+  <Typography
+    sx={{
+     textAlign: 'center',
+      fontSize: { xs: '0.62rem', sm: '0.72rem' },
+      fontWeight: 700,
+      color: '#128C7E',
+      lineHeight: 1.25,
+      whiteSpace: 'normal'
+    }}
+  >
+    पी एम यू एम कल्याण कोष
+  </Typography>
+</Box>
         </Box>
 
         {/* Main Heading */}
