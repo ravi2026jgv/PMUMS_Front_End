@@ -258,6 +258,13 @@ exportNoSahyogTwoMonths: (params = {}) => {
     responseType: 'blob',
   });
 },
+updateSahyogReceipt: (receiptId, payload) => {
+  return api.put(`/admin/monthly-sahyog/receipts/${receiptId}`, payload);
+},
+
+deleteSahyogReceipt: (receiptId) => {
+  return api.delete(`/admin/monthly-sahyog/receipts/${receiptId}`);
+},
 exportAllSahyog: (params = {}) => {
   return api.get('/admin/export/sahyog/all', {
     params,

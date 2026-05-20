@@ -114,6 +114,14 @@ const [filters, setFilters] = useState({
     const stringValue = String(value).trim();
     return stringValue !== '' ? stringValue : fallback;
   };
+  const getFullName = (user) => {
+  const firstName = user?.name ? String(user.name).trim() : '';
+  const surname = user?.surname ? String(user.surname).trim() : '';
+
+  const fullName = `${firstName} ${surname}`.trim();
+
+  return fullName || 'N/A';
+};
 
   const fetchNonDonors = useCallback(async (pageNum = 0) => {
     requestIdRef.current += 1;
@@ -863,7 +871,7 @@ fontWeight: 700,
                           </TableCell>
 
                           <TableCell sx={{ fontWeight: '700 !important', color: `${theme.dark} !important` }}>
-                            {getDisplayValue(user.name)}
+                            {getFullName(user)}
                           </TableCell>
 
                           <TableCell>{getDisplayValue(user.department)}</TableCell>

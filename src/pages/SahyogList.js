@@ -23,6 +23,12 @@ import {
   CardContent,
   Paper,
   InputAdornment,
+  Dialog,
+DialogTitle,
+DialogContent,
+DialogActions,
+IconButton,
+Stack,
 } from '@mui/material';
 import {
   CheckCircle,
@@ -32,9 +38,15 @@ import {
   FileDownloadRounded,
   VolunteerActivismRounded,
   InfoRounded,
+  EditRounded,
+DeleteRounded,
+CloseRounded,
+SaveRounded,
 } from '@mui/icons-material';
 import Layout from '../components/Layout/Layout';
-import { publicApi } from '../services/api';
+import { adminAPI, publicApi } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import { isAdminOrSuperAdmin } from '../utils/roleUtils';
 
 const theme = {
   dark: '#221b43',
@@ -79,7 +91,8 @@ const SahyogList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [beneficiaryOptions, setBeneficiaryOptions] = useState([]);
-
+const { user } = useAuth();
+const isAdminUser = isAdminOrSuperAdmin(user);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
@@ -93,6 +106,19 @@ const SahyogList = () => {
   district: '',
   block: '',
   beneficiaryId: OPEN_DEATH_CASES_VALUE,
+});
+
+const [editDialogOpen, setEditDialogOpen] = useState(false);
+const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+const [selectedDonor, setSelectedDonor] = useState(null);
+const [actionLoading, setActionLoading] = useState(false);
+
+const [editForm, setEditForm] = useState({
+  amount: '',
+  paymentDate: '',
+  referenceName: '',
+  utrNumber: '',
+  deathCaseId: '',
 });
 
   const abortControllerRef = useRef(null);
@@ -112,6 +138,16 @@ const SahyogList = () => {
   useEffect(() => {
     fetchBeneficiaries();
   }, [fetchBeneficiaries]);
+
+  const formatDateForInput = (dateValue) => {
+  if (!dateValue) return '';
+
+  try {
+    return new Date(dateValue).toISOString().split('T')[0];
+  } catch {
+    return '';
+  }
+};
 
   const hasActiveFilters = () => {
     return Boolean(
@@ -238,6 +274,111 @@ const SahyogList = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+const handleOpenEditDialog = (donor) => {
+  setSelectedDonor(donor);
+
+  setEditForm({
+  amount: donor.amount ?? '',
+  paymentDate: formatDateForInput(donor.paymentDate || donor.receiptUploadDate),
+  referenceName: donor.referenceName || '',
+  utrNumber: donor.utrNumber || '',
+  deathCaseId: donor.deathCaseId || '',
+});
+
+  setEditDialogOpen(true);
+};
+
+const handleCloseEditDialog = () => {
+  if (actionLoading) return;
+
+  setEditDialogOpen(false);
+  setSelectedDonor(null);
+  setEditForm({
+  amount: '',
+  paymentDate: '',
+  referenceName: '',
+  utrNumber: '',
+  deathCaseId: '',
+});
+};
+
+const handleEditFormChange = (field, value) => {
+  setEditForm((prev) => ({
+    ...prev,
+    [field]: value,
+  }));
+};
+
+const handleUpdateSahyogReceipt = async () => {
+  if (!selectedDonor?.receiptId) {
+    setError('Receipt ID नहीं मिला। कृपया backend response जांचें।');
+    return;
+  }
+
+  try {
+    setActionLoading(true);
+    setError('');
+
+    const payload = {
+  amount: editForm.amount !== '' ? Number(editForm.amount) : null,
+  paymentDate: editForm.paymentDate || null,
+  referenceName: editForm.referenceName || null,
+  utrNumber: editForm.utrNumber || null,
+  deathCaseId: editForm.deathCaseId ? Number(editForm.deathCaseId) : null,
+};
+
+    await adminAPI.updateSahyogReceipt(selectedDonor.receiptId, payload);
+
+    handleCloseEditDialog();
+    fetchDonors(page);
+  } catch (err) {
+    console.error('Error updating sahyog receipt:', err);
+    setError(
+      err.response?.data?.message ||
+        'सहयोग रिकॉर्ड अपडेट करने में त्रुटि हुई। कृपया पुनः प्रयास करें।'
+    );
+  } finally {
+    setActionLoading(false);
+  }
+};
+
+const handleOpenDeleteDialog = (donor) => {
+  setSelectedDonor(donor);
+  setDeleteDialogOpen(true);
+};
+
+const handleCloseDeleteDialog = () => {
+  if (actionLoading) return;
+
+  setDeleteDialogOpen(false);
+  setSelectedDonor(null);
+};
+
+const handleDeleteSahyogReceipt = async () => {
+  if (!selectedDonor?.receiptId) {
+    setError('Receipt ID नहीं मिला। कृपया backend response जांचें।');
+    return;
+  }
+
+  try {
+    setActionLoading(true);
+    setError('');
+
+    await adminAPI.deleteSahyogReceipt(selectedDonor.receiptId);
+
+    handleCloseDeleteDialog();
+    fetchDonors(page);
+  } catch (err) {
+    console.error('Error deleting sahyog receipt:', err);
+    setError(
+      err.response?.data?.message ||
+        'सहयोग रिकॉर्ड हटाने में त्रुटि हुई। कृपया पुनः प्रयास करें।'
+    );
+  } finally {
+    setActionLoading(false);
+  }
+};
+
 
   const handlePageChange = (event, newPage) => {
     const pageNum = parseInt(newPage, 10);
@@ -340,27 +481,36 @@ const SahyogList = () => {
     }
   };
 
-  const formatDateTime = (dateValue) => {
-    if (!dateValue) return 'N/A';
+  const formatDateTime = (dateValue, showTime = true) => {
+  if (!dateValue) return 'N/A';
 
-    return (
-      <>
-        {new Date(dateValue).toLocaleDateString('hi-IN', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-        })}
-        <br />
-        <span style={{ fontSize: '0.8rem', color: theme.muted }}>
-          {new Date(dateValue).toLocaleTimeString('hi-IN', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true,
-          })}
-        </span>
-      </>
-    );
-  };
+  const date = new Date(dateValue);
+
+  if (Number.isNaN(date.getTime())) return 'N/A';
+
+  return (
+    <>
+      {date.toLocaleDateString('hi-IN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      })}
+
+      {showTime && (
+        <>
+          <br />
+          <span style={{ fontSize: '0.8rem', color: theme.muted }}>
+            {date.toLocaleTimeString('hi-IN', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true,
+            })}
+          </span>
+        </>
+      )}
+    </>
+  );
+};
 
   return (
     <Layout>
@@ -871,14 +1021,17 @@ fontWeight: 700,                            color: 'white',
                         <TableCell>स्कूल का नाम</TableCell>
                         <TableCell>लाभार्थी</TableCell>
                         <TableCell>रसीद अपलोड दिनांक</TableCell>
+                        {isAdminUser && (
+  <TableCell align="center">Action</TableCell>
+)}
                       </TableRow>
                     </TableHead>
 
                     <TableBody>
                       {donors.map((donor, index) => (
                         <TableRow
-                          key={donor.registrationNumber || index}
-                          sx={{
+key={donor.receiptId || donor.registrationNumber || index}
+                        sx={{
                             transition: 'background-color 0.2s',
                             backgroundColor:
                               index % 2 === 0
@@ -918,8 +1071,46 @@ fontWeight: 700,                            color: 'white',
                           <TableCell sx={{ fontWeight: '900 !important', color: `${'#0f7633'} !important` }}>
                             {donor.beneficiary || 'N/A'}
                           </TableCell>
+<TableCell>
+  {formatDateTime(donor.paymentDate || donor.receiptUploadDate)}
+</TableCell>
+                          {isAdminUser && (
+  <TableCell align="center">
+    <Stack direction="row" spacing={1} justifyContent="center">
+      <IconButton
+        size="small"
+        onClick={() => handleOpenEditDialog(donor)}
+        disabled={!donor.receiptId}
+        sx={{
+          color: theme.main,
+          background: 'rgba(111, 92, 194, 0.10)',
+          border: '1px solid rgba(111, 92, 194, 0.22)',
+          '&:hover': {
+            background: 'rgba(111, 92, 194, 0.18)',
+          },
+        }}
+      >
+        <EditRounded fontSize="small" />
+      </IconButton>
 
-                          <TableCell>{formatDateTime(donor.receiptUploadDate)}</TableCell>
+      <IconButton
+        size="small"
+        onClick={() => handleOpenDeleteDialog(donor)}
+        disabled={!donor.receiptId}
+        sx={{
+          color: theme.red,
+          background: 'rgba(180, 35, 24, 0.08)',
+          border: '1px solid rgba(180, 35, 24, 0.18)',
+          '&:hover': {
+            background: 'rgba(180, 35, 24, 0.14)',
+          },
+        }}
+      >
+        <DeleteRounded fontSize="small" />
+      </IconButton>
+    </Stack>
+  </TableCell>
+)}
                         </TableRow>
                       ))}
                     </TableBody>
@@ -975,7 +1166,264 @@ fontWeight: 700,                            color: 'white',
               </>
             )}
           </Card>
-        </Container>
+                </Container>
+
+        <Dialog
+          open={editDialogOpen}
+          onClose={handleCloseEditDialog}
+          fullWidth
+          maxWidth="sm"
+          PaperProps={{
+            sx: {
+              borderRadius: '24px',
+              overflow: 'hidden',
+            },
+          }}
+        >
+          <DialogTitle
+            sx={{
+              background: theme.dark,
+              color: '#fff',
+              fontWeight: 900,
+              fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            सहयोग रिकॉर्ड एडिट करें
+
+            <IconButton onClick={handleCloseEditDialog} sx={{ color: '#fff' }}>
+              <CloseRounded />
+            </IconButton>
+          </DialogTitle>
+
+          <DialogContent sx={{ p: 3, background: '#ffffff' }}>
+            <Box sx={{ mt: 1 }}>
+              <Typography
+                sx={{
+                  fontWeight: 900,
+                  color: theme.dark,
+                  mb: 0.5,
+                  fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                }}
+              >
+                सदस्य
+              </Typography>
+
+              <Typography
+                sx={{
+                  color: theme.muted,
+                  fontWeight: 700,
+                  mb: 2,
+                  fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+                }}
+              >
+                {selectedDonor?.name || 'N/A'} - {selectedDonor?.registrationNumber || 'N/A'}
+              </Typography>
+              <Grid item xs={12}>
+  <Typography sx={{ mb: 1, fontWeight: 900, color: theme.dark }}>
+    लाभार्थी / Death Case
+  </Typography>
+
+  <FormControl fullWidth size="small">
+    <Select
+      value={editForm.deathCaseId}
+      onChange={(e) => handleEditFormChange('deathCaseId', e.target.value)}
+      displayEmpty
+      sx={inputSx}
+    >
+      <MenuItem value="">
+        Death Case चुनें
+      </MenuItem>
+
+      {beneficiaryOptions.map((item) => (
+        <MenuItem key={item.id} value={item.id}>
+          {item.name}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+</Grid>
+
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <Typography sx={{ mb: 1, fontWeight: 900, color: theme.dark }}>
+                    राशि
+                  </Typography>
+
+                  <TextField
+                    fullWidth
+                    size="small"
+                    type="number"
+                    value={editForm.amount}
+                    onChange={(e) => handleEditFormChange('amount', e.target.value)}
+                    placeholder="राशि दर्ज करें"
+                    sx={inputSx}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <Typography sx={{ mb: 1, fontWeight: 900, color: theme.dark }}>
+                    भुगतान दिनांक
+                  </Typography>
+
+                  <TextField
+                    fullWidth
+                    size="small"
+                    type="date"
+                    value={editForm.paymentDate}
+                    onChange={(e) => handleEditFormChange('paymentDate', e.target.value)}
+                    sx={inputSx}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Typography sx={{ mb: 1, fontWeight: 900, color: theme.dark }}>
+                    Reference Name
+                  </Typography>
+
+                  <TextField
+                    fullWidth
+                    size="small"
+                    value={editForm.referenceName}
+                    onChange={(e) => handleEditFormChange('referenceName', e.target.value)}
+                    placeholder="Reference name दर्ज करें"
+                    sx={inputSx}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Typography sx={{ mb: 1, fontWeight: 900, color: theme.dark }}>
+                    UTR Number
+                  </Typography>
+
+                  <TextField
+                    fullWidth
+                    size="small"
+                    value={editForm.utrNumber}
+                    onChange={(e) => handleEditFormChange('utrNumber', e.target.value)}
+                    placeholder="UTR number दर्ज करें"
+                    sx={inputSx}
+                  />
+                </Grid>
+              </Grid>
+            </Box>
+          </DialogContent>
+
+          <DialogActions sx={{ p: 2.5, background: '#f8f7ff' }}>
+            <Button
+              onClick={handleCloseEditDialog}
+              disabled={actionLoading}
+              sx={{
+                borderRadius: '12px',
+                fontWeight: 900,
+                color: theme.muted,
+              }}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              variant="contained"
+              onClick={handleUpdateSahyogReceipt}
+              disabled={actionLoading}
+              startIcon={
+                actionLoading ? <CircularProgress size={18} color="inherit" /> : <SaveRounded />
+              }
+              sx={{
+                borderRadius: '12px',
+                fontWeight: 900,
+                background: theme.main,
+                '&:hover': {
+                  background: theme.dark,
+                },
+              }}
+            >
+              Update
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={handleCloseDeleteDialog}
+          fullWidth
+          maxWidth="xs"
+          PaperProps={{
+            sx: {
+              borderRadius: '24px',
+              overflow: 'hidden',
+            },
+          }}
+        >
+          <DialogTitle
+            sx={{
+              background: theme.red,
+              color: '#fff',
+              fontWeight: 900,
+              fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+            }}
+          >
+            सहयोग रिकॉर्ड हटाएं
+          </DialogTitle>
+
+          <DialogContent sx={{ p: 3 }}>
+            <Typography
+              sx={{
+                color: theme.text,
+                fontWeight: 750,
+                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+              }}
+            >
+              क्या आप वाकई इस सहयोग रिकॉर्ड को हटाना चाहते हैं?
+            </Typography>
+
+            <Typography
+              sx={{
+                mt: 1.5,
+                color: theme.muted,
+                fontWeight: 700,
+                fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
+              }}
+            >
+              {selectedDonor?.name || 'N/A'} - {selectedDonor?.registrationNumber || 'N/A'}
+            </Typography>
+          </DialogContent>
+
+          <DialogActions sx={{ p: 2.5, background: '#fff7f7' }}>
+            <Button
+              onClick={handleCloseDeleteDialog}
+              disabled={actionLoading}
+              sx={{
+                borderRadius: '12px',
+                fontWeight: 900,
+                color: theme.muted,
+              }}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              variant="contained"
+              color="error"
+              onClick={handleDeleteSahyogReceipt}
+              disabled={actionLoading}
+              startIcon={
+                actionLoading ? <CircularProgress size={18} color="inherit" /> : <DeleteRounded />
+              }
+              sx={{
+                borderRadius: '12px',
+                fontWeight: 900,
+              }}
+            >
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </Layout>
   );
