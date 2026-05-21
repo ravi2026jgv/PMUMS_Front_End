@@ -302,6 +302,11 @@ exportPendingProfiles: (params = {}) => {
     responseType: 'blob'
   });
 },
+getPendingProfilesLiveLink: (params = {}) => {
+  return api.get('/admin/export/pending-profiles/live-link', {
+    params,
+  });
+},
 getExportMobileNumberSetting: () => {
   return api.get('/admin/settings/export-mobile-number');
 },
