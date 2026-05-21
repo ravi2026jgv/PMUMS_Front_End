@@ -72,6 +72,8 @@ import {
   DeleteForever,
   Chat,
   Search,
+  ContentCopy,
+Link as LinkIcon,
 } from "@mui/icons-material";
 import { useAuth } from "../context/AuthContext";
 import { managerAPI, adminAPI, api } from "../services/api";
@@ -170,6 +172,8 @@ const [passwordResetForm, setPasswordResetForm] = useState({
   const [dateExportFromDate, setDateExportFromDate] = useState("");
   const [dateExportToDate, setDateExportToDate] = useState("");
   const [managedLocationCounts, setManagedLocationCounts] = useState({});
+  const [liveLinkLoading, setLiveLinkLoading] = useState(false);
+const [pendingProfilesLiveUrl, setPendingProfilesLiveUrl] = useState("");
   // Manager role levels and permissions
   const isSuperAdmin = user?.role === "ROLE_SUPERADMIN";
   const isAdmin = user?.role === "ROLE_ADMIN";
@@ -790,7 +794,7 @@ const fetchManagedLocationCounts = async (scope) => {
   };
   const openExportDialog = async (type) => {
     setExportType(type);
-
+setPendingProfilesLiveUrl("");
    const defaultMode =
   type === "sahyog" || type === "asahyog"
     ? "month"
@@ -879,6 +883,73 @@ const fetchManagedLocationCounts = async (scope) => {
       );
     }
   };
+  const copyTextToClipboard = async (text) => {
+  if (!text) return false;
+
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    textArea.style.top = "-999999px";
+
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    const successful = document.execCommand("copy");
+    document.body.removeChild(textArea);
+
+    return successful;
+  } catch (error) {
+    console.error("Copy failed:", error);
+    return false;
+  }
+};
+const handleGeneratePendingProfilesLiveLink = async () => {
+  try {
+    setLiveLinkLoading(true);
+
+    const areaParams = getCurrentExportAreaParams();
+
+    const response = await managerAPI.getPendingProfilesLiveLink(areaParams);
+
+    const liveUrl = response?.data?.liveUrl;
+
+    if (!liveUrl) {
+      showSnackbar("Live Excel link not received from server!", "error");
+      return;
+    }
+
+    setPendingProfilesLiveUrl(liveUrl);
+
+    const copied = await copyTextToClipboard(liveUrl);
+
+    if (copied) {
+      showSnackbar(
+        "Live Excel link copied successfully. Use Excel → Data → Get Data → From Web.",
+        "success"
+      );
+    } else {
+      showSnackbar("Live Excel link generated. Please copy it manually.", "info");
+    }
+  } catch (error) {
+    console.error("Error generating live pending profile link:", error);
+    showSnackbar(
+      error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        "Failed to generate live Excel link!",
+      "error"
+    );
+  } finally {
+    setLiveLinkLoading(false);
+  }
+};
   const handleManagerExport = async () => {
     try {
       setExportLoading(true);
@@ -4332,36 +4403,116 @@ secondary={`${
                       current role access.
                     </Typography>
                   </Box>
+
                 )}
+                {exportType === "pending-profiles" && (
+  <Alert
+    severity="info"
+    sx={{
+      borderRadius: "16px",
+      bgcolor: "rgba(249, 115, 22, 0.08)",
+      border: "1px solid rgba(249, 115, 22, 0.18)",
+      color: "#9a3412",
+      "& .MuiAlert-icon": {
+        color: "#ea580c",
+      },
+    }}
+  >
+    Pending Profile live Excel link will be restricted to your assigned area.
+    Use this link in Excel: Data → Get Data → From Web.
+  </Alert>
+)}
+
+{exportType === "pending-profiles" && pendingProfilesLiveUrl && (
+  <Alert
+    severity="success"
+    icon={<ContentCopy fontSize="inherit" />}
+    sx={{
+      borderRadius: "16px",
+      bgcolor: "rgba(22, 163, 74, 0.08)",
+      border: "1px solid rgba(22, 163, 74, 0.18)",
+      "& .MuiAlert-message": {
+        width: "100%",
+      },
+    }}
+  >
+    <Typography sx={{ fontWeight: 900, mb: 0.5 }}>
+      Live Excel link generated
+    </Typography>
+
+    <Typography
+      sx={{
+        fontSize: 12,
+        wordBreak: "break-all",
+        color: "#374151",
+      }}
+    >
+      {pendingProfilesLiveUrl}
+    </Typography>
+
+    <Typography sx={{ fontSize: 12, mt: 1, color: "#64748b" }}>
+      Excel में जाएँ: Data → Get Data → From Web → यह link paste करें → Load.
+    </Typography>
+  </Alert>
+)}
               </Box>
             </DialogContent>
 
-            <DialogActions sx={premiumDialogActionsSx}>
-              <Button
-                variant="outlined"
-                onClick={() => setExportDialogOpen(false)}
-                disabled={exportLoading}
-                sx={dialogCancelButtonSx}
-              >
-                Cancel
-              </Button>
+           <DialogActions sx={premiumDialogActionsSx}>
+  <Button
+    onClick={() => setExportDialogOpen(false)}
+    disabled={exportLoading || liveLinkLoading}
+    variant="outlined"
+    sx={premiumCancelButtonSx}
+  >
+    Cancel
+  </Button>
 
-              <Button
-                variant="contained"
-                onClick={handleManagerExport}
-                disabled={exportLoading}
-                startIcon={
-                  exportLoading ? (
-                    <CircularProgress size={18} color="inherit" />
-                  ) : (
-                    <Download />
-                  )
-                }
-                sx={dialogPrimaryButtonSx}
-              >
-                {exportLoading ? "Exporting..." : "Export Now"}
-              </Button>
-            </DialogActions>
+  {exportType === "pending-profiles" && (
+    <Button
+      variant="outlined"
+      disabled={liveLinkLoading || exportLoading}
+      startIcon={
+        liveLinkLoading ? (
+          <CircularProgress size={18} color="inherit" />
+        ) : (
+          <LinkIcon />
+        )
+      }
+      onClick={handleGeneratePendingProfilesLiveLink}
+      sx={{
+        borderRadius: "14px",
+        textTransform: "none",
+        fontWeight: 900,
+        borderColor: "rgba(249, 115, 22, 0.45)",
+        color: "#ea580c",
+        px: 2.5,
+        "&:hover": {
+          borderColor: "#ea580c",
+          backgroundColor: "rgba(249, 115, 22, 0.08)",
+        },
+      }}
+    >
+      {liveLinkLoading ? "Generating..." : "Copy Live Excel Link"}
+    </Button>
+  )}
+
+  <Button
+    variant="contained"
+    disabled={exportLoading || liveLinkLoading}
+    startIcon={
+      exportLoading ? (
+        <CircularProgress size={18} color="inherit" />
+      ) : (
+        <Download />
+      )
+    }
+    onClick={handleManagerExport}
+    sx={premiumPrimaryButtonSx}
+  >
+    {exportLoading ? "Exporting." : "Export Now"}
+  </Button>
+</DialogActions>
           </Dialog>
 
           {/* Password Reset Dialog */}

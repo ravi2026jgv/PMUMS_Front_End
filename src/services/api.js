@@ -670,7 +670,11 @@ exportPendingProfiles: (params = {}) => {
     responseType: 'blob'
   });
 },
-
+getPendingProfilesLiveLink: (params = {}) => {
+  return api.get('/admin/export/pending-profiles/live-link', {
+    params,
+  });
+},
 exportZeroUtrMembers: (params = {}) => {
   return api.get('/admin/monthly-sahyog/no-utr-ever/export', {
     params,
