@@ -4463,7 +4463,7 @@ secondary={`${
     onClick={() => setExportDialogOpen(false)}
     disabled={exportLoading || liveLinkLoading}
     variant="outlined"
-    sx={premiumCancelButtonSx}
+    sx={dialogCancelButtonSx}
   >
     Cancel
   </Button>
@@ -4508,7 +4508,7 @@ secondary={`${
       )
     }
     onClick={handleManagerExport}
-    sx={premiumPrimaryButtonSx}
+    sx={dialogPrimaryButtonSx}
   >
     {exportLoading ? "Exporting." : "Export Now"}
   </Button>
