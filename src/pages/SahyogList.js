@@ -527,9 +527,11 @@ const formatDateTime = (dateValue, showTime = true) => {
   const ampm = hourNumber >= 12 ? 'pm' : 'am';
   const displayHour = hourNumber % 12 || 12;
 
-  const formattedTime = `${String(displayHour).padStart(2, '0')}:${String(
-    minuteNumber
-  ).padStart(2, '0')} ${ampm}`;
+const second = match[6] || '00';
+
+const formattedTime = `${String(displayHour).padStart(2, '0')}:${String(
+  minuteNumber
+).padStart(2, '0')}:${String(second).padStart(2, '0')} ${ampm}`;
 
   return (
     <>
