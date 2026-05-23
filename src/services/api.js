@@ -546,6 +546,13 @@ exportReceipts: () => {
   removeAllManagerAccess: (userId) => {
     return api.delete(`/manager/assignments/user/${userId}`);
   },
+  getHomeStatsSettings: () => {
+  return api.get('/admin/settings/home-stats');
+},
+
+updateHomeStatsSettings: (payload) => {
+  return api.put('/admin/settings/home-stats', payload);
+},
 
   // Get manager scope for a specific user
   getManagerScope: (managerId) => {
@@ -746,6 +753,9 @@ const publicAPI = {
 
 publicApi.getHomeDisplayContent = () => {
   return publicApi.get('/public/home-display-content');
+};
+publicApi.getHomeStats = () => {
+  return publicApi.get('/public/home-stats');
 };
 const receiptAPI = {
   uploadReceipt: (payload) => {

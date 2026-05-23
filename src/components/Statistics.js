@@ -121,18 +121,39 @@ const StatCard = ({ icon, value, label, variant = 'purple' }) => {
 const Statistics = () => {
   const [statisticsContentHtml, setStatisticsContentHtml] = useState('');
 
-  useEffect(() => {
-    const loadStatisticsContent = async () => {
-      try {
-        const response = await publicApi.getHomeDisplayContent();
-        setStatisticsContentHtml(response?.data?.statisticsContentHtml || '');
-      } catch (error) {
-        console.error('Failed to load statistics content:', error);
-      }
-    };
+  const [homeStats, setHomeStats] = useState({
+  registeredTeachersCount: 0,
+  emergencyHelpCount: '10000000',
+});
+const formatStatNumber = (value) => {
+  const numberValue = Number(value || 0);
 
-    loadStatisticsContent();
-  }, []);
+  if (Number.isNaN(numberValue)) return '0+';
+
+  return `${numberValue.toLocaleString('en-IN')}+`;
+};
+
+useEffect(() => {
+  const loadStatisticsContent = async () => {
+    try {
+      const [contentResponse, statsResponse] = await Promise.all([
+        publicApi.getHomeDisplayContent(),
+        publicApi.getHomeStats(),
+      ]);
+
+      setStatisticsContentHtml(contentResponse?.data?.statisticsContentHtml || '');
+
+      setHomeStats({
+        registeredTeachersCount: statsResponse?.data?.registeredTeachersCount || 0,
+        emergencyHelpCount: statsResponse?.data?.emergencyHelpCount || '10000000',
+      });
+    } catch (error) {
+      console.error('Failed to load statistics content:', error);
+    }
+  };
+
+  loadStatisticsContent();
+}, []);
 
   return (
     <Box
@@ -341,18 +362,18 @@ const Statistics = () => {
                   gap: 3,
                 }}
               >
-                <StatCard
-                  icon={<GroupsRoundedIcon sx={{ fontSize: 32 }} />}
-                  value="100000+"
-                  label="से ज्यादा पंजीकृत शिक्षक"
-                />
+               <StatCard
+  icon={<GroupsRoundedIcon sx={{ fontSize: 32 }} />}
+  value={formatStatNumber(homeStats.registeredTeachersCount)}
+  label="से ज्यादा पंजीकृत शिक्षक"
+/>
 
-                <StatCard
-                  icon={<VolunteerActivismRoundedIcon sx={{ fontSize: 32 }} />}
-                  value="10000000+"
-                  label="आकस्मिक मदद"
-                  variant="accent"
-                />
+<StatCard
+  icon={<VolunteerActivismRoundedIcon sx={{ fontSize: 32 }} />}
+  value={formatStatNumber(homeStats.emergencyHelpCount)}
+  label="आकस्मिक मदद"
+  variant="accent"
+/>
 
                 <Box
                   sx={{

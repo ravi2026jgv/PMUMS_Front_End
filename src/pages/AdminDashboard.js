@@ -119,7 +119,10 @@ const [homeDisplayContent, setHomeDisplayContent] = useState({
   homeNoticeHtml: '',
   statisticsContentHtml: '',
 });
-
+const [homeStatsSettings, setHomeStatsSettings] = useState({
+  registeredTeachersCount: 0,
+  emergencyHelpCount: '',
+});
 const [profileFieldLocks, setProfileFieldLocks] = useState({
   fullName: false,
   dateOfBirth: false,
@@ -1635,17 +1638,19 @@ const openSettingsDialog = async () => {
     setExportPermissionResult(null);
     setExportPermissionPage(0);
 
-    const [
-      mobileOtpResponse,
-      selfDonationVisibleResponse,
-      selfDonationQrResponse,
-      profileFieldLocksResponse,
-    ] = await Promise.all([
-      adminAPI.getMobileOtpSetting(),
-      adminAPI.getSelfDonationVisibleSetting(),
-      adminAPI.getSelfDonationQr(),
-      adminAPI.getProfileFieldLocks(),
-    ]);
+   const [
+  mobileOtpResponse,
+  selfDonationVisibleResponse,
+  selfDonationQrResponse,
+  profileFieldLocksResponse,
+  homeStatsResponse,
+] = await Promise.all([
+  adminAPI.getMobileOtpSetting(),
+  adminAPI.getSelfDonationVisibleSetting(),
+  adminAPI.getSelfDonationQr(),
+  adminAPI.getProfileFieldLocks(),
+  adminAPI.getHomeStatsSettings(),
+]);
 
     setMobileOtpEnabled(mobileOtpResponse.data?.mobileOtpEnabled === true);
 
@@ -1663,6 +1668,10 @@ const openSettingsDialog = async () => {
       email: !!profileFieldLocksResponse.data?.email,
       departmentUniqueId: !!profileFieldLocksResponse.data?.departmentUniqueId,
     });
+    setHomeStatsSettings({
+  registeredTeachersCount: homeStatsResponse?.data?.registeredTeachersCount || 0,
+  emergencyHelpCount: homeStatsResponse?.data?.emergencyHelpCount || '',
+});
 
     await fetchExportMobilePermissions(0, exportPermissionRowsPerPage);
   } catch (error) {
@@ -1801,11 +1810,14 @@ const handleSaveSettings = async () => {
   try {
     setSettingsSaving(true);
 
-    await Promise.all([
-      adminAPI.updateMobileOtpSetting(mobileOtpEnabled),
-      adminAPI.updateSelfDonationVisibleSetting(selfDonationVisible),
-      adminAPI.updateProfileFieldLocks(profileFieldLocks),
-    ]);
+   await Promise.all([
+  adminAPI.updateMobileOtpSetting(mobileOtpEnabled),
+  adminAPI.updateSelfDonationVisibleSetting(selfDonationVisible),
+  adminAPI.updateProfileFieldLocks(profileFieldLocks),
+  adminAPI.updateHomeStatsSettings({
+    emergencyHelpCount: homeStatsSettings.emergencyHelpCount,
+  }),
+]);
 
     if (selfDonationQrFile) {
       setSelfDonationQrUploading(true);
@@ -12712,7 +12724,66 @@ const requestedByName =
             </Grid>
           </Grid>
         </Paper> */}
+<Paper elevation={0} sx={settingsCardSx}>
+  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}>
+    <Box
+      sx={{
+        width: 40,
+        height: 40,
+        borderRadius: '14px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #0f766e 0%, #115e59 100%)',
+        color: '#fff',
+        boxShadow: '0 10px 20px rgba(15, 118, 110, 0.18)',
+        flexShrink: 0,
+      }}
+    >
+      <VolunteerActivism fontSize="small" />
+    </Box>
 
+    <Box>
+      <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a' }}>
+        Home Statistics
+      </Typography>
+      <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+        Registered teachers count is calculated automatically. Emergency help count can be updated manually.
+      </Typography>
+    </Box>
+  </Box>
+
+  <Grid container spacing={2}>
+    <Grid item xs={12} md={6}>
+      <TextField
+        fullWidth
+        label="Registered Teachers Count"
+        value={Number(homeStatsSettings.registeredTeachersCount || 0).toLocaleString('en-IN')}
+        disabled
+        helperText="This value comes from live users table count."
+      />
+    </Grid>
+
+    <Grid item xs={12} md={6}>
+      <TextField
+        fullWidth
+        label="Emergency Help Count"
+        value={homeStatsSettings.emergencyHelpCount}
+        onChange={(e) =>
+          setHomeStatsSettings((prev) => ({
+            ...prev,
+            emergencyHelpCount: e.target.value.replace(/\D/g, ''),
+          }))
+        }
+        helperText="This value will be shown on homepage under आकस्मिक मदद."
+        inputProps={{
+          inputMode: 'numeric',
+          pattern: '[0-9]*',
+        }}
+      />
+    </Grid>
+  </Grid>
+</Paper>
         <Paper elevation={0} sx={settingsCardSx}>
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}>
             <Box
@@ -12741,6 +12812,7 @@ const requestedByName =
               </Typography>
             </Box>
           </Box>
+          
 
           <Grid container spacing={1.5}>
             {[
