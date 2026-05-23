@@ -1072,7 +1072,7 @@ key={donor.receiptId || donor.registrationNumber || index}
                             {donor.beneficiary || 'N/A'}
                           </TableCell>
 <TableCell>
-  {formatDateTime(donor.paymentDate || donor.receiptUploadDate)}
+  {formatDateTime(donor.receiptUploadDate)}
 </TableCell>
                           {isAdminUser && (
   <TableCell align="center">
