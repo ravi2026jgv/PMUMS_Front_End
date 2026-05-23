@@ -91,6 +91,10 @@ publicApi.interceptors.request.use(
 api.reAuthenticate = (password) => {
   return api.post('/security/reauth', { password });
 };
+
+api.reAuthenticateManagerDashboard = (password) => {
+  return api.post('/security/manager-dashboard/reauth', { password });
+};
 // Response interceptor for error handling (apply to both instances)
 const authErrorHandler = (error) => {
   if (error.response?.status === 401) {
@@ -407,6 +411,8 @@ updateExportMobileNumberSetting: (enabled) => {
   updateMobileOtpSetting: (enabled) => {
     return api.put('/admin/settings/mobile-otp', { enabled });
   },
+  resetManagerDashboardPassword: (id, payload) =>
+  api.put(`/admin/users/${id}/manager-dashboard-password-reset`, payload),
 // Admin password reset (no current password required)
 resetUserPassword: (id, payload) =>
   api.put(`/admin/users/${id}/password-reset`, payload),

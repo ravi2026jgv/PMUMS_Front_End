@@ -166,9 +166,10 @@ const [blockManagerExportMobileEnabled, setBlockManagerExportMobileEnabled] = us
   const [passwordResetOpen, setPasswordResetOpen] = useState(false);
   const [passwordResetLoading, setPasswordResetLoading] = useState(false);
   const [passwordResetUser, setPasswordResetUser] = useState(null);
-  const [passwordResetForm, setPasswordResetForm] = useState({
+const [passwordResetForm, setPasswordResetForm] = useState({
   newPassword: '',
   confirmPassword: '',
+  resetType: 'normal',
 });
 const [showManualCreateSuccessPopup, setShowManualCreateSuccessPopup] = useState(false);
 const [manualCreateSuccessData, setManualCreateSuccessData] = useState(null);
@@ -2136,6 +2137,17 @@ const openPasswordReset = (user) => {
   setPasswordResetForm({
     newPassword: '',
     confirmPassword: '',
+    resetType: 'normal',
+  });
+  setPasswordResetOpen(true);
+};
+
+const openManagerDashboardPasswordReset = (user) => {
+  setPasswordResetUser(user);
+  setPasswordResetForm({
+    newPassword: '',
+    confirmPassword: '',
+    resetType: 'managerDashboard',
   });
   setPasswordResetOpen(true);
 };
@@ -2146,6 +2158,7 @@ const closePasswordReset = () => {
   setPasswordResetForm({
     newPassword: '',
     confirmPassword: '',
+    resetType: 'normal',
   });
 };
 
@@ -2173,12 +2186,21 @@ const submitPasswordReset = async () => {
   try {
     setPasswordResetLoading(true);
 
-    await adminAPI.resetUserPassword(passwordResetUser.id, {
-      newPassword,
-    });
+    if (passwordResetForm.resetType === 'managerDashboard') {
+  await adminAPI.resetManagerDashboardPassword(passwordResetUser.id, {
+    newPassword,
+  });
 
-    showSnackbar('Password reset successfully!', 'success');
-    closePasswordReset();
+  showSnackbar('Manager Dashboard password reset successfully!', 'success');
+} else {
+  await adminAPI.resetUserPassword(passwordResetUser.id, {
+    newPassword,
+  });
+
+  showSnackbar('Password reset successfully!', 'success');
+}
+
+closePasswordReset();
   } catch (error) {
     console.error('Error resetting password:', error);
     showSnackbar(
@@ -5798,6 +5820,16 @@ const renderReportTableTab = () => {
                     >
                       <LockReset fontSize="small" sx={{ color: '#9c27b0' }} />
                     </IconButton>
+                    {user.role && user.role !== 'ROLE_USER' && (
+  <IconButton
+    size="small"
+    onClick={() => openManagerDashboardPasswordReset(user)}
+    title="Reset Manager Dashboard Password"
+    sx={actionIconSx('#ea580c', 'rgba(234, 88, 12, 0.12)')}
+  >
+    <LockReset fontSize="small" sx={{ color: '#ea580c' }} />
+  </IconButton>
+)}
 
                     <IconButton 
                       size="small" 
@@ -13095,9 +13127,11 @@ const requestedByName =
     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
       <LockReset />
       <Box>
-        <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1.1 }}>
-          Reset User Password
-        </Typography>
+       <Typography variant="h6" sx={{ fontWeight: 900, lineHeight: 1.1 }}>
+  {passwordResetForm.resetType === 'managerDashboard'
+    ? 'Reset Manager Dashboard Password'
+    : 'Reset User Password'}
+</Typography>
 
         <Typography variant="caption" sx={{ opacity: 0.9, fontWeight: 600 }}>
      {passwordResetUser?.id
@@ -13149,14 +13183,20 @@ const requestedByName =
       },
     }}
   >
-    Enter a custom password for this user. The user can login using this new password.
+{passwordResetForm.resetType === 'managerDashboard'
+  ? 'Enter a separate password for Manager Dashboard access. This will not change the user normal login password.'
+  : 'Enter a custom password for this user. The user can login using this new password.'}
   </Alert>
 </Grid>
 
 <Grid item xs={12}>
   <TextField
     fullWidth
-    label="New Password"
+   label={
+  passwordResetForm.resetType === 'managerDashboard'
+    ? 'New Manager Dashboard Password'
+    : 'New Password'
+}
     type="password"
     value={passwordResetForm.newPassword}
     onChange={(e) =>
@@ -13174,7 +13214,11 @@ const requestedByName =
 <Grid item xs={12}>
   <TextField
     fullWidth
-    label="Confirm Password"
+   label={
+  passwordResetForm.resetType === 'managerDashboard'
+    ? 'Confirm Manager Dashboard Password'
+    : 'Confirm Password'
+}
     type="password"
     value={passwordResetForm.confirmPassword}
     onChange={(e) =>
@@ -13268,7 +13312,11 @@ const requestedByName =
         },
       }}
     >
-     {passwordResetLoading ? 'Saving...' : 'Save Password'}
+{passwordResetLoading
+  ? 'Saving...'
+  : passwordResetForm.resetType === 'managerDashboard'
+    ? 'Save Manager Dashboard Password'
+    : 'Save Password'}
     </Button>
   </DialogActions>
 </Dialog>

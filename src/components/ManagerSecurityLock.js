@@ -32,7 +32,7 @@ const ManagerSecurityLock = ({ open, onSuccess, onCancel }) => {
       setVerifying(true);
       setError('');
 
-      await api.reAuthenticate(password);
+    await api.reAuthenticateManagerDashboard(password);
 
       const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
       sessionStorage.setItem('managerDashboardReAuth', 'true');
@@ -72,7 +72,7 @@ const ManagerSecurityLock = ({ open, onSuccess, onCancel }) => {
       <DialogContent dividers>
         <Box sx={{ mb: 2 }}>
           <Typography variant="body2" color="text.secondary">
-            For extra security, please enter your password again to access the Manager Dashboard.
+For extra security, please enter your Manager Dashboard password to access the Manager Dashboard.
           </Typography>
         </Box>
 
@@ -84,7 +84,7 @@ const ManagerSecurityLock = ({ open, onSuccess, onCancel }) => {
 
         <TextField
           fullWidth
-          label="Password"
+        label="Manager Dashboard Password"
           type={showPassword ? 'text' : 'password'}
           value={password}
           autoFocus
