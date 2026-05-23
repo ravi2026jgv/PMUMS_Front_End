@@ -484,29 +484,62 @@ const handleDeleteSahyogReceipt = async () => {
 const formatDateTime = (dateValue, showTime = true) => {
   if (!dateValue) return 'N/A';
 
-  const date = new Date(dateValue);
+  const value = String(dateValue);
 
-  if (Number.isNaN(date.getTime())) return 'N/A';
+  const match = value.match(
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/
+  );
+
+  if (!match) {
+    const fallbackDate = new Date(dateValue);
+
+    if (Number.isNaN(fallbackDate.getTime())) return 'N/A';
+
+    return (
+      <>
+        {fallbackDate.toLocaleDateString('hi-IN', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        })}
+
+        {showTime && (
+          <>
+            <br />
+            <span style={{ fontSize: '0.8rem', color: theme.muted }}>
+              {fallbackDate.toLocaleTimeString('hi-IN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true,
+              })}
+            </span>
+          </>
+        )}
+      </>
+    );
+  }
+
+  const [, year, month, day, hour, minute] = match;
+
+  const hourNumber = Number(hour);
+  const minuteNumber = Number(minute);
+
+  const ampm = hourNumber >= 12 ? 'pm' : 'am';
+  const displayHour = hourNumber % 12 || 12;
+
+  const formattedTime = `${String(displayHour).padStart(2, '0')}:${String(
+    minuteNumber
+  ).padStart(2, '0')} ${ampm}`;
 
   return (
     <>
-      {date.toLocaleDateString('hi-IN', {
-        timeZone: 'Asia/Kolkata',
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      })}
+      {`${day}/${month}/${year}`}
 
       {showTime && (
         <>
           <br />
           <span style={{ fontSize: '0.8rem', color: theme.muted }}>
-            {date.toLocaleTimeString('hi-IN', {
-              timeZone: 'Asia/Kolkata',
-              hour: '2-digit',
-              minute: '2-digit',
-              hour12: true,
-            })}
+            {formattedTime}
           </span>
         </>
       )}
