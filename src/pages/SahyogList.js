@@ -481,7 +481,7 @@ const handleDeleteSahyogReceipt = async () => {
     }
   };
 
-  const formatDateTime = (dateValue, showTime = true) => {
+const formatDateTime = (dateValue, showTime = true) => {
   if (!dateValue) return 'N/A';
 
   const date = new Date(dateValue);
@@ -491,6 +491,7 @@ const handleDeleteSahyogReceipt = async () => {
   return (
     <>
       {date.toLocaleDateString('hi-IN', {
+        timeZone: 'Asia/Kolkata',
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
@@ -501,6 +502,7 @@ const handleDeleteSahyogReceipt = async () => {
           <br />
           <span style={{ fontSize: '0.8rem', color: theme.muted }}>
             {date.toLocaleTimeString('hi-IN', {
+              timeZone: 'Asia/Kolkata',
               hour: '2-digit',
               minute: '2-digit',
               hour12: true,
@@ -511,7 +513,6 @@ const handleDeleteSahyogReceipt = async () => {
     </>
   );
 };
-
   return (
     <Layout>
       <Box
