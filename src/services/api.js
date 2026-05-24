@@ -411,6 +411,17 @@ updateExportMobileNumberSetting: (enabled) => {
   updateMobileOtpSetting: (enabled) => {
     return api.put('/admin/settings/mobile-otp', { enabled });
   },
+  bulkPasswordReset: (file, defaultPassword = 'Shub@123') => {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('defaultPassword', defaultPassword);
+
+  return api.post('/admin/users/bulk-password-reset', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+},
   resetManagerDashboardPassword: (id, payload) =>
   api.put(`/admin/users/${id}/manager-dashboard-password-reset`, payload),
 // Admin password reset (no current password required)

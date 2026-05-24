@@ -174,6 +174,9 @@ const [passwordResetForm, setPasswordResetForm] = useState({
   confirmPassword: '',
   resetType: 'normal',
 });
+const [bulkPasswordResetFile, setBulkPasswordResetFile] = useState(null);
+const [bulkPasswordResetLoading, setBulkPasswordResetLoading] = useState(false);
+const [bulkPasswordResetResult, setBulkPasswordResetResult] = useState(null);
 const [showManualCreateSuccessPopup, setShowManualCreateSuccessPopup] = useState(false);
 const [manualCreateSuccessData, setManualCreateSuccessData] = useState(null);
   // Admin User Management - Trash (Deleted Users)
@@ -2221,6 +2224,65 @@ closePasswordReset();
     );
   } finally {
     setPasswordResetLoading(false);
+  }
+};
+
+const handleBulkPasswordReset = async () => {
+  if (!bulkPasswordResetFile) {
+    showSnackbar('Please select Excel file first!', 'error');
+    return;
+  }
+
+  const fileName = bulkPasswordResetFile.name || '';
+
+  if (!fileName.toLowerCase().endsWith('.xlsx') && !fileName.toLowerCase().endsWith('.xls')) {
+    showSnackbar('Please upload a valid Excel file only!', 'error');
+    return;
+  }
+
+  const confirmed = window.confirm(
+    'Are you sure you want to reset passwords for all registration numbers in this Excel file to Shub@123?'
+  );
+
+  if (!confirmed) return;
+
+  try {
+    setBulkPasswordResetLoading(true);
+    setBulkPasswordResetResult(null);
+
+    const response = await adminAPI.bulkPasswordReset(
+      bulkPasswordResetFile,
+      'Shub@123'
+    );
+
+    const result = response?.data?.data || response?.data || {};
+
+    setBulkPasswordResetResult(result);
+
+    showSnackbar(
+      `Bulk password reset completed. Updated: ${result.updatedCount || 0}, Not Found/Skipped: ${result.notFoundCount || 0}`,
+      'success'
+    );
+
+    setBulkPasswordResetFile(null);
+
+    // reset file input visually
+    const input = document.getElementById('bulk-password-reset-file-input');
+    if (input) {
+      input.value = '';
+    }
+
+  } catch (error) {
+    console.error('Bulk password reset error:', error);
+
+    showSnackbar(
+      error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        'Bulk password reset failed!',
+      'error'
+    );
+  } finally {
+    setBulkPasswordResetLoading(false);
   }
 };
 
@@ -5380,6 +5442,7 @@ const renderReportTableTab = () => {
         >
           Add User
         </Button>
+      
 
         <Button
           variant="contained"
@@ -5430,7 +5493,8 @@ const renderReportTableTab = () => {
       </Box>
     </Box>
       
-      {/* Search Filters */}
+     
+
 {/* Search Filters */}
 <Box
   sx={{
@@ -7284,6 +7348,55 @@ const getDeathCaseStatusChipSx = (status) => {
         </Button>
       </Grid>
 
+<Grid item xs={12} sm={6} md={3}>
+  <Button
+    fullWidth
+    variant="contained"
+    component="label"
+    startIcon={
+      bulkPasswordResetLoading ? (
+        <CircularProgress size={18} color="inherit" />
+      ) : (
+        <CloudUpload />
+      )
+    }
+    disabled={bulkPasswordResetLoading}
+    sx={quickActionButtonSx(
+      'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
+      'rgba(124, 58, 237, 0.22)'
+    )}
+  >
+    {bulkPasswordResetLoading ? 'Processing...' : 'Upload Password Excel'}
+
+    <input
+      id="bulk-password-reset-file-input"
+      type="file"
+      hidden
+      accept=".xlsx,.xls"
+      onChange={(e) => {
+        const file = e.target.files?.[0] || null;
+        setBulkPasswordResetFile(file);
+        setBulkPasswordResetResult(null);
+      }}
+    />
+  </Button>
+</Grid>
+
+<Grid item xs={12} sm={6} md={3}>
+  <Button
+    fullWidth
+    variant="contained"
+    startIcon={<LockReset />}
+    onClick={handleBulkPasswordReset}
+    disabled={!bulkPasswordResetFile || bulkPasswordResetLoading}
+    sx={quickActionButtonSx(
+      'linear-gradient(135deg, #9333ea 0%, #7e22ce 100%)',
+      'rgba(147, 51, 234, 0.22)'
+    )}
+  >
+    Reset Default Password
+  </Button>
+</Grid>
       <Grid item xs={12} sm={6} md={3}>
         <Button
           fullWidth
@@ -7391,7 +7504,85 @@ const getDeathCaseStatusChipSx = (status) => {
           >
             Manual Asahyog → Sahyog
           </Button>
+          {(bulkPasswordResetFile || bulkPasswordResetResult) && (
+  <Box
+    sx={{
+      mt: 2.5,
+      p: 2,
+      borderRadius: 3,
+      bgcolor: '#faf5ff',
+      border: '1px solid rgba(216, 180, 254, 0.75)',
+    }}
+  >
+    {bulkPasswordResetFile && (
+      <Alert
+        severity="info"
+        sx={{
+          mb: bulkPasswordResetResult ? 1.5 : 0,
+          borderRadius: 3,
+          fontWeight: 700,
+        }}
+      >
+        Selected Excel: <strong>{bulkPasswordResetFile.name}</strong>. Password will be reset to <strong>Shub@123</strong>.
+      </Alert>
+    )}
+
+    {bulkPasswordResetResult && (
+      <Alert
+        severity="success"
+        sx={{
+          borderRadius: 3,
+          fontWeight: 700,
+        }}
+      >
+        Bulk password reset completed. Total Registration Numbers:{' '}
+        <strong>{bulkPasswordResetResult.totalRegistrationNumbers || 0}</strong>, Updated:{' '}
+        <strong>{bulkPasswordResetResult.updatedCount || 0}</strong>, Not Found/Skipped:{' '}
+        <strong>{bulkPasswordResetResult.notFoundCount || 0}</strong>
+      </Alert>
+    )}
+
+    {Array.isArray(bulkPasswordResetResult?.notFoundRegistrationNumbers) &&
+      bulkPasswordResetResult.notFoundRegistrationNumbers.length > 0 && (
+        <Box
+          sx={{
+            mt: 1.5,
+            p: 2,
+            borderRadius: 3,
+            bgcolor: '#fff',
+            border: '1px solid rgba(216, 180, 254, 0.7)',
+            maxHeight: 180,
+            overflowY: 'auto',
+          }}
+        >
+          <Typography
+            variant="body2"
+            sx={{
+              fontWeight: 900,
+              color: '#581c87',
+              mb: 1,
+            }}
+          >
+            Not Found / Skipped Registration Numbers
+          </Typography>
+
+          <Typography
+            variant="body2"
+            sx={{
+              color: '#6b21a8',
+              fontWeight: 700,
+              wordBreak: 'break-word',
+              lineHeight: 1.8,
+            }}
+          >
+            {bulkPasswordResetResult.notFoundRegistrationNumbers.join(', ')}
+          </Typography>
+        </Box>
+      )}
+  </Box>
+)}
         </Grid>
+        
       )}
     </Grid>
   </Box>
