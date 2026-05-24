@@ -296,62 +296,67 @@ const [pendingProfilesLiveUrl, setPendingProfilesLiveUrl] = useState("");
     return sambhags.filter((sambhag) => sambhag.id);
   };
   const buildAssignedHierarchyFromScope = (fullHierarchy, scope) => {
-    if (isAdmin || isSuperAdmin) {
-      return fullHierarchy;
-    }
+  if (isAdmin || isSuperAdmin) {
+    return fullHierarchy;
+  }
 
-    const managedLocations = scope?.managedLocations || [];
+  const managedLocations = scope?.managedLocations || [];
 
-    const assignedSambhagIds = managedLocations
-      .filter((x) => x.locationType === "SAMBHAG")
-      .map((x) => String(x.locationId));
+  const assignedSambhagIds = managedLocations
+    .filter((x) => x.locationType === "SAMBHAG")
+    .map((x) => String(x.locationId));
 
-    const assignedDistrictIds = managedLocations
-      .filter((x) => x.locationType === "DISTRICT")
-      .map((x) => String(x.locationId));
+  const assignedDistrictIds = managedLocations
+    .filter((x) => x.locationType === "DISTRICT")
+    .map((x) => String(x.locationId));
 
-    const assignedBlockIds = managedLocations
-      .filter((x) => x.locationType === "BLOCK")
-      .map((x) => String(x.locationId));
+  const assignedBlockIds = managedLocations
+    .filter((x) => x.locationType === "BLOCK")
+    .map((x) => String(x.locationId));
 
-    return fullHierarchy
-      .map((sambhag) => {
-        const sambhagExplicitlyAssigned = assignedSambhagIds.includes(
-          String(sambhag.id),
-        );
+  return fullHierarchy
+    .map((sambhag) => {
+      const sambhagAssigned = assignedSambhagIds.includes(String(sambhag.id));
 
-        const districts = (sambhag.districts || [])
-          .map((district) => {
-            const districtExplicitlyAssigned = assignedDistrictIds.includes(
-              String(district.id),
+      const districts = (sambhag.districts || [])
+        .map((district) => {
+          const districtAssigned =
+            sambhagAssigned || assignedDistrictIds.includes(String(district.id));
+
+          let blocks = [];
+
+          if (sambhagAssigned || districtAssigned) {
+            // Sambhag/District manager should see all child blocks
+            blocks = district.blocks || [];
+          } else {
+            // Block manager should see only assigned blocks
+            blocks = (district.blocks || []).filter((block) =>
+              assignedBlockIds.includes(String(block.id))
             );
+          }
 
-            const blocks = (district.blocks || []).filter((block) =>
-              assignedBlockIds.includes(String(block.id)),
-            );
+          if (districtAssigned || blocks.length > 0) {
+            return {
+              ...district,
+              blocks,
+            };
+          }
 
-            if (districtExplicitlyAssigned || blocks.length > 0) {
-              return {
-                ...district,
-                blocks,
-              };
-            }
+          return null;
+        })
+        .filter(Boolean);
 
-            return null;
-          })
-          .filter(Boolean);
+      if (sambhagAssigned || districts.length > 0) {
+        return {
+          ...sambhag,
+          districts,
+        };
+      }
 
-        if (sambhagExplicitlyAssigned || districts.length > 0) {
-          return {
-            ...sambhag,
-            districts,
-          };
-        }
-
-        return null;
-      })
-      .filter(Boolean);
-  };
+      return null;
+    })
+    .filter(Boolean);
+};
   const openDateExportDialog = (type) => {
     setDateExportType(type);
     setDateExportFromDate("");
@@ -682,26 +687,43 @@ const fetchManagedLocationCounts = async (scope) => {
   setUserBlockOptions([]);
   setUsersPage(0);
 };
-  const handleUserDistrictChange = (event) => {
-    const districtId = event.target.value;
 
-    const selectedSambhag = locationHierarchy.find(
-      (item) => String(item.id) === String(userFilters.sambhagId),
+
+const findDistrictFromHierarchy = (districtId) => {
+  for (const sambhag of locationHierarchy || []) {
+    const district = (sambhag.districts || []).find(
+      (item) => String(item.id) === String(districtId)
     );
 
-    const selectedDistrict = selectedSambhag?.districts?.find(
-      (item) => String(item.id) === String(districtId),
-    );
+    if (district) {
+      return {
+        sambhag,
+        district,
+      };
+    }
+  }
 
-    setUserFilters((prev) => ({
-      ...prev,
-      districtId,
-      blockId: "",
-    }));
-
-    setUserBlockOptions(selectedDistrict?.blocks || []);
-    setUsersPage(0);
+  return {
+    sambhag: null,
+    district: null,
   };
+};
+
+const handleUserDistrictChange = (event) => {
+  const districtId = event.target.value;
+
+  const { sambhag, district } = findDistrictFromHierarchy(districtId);
+
+  setUserFilters((prev) => ({
+    ...prev,
+    sambhagId: prev.sambhagId || sambhag?.id || "",
+    districtId,
+    blockId: "",
+  }));
+
+  setUserBlockOptions(district?.blocks || []);
+  setUsersPage(0);
+};
 
   const handleUserBlockChange = (event) => {
     const blockId = event.target.value;
@@ -731,25 +753,20 @@ const fetchManagedLocationCounts = async (scope) => {
     setExportBlockOptions([]);
   };
 
-  const handleExportDistrictChange = (event) => {
-    const districtId = event.target.value;
+const handleExportDistrictChange = (event) => {
+  const districtId = event.target.value;
 
-    const selectedSambhag = locationHierarchy.find(
-      (item) => String(item.id) === String(exportLocationFilters.sambhagId),
-    );
+  const { sambhag, district } = findDistrictFromHierarchy(districtId);
 
-    const selectedDistrict = selectedSambhag?.districts?.find(
-      (item) => String(item.id) === String(districtId),
-    );
+  setExportLocationFilters((prev) => ({
+    ...prev,
+    sambhagId: prev.sambhagId || sambhag?.id || "",
+    districtId,
+    blockId: "",
+  }));
 
-    setExportLocationFilters((prev) => ({
-      ...prev,
-      districtId,
-      blockId: "",
-    }));
-
-    setExportBlockOptions(selectedDistrict?.blocks || []);
-  };
+  setExportBlockOptions(district?.blocks || []);
+};
 
   const handleExportBlockChange = (event) => {
     setExportLocationFilters((prev) => ({
@@ -1457,6 +1474,7 @@ const totalTickets =
     },
   ];
 
+
   return (
     <Grid container spacing={2.5} sx={{ mb: 4 }}>
       {stats.map((stat, index) => (
@@ -1756,8 +1774,7 @@ const renderUsersTab = () => (
             <FormControl
               size="small"
               sx={{ minWidth: { xs: '100%', sm: 170 }, ...premiumFieldSx }}
-              disabled={sambhagOptions.length === 0}
-            >
+disabled={userDistrictOptions.length === 0}            >
               <InputLabel>District</InputLabel>
               <Select
                 value={userFilters.districtId}
@@ -1775,10 +1792,10 @@ const renderUsersTab = () => (
           )}
 
           <FormControl
-            size="small"
-            sx={{ minWidth: { xs: '100%', sm: 170 }, ...premiumFieldSx }}
-            disabled={!userFilters.districtId || isBlockManager}
-          >
+  size="small"
+  sx={{ minWidth: { xs: '100%', sm: 170 }, ...premiumFieldSx }}
+  disabled={userBlockOptions.length === 0}
+>
             <InputLabel>Block</InputLabel>
             <Select
               value={userFilters.blockId}
@@ -2516,6 +2533,111 @@ const renderUsersTab = () => (
       left: "120%",
     },
   });
+  const renderExportAreaFilters = () => (
+  <Box
+    sx={{
+      p: 2,
+      borderRadius: "20px",
+      bgcolor: "#fff",
+      border: "1px solid rgba(148, 163, 184, 0.20)",
+      boxShadow: "0 12px 28px rgba(15, 23, 42, 0.05)",
+    }}
+  >
+    <Typography
+      variant="subtitle2"
+      sx={{
+        fontWeight: 900,
+        color: "#172554",
+        mb: 1.5,
+      }}
+    >
+      Area Filters
+    </Typography>
+
+    <Grid container spacing={2}>
+      {!isBlockManager && (
+        <Grid item xs={12} sm={4}>
+          <FormControl fullWidth size="small" sx={premiumFieldSx}>
+            <InputLabel>Sambhag</InputLabel>
+            <Select
+              value={exportLocationFilters.sambhagId}
+              label="Sambhag"
+              onChange={handleExportSambhagChange}
+            >
+              <MenuItem value="">All Assigned Sambhag</MenuItem>
+              {sambhagOptions.map((item) => (
+                <MenuItem key={item.id} value={item.id}>
+                  {item.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+      )}
+
+      {!isBlockManager && (
+        <Grid item xs={12} sm={4}>
+          <FormControl
+            fullWidth
+            size="small"
+            disabled={exportDistrictOptions.length === 0}
+            sx={premiumFieldSx}
+          >
+            <InputLabel>District</InputLabel>
+            <Select
+              value={exportLocationFilters.districtId}
+              label="District"
+              onChange={handleExportDistrictChange}
+            >
+              <MenuItem value="">All Assigned District</MenuItem>
+              {exportDistrictOptions.map((item) => (
+                <MenuItem key={item.id} value={item.id}>
+                  {item.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+      )}
+
+      <Grid item xs={12} sm={4}>
+        <FormControl
+          fullWidth
+          size="small"
+          disabled={exportBlockOptions.length === 0}
+          sx={premiumFieldSx}
+        >
+          <InputLabel>Block</InputLabel>
+          <Select
+            value={exportLocationFilters.blockId}
+            label="Block"
+            onChange={handleExportBlockChange}
+          >
+            <MenuItem value="">All Assigned Block</MenuItem>
+            {exportBlockOptions.map((item) => (
+              <MenuItem key={item.id} value={item.id}>
+                {item.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Grid>
+    </Grid>
+
+    {isBlockManager && (
+      <Typography
+        variant="body2"
+        sx={{
+          mt: 1.5,
+          color: "#64748b",
+          fontWeight: 600,
+        }}
+      >
+        Block Manager export is fixed to your assigned block only.
+      </Typography>
+    )}
+  </Box>
+); 
 
   if (!managerUnlocked) {
     return (
@@ -2708,6 +2830,7 @@ const renderUsersTab = () => (
   </Box>
 </Paper>
 
+ 
           {/* Dashboard Stats */}
           {renderDashboardStats()}
 
@@ -3698,27 +3821,7 @@ secondary={`${
                   Date blank रखने पर आपके assigned area के सभी records export
                   होंगे.
                 </Alert>
-
-                <Box
-                  sx={{
-                    p: 2,
-                    borderRadius: "20px",
-                    bgcolor: "#fff",
-                    border: "1px solid rgba(148, 163, 184, 0.20)",
-                    boxShadow: "0 12px 28px rgba(15, 23, 42, 0.05)",
-                  }}
-                >
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ fontWeight: 900, color: "#172554", mb: 0.7 }}
-                  >
-                    Export Scope
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: "#64748b" }}>
-                    This report will follow your manager role permissions and
-                    assigned location access.
-                  </Typography>
-                </Box>
+{renderExportAreaFilters()}
               </Box>
             </DialogContent>
 
@@ -4041,256 +4144,128 @@ secondary={`${
 
             <DialogContent dividers sx={premiumDialogContentSx}>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
-                {(exportType === "sahyog" || exportType === "asahyog") && (
-                  <>
-                    <Alert
-                      severity="info"
-                      sx={{
-                        borderRadius: "16px",
-                        bgcolor: "rgba(37, 99, 235, 0.08)",
-                        border: "1px solid rgba(37, 99, 235, 0.16)",
-                        color: "#1e3a8a",
-                        "& .MuiAlert-icon": {
-                          color: "#2563eb",
-                        },
-                      }}
-                    >
-                      Export will be restricted to your assigned area only.
-                    </Alert>
+             {exportType && (
+  <>
+    <Alert
+      severity="info"
+      sx={{
+        borderRadius: "16px",
+        bgcolor: "rgba(37, 99, 235, 0.08)",
+        border: "1px solid rgba(37, 99, 235, 0.16)",
+        color: "#1e3a8a",
+        "& .MuiAlert-icon": {
+          color: "#2563eb",
+        },
+      }}
+    >
+      Export will be restricted to your assigned area only. You can further filter by Sambhag, District and Block.
+    </Alert>
 
-                    <Box
-                      sx={{
-                        p: 2,
-                        borderRadius: "20px",
-                        bgcolor: "#fff",
-                        border: "1px solid rgba(148, 163, 184, 0.20)",
-                        boxShadow: "0 12px 28px rgba(15, 23, 42, 0.05)",
-                      }}
-                    >
-                      <Typography
-                        variant="subtitle2"
-                        sx={{
-                          fontWeight: 900,
-                          color: "#172554",
-                          mb: 1.5,
-                        }}
-                      >
-                        Area Filters
-                      </Typography>
+    {renderExportAreaFilters()}
+  </>
+)}
+{(exportType === "sahyog" || exportType === "asahyog") && (
+  <Box
+    sx={{
+      p: 2,
+      borderRadius: "20px",
+      bgcolor: "#fff",
+      border: "1px solid rgba(148, 163, 184, 0.20)",
+      boxShadow: "0 12px 28px rgba(15, 23, 42, 0.05)",
+    }}
+  >
+    <Typography
+      variant="subtitle2"
+      sx={{
+        fontWeight: 900,
+        color: "#172554",
+        mb: 1.5,
+      }}
+    >
+      Select Export Type
+    </Typography>
 
-                      <Grid container spacing={2}>
-                        {!isBlockManager && (
-                          <Grid item xs={12} sm={4}>
-                            <FormControl
-                              fullWidth
-                              size="small"
-                              sx={premiumFieldSx}
-                            >
-                              <InputLabel>Sambhag</InputLabel>
-                              <Select
-                                value={exportLocationFilters.sambhagId}
-                                label="Sambhag"
-                                onChange={handleExportSambhagChange}
-                              >
-                                <MenuItem value="">
-                                  All Assigned Sambhag
-                                </MenuItem>
-                                {sambhagOptions.map((item) => (
-                                  <MenuItem key={item.id} value={item.id}>
-                                    {item.name}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                        )}
+<Grid container spacing={1.5}>
+  <Grid item xs={12} sm={4}>
+    <Button
+      fullWidth
+      variant={exportMode === "beneficiary" ? "contained" : "outlined"}
+      onClick={() => setExportMode("beneficiary")}
+      sx={{
+        borderRadius: "14px",
+        py: 1.1,
+        textTransform: "none",
+        fontWeight: 800,
+        ...(exportMode === "beneficiary"
+          ? {
+              background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
+              boxShadow: "0 10px 20px rgba(37, 99, 235, 0.24)",
+            }
+          : {
+              color: "#2563eb",
+              borderColor: "rgba(37, 99, 235, 0.35)",
+              bgcolor: "#fff",
+            }),
+      }}
+    >
+      Death Case Wise
+    </Button>
+  </Grid>
 
-                        {!isBlockManager && (
-                          <Grid item xs={12} sm={4}>
-                            <FormControl
-                              fullWidth
-                              size="small"
-                              disabled={!exportLocationFilters.sambhagId}
-                              sx={premiumFieldSx}
-                            >
-                              <InputLabel>District</InputLabel>
-                              <Select
-                                value={exportLocationFilters.districtId}
-                                label="District"
-                                onChange={handleExportDistrictChange}
-                              >
-                                <MenuItem value="">
-                                  All Assigned District
-                                </MenuItem>
-                                {exportDistrictOptions.map((item) => (
-                                  <MenuItem key={item.id} value={item.id}>
-                                    {item.name}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
-                          </Grid>
-                        )}
+  <Grid item xs={12} sm={4}>
+    <Button
+      fullWidth
+      variant={exportMode === "month" ? "contained" : "outlined"}
+      onClick={() => setExportMode("month")}
+      sx={{
+        borderRadius: "14px",
+        py: 1.1,
+        textTransform: "none",
+        fontWeight: 800,
+        ...(exportMode === "month"
+          ? {
+              background: "linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)",
+              boxShadow: "0 10px 20px rgba(124, 58, 237, 0.24)",
+            }
+          : {
+              color: "#7c3aed",
+              borderColor: "rgba(124, 58, 237, 0.35)",
+              bgcolor: "#fff",
+            }),
+      }}
+    >
+      Month Wise
+    </Button>
+  </Grid>
 
-                        <Grid item xs={12} sm={4}>
-                          <FormControl
-                            fullWidth
-                            size="small"
-                            disabled={
-                              !exportLocationFilters.districtId ||
-                              isBlockManager
-                            }
-                            sx={premiumFieldSx}
-                          >
-                            <InputLabel>Block</InputLabel>
-                            <Select
-                              value={exportLocationFilters.blockId}
-                              label="Block"
-                              onChange={handleExportBlockChange}
-                            >
-                              <MenuItem value="">All Assigned Block</MenuItem>
-                              {exportBlockOptions.map((item) => (
-                                <MenuItem key={item.id} value={item.id}>
-                                  {item.name}
-                                </MenuItem>
-                              ))}
-                            </Select>
-                          </FormControl>
-                        </Grid>
-                      </Grid>
-
-                      {isBlockManager && (
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            mt: 1.5,
-                            color: "#64748b",
-                            fontWeight: 600,
-                          }}
-                        >
-                          Block Manager export is fixed to your assigned block
-                          only.
-                        </Typography>
-                      )}
-                    </Box>
-
-                    <Box
-                      sx={{
-                        p: 2,
-                        borderRadius: "20px",
-                        bgcolor: "#fff",
-                        border: "1px solid rgba(148, 163, 184, 0.20)",
-                        boxShadow: "0 12px 28px rgba(15, 23, 42, 0.05)",
-                      }}
-                    >
-                      <Typography
-                        variant="subtitle2"
-                        sx={{
-                          fontWeight: 900,
-                          color: "#172554",
-                          mb: 1.5,
-                        }}
-                      >
-                        Select Export Type
-                      </Typography>
-
-                      <Grid container spacing={1.5}>
-                        <Grid item xs={12} sm={4}>
-                          <Button
-                            fullWidth
-                            variant={
-                              exportMode === "beneficiary"
-                                ? "contained"
-                                : "outlined"
-                            }
-                            onClick={() => setExportMode("beneficiary")}
-                            sx={{
-                              borderRadius: "14px",
-                              py: 1.1,
-                              textTransform: "none",
-                              fontWeight: 800,
-                              ...(exportMode === "beneficiary"
-                                ? {
-                                    background:
-                                      "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
-                                    boxShadow:
-                                      "0 10px 20px rgba(37, 99, 235, 0.24)",
-                                  }
-                                : {
-                                    color: "#2563eb",
-                                    borderColor: "rgba(37, 99, 235, 0.35)",
-                                    bgcolor: "#fff",
-                                  }),
-                            }}
-                          >
-                            Death Case Wise
-                          </Button>
-                        </Grid>
-
-                        <Grid item xs={12} sm={4}>
-                          <Button
-                            fullWidth
-                            variant={
-                              exportMode === "month" ? "contained" : "outlined"
-                            }
-                            onClick={() => setExportMode("month")}
-                            sx={{
-                              borderRadius: "14px",
-                              py: 1.1,
-                              textTransform: "none",
-                              fontWeight: 800,
-                              ...(exportMode === "month"
-                                ? {
-                                    background:
-                                      "linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)",
-                                    boxShadow:
-                                      "0 10px 20px rgba(124, 58, 237, 0.24)",
-                                  }
-                                : {
-                                    color: "#7c3aed",
-                                    borderColor: "rgba(124, 58, 237, 0.35)",
-                                    bgcolor: "#fff",
-                                  }),
-                            }}
-                          >
-                            Month Wise
-                          </Button>
-                        </Grid>
-
-                        <Grid item xs={12} sm={4}>
-                          <Button
-                            fullWidth
-                            variant={
-                              exportMode === "all" ? "contained" : "outlined"
-                            }
-                            onClick={() => setExportMode("all")}
-                            sx={{
-                              borderRadius: "14px",
-                              py: 1.1,
-                              textTransform: "none",
-                              fontWeight: 800,
-                              ...(exportMode === "all"
-                                ? {
-                                    background:
-                                      "linear-gradient(135deg, #059669 0%, #047857 100%)",
-                                    boxShadow:
-                                      "0 10px 20px rgba(5, 150, 105, 0.24)",
-                                  }
-                                : {
-                                    color: "#059669",
-                                    borderColor: "rgba(5, 150, 105, 0.35)",
-                                    bgcolor: "#fff",
-                                  }),
-                            }}
-                          >
-                            All
-                          </Button>
-                        </Grid>
-                      </Grid>
-                    </Box>
-                  </>
-                )}
-
+  <Grid item xs={12} sm={4}>
+    <Button
+      fullWidth
+      variant={exportMode === "all" ? "contained" : "outlined"}
+      onClick={() => setExportMode("all")}
+      sx={{
+        borderRadius: "14px",
+        py: 1.1,
+        textTransform: "none",
+        fontWeight: 800,
+        ...(exportMode === "all"
+          ? {
+              background: "linear-gradient(135deg, #059669 0%, #047857 100%)",
+              boxShadow: "0 10px 20px rgba(5, 150, 105, 0.24)",
+            }
+          : {
+              color: "#059669",
+              borderColor: "rgba(5, 150, 105, 0.35)",
+              bgcolor: "#fff",
+            }),
+      }}
+    >
+      All
+    </Button>
+  </Grid>
+</Grid>
+  </Box>
+)}
                 {(exportType === "sahyog" || exportType === "asahyog") &&
                   exportMode === "beneficiary" && (
                     <Box
