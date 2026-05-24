@@ -2533,14 +2533,15 @@ disabled={userDistrictOptions.length === 0}            >
       left: "120%",
     },
   });
-  const renderExportAreaFilters = () => (
+const renderExportAreaFilters = () => (
   <Box
     sx={{
-      p: 2,
-      borderRadius: "20px",
+      p: 2.2,
+      borderRadius: "22px",
       bgcolor: "#fff",
       border: "1px solid rgba(148, 163, 184, 0.20)",
       boxShadow: "0 12px 28px rgba(15, 23, 42, 0.05)",
+      width: "100%",
     }}
   >
     <Typography
@@ -2548,81 +2549,99 @@ disabled={userDistrictOptions.length === 0}            >
       sx={{
         fontWeight: 900,
         color: "#172554",
-        mb: 1.5,
+        mb: 1.8,
       }}
     >
       Area Filters
     </Typography>
 
-    <Grid container spacing={2}>
+    <Box
+      sx={{
+        display: "flex",
+        gap: 1.5,
+        flexWrap: "wrap",
+        alignItems: "center",
+        width: "100%",
+      }}
+    >
       {!isBlockManager && (
-        <Grid item xs={12} sm={4}>
-          <FormControl fullWidth size="small" sx={premiumFieldSx}>
-            <InputLabel>Sambhag</InputLabel>
-            <Select
-              value={exportLocationFilters.sambhagId}
-              label="Sambhag"
-              onChange={handleExportSambhagChange}
-            >
-              <MenuItem value="">All Assigned Sambhag</MenuItem>
-              {sambhagOptions.map((item) => (
-                <MenuItem key={item.id} value={item.id}>
-                  {item.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-      )}
-
-      {!isBlockManager && (
-        <Grid item xs={12} sm={4}>
-          <FormControl
-            fullWidth
-            size="small"
-            disabled={exportDistrictOptions.length === 0}
-            sx={premiumFieldSx}
-          >
-            <InputLabel>District</InputLabel>
-            <Select
-              value={exportLocationFilters.districtId}
-              label="District"
-              onChange={handleExportDistrictChange}
-            >
-              <MenuItem value="">All Assigned District</MenuItem>
-              {exportDistrictOptions.map((item) => (
-                <MenuItem key={item.id} value={item.id}>
-                  {item.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-      )}
-
-      <Grid item xs={12} sm={4}>
         <FormControl
-          fullWidth
           size="small"
-          disabled={exportBlockOptions.length === 0}
-          sx={premiumFieldSx}
+          sx={{
+            ...premiumFieldSx,
+            width: { xs: "100%", sm: 220, md: 240 },
+            minWidth: { xs: "100%", sm: 220 },
+            flexShrink: 0,
+          }}
         >
-          <InputLabel>Block</InputLabel>
+          <InputLabel>Sambhag</InputLabel>
           <Select
-            value={exportLocationFilters.blockId}
-            label="Block"
-            onChange={handleExportBlockChange}
+            value={exportLocationFilters.sambhagId}
+            label="Sambhag"
+            onChange={handleExportSambhagChange}
           >
-            <MenuItem value="">All Assigned Block</MenuItem>
-            {exportBlockOptions.map((item) => (
+            <MenuItem value="">All Assigned Sambhag</MenuItem>
+            {sambhagOptions.map((item) => (
               <MenuItem key={item.id} value={item.id}>
                 {item.name}
               </MenuItem>
             ))}
           </Select>
         </FormControl>
-      </Grid>
-    </Grid>
+      )}
+
+      {!isBlockManager && (
+        <FormControl
+          size="small"
+          disabled={exportDistrictOptions.length === 0}
+          sx={{
+            ...premiumFieldSx,
+            width: { xs: "100%", sm: 220, md: 240 },
+            minWidth: { xs: "100%", sm: 220 },
+            flexShrink: 0,
+          }}
+        >
+          <InputLabel>District</InputLabel>
+          <Select
+            value={exportLocationFilters.districtId}
+            label="District"
+            onChange={handleExportDistrictChange}
+          >
+            <MenuItem value="">All Assigned District</MenuItem>
+            {exportDistrictOptions.map((item) => (
+              <MenuItem key={item.id} value={item.id}>
+                {item.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      )}
+
+      <FormControl
+        size="small"
+        disabled={exportBlockOptions.length === 0}
+        sx={{
+          ...premiumFieldSx,
+          width: { xs: "100%", sm: 220, md: 240 },
+          minWidth: { xs: "100%", sm: 220 },
+          flexShrink: 0,
+        }}
+      >
+        <InputLabel>Block</InputLabel>
+        <Select
+          value={exportLocationFilters.blockId}
+          label="Block"
+          onChange={handleExportBlockChange}
+        >
+          <MenuItem value="">All Assigned Block</MenuItem>
+          {exportBlockOptions.map((item) => (
+            <MenuItem key={item.id} value={item.id}>
+              {item.name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    </Box>
 
     {isBlockManager && (
       <Typography
@@ -2637,7 +2656,7 @@ disabled={userDistrictOptions.length === 0}            >
       </Typography>
     )}
   </Box>
-); 
+);
 
   if (!managerUnlocked) {
     return (
