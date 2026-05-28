@@ -2426,25 +2426,33 @@ disabled={userDistrictOptions.length === 0}            >
   };
 
   const premiumFieldSx = {
-    "& .MuiOutlinedInput-root": {
-      borderRadius: "14px",
-      bgcolor: "#fff",
-      boxShadow: "0 8px 20px rgba(15, 23, 42, 0.04)",
-      "& fieldset": {
-        borderColor: "rgba(148, 163, 184, 0.35)",
-      },
-      "&:hover fieldset": {
-        borderColor: "#2563eb",
-      },
-      "&.Mui-focused fieldset": {
-        borderColor: "#2563eb",
-        borderWidth: "1px",
-      },
+  "& .MuiOutlinedInput-root": {
+    borderRadius: "14px",
+    bgcolor: "#fff",
+    minHeight: 48,
+    boxShadow: "0 8px 20px rgba(15, 23, 42, 0.04)",
+    "& fieldset": {
+      borderColor: "rgba(148, 163, 184, 0.35)",
     },
-    "& .MuiInputLabel-root.Mui-focused": {
-      color: "#2563eb",
+    "&:hover fieldset": {
+      borderColor: "#2563eb",
     },
-  };
+    "&.Mui-focused fieldset": {
+      borderColor: "#2563eb",
+      borderWidth: "1px",
+    },
+  },
+  "& .MuiSelect-select": {
+    minWidth: "160px",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+    fontWeight: 700,
+  },
+  "& .MuiInputLabel-root.Mui-focused": {
+    color: "#2563eb",
+  },
+};
 
   const dialogCancelButtonSx = {
     borderRadius: "14px",

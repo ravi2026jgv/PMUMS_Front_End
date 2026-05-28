@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
+  Autocomplete,
   Avatar,
   Box,
   Button,
@@ -191,14 +192,16 @@ const tableColumnCount = isAdminMode ? 7 : 6;
   const [chatOpen, setChatOpen] = useState(false);
   const [replyMessage, setReplyMessage] = useState('');
   const [replySending, setReplySending] = useState(false);
-
+const [relatedUsers, setRelatedUsers] = useState([]);
+const [relatedUsersLoading, setRelatedUsersLoading] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [createSaving, setCreateSaving] = useState(false);
-  const [createForm, setCreateForm] = useState({
-    title: '',
-    description: '',
-    priority: 'MEDIUM',
-  });
+const [createForm, setCreateForm] = useState({
+  title: '',
+  description: '',
+  priority: 'MEDIUM',
+  relatedUserId: '',
+});
 
   const [error, setError] = useState('');
 
@@ -349,6 +352,27 @@ const activeFilterCount = Object.entries(filters).filter(([key, value]) => {
       setReplySending(false);
     }
   };
+  const fetchRelatedUsersForTicket = async () => {
+  if (!isManagerMode || relatedUser) return;
+
+  try {
+    setRelatedUsersLoading(true);
+
+    const response = await managerAPI.getAccessibleUsers({
+      page: 0,
+      size: 200,
+      role: 'ROLE_USER',
+      status: 'ACTIVE',
+    });
+
+    setRelatedUsers(response?.data?.content || []);
+  } catch (err) {
+    console.error('Error loading related users for ticket:', err);
+    setRelatedUsers([]);
+  } finally {
+    setRelatedUsersLoading(false);
+  }
+};
 
   const handleCreateTicket = async () => {
     if (!createForm.title.trim()) {
@@ -365,21 +389,22 @@ const activeFilterCount = Object.entries(filters).filter(([key, value]) => {
       setCreateSaving(true);
       setError('');
 
-      const payload = {
-        title: createForm.title.trim(),
-        description: createForm.description.trim(),
-        priority: createForm.priority,
-        relatedUserId: relatedUser?.id || null,
-      };
+     const payload = {
+  title: createForm.title.trim(),
+  description: createForm.description.trim(),
+  priority: createForm.priority,
+  relatedUserId: relatedUser?.id || createForm.relatedUserId || null,
+};
 
       await managerAPI.createQuery(payload);
 
       setCreateOpen(false);
       setCreateForm({
-        title: '',
-        description: '',
-        priority: 'MEDIUM',
-      });
+  title: '',
+  description: '',
+  priority: 'MEDIUM',
+  relatedUserId: '',
+});
 
       await fetchTickets();
     } catch (err) {
@@ -410,6 +435,13 @@ const activeFilterCount = Object.entries(filters).filter(([key, value]) => {
       setError(err?.response?.data?.message || err?.response?.data?.error || 'Failed to update status');
     }
   };
+
+  useEffect(() => {
+  if (createOpen) {
+    fetchRelatedUsersForTicket();
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [createOpen]);
 
 useEffect(() => {
   fetchTickets();
@@ -1031,13 +1063,19 @@ background: isAdminMode
                   <Typography variant="caption" color="text.secondary">Status</Typography>
                   <Box>
                     <Chip
-  label={isAdminMode ? 'Admin View' : 'Manager View'}
+  label={
+    selectedTicket?.statusDisplay ||
+    STATUS_LABELS[selectedTicket?.status] ||
+    selectedTicket?.status ||
+    '-'
+  }
   size="small"
   sx={{
-    bgcolor: 'rgba(255,255,255,0.18)',
-    color: 'white',
+    bgcolor: STATUS_COLORS[selectedTicket?.status] || '#757575',
+    color: '#FFFFFF',
     fontWeight: 800,
-    border: '1px solid rgba(255,255,255,0.25)',
+    border: '1px solid rgba(255,255,255,0.35)',
+    boxShadow: '0 4px 12px rgba(15, 23, 42, 0.18)',
   }}
 />
                   </Box>
@@ -1172,6 +1210,35 @@ background: isAdminMode
           )}
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+           {isManagerMode && !relatedUser && (
+  <Autocomplete
+    options={relatedUsers}
+    loading={relatedUsersLoading}
+    value={
+      relatedUsers.find((u) => u.id === createForm.relatedUserId) || null
+    }
+    getOptionLabel={(option) => {
+      const fullName = `${option.name || ''} ${option.surname || ''}`.trim();
+      return `${fullName || option.fullName || option.id} (${option.id})`;
+    }}
+    isOptionEqualToValue={(option, value) => option.id === value.id}
+    onChange={(_, selectedUser) =>
+      setCreateForm((prev) => ({
+        ...prev,
+        relatedUserId: selectedUser?.id || '',
+      }))
+    }
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        label="For Whom / संबंधित उपयोगकर्ता"
+        placeholder="Search and select user"
+        sx={commonTextFieldSx}
+        helperText="Select the user for whom this ticket is being created"
+      />
+    )}
+  />
+)}
             <TextField
               fullWidth
               label="Title / Subject"
