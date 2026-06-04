@@ -369,7 +369,7 @@ setSuccessSnackbarOpen(true);
      
 
       {/* SAHYOG CARD: ONLY WHEN LOGGED OUT  currently commented*/}
-      {/* {!isAuthenticated && (
+      {!isAuthenticated && (
         <Box
           sx={{
             py: { xs: 5, md: 7 },
@@ -483,7 +483,7 @@ boxShadow: "0 28px 80px rgba(0, 0, 0, 0.22)",
             </Card>
           </Container>
         </Box>
-      )} */}
+      )}
  <Box
   sx={{
     py: { xs: 5, md: 7 },
@@ -594,7 +594,7 @@ boxShadow: "0 28px 80px rgba(0, 0, 0, 0.22)",
 </Box>
  
       {/* ASSIGNED POOL SECTION: ONLY WHEN LOGGED IN currently commented */}
-      {/* {isAuthenticated && <DeathCase />} */}
+      {isAuthenticated && <DeathCase />}
  <Statistics />
       <Founders />
 
