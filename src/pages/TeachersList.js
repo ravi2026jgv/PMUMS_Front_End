@@ -96,11 +96,12 @@ const [activePoolLoading, setActivePoolLoading] = useState(true);
 
   const [utrDialogOpen, setUtrDialogOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState(null);
-  const [utrForm, setUtrForm] = useState({
-    amount: '',
-    referenceName: '',
-    utrNumber: ''
-  });
+ const [utrForm, setUtrForm] = useState({
+  amount: '',
+  paymentDate: new Date().toISOString().split('T')[0],
+  referenceName: '',
+  utrNumber: ''
+});
   const [utrSubmitting, setUtrSubmitting] = useState(false);
   const [utrSuccess, setUtrSuccess] = useState('');
 const [successSnackbarOpen, setSuccessSnackbarOpen] = useState(false);
@@ -425,6 +426,7 @@ const fetchActivePools = async () => {
     setSelectedTeacher(teacher);
     setUtrForm({
       amount: '',
+       paymentDate: new Date().toISOString().split('T')[0],
       referenceName: '',
       utrNumber: ''
     });
@@ -440,6 +442,7 @@ const fetchActivePools = async () => {
     setSelectedTeacher(null);
     setUtrForm({
       amount: '',
+       paymentDate: new Date().toISOString().split('T')[0],
       referenceName: '',
       utrNumber: ''
     });
@@ -456,11 +459,12 @@ const fetchActivePools = async () => {
       setError('');
       setUtrSuccess('');
 
-      await receiptAPI.uploadReceipt({
+     await receiptAPI.uploadReceipt({
   userId: selectedTeacher?.id,
   mobileNumber: selectedTeacher?.mobileNumber,
   amount: Number(utrForm.amount),
-referenceName: utrForm.referenceName?.trim() || '',
+  paymentDate: utrForm.paymentDate,
+  referenceName: utrForm.referenceName?.trim() || '',
   utrNumber: utrForm.utrNumber
 });
 

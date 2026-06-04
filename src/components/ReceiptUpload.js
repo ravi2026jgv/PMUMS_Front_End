@@ -129,11 +129,12 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
     setError("");
 
     try {
-      const requestData = {
-        amount: parseFloat(formData.amount),
-        referenceName: formData.referenceName || null,
-        utrNumber: formData.utrNumber,
-      };
+     const requestData = {
+  amount: parseFloat(formData.amount),
+  paymentDate: formData.paymentDate,
+  referenceName: formData.referenceName || null,
+  utrNumber: formData.utrNumber,
+};
 
       const response = await api.post("/receipts", requestData);
 
