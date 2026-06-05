@@ -241,32 +241,7 @@ useEffect(() => {
                   pr: { md: 2 },
                 }}
               >
-                <Box
-                  sx={{
-                    color: theme.muted,
-                    fontSize: { xs: '0.98rem', md: '1.05rem' },
-                    lineHeight: 1.9,
-                    fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
-                    mb: statisticsContentHtml ? 3 : 0,
-                    '& b, & strong': {
-                      fontWeight: 850,
-                      color: theme.dark,
-                    },
-                    '& p': {
-                      marginTop: 0,
-                      marginBottom: '14px',
-                    },
-                    '& a': {
-                      color: '#0f766e',
-                      fontWeight: 800,
-                      textDecoration: 'none',
-                      borderBottom: '1px solid rgba(15, 118, 110, 0.35)',
-                    },
-                  }}
-                  dangerouslySetInnerHTML={{
-                    __html: statisticsContentHtml || '',
-                  }}
-                />
+
 
                 <Stack spacing={1.5}>
                   {rulePoints.map((item, index) => (

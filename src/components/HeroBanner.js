@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Container,
@@ -12,11 +12,27 @@ import {
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { red } from '@mui/material/colors';
+import { publicApi } from '../services/api';
 
 const HeroBanner = ({ children }) => {
+    const [statisticsContentHtml, setStatisticsContentHtml] = useState('');
+  
   const { isAuthenticated } = useAuth();
 const channelLink = 'https://whatsapp.com/channel/0029Vaw20ci5K3zZkmv3jV1g';
 
+useEffect(() => {
+  const loadHomeDisplayContent = async () => {
+    try {
+      const response = await publicApi.getHomeDisplayContent();
+
+      setStatisticsContentHtml(response?.data?.statisticsContentHtml || '');
+    } catch (error) {
+      console.error('Failed to load statistics content:', error);
+    }
+  };
+
+  loadHomeDisplayContent();
+}, []);
 const handleChannelClick = () => {
   window.open(channelLink, '_blank');
 };
@@ -166,6 +182,7 @@ textShadow: '0 2px 8px rgba(0, 0, 0, 0.30)',
   }}
 >
   <Typography
+    component="div"
     sx={{
       color: '#b91c1c',
       background: '#fff1f2',
@@ -181,9 +198,10 @@ textShadow: '0 2px 8px rgba(0, 0, 0, 0.30)',
       fontFamily: 'Poppins, Noto Sans Devanagari, Arial, sans-serif',
       boxShadow: '0 8px 24px rgba(185, 28, 28, 0.18)',
     }}
-  >
-प्रिय साथियों, PMUMS कर्मचारी कल्याण कोष की सहयोग प्रक्रिया प्रारंभ हो चुकी है। <br/>सहयोग अवधि दिनांक 05 जून 2026 से 20 जून 2026 तक निर्धारित की गई है तथा सहयोग राशि ₹180 मात्र है। <br/>सभी सम्मानित सदस्यों से निवेदन है कि निर्धारित अवधि के भीतर अपना सहयोग अवश्य पूर्ण करें एवं सहयोग के पश्चात UTR नंबर दर्ज करना न भूलें। आपका सहयोग दिवंगत साथी कर्मचारियों के परिवारों को आर्थिक संबल प्रदान करने में महत्वपूर्ण भूमिका निभाएगा।
-  </Typography>
+    dangerouslySetInnerHTML={{
+      __html: statisticsContentHtml || '',
+    }}
+  />
 </Box>
         {/* Description Box */}
        

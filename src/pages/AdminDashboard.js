@@ -8231,11 +8231,11 @@ const getDeathCaseStatusChipSx = (status) => {
                   letterSpacing: '-0.02em',
                 }}
               >
-                Statistics Content
+                Red Box Content
               </Typography>
 
               <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
-                This content will be shown on the left side of the Statistics section.
+                This content will be shown on the red box of the home section.
               </Typography>
             </Box>
           </Box>

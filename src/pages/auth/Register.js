@@ -851,18 +851,18 @@ background: theme.main,                  }}
                     </Grid>
 
                     <Grid item xs={12} md={6}>
-                      <Typography sx={labelSx}>पिता का नाम *</Typography>
-                      <TextField
-                        fullWidth
-                        placeholder="Father Name"
-                        {...register("fatherName", {
-                          required: "Father name is required",
-                        })}
-                        error={!!errors.fatherName}
-                        helperText={errors.fatherName?.message}
-                        sx={inputSx}
-                      />
-                    </Grid>
+  <Typography sx={labelSx}>पिता/पति का नाम *</Typography>
+  <TextField
+    fullWidth
+    placeholder="Pita/Pati Ka Name"
+    {...register("fatherName", {
+      required: "पिता/पति का नाम आवश्यक है",
+    })}
+    error={!!errors.fatherName}
+    helperText={errors.fatherName?.message}
+    sx={inputSx}
+  />
+</Grid>
 
                     <Grid item xs={12} md={4}>
                       <Typography sx={labelSx}>लिंग *</Typography>
