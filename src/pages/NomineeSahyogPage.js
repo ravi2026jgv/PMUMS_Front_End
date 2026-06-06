@@ -224,11 +224,12 @@ const NomineeSahyogPage = () => {
       setUtrError("कृपया पहले मोबाइल नंबर से सदस्य खोजें।");
       return;
     }
+const cleanUtrNumber = utrForm.utrNumber?.trim();
 
-    if (!utrForm.amount || !utrForm.utrNumber) {
-      setUtrError("कृपया राशि और UTR Number भरें।");
-      return;
-    }
+if (!utrForm.amount || !cleanUtrNumber) {
+  setUtrError("कृपया राशि और UTR Number भरें।");
+  return;
+}
 
     try {
       setUtrSubmitting(true);
@@ -240,7 +241,7 @@ const NomineeSahyogPage = () => {
         mobileNumber: searchedMember.mobileNumber || mobileSearch,
         amount: Number(utrForm.amount),
         referenceName: utrForm.referenceName?.trim() || "",
-        utrNumber: utrForm.utrNumber
+        utrNumber: cleanUtrNumber
       });
 
       setUtrSuccess("UTR सफलतापूर्वक सबमिट हो गया।");
@@ -249,7 +250,7 @@ const NomineeSahyogPage = () => {
       setSearchedMember((prev) => ({
         ...prev,
         utrUploaded: true,
-        latestUtrNumber: utrForm.utrNumber
+       latestUtrNumber: cleanUtrNumber
       }));
 
       setTimeout(() => {

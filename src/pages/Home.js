@@ -218,7 +218,9 @@ const handlePublicUtrSubmit = async () => {
     return;
   }
 
-if (!utrForm.amount || !utrForm.utrNumber) {
+const cleanUtrNumber = utrForm.utrNumber?.trim();
+
+if (!utrForm.amount || !cleanUtrNumber) {
   setUtrError("कृपया राशि और UTR Number भरें।");
   return;
 }
@@ -233,7 +235,7 @@ if (!utrForm.amount || !utrForm.utrNumber) {
       mobileNumber: searchedMember.mobileNumber || mobileSearch,
       amount: Number(utrForm.amount),
       referenceName: utrForm.referenceName?.trim() || "",
-      utrNumber: utrForm.utrNumber
+     utrNumber: cleanUtrNumber
     });
 
 setUtrSuccess("UTR सफलतापूर्वक सबमिट हो गया।");
@@ -241,7 +243,7 @@ setSuccessSnackbarOpen(true);
     setSearchedMember((prev) => ({
       ...prev,
       utrUploaded: true,
-      latestUtrNumber: utrForm.utrNumber
+     latestUtrNumber: cleanUtrNumber
     }));
 
     setTimeout(() => {

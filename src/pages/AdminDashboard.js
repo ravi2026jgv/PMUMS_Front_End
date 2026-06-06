@@ -705,15 +705,15 @@ const handleManualSahyogMove = async () => {
 
     setManualSahyogMoveLoading(true);
 
-    const payload = {
-      userId: manualSahyogMoveForm.userId.trim(),
-      deathCaseId: Number(manualSahyogMoveForm.deathCaseId),
-      amount: Number(manualSahyogMoveForm.amount),
-      paymentDate: manualSahyogMoveForm.paymentDate,
-      referenceName: manualSahyogMoveForm.referenceName || 'Manual Admin Entry',
-      utrNumber: manualSahyogMoveForm.utrNumber || '',
-      remarks: manualSahyogMoveForm.remarks || 'Manual move from Asahyog to Sahyog',
-    };
+   const payload = {
+  userId: manualSahyogMoveForm.userId.trim(),
+  deathCaseId: Number(manualSahyogMoveForm.deathCaseId),
+  amount: Number(manualSahyogMoveForm.amount),
+  paymentDate: manualSahyogMoveForm.paymentDate,
+  referenceName: manualSahyogMoveForm.referenceName?.trim() || 'Manual Admin Entry',
+  utrNumber: manualSahyogMoveForm.utrNumber?.trim() || '',
+  remarks: manualSahyogMoveForm.remarks?.trim() || 'Manual move from Asahyog to Sahyog',
+};
 
     await adminAPI.manualMoveAsahyogToSahyog(payload);
 

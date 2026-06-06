@@ -315,17 +315,24 @@ const handleUpdateSahyogReceipt = async () => {
     return;
   }
 
+  const cleanUtrNumber = editForm.utrNumber?.trim();
+
+  if (!cleanUtrNumber) {
+    setError('कृपया UTR Number भरें।');
+    return;
+  }
+
   try {
     setActionLoading(true);
     setError('');
 
     const payload = {
-  amount: editForm.amount !== '' ? Number(editForm.amount) : null,
-  paymentDate: editForm.paymentDate || null,
-  referenceName: editForm.referenceName || null,
-  utrNumber: editForm.utrNumber || null,
-  deathCaseId: editForm.deathCaseId ? Number(editForm.deathCaseId) : null,
-};
+      amount: editForm.amount !== '' ? Number(editForm.amount) : null,
+      paymentDate: editForm.paymentDate || null,
+      referenceName: editForm.referenceName?.trim() || null,
+      utrNumber: cleanUtrNumber,
+      deathCaseId: editForm.deathCaseId ? Number(editForm.deathCaseId) : null,
+    };
 
     await adminAPI.updateSahyogReceipt(selectedDonor.receiptId, payload);
 

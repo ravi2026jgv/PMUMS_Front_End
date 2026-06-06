@@ -449,7 +449,9 @@ const fetchActivePools = async () => {
   };
 
   const handleUtrSubmit = async () => {
-   if (!utrForm.amount || !utrForm.utrNumber) {
+  const cleanUtrNumber = utrForm.utrNumber?.trim();
+
+if (!utrForm.amount || !cleanUtrNumber) {
   setError('कृपया राशि और UTR Number भरें।');
   return;
 }
@@ -465,7 +467,7 @@ const fetchActivePools = async () => {
   amount: Number(utrForm.amount),
   paymentDate: utrForm.paymentDate,
   referenceName: utrForm.referenceName?.trim() || '',
-  utrNumber: utrForm.utrNumber
+ utrNumber: cleanUtrNumber
 });
 
       setUtrSuccess('UTR सफलतापूर्वक सबमिट हो गया।');
@@ -476,10 +478,14 @@ await fetchTeachers(currentPage, filters);
 setTimeout(() => {
   closeUtrDialog();
 }, 800);
-    } catch (err) {
-      console.error('UTR upload failed:', err);
-      setError(err?.response?.data?.message || 'UTR सबमिट करने में त्रुटि हुई।');
-    } finally {
+   } catch (err) {
+  console.error('UTR upload failed:', err);
+  setError(
+    err?.response?.data?.message ||
+    err?.response?.data?.error ||
+    'UTR सबमिट करने में त्रुटि हुई।'
+  );
+} finally {
       setUtrSubmitting(false);
     }
   };

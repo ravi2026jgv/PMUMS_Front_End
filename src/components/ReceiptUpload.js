@@ -120,20 +120,22 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
   };
 
   const handleUpload = async () => {
-    if (!formData.amount || !formData.utrNumber) {
-      setError("कृपया सभी आवश्यक फील्ड भरें (Amount + UTR)");
-      return;
-    }
+   const cleanUtrNumber = formData.utrNumber?.trim();
+
+if (!formData.amount || !cleanUtrNumber) {
+  setError("कृपया सभी आवश्यक फील्ड भरें (Amount + UTR)");
+  return;
+}
 
     setUploading(true);
     setError("");
 
     try {
-     const requestData = {
+    const requestData = {
   amount: parseFloat(formData.amount),
   paymentDate: formData.paymentDate,
-  referenceName: formData.referenceName || null,
-  utrNumber: formData.utrNumber,
+  referenceName: formData.referenceName?.trim() || null,
+  utrNumber: cleanUtrNumber,
 };
 
       const response = await api.post("/receipts", requestData);
