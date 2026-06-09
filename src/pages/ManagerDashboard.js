@@ -594,23 +594,68 @@ const fetchManagedLocationCounts = async (scope) => {
   }
 };
 
-  const getCurrentExportAreaParams = () => {
-    const params = {};
+const getCurrentExportAreaParams = () => {
+  const params = {};
 
-    if (exportLocationFilters.sambhagId) {
-      params.sambhagId = exportLocationFilters.sambhagId;
-    }
+  const { sambhagId, districtId, blockId } = exportLocationFilters;
 
-    if (exportLocationFilters.districtId) {
-      params.districtId = exportLocationFilters.districtId;
-    }
-
-    if (exportLocationFilters.blockId) {
-      params.blockId = exportLocationFilters.blockId;
+  // Block Manager: always export only assigned block
+  if (isBlockManager) {
+    if (blockId) {
+      params.blockId = blockId;
     }
 
     return params;
-  };
+  }
+
+  // District Manager: NEVER send sambhagId
+  // District manager can export full district or selected block inside district
+  if (isDistrictManager) {
+    if (districtId) {
+      params.districtId = districtId;
+    }
+
+    if (blockId) {
+      params.blockId = blockId;
+    }
+
+    return params;
+  }
+
+  // Sambhag Manager: can export full sambhag, district, or block
+  if (isSambhagManager) {
+    if (blockId) {
+      params.blockId = blockId;
+      return params;
+    }
+
+    if (districtId) {
+      params.districtId = districtId;
+      return params;
+    }
+
+    if (sambhagId) {
+      params.sambhagId = sambhagId;
+    }
+
+    return params;
+  }
+
+  // Admin / Super Admin
+  if (blockId) {
+    params.blockId = blockId;
+  }
+
+  if (districtId) {
+    params.districtId = districtId;
+  }
+
+  if (sambhagId) {
+    params.sambhagId = sambhagId;
+  }
+
+  return params;
+};
   const fetchOverviewManagedUsersCount = async () => {
     try {
      const response = await managerAPI.getAccessibleUsers({
@@ -708,6 +753,67 @@ const findDistrictFromHierarchy = (districtId) => {
     district: null,
   };
 };
+const getAllAssignedDistrictOptions = () => {
+  return [
+    ...new Map(
+      (locationHierarchy || [])
+        .flatMap((sambhag) =>
+          (sambhag.districts || []).map((district) => ({
+            ...district,
+            parentSambhagId: sambhag.id,
+            parentSambhagName: sambhag.name,
+          }))
+        )
+        .map((district) => [String(district.id), district])
+    ).values(),
+  ];
+};
+
+const getAllAssignedBlockOptions = (districtList = null) => {
+  const districts = districtList || getAllAssignedDistrictOptions();
+
+  return [
+    ...new Map(
+      districts
+        .flatMap((district) =>
+          (district.blocks || []).map((block) => ({
+            ...block,
+            parentDistrictId: district.id,
+            parentDistrictName: district.name,
+            parentSambhagId: district.parentSambhagId,
+            parentSambhagName: district.parentSambhagName,
+          }))
+        )
+        .map((block) => [String(block.id), block])
+    ).values(),
+  ];
+};
+
+const getDerivedManagedAreaCounts = () => {
+  const divisions = (locationHierarchy || []).length;
+
+  const districts = (locationHierarchy || []).reduce(
+    (sum, sambhag) => sum + (sambhag.districts || []).length,
+    0
+  );
+
+  const blocks = (locationHierarchy || []).reduce(
+    (sum, sambhag) =>
+      sum +
+      (sambhag.districts || []).reduce(
+        (districtSum, district) =>
+          districtSum + (district.blocks || []).length,
+        0
+      ),
+    0
+  );
+
+  return {
+    divisions,
+    districts,
+    blocks,
+  };
+};
 
 const handleUserDistrictChange = (event) => {
   const districtId = event.target.value;
@@ -736,25 +842,64 @@ const handleUserDistrictChange = (event) => {
     setUsersPage(0);
   };
 
-  const handleExportSambhagChange = (event) => {
-    const sambhagId = event.target.value;
+const handleExportSambhagChange = (event) => {
+  const sambhagId = event.target.value;
 
-    const selectedSambhag = locationHierarchy.find(
-      (item) => String(item.id) === String(sambhagId),
-    );
+  const selectedSambhag = locationHierarchy.find(
+    (item) => String(item.id) === String(sambhagId)
+  );
 
-    setExportLocationFilters({
-      sambhagId,
-      districtId: "",
-      blockId: "",
-    });
+  const districts = sambhagId
+    ? selectedSambhag?.districts || []
+    : getAllAssignedDistrictOptions();
 
-    setExportDistrictOptions(selectedSambhag?.districts || []);
-    setExportBlockOptions([]);
-  };
+  const blocks = getAllAssignedBlockOptions(
+    districts.map((district) => ({
+      ...district,
+      parentSambhagId: selectedSambhag?.id || district.parentSambhagId,
+      parentSambhagName: selectedSambhag?.name || district.parentSambhagName,
+    }))
+  );
+
+  setExportLocationFilters({
+    sambhagId,
+    districtId: "",
+    blockId: "",
+  });
+
+  setExportDistrictOptions(districts);
+  setExportBlockOptions(blocks);
+};
 
 const handleExportDistrictChange = (event) => {
   const districtId = event.target.value;
+
+  if (!districtId) {
+    const selectedSambhag = locationHierarchy.find(
+      (item) => String(item.id) === String(exportLocationFilters.sambhagId)
+    );
+
+    const districts = exportLocationFilters.sambhagId
+      ? selectedSambhag?.districts || []
+      : getAllAssignedDistrictOptions();
+
+    const blocks = getAllAssignedBlockOptions(
+      districts.map((district) => ({
+        ...district,
+        parentSambhagId: selectedSambhag?.id || district.parentSambhagId,
+        parentSambhagName: selectedSambhag?.name || district.parentSambhagName,
+      }))
+    );
+
+    setExportLocationFilters((prev) => ({
+      ...prev,
+      districtId: "",
+      blockId: "",
+    }));
+
+    setExportBlockOptions(blocks);
+    return;
+  }
 
   const { sambhag, district } = findDistrictFromHierarchy(districtId);
 
@@ -765,7 +910,15 @@ const handleExportDistrictChange = (event) => {
     blockId: "",
   }));
 
-  setExportBlockOptions(district?.blocks || []);
+  const blocks = (district?.blocks || []).map((block) => ({
+    ...block,
+    parentDistrictId: district?.id,
+    parentDistrictName: district?.name,
+    parentSambhagId: sambhag?.id,
+    parentSambhagName: sambhag?.name,
+  }));
+
+  setExportBlockOptions(blocks);
 };
 
   const handleExportBlockChange = (event) => {
@@ -827,29 +980,18 @@ setPendingProfilesLiveUrl("");
     setExportBeneficiary("");
     setExportMonth(new Date().getMonth() + 1);
     setExportYear(new Date().getFullYear());
-    if (isBlockManager) {
-      const firstSambhag = locationHierarchy[0];
-      const firstDistrict = firstSambhag?.districts?.[0];
-      const firstBlock = firstDistrict?.blocks?.[0];
+const allDistricts = getAllAssignedDistrictOptions();
+const allBlocks = getAllAssignedBlockOptions(allDistricts);
 
-      setExportLocationFilters({
-        sambhagId: firstSambhag?.id || "",
-        districtId: firstDistrict?.id || "",
-        blockId: firstBlock?.id || "",
-      });
+setExportLocationFilters({
+  sambhagId: "",
+  districtId: "",
+  blockId: "",
+});
 
-      setExportDistrictOptions(firstSambhag?.districts || []);
-      setExportBlockOptions(firstDistrict?.blocks || []);
-    } else {
-      setExportLocationFilters({
-        sambhagId: "",
-        districtId: "",
-        blockId: "",
-      });
-
-      setExportDistrictOptions([]);
-      setExportBlockOptions([]);
-    }
+setExportDistrictOptions(allDistricts);
+setExportBlockOptions(allBlocks);
+    
 
     if ((type === "sahyog" || type === "asahyog") && deathCases.length === 0) {
       await fetchDeathCases();
@@ -1752,25 +1894,33 @@ const renderUsersTab = () => (
             </Select>
           </FormControl>
 
-          {!isBlockManager && (
-            <FormControl size="small" sx={{ minWidth: { xs: '100%', sm: 170 }, ...premiumFieldSx }}>
-              <InputLabel>Sambhag</InputLabel>
-              <Select
-                value={userFilters.sambhagId}
-                label="Sambhag"
-                onChange={handleUserSambhagChange}
-              >
-                <MenuItem value="">All Assigned Sambhag</MenuItem>
-                {sambhagOptions.map((item) => (
-                  <MenuItem key={item.id} value={item.id}>
-                    {item.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          )}
+       {sambhagOptions.length > 0 && (
+  <FormControl
+    size="small"
+    sx={{
+      ...premiumFieldSx,
+      width: { xs: "100%", sm: 220, md: 240 },
+      minWidth: { xs: "100%", sm: 220 },
+      flexShrink: 0,
+    }}
+  >
+    <InputLabel>Sambhag</InputLabel>
+    <Select
+      value={userFilters.sambhagId}
+      label="Sambhag"
+      onChange={handleUserSambhagChange}
+    >
+      <MenuItem value="">All Assigned Sambhag</MenuItem>
+      {sambhagOptions.map((item) => (
+        <MenuItem key={item.id} value={item.id}>
+          {item.name}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+)}
 
-          {!isBlockManager && (
+         {exportDistrictOptions.length > 0 && (
             <FormControl
               size="small"
               sx={{ minWidth: { xs: '100%', sm: 170 }, ...premiumFieldSx }}
@@ -2643,10 +2793,11 @@ const renderExportAreaFilters = () => (
         >
           <MenuItem value="">All Assigned Block</MenuItem>
           {exportBlockOptions.map((item) => (
-            <MenuItem key={item.id} value={item.id}>
-              {item.name}
-            </MenuItem>
-          ))}
+  <MenuItem key={item.id} value={item.id}>
+    {item.name}
+    {item.parentDistrictName ? ` (${item.parentDistrictName})` : ""}
+  </MenuItem>
+))}
         </Select>
       </FormControl>
     </Box>
@@ -2683,7 +2834,7 @@ const renderExportAreaFilters = () => (
       </Layout>
     );
   }
-
+const derivedAreaCounts = getDerivedManagedAreaCounts();
   return (
     <Layout>
       <Box
@@ -2807,8 +2958,7 @@ const renderExportAreaFilters = () => (
             <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mt: 1.2 }}>
               <Chip
                 size="small"
-                label={`${managerScope?.totalSambhags ?? dashboardData?.scope?.totalSambhags ?? 0} Divisions`}
-                sx={{
+label={`${derivedAreaCounts.divisions} Divisions`}                sx={{
                   fontWeight: 800,
                   color: "#1e3a8a",
                   bgcolor: "rgba(37, 99, 235, 0.09)",
@@ -2817,7 +2967,7 @@ const renderExportAreaFilters = () => (
               />
               <Chip
                 size="small"
-                label={`${managerScope?.totalDistricts ?? dashboardData?.scope?.totalDistricts ?? 0} Districts`}
+                label={`${derivedAreaCounts.districts} Districts`}
                 sx={{
                   fontWeight: 800,
                   color: "#5b21b6",
@@ -2827,7 +2977,7 @@ const renderExportAreaFilters = () => (
               />
               <Chip
                 size="small"
-                label={`${managerScope?.totalBlocks ?? dashboardData?.scope?.totalBlocks ?? 0} Blocks`}
+                label={`${derivedAreaCounts.blocks} Blocks`}
                 sx={{
                   fontWeight: 800,
                   color: "#047857",

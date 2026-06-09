@@ -349,7 +349,67 @@ const [page, setPage] = useState(0);
   // Role hierarchy - updated to match your backend
   const roles = ['ROLE_ADMIN', 'ROLE_SAMBHAG_MANAGER', 'ROLE_DISTRICT_MANAGER', 'ROLE_BLOCK_MANAGER', 'ROLE_USER'];
   const userStatuses = ['ACTIVE', 'BLOCKED', 'DELETED'];
+const nomineeRelationOptions = [
+  { value: 'पिता', label: 'पिता (Father)' },
+  { value: 'माता', label: 'माता (Mother)' },
+  { value: 'भाई', label: 'भाई (Brother)' },
+  { value: 'बहन', label: 'बहन (Sister)' },
+  { value: 'पति', label: 'पति (Husband)' },
+  { value: 'पत्नी', label: 'पत्नी (Wife)' },
+  { value: 'पुत्र', label: 'पुत्र (Son)' },
+  { value: 'पुत्री', label: 'पुत्री (Daughter)' },
+  { value: 'दादा', label: 'दादा (Grandfather)' },
+  { value: 'दादी', label: 'दादी (Grandmother)' },
+  { value: 'अन्य', label: 'अन्य (Other)' },
+];
+const normalizeNomineeRelation = (value) => {
+  const relation = String(value || '').trim();
 
+  if (!relation) return '';
+
+  const relationMap = {
+    // Hindi values
+    'पिता': 'पिता',
+    'माता': 'माता',
+    'भाई': 'भाई',
+    'बहन': 'बहन',
+    'पति': 'पति',
+    'पत्नी': 'पत्नी',
+    'पुत्र': 'पुत्र',
+    'पुत्री': 'पुत्री',
+    'दादा': 'दादा',
+    'दादी': 'दादी',
+    'अन्य': 'अन्य',
+
+    // English old values
+    father: 'पिता',
+    mother: 'माता',
+    brother: 'भाई',
+    sister: 'बहन',
+    husband: 'पति',
+    wife: 'पत्नी',
+    son: 'पुत्र',
+    daughter: 'पुत्री',
+    grandfather: 'दादा',
+    grandmother: 'दादी',
+    other: 'अन्य',
+
+    // Common mixed labels if old data saved label instead of value
+    'पिता (father)': 'पिता',
+    'माता (mother)': 'माता',
+    'भाई (brother)': 'भाई',
+    'बहन (sister)': 'बहन',
+    'पति (husband)': 'पति',
+    'पत्नी (wife)': 'पत्नी',
+    'पुत्र (son)': 'पुत्र',
+    'पुत्री (daughter)': 'पुत्री',
+    'दादा (grandfather)': 'दादा',
+    'दादी (grandmother)': 'दादी',
+    'अन्य (other)': 'अन्य',
+  };
+
+  return relationMap[relation.toLowerCase()] || relation;
+};
   // API Integration Functions
   const fetchUsers = async () => {
     setUsersLoading(true);
@@ -2105,11 +2165,10 @@ const buildUpiLink = (upiId, nomineeName) => {
       departmentSambhag: user?.departmentSambhag || user?.sambhag || '',
       departmentDistrict: user?.departmentDistrict || user?.district || '',
       departmentBlock: user?.departmentBlock || user?.block || '',
-      nominee1Name: user?.nominee1Name || '',
-      nominee1Relation: user?.nominee1Relation || '',
-      nominee2Name: user?.nominee2Name || '',
-      nominee2Relation: user?.nominee2Relation || '',
-    });
+nominee1Name: user?.nominee1Name || '',
+nominee1Relation: normalizeNomineeRelation(user?.nominee1Relation),
+nominee2Name: user?.nominee2Name || '',
+nominee2Relation: normalizeNomineeRelation(user?.nominee2Relation),    });
     setUserDetailsOpen(true);
   };
 
@@ -2391,6 +2450,143 @@ const handleBulkSoftDelete = async () => {
     }
   };
 
+  const getAssignmentLocationKey = (assignment) => {
+  if (assignment?.managerLevel === 'SAMBHAG' && assignment?.sambhagId) {
+    return `SAMBHAG:${String(assignment.sambhagId)}`;
+  }
+
+  if (assignment?.managerLevel === 'DISTRICT' && assignment?.districtId) {
+    return `DISTRICT:${String(assignment.districtId)}`;
+  }
+
+  if (assignment?.managerLevel === 'BLOCK' && assignment?.blockId) {
+    return `BLOCK:${String(assignment.blockId)}`;
+  }
+
+  return '';
+};
+
+const getSelectedAssignmentLocationKeys = () => {
+  if (roleAssignmentData.role === 'ROLE_SAMBHAG_MANAGER') {
+    return roleAssignmentData.sambhagIds.map((id) => `SAMBHAG:${String(id)}`);
+  }
+
+  if (roleAssignmentData.role === 'ROLE_DISTRICT_MANAGER') {
+    return roleAssignmentData.districtIds.map((id) => `DISTRICT:${String(id)}`);
+  }
+
+  if (roleAssignmentData.role === 'ROLE_BLOCK_MANAGER') {
+    return roleAssignmentData.blockIds.map((id) => `BLOCK:${String(id)}`);
+  }
+
+  return [];
+};
+
+const buildSelectedAssignmentPayloads = () => {
+  const managerLevelMap = {
+    ROLE_SAMBHAG_MANAGER: 'SAMBHAG',
+    ROLE_DISTRICT_MANAGER: 'DISTRICT',
+    ROLE_BLOCK_MANAGER: 'BLOCK',
+  };
+
+  const managerLevel = managerLevelMap[roleAssignmentData.role];
+
+  if (!managerLevel || !selectedUserForRole?.id) {
+    return [];
+  }
+
+  if (roleAssignmentData.role === 'ROLE_SAMBHAG_MANAGER') {
+    return roleAssignmentData.sambhagIds.map((sambhagId) => ({
+      managerId: selectedUserForRole.id,
+      managerLevel,
+      sambhagId,
+      districtId: null,
+      blockId: null,
+      notes: `${selectedUserForRole.name || selectedUserForRole.id} assigned as Division Manager`,
+    }));
+  }
+
+  if (roleAssignmentData.role === 'ROLE_DISTRICT_MANAGER') {
+    return roleAssignmentData.districtIds.map((districtId) => {
+      const district = availableDistricts.find(
+        (d) => String(d.id) === String(districtId)
+      );
+
+      return {
+        managerId: selectedUserForRole.id,
+        managerLevel,
+        sambhagId: null,
+        districtId,
+        blockId: null,
+        notes: `${selectedUserForRole.name || selectedUserForRole.id} assigned as District Manager for ${district?.name || districtId}`,
+      };
+    });
+  }
+
+  if (roleAssignmentData.role === 'ROLE_BLOCK_MANAGER') {
+    return roleAssignmentData.blockIds.map((blockId) => {
+      const block = availableBlocks.find(
+        (b) => String(b.id) === String(blockId)
+      );
+
+      return {
+        managerId: selectedUserForRole.id,
+        managerLevel,
+        sambhagId: null,
+        districtId: null,
+        blockId,
+        notes: `${selectedUserForRole.name || selectedUserForRole.id} assigned as Block Manager for ${block?.name || blockId}`,
+      };
+    });
+  }
+
+  return [];
+};
+
+const syncManagerAssignments = async () => {
+  const existingAssignments = await fetchUserAssignments(selectedUserForRole.id);
+
+  const selectedKeys = new Set(getSelectedAssignmentLocationKeys());
+
+  const existingKeyToAssignment = new Map(
+    (existingAssignments || [])
+      .map((assignment) => [getAssignmentLocationKey(assignment), assignment])
+      .filter(([key]) => key)
+  );
+
+  const assignmentsToRemove = (existingAssignments || []).filter((assignment) => {
+    const key = getAssignmentLocationKey(assignment);
+
+    if (!key) return false;
+
+    return !selectedKeys.has(key);
+  });
+
+  await Promise.all(
+    assignmentsToRemove.map((assignment) =>
+      adminAPI.removeManagerAssignment(assignment.id)
+    )
+  );
+
+  const selectedPayloads = buildSelectedAssignmentPayloads();
+
+  const payloadsToCreate = selectedPayloads.filter((payload) => {
+    const key =
+      payload.managerLevel === 'SAMBHAG'
+        ? `SAMBHAG:${String(payload.sambhagId)}`
+        : payload.managerLevel === 'DISTRICT'
+          ? `DISTRICT:${String(payload.districtId)}`
+          : payload.managerLevel === 'BLOCK'
+            ? `BLOCK:${String(payload.blockId)}`
+            : '';
+
+    return key && !existingKeyToAssignment.has(key);
+  });
+
+  await Promise.all(
+    payloadsToCreate.map((payload) => adminAPI.createManagerAssignment(payload))
+  );
+};
   // Handle role assignment form submission
   const handleRoleAssignmentSubmit = async () => {
     if (!roleAssignmentData.role) {
@@ -2435,33 +2631,24 @@ if (
   return;
 }
 
-//     try {
-//       // First update the user role
-//       await handleUpdateUserRole(selectedUserForRole.id, roleAssignmentData.role);
-      
-//       // If assigning a manager role, create manager assignment
-//       if (roleAssignmentData.role !== 'ROLE_USER') {
-//         await createManagerAssignment();
-//       }
-      
-//       setRoleAssignmentDialog(false);
-//       setSelectedUserForRole(null);
-// setRoleAssignmentData({ role: '', sambhagIds: [], districtIds: [], blockIds: [] });      showSnackbar('Role assigned successfully!', 'success');
-//   } catch (error) {
-//   console.error('Error in role assignment:', error);
-//   const msg =
-//     error?.response?.data?.error ||
-//     error?.message ||
-//     'Error assigning role!';
-//   showSnackbar(msg, 'error');
-// }
-try {
-  const previousRole = selectedUserForRole?.role;
 
+try {
   await handleUpdateUserRole(selectedUserForRole.id, roleAssignmentData.role);
 
-  if (roleAssignmentData.role !== 'ROLE_USER') {
-    await createManagerAssignment();
+  if (
+    roleAssignmentData.role === 'ROLE_SAMBHAG_MANAGER' ||
+    roleAssignmentData.role === 'ROLE_DISTRICT_MANAGER' ||
+    roleAssignmentData.role === 'ROLE_BLOCK_MANAGER'
+  ) {
+    await syncManagerAssignments();
+  } else {
+    const existingAssignments = await fetchUserAssignments(selectedUserForRole.id);
+
+    await Promise.all(
+      (existingAssignments || []).map((assignment) =>
+        adminAPI.removeManagerAssignment(assignment.id)
+      )
+    );
   }
 
   setRoleAssignmentDialog(false);
@@ -2470,10 +2657,15 @@ try {
     role: '',
     sambhagIds: [],
     districtIds: [],
-    blockIds: []
+    blockIds: [],
   });
+  setAvailableDistricts([]);
+  setAvailableBlocks([]);
 
   showSnackbar('Role assigned successfully!', 'success');
+
+  fetchUsers();
+  fetchManagerAssignments();
 } catch (error) {
   console.error('Error in role assignment:', error);
 
@@ -2483,27 +2675,8 @@ try {
     error?.message ||
     '';
 
-  if (backendMessage.toLowerCase().includes('already assigned')) {
-    setRoleAssignmentDialog(false);
-    setSelectedUserForRole(null);
-    setRoleAssignmentData({
-      role: '',
-      sambhagIds: [],
-      districtIds: [],
-      blockIds: []
-    });
-
-    showSnackbar(
-      'Role updated successfully. Manager was already assigned to the selected location.',
-      'success'
-    );
-    fetchUsers();
-    fetchManagerAssignments();
-    return;
-  }
-
   showSnackbar(backendMessage || 'Error assigning role!', 'error');
-}
+} 
   };
 
   // Create manager assignment based on role and location
@@ -3312,107 +3485,37 @@ const handleRoleAssignmentChange = (field, value) => {
 };
 
   // Fetch location hierarchy - using same API as registration
-  const fetchLocationHierarchy = async () => {
-    try {
-      setLoadingLocations(true);
-      
-      // Try to fetch from API first
-      let locationData;
-      try {
-        const response = await adminAPI.getLocationHierarchy();
-        locationData = response.data;
-      } catch (apiErr) {
-        console.warn('Location API failed, using fallback data:', apiErr);
-        
-        // Fallback MP data structure - same as registration but with numeric IDs
-        locationData = {
-          states: [{
-            id: 'MP',
-            name: 'Madhya Pradesh',
-            sambhags: [
-              {
-                id: 1,
-                name: 'Bhopal Division',
-                districts: [
-                  {
-                    id: 1,
-                    name: 'Bhopal',
-                    blocks: [
-                      { id: 1, name: 'Bhopal' },
-                      { id: 2, name: 'Huzur' },
-                      { id: 3, name: 'Berasia' }
-                    ]
-                  },
-                  {
-                    id: 2,
-                    name: 'Raisen',
-                    blocks: [
-                      { id: 4, name: 'Begumganj' },
-                      { id: 5, name: 'Gairatganj' },
-                      { id: 6, name: 'Bareli' }
-                    ]
-                  }
-                ]
-              },
-              {
-                id: 2,
-                name: 'Indore Division',
-                districts: [
-                  {
-                    id: 3,
-                    name: 'Indore',
-                    blocks: [
-                      { id: 7, name: 'Indore' },
-                      { id: 8, name: 'Mhow' },
-                      { id: 9, name: 'Sanwer' }
-                    ]
-                  },
-                  {
-                    id: 4,
-                    name: 'Dewas',
-                    blocks: [
-                      { id: 10, name: 'Dewas' },
-                      { id: 11, name: 'Bagli' },
-                      { id: 12, name: 'Khategaon' }
-                    ]
-                  }
-                ]
-              },
-              {
-                id: 3,
-                name: 'Ujjain Division',
-                districts: [
-                  {
-                    id: 5,
-                    name: 'Ujjain',
-                    blocks: [
-                      { id: 13, name: 'Ujjain' },
-                      { id: 14, name: 'Ghatiya' },
-                      { id: 15, name: 'Khachrod' }
-                    ]
-                  }
-                ]
-              }
-            ]
-          }]
-        };
-      }
-      
-      setLocationHierarchy(locationData);
-      
-      // Auto-select Madhya Pradesh and set available sambhags
-      if (locationData.states && locationData.states.length === 1) {
-        const mpState = locationData.states[0];
-        setAvailableSambhags(mpState.sambhags || []);
-      }
-      
-    } catch (err) {
-      console.error('Error setting up location hierarchy:', err);
-      showSnackbar('Error loading location data. Please try again.', 'error');
-    } finally {
-      setLoadingLocations(false);
+const fetchLocationHierarchy = async () => {
+  try {
+    setLoadingLocations(true);
+
+    const response = await adminAPI.getLocationHierarchy();
+    const hierarchyData = response.data;
+
+    setLocationHierarchy(hierarchyData);
+
+    if (hierarchyData.states && hierarchyData.states.length === 1) {
+      const mpState = hierarchyData.states[0];
+      setSelectedState(mpState.id);
+      setAvailableSambhags(mpState.sambhags || []);
     }
-  };
+
+    return hierarchyData;
+  } catch (apiErr) {
+    console.error('Location API failed:', apiErr);
+    setLocationHierarchy(null);
+    setAvailableSambhags([]);
+    setAvailableDistricts([]);
+    setAvailableBlocks([]);
+    showSnackbar(
+      'Failed to load real location data. Manager assignment cannot continue.',
+      'error'
+    );
+    return null;
+  } finally {
+    setLoadingLocations(false);
+  }
+};
 
   // Fetch manager assignments using new endpoint
   const fetchManagerAssignments = async () => {
@@ -5821,23 +5924,163 @@ const renderReportTableTab = () => {
                    
                     <IconButton 
                       size="small" 
-                      onClick={() => {
-                        setSelectedUserForRole(user);
-                        setRoleAssignmentDialog(true);
-                       setRoleAssignmentData({
-  role: '',
-  sambhagIds: [],
-  districtIds: [],
-  blockIds: []
+                    onClick={async () => {
+  setSelectedUserForRole(user);
+  setRoleAssignmentDialog(true);
+
+  setRoleAssignmentData({
+    role: user?.role || 'ROLE_USER',
+    sambhagIds: [],
+    districtIds: [],
+    blockIds: [],
+  });
+
+  setAvailableDistricts([]);
+  setAvailableBlocks([]);
+
+  let hierarchyData = locationHierarchy;
+
+  if (!hierarchyData) {
+    hierarchyData = await fetchLocationHierarchy();
+  }
+
+  const isManagerRole =
+    user?.role &&
+    user.role !== 'ROLE_USER' &&
+    user.role !== 'ROLE_ADMIN' &&
+    user.role !== 'ROLE_SUPERADMIN';
+
+  if (!isManagerRole) {
+    return;
+  }
+
+  try {
+const userAssignments = await fetchUserAssignments(user.id);
+
+const allSambhags =
+  hierarchyData?.states?.flatMap((state) => state.sambhags || []) || [];
+
+const rawSambhagIds = [
+  ...new Set(
+    (userAssignments || [])
+      .map((item) => item.sambhagId)
+      .filter(Boolean)
+      .map(String)
+  ),
+];
+
+const districtIds = [
+  ...new Set(
+    (userAssignments || [])
+      .map((item) => item.districtId)
+      .filter(Boolean)
+      .map(String)
+  ),
+];
+
+const blockIds = [
+  ...new Set(
+    (userAssignments || [])
+      .map((item) => item.blockId)
+      .filter(Boolean)
+      .map(String)
+  ),
+];
+
+// Find parent District automatically from selected Block
+const parentDistrictIds = [];
+
+allSambhags.forEach((sambhag) => {
+  (sambhag.districts || []).forEach((district) => {
+    const isAnyBlockSelected = (district.blocks || []).some((block) =>
+      blockIds.includes(String(block.id))
+    );
+
+    if (isAnyBlockSelected) {
+      parentDistrictIds.push(String(district.id));
+    }
+  });
 });
-                        // Reset location data
-                        setAvailableDistricts([]);
-                        setAvailableBlocks([]);
-                        // Fetch location hierarchy when dialog opens
-                        if (!locationHierarchy) {
-                          fetchLocationHierarchy();
-                        }
-                      }}
+
+const finalDistrictIds = [
+  ...new Set([...districtIds, ...parentDistrictIds]),
+];
+
+// Find parent Division/Sambhag automatically from selected District/Block
+const parentSambhagIds = [];
+
+allSambhags.forEach((sambhag) => {
+  (sambhag.districts || []).forEach((district) => {
+    const isDistrictSelected = districtIds.includes(String(district.id));
+
+    const isAnyBlockSelected = (district.blocks || []).some((block) =>
+      blockIds.includes(String(block.id))
+    );
+
+    if (isDistrictSelected || isAnyBlockSelected) {
+      parentSambhagIds.push(String(sambhag.id));
+    }
+  });
+});
+
+const sambhagIds = [
+  ...new Set([...rawSambhagIds, ...parentSambhagIds]),
+];
+    const selectedSambhags = allSambhags.filter((sambhag) => {
+      const hasSelectedSambhag = sambhagIds.includes(String(sambhag.id));
+
+    const hasSelectedDistrict = (sambhag.districts || []).some((district) =>
+  finalDistrictIds.includes(String(district.id))
+);
+
+      const hasSelectedBlock = (sambhag.districts || []).some((district) =>
+        (district.blocks || []).some((block) =>
+          blockIds.includes(String(block.id))
+        )
+      );
+
+      return hasSelectedSambhag || hasSelectedDistrict || hasSelectedBlock;
+    });
+
+    const districtOptions = [
+      ...new Map(
+        selectedSambhags
+          .flatMap((sambhag) => sambhag.districts || [])
+          .map((district) => [String(district.id), district])
+      ).values(),
+    ];
+
+    const selectedDistricts = districtOptions.filter((district) => {
+const hasSelectedDistrict = finalDistrictIds.includes(String(district.id));
+      const hasSelectedBlock = (district.blocks || []).some((block) =>
+        blockIds.includes(String(block.id))
+      );
+
+      return hasSelectedDistrict || hasSelectedBlock;
+    });
+
+    const blockOptions = [
+      ...new Map(
+        selectedDistricts
+          .flatMap((district) => district.blocks || [])
+          .map((block) => [String(block.id), block])
+      ).values(),
+    ];
+
+    setRoleAssignmentData({
+  role: user?.role || 'ROLE_USER',
+  sambhagIds,
+  districtIds: finalDistrictIds,
+  blockIds,
+});
+
+    setAvailableDistricts(districtOptions);
+    setAvailableBlocks(blockOptions);
+  } catch (error) {
+    console.error('Error loading existing role assignment:', error);
+    showSnackbar('Unable to load existing manager assignment!', 'warning');
+  }
+}}
                       title="Assign Role"
                       color="primary"
                      sx={actionIconSx('#1976d2', 'rgba(25, 118, 210, 0.12)')}
@@ -8909,12 +9152,26 @@ const getDeathCaseStatusChipSx = (status) => {
       </Grid>
 
       <Grid item xs={12} md={6}>
-        <TextField
-          fullWidth
-          label="नामांकित का संबंध *"
-          value={manualCreateForm.nominee1Relation}
-          onChange={(e) => setManualCreateForm((p) => ({ ...p, nominee1Relation: e.target.value }))}
-        />
+       <FormControl fullWidth>
+  <InputLabel>नामांकित का संबंध *</InputLabel>
+  <Select
+    label="नामांकित का संबंध *"
+    value={manualCreateForm.nominee1Relation || ''}
+    onChange={(e) =>
+      setManualCreateForm((p) => ({
+        ...p,
+        nominee1Relation: e.target.value,
+      }))
+    }
+  >
+    <MenuItem value="">संबंध चुनें</MenuItem>
+    {nomineeRelationOptions.map((item) => (
+      <MenuItem key={item.value} value={item.value}>
+        {item.label}
+      </MenuItem>
+    ))}
+  </Select>
+</FormControl>
       </Grid>
 
       <Grid item xs={12} sx={{ pt: 2 }}>
@@ -8924,12 +9181,26 @@ const getDeathCaseStatusChipSx = (status) => {
       </Grid>
 
       <Grid item xs={12} md={6}>
-        <TextField
-          fullWidth
-          label="नामांकित का नाम *"
-          value={manualCreateForm.nominee2Name}
-          onChange={(e) => setManualCreateForm((p) => ({ ...p, nominee2Name: e.target.value }))}
-        />
+        <FormControl fullWidth>
+  <InputLabel>नामांकित का संबंध *</InputLabel>
+  <Select
+    label="नामांकित का संबंध *"
+    value={manualCreateForm.nominee2Relation || ''}
+    onChange={(e) =>
+      setManualCreateForm((p) => ({
+        ...p,
+        nominee2Relation: e.target.value,
+      }))
+    }
+  >
+    <MenuItem value="">संबंध चुनें</MenuItem>
+    {nomineeRelationOptions.map((item) => (
+      <MenuItem key={item.value} value={item.value}>
+        {item.label}
+      </MenuItem>
+    ))}
+  </Select>
+</FormControl>
       </Grid>
 
       <Grid item xs={12} md={6}>
@@ -12631,16 +12902,27 @@ const requestedByName =
           </Grid>
 
           <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Nominee 1 Relation"
-              value={userDetailsForm.nominee1Relation}
-              onChange={(e) =>
-                setUserDetailsForm((prev) => ({ ...prev, nominee1Relation: e.target.value }))
-              }
-              sx={premiumTextFieldSx}
-            />
-          </Grid>
+  <FormControl fullWidth sx={premiumTextFieldSx}>
+    <InputLabel>Nominee 1 Relation</InputLabel>
+    <Select
+      label="Nominee 1 Relation"
+      value={userDetailsForm.nominee1Relation || ''}
+      onChange={(e) =>
+        setUserDetailsForm((prev) => ({
+          ...prev,
+          nominee1Relation: e.target.value,
+        }))
+      }
+    >
+      <MenuItem value="">Select Relation</MenuItem>
+      {nomineeRelationOptions.map((item) => (
+        <MenuItem key={item.value} value={item.value}>
+          {item.label}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+</Grid>
 
           <Grid item xs={12} sm={6}>
             <TextField
@@ -12654,17 +12936,28 @@ const requestedByName =
             />
           </Grid>
 
-          <Grid item xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Nominee 2 Relation"
-              value={userDetailsForm.nominee2Relation}
-              onChange={(e) =>
-                setUserDetailsForm((prev) => ({ ...prev, nominee2Relation: e.target.value }))
-              }
-              sx={premiumTextFieldSx}
-            />
-          </Grid>
+         <Grid item xs={12} sm={6}>
+  <FormControl fullWidth sx={premiumTextFieldSx}>
+    <InputLabel>Nominee 2 Relation</InputLabel>
+    <Select
+      label="Nominee 2 Relation"
+      value={userDetailsForm.nominee2Relation || ''}
+      onChange={(e) =>
+        setUserDetailsForm((prev) => ({
+          ...prev,
+          nominee2Relation: e.target.value,
+        }))
+      }
+    >
+      <MenuItem value="">Select Relation</MenuItem>
+      {nomineeRelationOptions.map((item) => (
+        <MenuItem key={item.value} value={item.value}>
+          {item.label}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+</Grid>
         </Grid>
       </Paper>
     </Box>
