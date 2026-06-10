@@ -98,14 +98,14 @@ const isAdminUser = isAdminOrSuperAdmin(user);
   const [totalElements, setTotalElements] = useState(0);
   const [pageSize] = useState(20);
 
- const [filters, setFilters] = useState({
+const [filters, setFilters] = useState({
   userId: '',
   fullName: '',
   mobileNumber: '',
   sambhag: '',
   district: '',
   block: '',
-  beneficiaryId: OPEN_DEATH_CASES_VALUE,
+  beneficiaryId: '',
 });
 
 const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -941,10 +941,11 @@ boxShadow: '0 12px 28px rgba(15, 118, 110, 0.28)',
                       displayEmpty
                       sx={inputSx}
                     >
+                                            <MenuItem value="">सभी लाभार्थी</MenuItem>
                       <MenuItem value={OPEN_DEATH_CASES_VALUE}>
   सभी चालू सहायता केस 
 </MenuItem>
-                      <MenuItem value="">सभी लाभार्थी</MenuItem>
+
 
 
 
