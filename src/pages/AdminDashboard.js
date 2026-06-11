@@ -9175,42 +9175,48 @@ const getDeathCaseStatusChipSx = (status) => {
       </Grid>
 
       <Grid item xs={12} sx={{ pt: 2 }}>
-        <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1a237e' }}>
-          दूसरा नामांकित (Second Nominee)
-        </Typography>
-      </Grid>
+  <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#1a237e' }}>
+    दूसरा नामांकित (Second Nominee)
+  </Typography>
+</Grid>
 
-      <Grid item xs={12} md={6}>
-        <FormControl fullWidth>
-  <InputLabel>नामांकित का संबंध *</InputLabel>
-  <Select
-    label="नामांकित का संबंध *"
-    value={manualCreateForm.nominee2Relation || ''}
+<Grid item xs={12} md={6}>
+  <TextField
+    fullWidth
+    label="नामांकित का नाम *"
+    value={manualCreateForm.nominee2Name}
     onChange={(e) =>
       setManualCreateForm((p) => ({
         ...p,
-        nominee2Relation: e.target.value,
+        nominee2Name: e.target.value,
       }))
     }
-  >
-    <MenuItem value="">संबंध चुनें</MenuItem>
-    {nomineeRelationOptions.map((item) => (
-      <MenuItem key={item.value} value={item.value}>
-        {item.label}
-      </MenuItem>
-    ))}
-  </Select>
-</FormControl>
-      </Grid>
+  />
+</Grid>
 
-      <Grid item xs={12} md={6}>
-        <TextField
-          fullWidth
-          label="नामांकित का संबंध *"
-          value={manualCreateForm.nominee2Relation}
-          onChange={(e) => setManualCreateForm((p) => ({ ...p, nominee2Relation: e.target.value }))}
-        />
-      </Grid>
+<Grid item xs={12} md={6}>
+  <FormControl fullWidth>
+    <InputLabel>नामांकित का संबंध *</InputLabel>
+    <Select
+      label="नामांकित का संबंध *"
+      value={manualCreateForm.nominee2Relation || ''}
+      onChange={(e) =>
+        setManualCreateForm((p) => ({
+          ...p,
+          nominee2Relation: e.target.value,
+        }))
+      }
+    >
+      <MenuItem value="">संबंध चुनें</MenuItem>
+      {nomineeRelationOptions.map((item) => (
+        <MenuItem key={item.value} value={item.value}>
+          {item.label}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+</Grid>
+     
     </Grid>
 
     {/* 5. Manual Entry Details */}
