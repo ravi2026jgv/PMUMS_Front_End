@@ -422,6 +422,16 @@ updateExportMobileNumberSetting: (enabled) => {
     },
   });
 },
+bulkLocationUpdate: (file, dryRun = true) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  return api.post(`/admin/users/bulk-location-update?dryRun=${dryRun}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+},
   resetManagerDashboardPassword: (id, payload) =>
   api.put(`/admin/users/${id}/manager-dashboard-password-reset`, payload),
 // Admin password reset (no current password required)

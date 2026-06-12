@@ -174,6 +174,12 @@ const [passwordResetForm, setPasswordResetForm] = useState({
   confirmPassword: '',
   resetType: 'normal',
 });
+const [bulkLocationUpdateOpen, setBulkLocationUpdateOpen] = useState(false);
+const [bulkLocationUpdateFile, setBulkLocationUpdateFile] = useState(null);
+const [bulkLocationUpdateLoading, setBulkLocationUpdateLoading] = useState(false);
+const [bulkLocationUpdateResult, setBulkLocationUpdateResult] = useState(null);
+
+const [bulkPasswordResetOpen, setBulkPasswordResetOpen] = useState(false);
 const [bulkPasswordResetFile, setBulkPasswordResetFile] = useState(null);
 const [bulkPasswordResetLoading, setBulkPasswordResetLoading] = useState(false);
 const [bulkPasswordResetResult, setBulkPasswordResetResult] = useState(null);
@@ -600,6 +606,39 @@ const formatDobAsPassword = (dobValue) => {
   const [year, month, day] = String(dobValue).split('-');
   if (!year || !month || !day) return '';
   return `${day}${month}${year}`;
+};
+const openBulkPasswordResetDialog = () => {
+  setBulkPasswordResetOpen(true);
+  setBulkPasswordResetFile(null);
+  setBulkPasswordResetResult(null);
+};
+
+const closeBulkPasswordResetDialog = () => {
+  if (bulkPasswordResetLoading) return;
+
+  setBulkPasswordResetOpen(false);
+  setBulkPasswordResetFile(null);
+  setBulkPasswordResetResult(null);
+
+  const input = document.getElementById('bulk-password-reset-file-input');
+  if (input) input.value = '';
+};
+
+const openBulkLocationUpdateDialog = () => {
+  setBulkLocationUpdateOpen(true);
+  setBulkLocationUpdateFile(null);
+  setBulkLocationUpdateResult(null);
+};
+
+const closeBulkLocationUpdateDialog = () => {
+  if (bulkLocationUpdateLoading) return;
+
+  setBulkLocationUpdateOpen(false);
+  setBulkLocationUpdateFile(null);
+  setBulkLocationUpdateResult(null);
+
+  const input = document.getElementById('bulk-location-update-file-input');
+  if (input) input.value = '';
 };
 
 useEffect(() => {
@@ -2286,6 +2325,73 @@ closePasswordReset();
   }
 };
 
+const handleBulkLocationUpdate = async (dryRun = true) => {
+  if (!bulkLocationUpdateFile) {
+    showSnackbar('Please select Excel file first!', 'error');
+    return;
+  }
+
+  const fileName = bulkLocationUpdateFile.name || '';
+
+  if (!fileName.toLowerCase().endsWith('.xlsx') && !fileName.toLowerCase().endsWith('.xls')) {
+    showSnackbar('Please upload a valid Excel file only!', 'error');
+    return;
+  }
+
+  if (!dryRun) {
+    const confirmed = window.confirm(
+      'Are you sure you want to update user locations from this Excel file? This will update database records.'
+    );
+
+    if (!confirmed) return;
+  }
+
+  try {
+    setBulkLocationUpdateLoading(true);
+
+    if (!dryRun) {
+      setBulkLocationUpdateResult(null);
+    }
+
+    const response = await adminAPI.bulkLocationUpdate(
+      bulkLocationUpdateFile,
+      dryRun
+    );
+
+    const result = response?.data?.data || response?.data || {};
+
+    setBulkLocationUpdateResult(result);
+
+    showSnackbar(
+      dryRun
+        ? `Dry run completed. Ready to update: ${result.uniqueUserIds || 0}, Skipped: ${result.skippedCount || 0}`
+        : `Location update completed. Updated: ${result.updatedCount || 0}, Skipped: ${result.skippedCount || 0}`,
+      'success'
+    );
+
+   if (!dryRun) {
+  setBulkLocationUpdateFile(null);
+
+  const input = document.getElementById('bulk-location-update-file-input');
+  if (input) {
+    input.value = '';
+  }
+
+  fetchUsers();
+}
+  } catch (error) {
+    console.error('Bulk location update error:', error);
+
+    showSnackbar(
+      error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        'Bulk location update failed!',
+      'error'
+    );
+  } finally {
+    setBulkLocationUpdateLoading(false);
+  }
+};
 const handleBulkPasswordReset = async () => {
   if (!bulkPasswordResetFile) {
     showSnackbar('Please select Excel file first!', 'error');
@@ -7590,38 +7696,18 @@ const getDeathCaseStatusChipSx = (status) => {
           Export Pending Profiles
         </Button>
       </Grid>
-
 <Grid item xs={12} sm={6} md={3}>
   <Button
     fullWidth
     variant="contained"
-    component="label"
-    startIcon={
-      bulkPasswordResetLoading ? (
-        <CircularProgress size={18} color="inherit" />
-      ) : (
-        <CloudUpload />
-      )
-    }
-    disabled={bulkPasswordResetLoading}
+    startIcon={<LockReset />}
+    onClick={openBulkPasswordResetDialog}
     sx={quickActionButtonSx(
-      'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)',
-      'rgba(124, 58, 237, 0.22)'
+      'linear-gradient(135deg, #9333ea 0%, #7e22ce 100%)',
+      'rgba(147, 51, 234, 0.22)'
     )}
   >
-    {bulkPasswordResetLoading ? 'Processing...' : 'Upload Password Excel'}
-
-    <input
-      id="bulk-password-reset-file-input"
-      type="file"
-      hidden
-      accept=".xlsx,.xls"
-      onChange={(e) => {
-        const file = e.target.files?.[0] || null;
-        setBulkPasswordResetFile(file);
-        setBulkPasswordResetResult(null);
-      }}
-    />
+    Bulk Password Reset
   </Button>
 </Grid>
 
@@ -7629,15 +7715,14 @@ const getDeathCaseStatusChipSx = (status) => {
   <Button
     fullWidth
     variant="contained"
-    startIcon={<LockReset />}
-    onClick={handleBulkPasswordReset}
-    disabled={!bulkPasswordResetFile || bulkPasswordResetLoading}
+    startIcon={<LocationOn />}
+    onClick={openBulkLocationUpdateDialog}
     sx={quickActionButtonSx(
-      'linear-gradient(135deg, #9333ea 0%, #7e22ce 100%)',
-      'rgba(147, 51, 234, 0.22)'
+      'linear-gradient(135deg, #0f766e 0%, #115e59 100%)',
+      'rgba(15, 118, 110, 0.22)'
     )}
   >
-    Reset Default Password
+    Bulk Location Update
   </Button>
 </Grid>
       <Grid item xs={12} sm={6} md={3}>
@@ -7747,83 +7832,6 @@ const getDeathCaseStatusChipSx = (status) => {
           >
             Manual Asahyog → Sahyog
           </Button>
-          {(bulkPasswordResetFile || bulkPasswordResetResult) && (
-  <Box
-    sx={{
-      mt: 2.5,
-      p: 2,
-      borderRadius: 3,
-      bgcolor: '#faf5ff',
-      border: '1px solid rgba(216, 180, 254, 0.75)',
-    }}
-  >
-    {bulkPasswordResetFile && (
-      <Alert
-        severity="info"
-        sx={{
-          mb: bulkPasswordResetResult ? 1.5 : 0,
-          borderRadius: 3,
-          fontWeight: 700,
-        }}
-      >
-        Selected Excel: <strong>{bulkPasswordResetFile.name}</strong>. Password will be reset to <strong>Shub@123</strong>.
-      </Alert>
-    )}
-
-    {bulkPasswordResetResult && (
-      <Alert
-        severity="success"
-        sx={{
-          borderRadius: 3,
-          fontWeight: 700,
-        }}
-      >
-        Bulk password reset completed. Total Registration Numbers:{' '}
-        <strong>{bulkPasswordResetResult.totalRegistrationNumbers || 0}</strong>, Updated:{' '}
-        <strong>{bulkPasswordResetResult.updatedCount || 0}</strong>, Not Found/Skipped:{' '}
-        <strong>{bulkPasswordResetResult.notFoundCount || 0}</strong>
-      </Alert>
-    )}
-
-    {Array.isArray(bulkPasswordResetResult?.notFoundRegistrationNumbers) &&
-      bulkPasswordResetResult.notFoundRegistrationNumbers.length > 0 && (
-        <Box
-          sx={{
-            mt: 1.5,
-            p: 2,
-            borderRadius: 3,
-            bgcolor: '#fff',
-            border: '1px solid rgba(216, 180, 254, 0.7)',
-            maxHeight: 180,
-            overflowY: 'auto',
-          }}
-        >
-          <Typography
-            variant="body2"
-            sx={{
-              fontWeight: 900,
-              color: '#581c87',
-              mb: 1,
-            }}
-          >
-            Not Found / Skipped Registration Numbers
-          </Typography>
-
-          <Typography
-            variant="body2"
-            sx={{
-              color: '#6b21a8',
-              fontWeight: 700,
-              wordBreak: 'break-word',
-              lineHeight: 1.8,
-            }}
-          >
-            {bulkPasswordResetResult.notFoundRegistrationNumbers.join(', ')}
-          </Typography>
-        </Box>
-      )}
-  </Box>
-)}
         </Grid>
         
       )}
@@ -14211,7 +14219,399 @@ const requestedByName =
     </Button>
   </DialogActions>
 </Dialog>
+<Dialog
+  open={bulkPasswordResetOpen}
+  onClose={closeBulkPasswordResetDialog}
+  maxWidth="sm"
+  fullWidth
+  PaperProps={{
+    sx: {
+      borderRadius: 4,
+      overflow: 'hidden',
+    },
+  }}
+>
+  <DialogTitle
+    sx={{
+      px: 3,
+      py: 2.5,
+      color: '#fff',
+      fontWeight: 900,
+      background: 'linear-gradient(135deg, #9333ea 0%, #7e22ce 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    }}
+  >
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <LockReset />
+      Bulk Password Reset
+    </Box>
 
+    <IconButton onClick={closeBulkPasswordResetDialog} sx={{ color: '#fff' }}>
+      <Close />
+    </IconButton>
+  </DialogTitle>
+
+  <DialogContent sx={{ p: 3, bgcolor: '#faf5ff' }}>
+    <Alert severity="warning" sx={{ mb: 2, borderRadius: 3, fontWeight: 700 }}>
+      Upload Excel with registration numbers. All matched users will be reset to password <strong>Shub@123</strong>.
+    </Alert>
+
+    <Button
+      fullWidth
+      variant="outlined"
+      component="label"
+      startIcon={<CloudUpload />}
+      disabled={bulkPasswordResetLoading}
+      sx={{
+        py: 1.5,
+        borderRadius: 3,
+        fontWeight: 900,
+        borderStyle: 'dashed',
+        bgcolor: '#fff',
+      }}
+    >
+      Select Password Excel File
+
+      <input
+        id="bulk-password-reset-file-input"
+        type="file"
+        hidden
+        accept=".xlsx,.xls"
+        onChange={(e) => {
+          const file = e.target.files?.[0] || null;
+          setBulkPasswordResetFile(file);
+          setBulkPasswordResetResult(null);
+        }}
+      />
+    </Button>
+
+    {bulkPasswordResetFile && (
+      <Alert severity="info" sx={{ mt: 2, borderRadius: 3, fontWeight: 700 }}>
+        Selected File: <strong>{bulkPasswordResetFile.name}</strong>
+      </Alert>
+    )}
+
+    {bulkPasswordResetResult && (
+      <Box
+        sx={{
+          mt: 2,
+          p: 2,
+          borderRadius: 3,
+          bgcolor: '#fff',
+          border: '1px solid rgba(216, 180, 254, 0.8)',
+        }}
+      >
+        <Typography variant="subtitle1" sx={{ fontWeight: 900, color: '#581c87', mb: 1 }}>
+          Password Reset Result
+        </Typography>
+
+        <Grid container spacing={1.5}>
+          <Grid item xs={12} sm={4}>
+            <Chip
+              label={`Total: ${bulkPasswordResetResult.totalRegistrationNumbers || 0}`}
+              color="secondary"
+              sx={{ fontWeight: 800 }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <Chip
+              label={`Updated: ${bulkPasswordResetResult.updatedCount || 0}`}
+              color="success"
+              sx={{ fontWeight: 800 }}
+            />
+          </Grid>
+          <Grid item xs={12} sm={4}>
+            <Chip
+              label={`Skipped: ${bulkPasswordResetResult.notFoundCount || 0}`}
+              color="warning"
+              sx={{ fontWeight: 800 }}
+            />
+          </Grid>
+        </Grid>
+
+        {Array.isArray(bulkPasswordResetResult?.notFoundRegistrationNumbers) &&
+          bulkPasswordResetResult.notFoundRegistrationNumbers.length > 0 && (
+            <Box
+              sx={{
+                mt: 2,
+                p: 2,
+                borderRadius: 3,
+                bgcolor: '#fef2f2',
+                maxHeight: 180,
+                overflowY: 'auto',
+              }}
+            >
+              <Typography variant="body2" sx={{ fontWeight: 900, color: '#991b1b', mb: 1 }}>
+                Not Found / Skipped Registration Numbers
+              </Typography>
+
+              <Typography
+                variant="body2"
+                sx={{
+                  color: '#7f1d1d',
+                  fontWeight: 700,
+                  whiteSpace: 'pre-line',
+                  wordBreak: 'break-word',
+                }}
+              >
+                {bulkPasswordResetResult.notFoundRegistrationNumbers.join('\n')}
+              </Typography>
+            </Box>
+          )}
+      </Box>
+    )}
+  </DialogContent>
+
+  <DialogActions sx={{ p: 2.5, bgcolor: '#fff' }}>
+    <Button
+      onClick={closeBulkPasswordResetDialog}
+      disabled={bulkPasswordResetLoading}
+      sx={{ borderRadius: 3, fontWeight: 800 }}
+    >
+      Close
+    </Button>
+
+    <Button
+      variant="contained"
+      startIcon={
+        bulkPasswordResetLoading ? <CircularProgress size={18} color="inherit" /> : <LockReset />
+      }
+      onClick={handleBulkPasswordReset}
+      disabled={!bulkPasswordResetFile || bulkPasswordResetLoading}
+      sx={{
+        borderRadius: 3,
+        fontWeight: 900,
+        background: 'linear-gradient(135deg, #9333ea 0%, #7e22ce 100%)',
+      }}
+    >
+      {bulkPasswordResetLoading ? 'Processing...' : 'Reset Passwords'}
+    </Button>
+  </DialogActions>
+</Dialog>
+<Dialog
+  open={bulkLocationUpdateOpen}
+  onClose={closeBulkLocationUpdateDialog}
+  maxWidth="md"
+  fullWidth
+  PaperProps={{
+    sx: {
+      borderRadius: 4,
+      overflow: 'hidden',
+    },
+  }}
+>
+  <DialogTitle
+    sx={{
+      px: 3,
+      py: 2.5,
+      color: '#fff',
+      fontWeight: 900,
+      background: 'linear-gradient(135deg, #0f766e 0%, #115e59 100%)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    }}
+  >
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <LocationOn />
+      Bulk Location Update
+    </Box>
+
+    <IconButton onClick={closeBulkLocationUpdateDialog} sx={{ color: '#fff' }}>
+      <Close />
+    </IconButton>
+  </DialogTitle>
+
+  <DialogContent sx={{ p: 3, bgcolor: '#ecfeff' }}>
+    <Alert severity="info" sx={{ mb: 2, borderRadius: 3, fontWeight: 700 }}>
+      Upload Excel with <strong>UserId, State, Sambhag, District, Block</strong>. First run check, then update database.
+    </Alert>
+
+    <Button
+      fullWidth
+      variant="outlined"
+      component="label"
+      startIcon={<CloudUpload />}
+      disabled={bulkLocationUpdateLoading}
+      sx={{
+        py: 1.5,
+        borderRadius: 3,
+        fontWeight: 900,
+        borderStyle: 'dashed',
+        bgcolor: '#fff',
+      }}
+    >
+      Select Location Excel File
+
+      <input
+        id="bulk-location-update-file-input"
+        type="file"
+        hidden
+        accept=".xlsx,.xls"
+        onChange={(e) => {
+          const file = e.target.files?.[0] || null;
+          setBulkLocationUpdateFile(file);
+          setBulkLocationUpdateResult(null);
+        }}
+      />
+    </Button>
+
+    {bulkLocationUpdateFile && (
+      <Alert severity="info" sx={{ mt: 2, borderRadius: 3, fontWeight: 700 }}>
+        Selected File: <strong>{bulkLocationUpdateFile.name}</strong>
+      </Alert>
+    )}
+
+    {bulkLocationUpdateResult && (
+      <Box
+        sx={{
+          mt: 2,
+          p: 2,
+          borderRadius: 3,
+          bgcolor: '#fff',
+          border: '1px solid rgba(103, 232, 249, 0.8)',
+        }}
+      >
+        <Typography variant="subtitle1" sx={{ fontWeight: 900, color: '#0f766e', mb: 1 }}>
+          {bulkLocationUpdateResult.dryRun ? 'Location Check Result' : 'Location Update Result'}
+        </Typography>
+
+        <Grid container spacing={1.5}>
+          <Grid item xs={12} sm={6} md={2.4}>
+            <Chip label={`Rows: ${bulkLocationUpdateResult.totalRows || 0}`} sx={{ fontWeight: 800 }} />
+          </Grid>
+          <Grid item xs={12} sm={6} md={2.4}>
+            <Chip label={`Unique: ${bulkLocationUpdateResult.uniqueUserIds || 0}`} color="info" sx={{ fontWeight: 800 }} />
+          </Grid>
+          <Grid item xs={12} sm={6} md={2.4}>
+            <Chip label={`Updated: ${bulkLocationUpdateResult.updatedCount || 0}`} color="success" sx={{ fontWeight: 800 }} />
+          </Grid>
+          <Grid item xs={12} sm={6} md={2.4}>
+            <Chip label={`Skipped: ${bulkLocationUpdateResult.skippedCount || 0}`} color="warning" sx={{ fontWeight: 800 }} />
+          </Grid>
+          <Grid item xs={12} sm={6} md={2.4}>
+            <Chip label={`Duplicate: ${bulkLocationUpdateResult.duplicateCount || 0}`} color="secondary" sx={{ fontWeight: 800 }} />
+          </Grid>
+        </Grid>
+
+        {Array.isArray(bulkLocationUpdateResult?.duplicateUserIds) &&
+          bulkLocationUpdateResult.duplicateUserIds.length > 0 && (
+            <Box sx={{ mt: 2, p: 2, borderRadius: 3, bgcolor: '#f8fafc' }}>
+              <Typography variant="body2" sx={{ fontWeight: 900, color: '#334155', mb: 1 }}>
+                Duplicate User IDs
+              </Typography>
+              <Typography variant="body2" sx={{ fontWeight: 700, wordBreak: 'break-word' }}>
+                {bulkLocationUpdateResult.duplicateUserIds.join(', ')}
+              </Typography>
+            </Box>
+          )}
+
+        {Array.isArray(bulkLocationUpdateResult?.notFoundUsers) &&
+          bulkLocationUpdateResult.notFoundUsers.length > 0 && (
+            <Box
+              sx={{
+                mt: 2,
+                p: 2,
+                borderRadius: 3,
+                bgcolor: '#fffbeb',
+                maxHeight: 180,
+                overflowY: 'auto',
+              }}
+            >
+              <Typography variant="body2" sx={{ fontWeight: 900, color: '#92400e', mb: 1 }}>
+                Users Not Found / Skipped
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: '#78350f',
+                  fontWeight: 700,
+                  whiteSpace: 'pre-line',
+                  wordBreak: 'break-word',
+                }}
+              >
+                {bulkLocationUpdateResult.notFoundUsers.join('\n')}
+              </Typography>
+            </Box>
+          )}
+
+        {Array.isArray(bulkLocationUpdateResult?.locationErrors) &&
+          bulkLocationUpdateResult.locationErrors.length > 0 && (
+            <Box
+              sx={{
+                mt: 2,
+                p: 2,
+                borderRadius: 3,
+                bgcolor: '#fef2f2',
+                maxHeight: 220,
+                overflowY: 'auto',
+              }}
+            >
+              <Typography variant="body2" sx={{ fontWeight: 900, color: '#991b1b', mb: 1 }}>
+                Location Mapping Errors
+              </Typography>
+              <Typography
+                variant="body2"
+                sx={{
+                  color: '#7f1d1d',
+                  fontWeight: 700,
+                  whiteSpace: 'pre-line',
+                  wordBreak: 'break-word',
+                }}
+              >
+                {bulkLocationUpdateResult.locationErrors.join('\n')}
+              </Typography>
+            </Box>
+          )}
+      </Box>
+    )}
+  </DialogContent>
+
+  <DialogActions sx={{ p: 2.5, bgcolor: '#fff', gap: 1 }}>
+    <Button
+      onClick={closeBulkLocationUpdateDialog}
+      disabled={bulkLocationUpdateLoading}
+      sx={{ borderRadius: 3, fontWeight: 800 }}
+    >
+      Close
+    </Button>
+
+    <Button
+      variant="outlined"
+      startIcon={
+        bulkLocationUpdateLoading ? <CircularProgress size={18} /> : <Visibility />
+      }
+      onClick={() => handleBulkLocationUpdate(true)}
+      disabled={!bulkLocationUpdateFile || bulkLocationUpdateLoading}
+      sx={{ borderRadius: 3, fontWeight: 900 }}
+    >
+      Check Excel
+    </Button>
+
+    <Button
+      variant="contained"
+      startIcon={
+        bulkLocationUpdateLoading ? <CircularProgress size={18} color="inherit" /> : <LocationOn />
+      }
+      onClick={() => handleBulkLocationUpdate(false)}
+      disabled={
+        !bulkLocationUpdateFile ||
+        bulkLocationUpdateLoading ||
+        !bulkLocationUpdateResult ||
+        bulkLocationUpdateResult.dryRun !== true
+      }
+      sx={{
+        borderRadius: 3,
+        fontWeight: 900,
+        background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+      }}
+    >
+      Update Locations
+    </Button>
+  </DialogActions>
+</Dialog>
       </Box>
     </Layout>
   );
