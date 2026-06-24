@@ -180,8 +180,9 @@ const [pendingProfilesLiveUrl, setPendingProfilesLiveUrl] = useState("");
   const isSambhagManager = user?.role === "ROLE_SAMBHAG_MANAGER";
   const isDistrictManager = user?.role === "ROLE_DISTRICT_MANAGER";
   const isBlockManager = user?.role === "ROLE_BLOCK_MANAGER";
-const canDeleteUsers = isSambhagManager || isDistrictManager || isBlockManager;  const canManageUsers =
-    isSuperAdmin || isAdmin || isSambhagManager || isDistrictManager;
+const canDeleteUsers = dashboardData?.permissions?.canDeleteUsers === true;
+
+const canManageUsers = isSuperAdmin || isAdmin || isSambhagManager || isDistrictManager;
   const canAssignQueries =
     isSuperAdmin || isAdmin || isSambhagManager || isDistrictManager;
   const canEscalateQueries =

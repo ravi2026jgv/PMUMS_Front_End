@@ -202,6 +202,9 @@ const [createForm, setCreateForm] = useState({
   priority: 'MEDIUM',
   relatedUserId: '',
 });
+const [createFormErrors, setCreateFormErrors] = useState({
+  relatedUserId: '',
+});
 
   const [error, setError] = useState('');
 
@@ -384,16 +387,25 @@ const activeFilterCount = Object.entries(filters).filter(([key, value]) => {
       setError('Message is required');
       return;
     }
-
+if (isManagerMode && !relatedUser && !createForm.relatedUserId) {
+  setCreateFormErrors({
+    relatedUserId: 'Please select the user for whom this ticket is being created',
+  });
+  setError('Please select the user for whom this ticket is being created');
+  return;
+}
+setCreateFormErrors({
+  relatedUserId: '',
+});
     try {
       setCreateSaving(true);
       setError('');
 
-     const payload = {
+    const payload = {
   title: createForm.title.trim(),
   description: createForm.description.trim(),
   priority: createForm.priority,
-  relatedUserId: relatedUser?.id || createForm.relatedUserId || null,
+  relatedUserId: relatedUser?.id || createForm.relatedUserId,
 };
 
       await managerAPI.createQuery(payload);
@@ -403,6 +415,9 @@ const activeFilterCount = Object.entries(filters).filter(([key, value]) => {
   title: '',
   description: '',
   priority: 'MEDIUM',
+  relatedUserId: '',
+});
+setCreateFormErrors({
   relatedUserId: '',
 });
 
@@ -1211,33 +1226,43 @@ background: isAdminMode
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
            {isManagerMode && !relatedUser && (
-  <Autocomplete
-    options={relatedUsers}
-    loading={relatedUsersLoading}
-    value={
-      relatedUsers.find((u) => u.id === createForm.relatedUserId) || null
-    }
-    getOptionLabel={(option) => {
-      const fullName = `${option.name || ''} ${option.surname || ''}`.trim();
-      return `${fullName || option.fullName || option.id} (${option.id})`;
-    }}
-    isOptionEqualToValue={(option, value) => option.id === value.id}
-    onChange={(_, selectedUser) =>
-      setCreateForm((prev) => ({
-        ...prev,
-        relatedUserId: selectedUser?.id || '',
-      }))
-    }
-    renderInput={(params) => (
-      <TextField
-        {...params}
-        label="For Whom / संबंधित उपयोगकर्ता"
-        placeholder="Search and select user"
-        sx={commonTextFieldSx}
-        helperText="Select the user for whom this ticket is being created"
-      />
-    )}
-  />
+ <Autocomplete
+  options={relatedUsers}
+  loading={relatedUsersLoading}
+  value={
+    relatedUsers.find((u) => u.id === createForm.relatedUserId) || null
+  }
+  getOptionLabel={(option) => {
+    const fullName = `${option.name || ''} ${option.surname || ''}`.trim();
+    return `${fullName || option.fullName || option.id} (${option.id})`;
+  }}
+  isOptionEqualToValue={(option, value) => option.id === value.id}
+  onChange={(_, selectedUser) => {
+    setCreateForm((prev) => ({
+      ...prev,
+      relatedUserId: selectedUser?.id || '',
+    }));
+
+    setCreateFormErrors((prev) => ({
+      ...prev,
+      relatedUserId: '',
+    }));
+  }}
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      required
+      label="For Whom / संबंधित उपयोगकर्ता"
+      placeholder="Search and select user"
+      sx={commonTextFieldSx}
+      error={Boolean(createFormErrors.relatedUserId)}
+      helperText={
+        createFormErrors.relatedUserId ||
+        'Select the user for whom this ticket is being created'
+      }
+    />
+  )}
+/>
 )}
             <TextField
               fullWidth
@@ -1278,15 +1303,20 @@ background: isAdminMode
           <Button onClick={() => setCreateOpen(false)} disabled={createSaving}>
             Cancel
           </Button>
-          <Button
-            variant="contained"
-            onClick={handleCreateTicket}
-            disabled={createSaving}
-            startIcon={createSaving ? <CircularProgress size={16} color="inherit" /> : <Send />}
-            sx={{ bgcolor: '#1E3A8A' }}
-          >
-            {createSaving ? 'Sending...' : 'Submit Ticket'}
-          </Button>
+         <Button
+  variant="contained"
+  onClick={handleCreateTicket}
+  disabled={
+    createSaving ||
+    !createForm.title.trim() ||
+    !createForm.description.trim() ||
+    (isManagerMode && !relatedUser && !createForm.relatedUserId)
+  }
+  startIcon={createSaving ? <CircularProgress size={16} color="inherit" /> : <Send />}
+  sx={{ bgcolor: '#1E3A8A' }}
+>
+  {createSaving ? 'Sending...' : 'Submit Ticket'}
+</Button>
         </DialogActions>
       </Dialog>
     </>

@@ -407,7 +407,22 @@ updateExportMobileNumberSetting: (enabled) => {
   getMobileOtpSetting: () => {
     return api.get('/admin/settings/mobile-otp');
   },
+// Manager Delete Permission APIs - User-specific manager delete access
+getManagerDeletePermissions: (params = {}) => {
+  return api.get('/admin/manager-delete-permissions', { params });
+},
 
+checkManagerDeletePermission: (userId) => {
+  return api.get(`/admin/manager-delete-permissions/check/${userId}`);
+},
+
+grantManagerDeletePermission: (payload) => {
+  return api.post('/admin/manager-delete-permissions/grant', payload);
+},
+
+revokeManagerDeletePermission: (payload) => {
+  return api.post('/admin/manager-delete-permissions/revoke', payload);
+},
   updateMobileOtpSetting: (enabled) => {
     return api.put('/admin/settings/mobile-otp', { enabled });
   },

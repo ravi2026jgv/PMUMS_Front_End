@@ -227,6 +227,14 @@ const [exportPermissionRowsPerPage, setExportPermissionRowsPerPage] = useState(1
 const [exportPermissionTotal, setExportPermissionTotal] = useState(0);
 const [liveLinkLoading, setLiveLinkLoading] = useState(false);
 const [pendingProfilesLiveUrl, setPendingProfilesLiveUrl] = useState(''); 
+const [deletePermissionUserId, setDeletePermissionUserId] = useState('');
+const [deletePermissionRemarks, setDeletePermissionRemarks] = useState('');
+const [deletePermissionResult, setDeletePermissionResult] = useState(null);
+const [deletePermissionLoading, setDeletePermissionLoading] = useState(false);
+const [deletePermissionRows, setDeletePermissionRows] = useState([]);
+const [deletePermissionPage, setDeletePermissionPage] = useState(0);
+const [deletePermissionRowsPerPage, setDeletePermissionRowsPerPage] = useState(10);
+const [deletePermissionTotal, setDeletePermissionTotal] = useState(0);
 // Death Cases specific state
     const [isDeathCaseEditMode, setIsDeathCaseEditMode] = useState(false);
   const [editingDeathCaseId, setEditingDeathCaseId] = useState(null);
@@ -1724,6 +1732,118 @@ const handleRevokeExportMobilePermission = async () => {
     setExportPermissionLoading(false);
   }
 };
+const fetchManagerDeletePermissions = async (
+  page = deletePermissionPage,
+  size = deletePermissionRowsPerPage
+) => {
+  try {
+    const response = await adminAPI.getManagerDeletePermissions({
+      page,
+      size,
+    });
+
+    setDeletePermissionRows(response?.data?.content || []);
+    setDeletePermissionTotal(response?.data?.totalElements || 0);
+  } catch (error) {
+    console.error('Error loading manager delete permissions:', error);
+    showSnackbar(
+      error?.response?.data?.message || 'Failed to load manager delete permissions!',
+      'error'
+    );
+    setDeletePermissionRows([]);
+    setDeletePermissionTotal(0);
+  }
+};
+
+const handleCheckManagerDeletePermission = async () => {
+  const userId = deletePermissionUserId.trim();
+
+  if (!userId) {
+    showSnackbar('Please enter Manager User ID!', 'error');
+    return;
+  }
+
+  try {
+    setDeletePermissionLoading(true);
+
+    const response = await adminAPI.checkManagerDeletePermission(userId);
+    setDeletePermissionResult(response.data);
+
+    showSnackbar('Delete permission status loaded successfully!', 'success');
+  } catch (error) {
+    console.error('Error checking manager delete permission:', error);
+    setDeletePermissionResult(null);
+    showSnackbar(
+      error?.response?.data?.message || 'Failed to check delete permission!',
+      'error'
+    );
+  } finally {
+    setDeletePermissionLoading(false);
+  }
+};
+
+const handleGrantManagerDeletePermission = async () => {
+  const userId = deletePermissionUserId.trim();
+
+  if (!userId) {
+    showSnackbar('Please enter Manager User ID!', 'error');
+    return;
+  }
+
+  try {
+    setDeletePermissionLoading(true);
+
+    const response = await adminAPI.grantManagerDeletePermission({
+      userId,
+      remarks: deletePermissionRemarks || 'Granted delete access from Admin Dashboard',
+    });
+
+    setDeletePermissionResult(response.data);
+    await fetchManagerDeletePermissions();
+
+    showSnackbar('Manager delete permission granted successfully!', 'success');
+  } catch (error) {
+    console.error('Error granting manager delete permission:', error);
+    showSnackbar(
+      error?.response?.data?.message || 'Failed to grant delete permission!',
+      'error'
+    );
+  } finally {
+    setDeletePermissionLoading(false);
+  }
+};
+
+const handleRevokeManagerDeletePermission = async () => {
+  const userId = deletePermissionUserId.trim();
+
+  if (!userId) {
+    showSnackbar('Please enter Manager User ID!', 'error');
+    return;
+  }
+
+  try {
+    setDeletePermissionLoading(true);
+
+    const response = await adminAPI.revokeManagerDeletePermission({
+      userId,
+      remarks: deletePermissionRemarks || 'Revoked delete access from Admin Dashboard',
+    });
+
+    setDeletePermissionResult(response.data);
+    await fetchManagerDeletePermissions();
+
+    showSnackbar('Manager delete permission revoked successfully!', 'success');
+  } catch (error) {
+    console.error('Error revoking manager delete permission:', error);
+    showSnackbar(
+      error?.response?.data?.message || 'Failed to revoke delete permission!',
+      'error'
+    );
+  } finally {
+    setDeletePermissionLoading(false);
+  }
+};
+
 const handleContentFieldChange = (field, value) => {
   setHomeDisplayContent((prev) => ({
     ...prev,
@@ -1739,6 +1859,10 @@ const openSettingsDialog = async () => {
     setExportPermissionRemarks('');
     setExportPermissionResult(null);
     setExportPermissionPage(0);
+    setDeletePermissionUserId('');
+setDeletePermissionRemarks('');
+setDeletePermissionResult(null);
+setDeletePermissionPage(0);
 
    const [
   mobileOtpResponse,
@@ -1775,7 +1899,10 @@ const openSettingsDialog = async () => {
   emergencyHelpCount: homeStatsResponse?.data?.emergencyHelpCount || '',
 });
 
-    await fetchExportMobilePermissions(0, exportPermissionRowsPerPage);
+await Promise.all([
+  fetchExportMobilePermissions(0, exportPermissionRowsPerPage),
+  fetchManagerDeletePermissions(0, deletePermissionRowsPerPage),
+]);
   } catch (error) {
     console.error('Error loading settings:', error);
     showSnackbar('Failed to load settings!', 'error');
@@ -13535,6 +13662,202 @@ const requestedByName =
         setExportPermissionRowsPerPage(newSize);
         setExportPermissionPage(0);
         await fetchExportMobilePermissions(0, newSize);
+      }}
+    />
+  </Box>
+</Paper>
+<Paper elevation={0} sx={settingsCardSx}>
+  <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}>
+    <Box
+      sx={{
+        width: 40,
+        height: 40,
+        borderRadius: '14px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #be123c 0%, #7f1d1d 100%)',
+        color: '#fff',
+        boxShadow: '0 10px 20px rgba(190, 18, 60, 0.18)',
+        flexShrink: 0,
+      }}
+    >
+      <Delete fontSize="small" />
+    </Box>
+
+    <Box>
+      <Typography variant="h6" sx={{ fontWeight: 900, color: '#0f172a' }}>
+        Manager Delete Permission
+      </Typography>
+      <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+        Allow selected managers to see and use the delete button in Manager Dashboard.
+      </Typography>
+    </Box>
+  </Box>
+
+  <Grid container spacing={2}>
+    <Grid item xs={12} md={4}>
+      <TextField
+        fullWidth
+        size="small"
+        label="Manager User ID"
+        placeholder="Example: PMUMS20240001"
+        value={deletePermissionUserId}
+        onChange={(e) => setDeletePermissionUserId(e.target.value)}
+        sx={premiumTextFieldSx}
+      />
+    </Grid>
+
+    <Grid item xs={12} md={5}>
+      <TextField
+        fullWidth
+        size="small"
+        label="Remarks"
+        placeholder="Optional reason"
+        value={deletePermissionRemarks}
+        onChange={(e) => setDeletePermissionRemarks(e.target.value)}
+        sx={premiumTextFieldSx}
+      />
+    </Grid>
+
+    <Grid item xs={12} md={3}>
+      <Button
+        fullWidth
+        variant="outlined"
+        disabled={deletePermissionLoading}
+        onClick={handleCheckManagerDeletePermission}
+        sx={{
+          height: 40,
+          borderRadius: 3,
+          fontWeight: 800,
+          textTransform: 'none',
+        }}
+      >
+        Check
+      </Button>
+    </Grid>
+
+    <Grid item xs={12} md={6}>
+      <Button
+        fullWidth
+        variant="contained"
+        disabled={deletePermissionLoading}
+        onClick={handleGrantManagerDeletePermission}
+        sx={premiumPrimaryButtonSx}
+      >
+        {deletePermissionLoading ? 'Processing...' : 'Grant Delete Permission'}
+      </Button>
+    </Grid>
+
+    <Grid item xs={12} md={6}>
+      <Button
+        fullWidth
+        variant="outlined"
+        color="error"
+        disabled={deletePermissionLoading}
+        onClick={handleRevokeManagerDeletePermission}
+        sx={{
+          borderRadius: 3,
+          py: 1,
+          fontWeight: 800,
+          textTransform: 'none',
+        }}
+      >
+        Revoke Delete Permission
+      </Button>
+    </Grid>
+  </Grid>
+
+  {deletePermissionResult && (
+    <Alert
+      severity={deletePermissionResult.enabled ? 'success' : 'warning'}
+      sx={{ mt: 2, borderRadius: 3 }}
+    >
+      <strong>
+        {deletePermissionResult.userName || deletePermissionResult.userId}
+      </strong>
+      {' '}({deletePermissionResult.userRole || '-'}) - Manager delete permission is{' '}
+      <strong>{deletePermissionResult.enabled ? 'Enabled' : 'Disabled'}</strong>
+    </Alert>
+  )}
+
+  <Box sx={{ mt: 3 }}>
+    <Typography
+      variant="subtitle1"
+      sx={{
+        fontWeight: 900,
+        color: '#334155',
+        mb: 1,
+      }}
+    >
+      Delete Permission History
+    </Typography>
+
+    <TableContainer sx={{ borderRadius: 3, border: '1px solid #e2e8f0' }}>
+      <Table size="small">
+        <TableHead>
+          <TableRow sx={{ bgcolor: '#f8fafc' }}>
+            <TableCell sx={{ fontWeight: 900 }}>User ID</TableCell>
+            <TableCell sx={{ fontWeight: 900 }}>Name</TableCell>
+            <TableCell sx={{ fontWeight: 900 }}>Role</TableCell>
+            <TableCell sx={{ fontWeight: 900 }}>Permission</TableCell>
+            <TableCell sx={{ fontWeight: 900 }}>Granted At</TableCell>
+            <TableCell sx={{ fontWeight: 900 }}>Revoked At</TableCell>
+            <TableCell sx={{ fontWeight: 900 }}>Remarks</TableCell>
+          </TableRow>
+        </TableHead>
+
+        <TableBody>
+          {deletePermissionRows.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={7} align="center" sx={{ py: 3 }}>
+                No delete permission records found
+              </TableCell>
+            </TableRow>
+          ) : (
+            deletePermissionRows.map((row) => (
+              <TableRow key={row.id || row.userId}>
+                <TableCell>{row.userId || '-'}</TableCell>
+                <TableCell>{row.userName || '-'}</TableCell>
+                <TableCell>{row.userRole || '-'}</TableCell>
+                <TableCell>
+                  <Chip
+                    size="small"
+                    label={row.enabled ? 'Enabled' : 'Disabled'}
+                    color={row.enabled ? 'success' : 'default'}
+                    variant="outlined"
+                    sx={{ fontWeight: 800 }}
+                  />
+                </TableCell>
+                <TableCell>
+                  {row.grantedAt ? new Date(row.grantedAt).toLocaleString('en-IN') : '-'}
+                </TableCell>
+                <TableCell>
+                  {row.revokedAt ? new Date(row.revokedAt).toLocaleString('en-IN') : '-'}
+                </TableCell>
+                <TableCell>{row.remarks || '-'}</TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
+
+    <TablePagination
+      component="div"
+      count={deletePermissionTotal}
+      page={deletePermissionPage}
+      rowsPerPage={deletePermissionRowsPerPage}
+      rowsPerPageOptions={[5, 10, 20, 50]}
+      onPageChange={async (_, newPage) => {
+        setDeletePermissionPage(newPage);
+        await fetchManagerDeletePermissions(newPage, deletePermissionRowsPerPage);
+      }}
+      onRowsPerPageChange={async (e) => {
+        const newSize = parseInt(e.target.value, 10);
+        setDeletePermissionRowsPerPage(newSize);
+        setDeletePermissionPage(0);
+        await fetchManagerDeletePermissions(0, newSize);
       }}
     />
   </Box>
