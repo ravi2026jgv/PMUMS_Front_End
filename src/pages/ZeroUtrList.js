@@ -25,7 +25,11 @@ import {
   InfoRounded,
 } from '@mui/icons-material';
 import Layout from '../components/Layout/Layout';
-import api from '../services/api';
+// OLD
+// import api from '../services/api';
+
+// NEW
+import { publicApi } from '../services/api';
 
 const theme = {
   dark: '#221b43',
@@ -124,11 +128,19 @@ const ZeroUtrList = () => {
         filters.district ||
         filters.block;
 
-      const endpoint = hasFilters
-        ? '/admin/monthly-sahyog/no-utr-ever/search'
-        : '/admin/monthly-sahyog/no-utr-ever';
+      // OLD - admin/full data API
+// const endpoint = hasFilters
+//   ? '/admin/monthly-sahyog/no-utr-ever/search'
+//   : '/admin/monthly-sahyog/no-utr-ever';
+//
+// const response = await api.get(endpoint, {
 
-      const response = await api.get(endpoint, {
+// NEW - safe public table-only API
+const endpoint = hasFilters
+  ? '/public/monthly-sahyog/no-utr-ever/search'
+  : '/public/monthly-sahyog/no-utr-ever';
+
+const response = await publicApi.get(endpoint, {
         params: {
           page: pageNum,
           size: pageSize,

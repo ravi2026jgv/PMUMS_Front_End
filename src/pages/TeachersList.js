@@ -287,9 +287,15 @@ const fetchActivePools = async () => {
       if (currentFilters.searchName) params.append('name', currentFilters.searchName);
       if (currentFilters.mobileNumber) params.append('mobile', currentFilters.mobileNumber);
 
-      const response = await publicApi.get(`/users/filter?${params.toString()}`, {
-        signal: abortControllerRef.current.signal
-      });
+      // OLD - full user data API
+// const response = await publicApi.get(`/users/filter?${params.toString()}`, {
+//   signal: abortControllerRef.current.signal
+// });
+
+// NEW - safe public table-only API
+const response = await publicApi.get(`/public/members/filter?${params.toString()}`, {
+  signal: abortControllerRef.current.signal
+});
 
       if (thisRequestId !== requestIdRef.current) {
         return;

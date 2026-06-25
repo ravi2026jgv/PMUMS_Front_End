@@ -219,8 +219,12 @@ const PendingProfilesList = () => {
       setLoading(true);
       setError('');
 
-      const response = await publicApi.get('/users/pending-profiles/filter', {
-        params: {
+// OLD - full user data API
+// const response = await publicApi.get('/users/pending-profiles/filter', {
+
+// NEW - safe public table-only API
+const response = await publicApi.get('/public/pending-profiles/filter', {
+          params: {
           page: pageNum,
           size: pageSize,
           ...(filters.sambhagId && { sambhagId: filters.sambhagId }),
@@ -830,8 +834,10 @@ background: theme.dark,                            color: 'white',
                           </TableCell>
 
                           <TableCell sx={{ fontWeight: '700 !important', color: `${theme.dark} !important` }}>
-                            {getDisplayValue(user.name)}
-                          </TableCell>
+  {getDisplayValue(
+    `${user.name || ''} ${user.surname || ''}`.trim()
+  )}
+</TableCell>
 
                           <TableCell>{getDisplayValue(user.department)}</TableCell>
                           <TableCell>{getDisplayValue(user.state || user.departmentState)}</TableCell>

@@ -97,8 +97,11 @@ const [filters, setFilters] = useState({
 
   const fetchBeneficiaries = useCallback(async () => {
     try {
-      const response = await publicApi.get('/admin/monthly-sahyog/non-donors/beneficiaries-all');
-      setBeneficiaryOptions(response.data || []);
+// OLD
+// const response = await publicApi.get('/admin/monthly-sahyog/non-donors/beneficiaries-all');
+
+// NEW
+const response = await publicApi.get('/public/monthly-sahyog/non-donors/beneficiaries-all');      setBeneficiaryOptions(response.data || []);
     } catch (err) {
       console.error('Error fetching beneficiaries:', err);
       setBeneficiaryOptions([]);
@@ -137,8 +140,12 @@ const [filters, setFilters] = useState({
       setLoading(true);
       setError('');
 
-      const response = await publicApi.get('/admin/monthly-sahyog/non-donors/search-by-beneficiary', {
-        params: {
+// OLD
+// const response = await publicApi.get('/admin/monthly-sahyog/non-donors/search-by-beneficiary', {
+
+// NEW
+const response = await publicApi.get('/public/monthly-sahyog/non-donors/search-by-beneficiary', {
+          params: {
           page: pageNum,
           size: pageSize,
           ...(filters.userId && { userId: filters.userId }),
