@@ -166,9 +166,9 @@ const NomineeSahyogPage = () => {
     try {
       setSearchLoading(true);
 
-      const response = await publicApi.get(
-        `/users/filter?mobile=${value}&page=0&size=10`
-      );
+    const response = await publicApi.get(
+  `/users/lookup/filter?mobile=${value}&page=0&size=10`
+);
 
       const users = response?.data?.content || [];
 
