@@ -85,7 +85,15 @@ const inputSx = {
   },
 };
 const OPEN_DEATH_CASES_VALUE = 'OPEN_DEATH_CASES';
-
+const DEFAULT_FILTERS = {
+  userId: '',
+  fullName: '',
+  mobileNumber: '',
+  sambhag: '',
+  district: '',
+  block: '',
+  beneficiaryId: OPEN_DEATH_CASES_VALUE,
+};
 const SahyogList = () => {
   const [donors, setDonors] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -98,15 +106,7 @@ const isAdminUser = isAdminOrSuperAdmin(user);
   const [totalElements, setTotalElements] = useState(0);
   const [pageSize] = useState(20);
 
-const [filters, setFilters] = useState({
-  userId: '',
-  fullName: '',
-  mobileNumber: '',
-  sambhag: '',
-  district: '',
-  block: '',
-  beneficiaryId: '',
-});
+const [filters, setFilters] = useState(DEFAULT_FILTERS);
 
 const [editDialogOpen, setEditDialogOpen] = useState(false);
 const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -120,7 +120,7 @@ const [editForm, setEditForm] = useState({
   utrNumber: '',
   deathCaseId: '',
 });
-
+const isFetchingRef = useRef(false);
   const abortControllerRef = useRef(null);
   const requestIdRef = useRef(0);
   const isInitialMount = useRef(true);
@@ -164,7 +164,8 @@ const response = await publicApi.get('/public/monthly-sahyog/donors/beneficiarie
     );
   };
 
-  const fetchDonors = useCallback(async (pageNum = 0) => {
+const fetchDonors = useCallback(async (pageNum = 0, filtersOverride = null) => {    if (isFetchingRef.current) return;
+isFetchingRef.current = true;
     requestIdRef.current += 1;
     const thisRequestId = requestIdRef.current;
 
@@ -177,29 +178,29 @@ const response = await publicApi.get('/public/monthly-sahyog/donors/beneficiarie
     try {
       setLoading(true);
       setError('');
-
+const activeFilters = filtersOverride || filters;
 // OLD
 // const response = await publicApi.get('/admin/monthly-sahyog/donors/search-by-beneficiary', {
 
 // NEW
 const response = await publicApi.get('/public/monthly-sahyog/donors/search-by-beneficiary', {
-          params: {
-          page: pageNum,
-          size: pageSize,
-          ...(filters.userId && { userId: filters.userId }),
-          ...(filters.fullName && { name: filters.fullName }),
-          ...(filters.mobileNumber && { mobile: filters.mobileNumber }),
-          ...(filters.sambhag && { sambhag: filters.sambhag }),
-          ...(filters.district && { district: filters.district }),
-          ...(filters.block && { block: filters.block }),
-...(filters.beneficiaryId &&
-  filters.beneficiaryId !== OPEN_DEATH_CASES_VALUE && {
-    beneficiaryId: filters.beneficiaryId,
+       params: {
+  page: pageNum,
+  size: pageSize,
+  ...(activeFilters.userId && { userId: activeFilters.userId }),
+  ...(activeFilters.fullName && { name: activeFilters.fullName }),
+  ...(activeFilters.mobileNumber && { mobile: activeFilters.mobileNumber }),
+  ...(activeFilters.sambhag && { sambhag: activeFilters.sambhag }),
+  ...(activeFilters.district && { district: activeFilters.district }),
+  ...(activeFilters.block && { block: activeFilters.block }),
+  ...(activeFilters.beneficiaryId &&
+    activeFilters.beneficiaryId !== OPEN_DEATH_CASES_VALUE && {
+      beneficiaryId: activeFilters.beneficiaryId,
+    }),
+  ...(activeFilters.beneficiaryId === OPEN_DEATH_CASES_VALUE && {
+    openOnly: true,
   }),
-...(filters.beneficiaryId === OPEN_DEATH_CASES_VALUE && {
-  openOnly: true,
-}),
-        },
+},
         signal: abortControllerRef.current.signal,
       });
 
@@ -231,6 +232,7 @@ const response = await publicApi.get('/public/monthly-sahyog/donors/search-by-be
       setError('सहयोग सूची लोड करने में त्रुटि हुई। कृपया पुनः प्रयास करें।');
       setDonors([]);
     } finally {
+      isFetchingRef.current = false;
       if (thisRequestId === requestIdRef.current) {
         setLoading(false);
       }
@@ -246,28 +248,28 @@ const response = await publicApi.get('/public/monthly-sahyog/donors/search-by-be
     filters.beneficiaryId,
   ]);
 
-  useEffect(() => {
-    if (isInitialMount.current) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (isInitialMount.current) {
+  //     return;
+  //   }
 
-    const debounceTimer = setTimeout(() => {
-      fetchDonors(0);
-    }, 300);
+  //   const debounceTimer = setTimeout(() => {
+  //     fetchDonors(0);
+  //   }, 300);
 
-    return () => {
-      clearTimeout(debounceTimer);
-    };
-  }, [
-    fetchDonors,
-    filters.userId,
-    filters.fullName,
-    filters.mobileNumber,
-    filters.sambhag,
-    filters.district,
-    filters.block,
-    filters.beneficiaryId,
-  ]);
+  //   return () => {
+  //     clearTimeout(debounceTimer);
+  //   };
+  // }, [
+  //   fetchDonors,
+  //   filters.userId,
+  //   filters.fullName,
+  //   filters.mobileNumber,
+  //   filters.sambhag,
+  //   filters.district,
+  //   filters.block,
+  //   filters.beneficiaryId,
+  // ]);
 
   useEffect(() => {
     fetchDonors(0).then(() => {
@@ -393,6 +395,16 @@ const handleDeleteSahyogReceipt = async () => {
   }
 };
 
+const handleSearch = () => {
+  setPage(0);
+  fetchDonors(0);
+};
+
+const handleClearFilters = () => {
+  setFilters(DEFAULT_FILTERS);
+  setPage(0);
+  fetchDonors(0, DEFAULT_FILTERS);
+};
 
   const handlePageChange = (event, newPage) => {
     const pageNum = parseInt(newPage, 10);
@@ -948,9 +960,12 @@ boxShadow: '0 12px 28px rgba(15, 118, 110, 0.28)',
                       displayEmpty
                       sx={inputSx}
                     >
-                                            <MenuItem value="">सभी लाभार्थी</MenuItem>
-                      <MenuItem value={OPEN_DEATH_CASES_VALUE}>
-  सभी चालू सहायता केस 
+                   <MenuItem value={OPEN_DEATH_CASES_VALUE}>
+  सभी चालू सहायता केस
+</MenuItem>
+
+<MenuItem value="">
+  सभी लाभार्थी
 </MenuItem>
 
 
@@ -964,6 +979,50 @@ boxShadow: '0 12px 28px rgba(15, 118, 110, 0.28)',
                     </Select>
                   </FormControl>
                 </Grid>
+                <Box sx={{ mt: 2.5, display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+  <Button
+    variant="contained"
+    startIcon={<Search />}
+    onClick={handleSearch}
+    disabled={loading}
+    sx={{
+      borderRadius: '14px',
+      px: 3,
+      py: 1,
+      fontWeight: 950,
+      textTransform: 'none',
+      background: theme.main,
+      boxShadow: '0 12px 28px rgba(111, 92, 194, 0.28)',
+      '&:hover': {
+        background: theme.dark,
+        transform: 'translateY(-1px)',
+      },
+    }}
+  >
+    Search
+  </Button>
+
+  <Button
+    variant="outlined"
+    onClick={handleClearFilters}
+    disabled={loading}
+    sx={{
+      borderRadius: '14px',
+      px: 3,
+      py: 1,
+      fontWeight: 950,
+      textTransform: 'none',
+      borderColor: theme.main,
+      color: theme.main,
+      '&:hover': {
+        borderColor: theme.dark,
+        background: 'rgba(111, 92, 194, 0.08)',
+      },
+    }}
+  >
+    Clear
+  </Button>
+</Box>
               </Grid>
 
               {hasActiveFilters() && (
