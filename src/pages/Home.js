@@ -111,6 +111,17 @@ const [utrError, setUtrError] = useState("");
 
     navigate("/sahyog");
   };
+  const maskUtrNumber = (utrNumber) => {
+  if (!utrNumber) return null;
+
+  const cleanUtr = utrNumber.trim();
+
+  if (cleanUtr.length <= 4) {
+    return "****";
+  }
+
+  return `********${cleanUtr.slice(-4)}`;
+};
 const getQrImageUrl = (qrPath) => {
   if (!qrPath) return "";
 
@@ -240,11 +251,11 @@ if (!utrForm.amount || !cleanUtrNumber) {
 
 setUtrSuccess("UTR सफलतापूर्वक सबमिट हो गया।");
 setSuccessSnackbarOpen(true);
-    setSearchedMember((prev) => ({
-      ...prev,
-      utrUploaded: true,
-     latestUtrNumber: cleanUtrNumber
-    }));
+   setSearchedMember((prev) => ({
+  ...prev,
+  utrUploaded: true,
+  latestUtrNumber: maskUtrNumber(cleanUtrNumber)
+}));
 
     setTimeout(() => {
       closeUtrDialog();

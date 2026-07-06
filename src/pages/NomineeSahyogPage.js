@@ -95,7 +95,17 @@ const NomineeSahyogPage = () => {
   const [utrSubmitting, setUtrSubmitting] = useState(false);
   const [utrSuccess, setUtrSuccess] = useState("");
   const [utrError, setUtrError] = useState("");
+const maskUtrNumber = (utrNumber) => {
+  if (!utrNumber) return null;
 
+  const cleanUtr = utrNumber.trim();
+
+  if (cleanUtr.length <= 4) {
+    return "****";
+  }
+
+  return `********${cleanUtr.slice(-4)}`;
+};
   const getQrImageUrl = (qrPath) => {
     if (!qrPath) return "";
 
@@ -248,10 +258,10 @@ if (!utrForm.amount || !cleanUtrNumber) {
       setSuccessSnackbarOpen(true);
 
       setSearchedMember((prev) => ({
-        ...prev,
-        utrUploaded: true,
-       latestUtrNumber: cleanUtrNumber
-      }));
+  ...prev,
+  utrUploaded: true,
+  latestUtrNumber: maskUtrNumber(cleanUtrNumber)
+}));
 
       setTimeout(() => {
         closeUtrDialog();
