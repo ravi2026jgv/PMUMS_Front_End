@@ -133,45 +133,52 @@ export const authService = {
   },
 
   // Get current user profile
-  getCurrentUser: async () => {
-    // Since login now provides complete user data, first check localStorage
-    const savedUser = localStorage.getItem('user');
-    console.log('🔍 Checking localStorage for user:', savedUser);
+  // getCurrentUser: async () => {
+  //   // Since login now provides complete user data, first check localStorage
+  //   const savedUser = localStorage.getItem('user');
+  //   console.log('🔍 Checking localStorage for user:', savedUser);
     
-    if (savedUser) {
-      const userData = JSON.parse(savedUser);
-      console.log('🔍 Parsed user data from localStorage:', userData);
-      console.log('🆔 Current user ID in localStorage:', userData.id);
+  //   if (savedUser) {
+  //     const userData = JSON.parse(savedUser);
+  //     console.log('🔍 Parsed user data from localStorage:', userData);
+  //     console.log('🆔 Current user ID in localStorage:', userData.id);
       
-      // If we have complete user data with ID, use it to fetch fresh data
-      if (userData.id) {
-        // Skip API call and use cached user data
-        console.log('📋 Using cached user data, skipping API refresh');
-        return userData;
+  //     // If we have complete user data with ID, use it to fetch fresh data
+  //     if (userData.id) {
+  //       // Skip API call and use cached user data
+  //       console.log('📋 Using cached user data, skipping API refresh');
+  //       return userData;
         
-        /*
-        // Disabled automatic user data refresh
-        try {
-          console.log('🌐 Fetching fresh user data from API for ID:', userData.id);
-          const response = await api.get(`/admin/users/${userData.id}`);
-          console.log('✅ Fresh user data from API:', response.data);
-          console.log('🆔 Fresh user ID from API:', response.data.id);
+  //       /*
+  //       // Disabled automatic user data refresh
+  //       try {
+  //         console.log('🌐 Fetching fresh user data from API for ID:', userData.id);
+  //         const response = await api.get(`/admin/users/${userData.id}`);
+  //         console.log('✅ Fresh user data from API:', response.data);
+  //         console.log('🆔 Fresh user ID from API:', response.data.id);
           
-          // Update localStorage with fresh data
-          localStorage.setItem('user', JSON.stringify(response.data));
-          return response.data;
-        } catch (error) {
-          console.error('❌ Failed to fetch user by ID:', error);
-          console.log('⚠️ Using cached user data as fallback');
-          // Return saved user data as fallback if it's complete
-          return userData;
-        }
-        */
-      }
-    }
+  //         // Update localStorage with fresh data
+  //         localStorage.setItem('user', JSON.stringify(response.data));
+  //         return response.data;
+  //       } catch (error) {
+  //         console.error('❌ Failed to fetch user by ID:', error);
+  //         console.log('⚠️ Using cached user data as fallback');
+  //         // Return saved user data as fallback if it's complete
+  //         return userData;
+  //       }
+  //       */
+  //     }
+  //   }
     
-    throw new Error('No user data found. Please login again.');
-  },
+  //   throw new Error('No user data found. Please login again.');
+  // },
+getCurrentUser: async () => {
+  const response = await api.get('/auth/me');
+
+  localStorage.setItem('user', JSON.stringify(response.data));
+
+  return response.data;
+},
 
   // Logout user
   logout: async () => {

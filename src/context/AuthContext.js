@@ -120,9 +120,8 @@ const setupAutoLogout = (token) => {
   useEffect(() => {
     const checkAuthStatus = async () => {
       const token = localStorage.getItem('authToken');
-      const savedUser = localStorage.getItem('user');
 
-      if (token && savedUser) {
+if (token) {
         const expiryTime = getTokenExpiryTime(token);
 
         const loginDate = localStorage.getItem('loginDate');
@@ -196,12 +195,12 @@ if (!expiryTime || Date.now() >= expiryTime || loginDate !== todayDate) {
       localStorage.removeItem('authToken');
       localStorage.removeItem('user');
 
-      localStorage.setItem('authToken', token);
-localStorage.setItem('user', JSON.stringify(userData));
+localStorage.setItem('authToken', token);
 localStorage.setItem('loginDate', new Date().toISOString().split('T')[0]);
 
-      dispatch({ type: 'LOGIN_SUCCESS', payload: userData });
+const verifiedUser = await authService.getCurrentUser();
 
+dispatch({ type: 'LOGIN_SUCCESS', payload: verifiedUser });
       setupAutoLogout(token);
 
       const userName = userData.name || userData.username || 'उपयोगकर्ता';
