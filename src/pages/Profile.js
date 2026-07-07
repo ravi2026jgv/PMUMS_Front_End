@@ -81,10 +81,22 @@ const hasFieldValue = (value) =>
   value !== null &&
   value !== undefined &&
   value.toString().trim() !== '';
-const isFullNameLocked = Boolean(profileFieldLocks?.fullName);
-const isDateOfBirthLocked = Boolean(profileFieldLocks?.dateOfBirth);
-const isMobileNumberLocked = Boolean(profileFieldLocks?.mobileNumber);
-const isEmailLocked = Boolean(profileFieldLocks?.email);
+
+const normalizeRole = (role) =>
+  role ? role.toString().replace(/^ROLE_/, '') : '';
+
+const isSuperAdmin =
+  normalizeRole(user?.role) === 'SUPERADMIN' ||
+  normalizeRole(profileData?.role) === 'SUPERADMIN';
+
+/*
+ * SuperAdmin should be able to edit profile fields from frontend
+ * even when profile field locks are enabled.
+ */
+const isFullNameLocked = !isSuperAdmin && Boolean(profileFieldLocks?.fullName);
+const isDateOfBirthLocked = !isSuperAdmin && Boolean(profileFieldLocks?.dateOfBirth);
+const isMobileNumberLocked = !isSuperAdmin && Boolean(profileFieldLocks?.mobileNumber);
+const isEmailLocked = !isSuperAdmin && Boolean(profileFieldLocks?.email);
 const isNominee1Locked =
   hasFieldValue(profileData?.nominee1Name) ||
   hasFieldValue(profileData?.nominee1Relation);
@@ -112,9 +124,10 @@ const isEmailValueLocked =
   hasFieldValue(profileData?.email);
 
 const isDepartmentUniqueIdValueLocked =
+  !isSuperAdmin &&
   Boolean(profileFieldLocks?.departmentUniqueId) &&
   hasFieldValue(profileData?.departmentUniqueId);
-
+  
   const isDepartmentUniqueIdLocked = isDepartmentUniqueIdValueLocked;
 const {
     register,
