@@ -95,9 +95,17 @@ const AdminDashboard = () => {
   const [totalUsers, setTotalUsers] = useState(0);
   const [deathCases, setDeathCases] = useState([]);
   const [payments] = useState([]);
-  const [receipts, setReceipts] = useState([]);
-  const [totalReceipts, setTotalReceipts] = useState(0);
-  const [receiptsLoading, setReceiptsLoading] = useState(false);
+const [receipts, setReceipts] = useState([]);
+const [totalReceipts, setTotalReceipts] = useState(0);
+const [receiptsLoading, setReceiptsLoading] = useState(false);
+
+// Receipt-specific pagination
+const [receiptPage, setReceiptPage] = useState(0);
+const [receiptRowsPerPage, setReceiptRowsPerPage] = useState(20);
+
+// UTR search
+const [receiptUtrInput, setReceiptUtrInput] = useState('');
+const [receiptUtrSearch, setReceiptUtrSearch] = useState('');
   const [queries, setQueries] = useState([]);
   const [assignments, setAssignments] = useState([]);
   const [managerAssignments, setManagerAssignments] = useState([]);
@@ -2284,6 +2292,25 @@ const formatDate = (dateString) => {
   });
 };
 
+const formatDateTime = (dateString) => {
+  if (!dateString) return '-';
+
+  const date = new Date(dateString);
+
+  if (Number.isNaN(date.getTime())) {
+    return '-';
+  }
+
+  return date.toLocaleString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+};
+
   const toDateInputValue = (value) => {
     if (!value) return '';
     // LocalDate from backend usually comes as 'YYYY-MM-DD'
@@ -3357,32 +3384,97 @@ const handleSendInsuranceInquiryEmail = async () => {
   };
 
   // Fetch receipts
-  const fetchReceipts = async (page = 0, size = 20) => {
-    try {
-      console.log('Fetching receipts...');
-      setReceiptsLoading(true);
-      const response = await adminAPI.getReceipts({ page, size });
-      console.log('Receipts response:', response);
-      
-      if (response && response.data) {
-        const { content, totalElements } = response.data;
-        setReceipts(content || []);
-        setTotalReceipts(totalElements || 0);
-        console.log(`Loaded ${content?.length || 0} receipts out of ${totalElements || 0} total`);
-      } else {
-        console.warn('Unexpected receipts response structure:', response);
-        setReceipts([]);
-        setTotalReceipts(0);
-      }
-    } catch (error) {
-      console.error('Error fetching receipts:', error);
-      showSnackbar('Error loading Receipts!', 'error');
-      setReceipts([]);
-      setTotalReceipts(0);
-    } finally {
-      setReceiptsLoading(false);
+ const fetchReceipts = async (
+  currentPage = receiptPage,
+  pageSize = receiptRowsPerPage,
+  utrNumber = receiptUtrSearch
+) => {
+  try {
+    setReceiptsLoading(true);
+
+    const params = {
+      page: currentPage,
+      size: pageSize,
+      sort: 'uploadedAt,desc',
+    };
+
+    const normalizedUtrNumber = String(utrNumber || '').trim();
+
+    if (normalizedUtrNumber) {
+      params.utrNumber = normalizedUtrNumber;
     }
-  };
+
+    const response = await adminAPI.getReceipts(params);
+
+    const responseData = response?.data || {};
+
+    setReceipts(responseData.content || []);
+    setTotalReceipts(responseData.totalElements || 0);
+  } catch (error) {
+    console.error('Error fetching receipts:', error);
+
+    showSnackbar(
+      error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        'Error loading receipts!',
+      'error'
+    );
+
+    setReceipts([]);
+    setTotalReceipts(0);
+  } finally {
+    setReceiptsLoading(false);
+  }
+};
+
+const handleReceiptSearch = () => {
+  const normalizedUtrNumber = receiptUtrInput.trim();
+
+  /*
+   * When already on page 0 and the same search is submitted again,
+   * manually reload the records.
+   */
+  if (
+    receiptPage === 0 &&
+    receiptUtrSearch === normalizedUtrNumber
+  ) {
+    fetchReceipts(
+      0,
+      receiptRowsPerPage,
+      normalizedUtrNumber
+    );
+    return;
+  }
+
+  setReceiptPage(0);
+  setReceiptUtrSearch(normalizedUtrNumber);
+};
+
+const handleClearReceiptSearch = () => {
+  setReceiptUtrInput('');
+
+  if (receiptPage === 0 && !receiptUtrSearch) {
+    fetchReceipts(0, receiptRowsPerPage, '');
+    return;
+  }
+
+  setReceiptPage(0);
+  setReceiptUtrSearch('');
+};
+
+const handleReceiptPageChange = (event, newPage) => {
+  setReceiptPage(newPage);
+};
+
+const handleReceiptRowsPerPageChange = (event) => {
+  const newRowsPerPage = parseInt(
+    event.target.value,
+    10
+  );
+
+  setReceiptRowsPerPage(newRowsPerPage);
+  setReceiptPage(0);
+};
 
   // Load death cases when death cases tab is selected
   useEffect(() => {
@@ -3390,12 +3482,22 @@ const handleSendInsuranceInquiryEmail = async () => {
       fetchDeathCases();
     }
   }, [activeTab]);
-    useEffect(() => {
-      if (activeTab === 3) {
-        fetchReceipts();
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeTab]);
+   useEffect(() => {
+  if (activeTab === 3) {
+    fetchReceipts(
+      receiptPage,
+      receiptRowsPerPage,
+      receiptUtrSearch
+    );
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [
+  activeTab,
+  receiptPage,
+  receiptRowsPerPage,
+  receiptUtrSearch,
+]);
 
   // Fetch location hierarchy for death case form
   useEffect(() => {
@@ -3956,10 +4058,11 @@ const handleExportZeroUtr = async () => {
   };
 
   // Load data on component mount and when page/rowsPerPage changes
-  useEffect(() => {
+useEffect(() => {
   fetchUsers();
-  fetchReceipts(page, rowsPerPage);
   fetchManagerAssignments();
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [page, rowsPerPage]);
   // Debounced search - triggers when filters change
   useEffect(() => {
@@ -4416,18 +4519,47 @@ const handleExportData = async (type) => {
   try {
     setExportLoading(true);
 
-    if (type === 'receipts') {
-      const response = await adminAPI.exportReceipts();
+   if (type === 'receipts') {
+  const exportParams = {};
 
-      downloadBlobFile(
-        response.data,
-        `receipts_${new Date().toISOString().slice(0, 10)}.xlsx`,
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      );
+  if (receiptUtrSearch.trim()) {
+    exportParams.utrNumber =
+      receiptUtrSearch.trim();
+  }
 
-      showSnackbar('Receipts exported successfully!', 'success');
-      return;
-    }
+  const response =
+    await adminAPI.exportReceipts(
+      exportParams
+    );
+
+  const safeUtrNumber =
+    receiptUtrSearch
+      .trim()
+      .replace(/[^a-zA-Z0-9_-]/g, '_');
+
+  const fileName = safeUtrNumber
+    ? `receipts_UTR_${safeUtrNumber}_${new Date()
+        .toISOString()
+        .slice(0, 10)}.xlsx`
+    : `receipts_${new Date()
+        .toISOString()
+        .slice(0, 10)}.xlsx`;
+
+  downloadBlobFile(
+    response.data,
+    fileName,
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  );
+
+  showSnackbar(
+    receiptUtrSearch
+      ? 'Filtered UTR receipts exported successfully!'
+      : 'Receipts exported successfully!',
+    'success'
+  );
+
+  return;
+}
 
     showSnackbar(`${type} export is not configured yet.`, 'warning');
   } catch (error) {
@@ -6965,31 +7097,44 @@ const hasSelectedDistrict = finalDistrictIds.includes(String(district.id));
   </Paper>
 );
 
- const renderPaymentsTab = () => (
+const renderPaymentsTab = () => (
   <Paper
     elevation={0}
     sx={{
       borderRadius: 4,
       overflow: 'hidden',
       background: 'rgba(255,255,255,0.96)',
-      border: '1px solid rgba(226, 232, 240, 0.95)',
-      boxShadow: '0 18px 44px rgba(15, 23, 42, 0.08)',
+      border:
+        '1px solid rgba(226, 232, 240, 0.95)',
+      boxShadow:
+        '0 18px 44px rgba(15, 23, 42, 0.08)',
     }}
   >
+    {/* Header */}
     <Box
       sx={{
         p: { xs: 2.5, md: 3 },
         background:
           'linear-gradient(135deg, rgba(239,246,255,0.96) 0%, rgba(240,253,244,0.92) 100%)',
-        borderBottom: '1px solid rgba(226, 232, 240, 0.9)',
+        borderBottom:
+          '1px solid rgba(226, 232, 240, 0.9)',
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: { xs: 'flex-start', md: 'center' },
+        alignItems: {
+          xs: 'flex-start',
+          md: 'center',
+        },
         flexWrap: 'wrap',
         gap: 2,
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.5,
+        }}
+      >
         <Box
           sx={{
             width: 46,
@@ -6998,9 +7143,11 @@ const hasSelectedDistrict = finalDistrictIds.includes(String(district.id));
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'linear-gradient(135deg, #2563eb 0%, #16a34a 100%)',
+            background:
+              'linear-gradient(135deg, #2563eb 0%, #16a34a 100%)',
             color: '#fff',
-            boxShadow: '0 12px 24px rgba(37, 99, 235, 0.22)',
+            boxShadow:
+              '0 12px 24px rgba(37, 99, 235, 0.22)',
           }}
         >
           <Payment sx={{ fontSize: 26 }} />
@@ -7018,7 +7165,13 @@ const hasSelectedDistrict = finalDistrictIds.includes(String(district.id));
             Receipts Management
           </Typography>
 
-          <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 600 }}>
+          <Typography
+            variant="body2"
+            sx={{
+              color: '#64748b',
+              fontWeight: 600,
+            }}
+          >
             {receiptsLoading
               ? 'Loading receipt records...'
               : `${totalReceipts} receipt records available`}
@@ -7026,46 +7179,199 @@ const hasSelectedDistrict = finalDistrictIds.includes(String(district.id));
         </Box>
       </Box>
 
-      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          gap: 1,
+          alignItems: 'center',
+          flexWrap: 'wrap',
+        }}
+      >
         <Chip
           label={`${receipts.length} visible`}
           size="small"
           variant="outlined"
           sx={{
-            bgcolor: 'rgba(37, 99, 235, 0.10)',
+            bgcolor:
+              'rgba(37, 99, 235, 0.10)',
             color: '#1d4ed8',
-            border: '1px solid rgba(37, 99, 235, 0.18)',
+            border:
+              '1px solid rgba(37, 99, 235, 0.18)',
             fontWeight: 900,
             borderRadius: '10px',
           }}
         />
 
-       <Button
-  variant="outlined"
-  startIcon={exportLoading ? <CircularProgress size={18} /> : <Download />}
-  onClick={() => handleExportData('receipts')}
-  disabled={exportLoading}
-  sx={{
-    borderRadius: 3,
-    px: 2,
-    py: 1,
-    fontWeight: 800,
-    textTransform: 'none',
-    borderColor: '#bfdbfe',
-    color: '#1d4ed8',
-    bgcolor: '#fff',
-    '&:hover': {
-      borderColor: '#2563eb',
-      bgcolor: 'rgba(239, 246, 255, 0.9)',
-      transform: 'translateY(-1px)',
-    },
-  }}
->
-  {exportLoading ? 'Exporting...' : 'Export'}
-</Button>
- </Box>
+        <Button
+          variant="outlined"
+          startIcon={
+            exportLoading ? (
+              <CircularProgress size={18} />
+            ) : (
+              <Download />
+            )
+          }
+          onClick={() =>
+            handleExportData('receipts')
+          }
+          disabled={exportLoading}
+          sx={{
+            borderRadius: 3,
+            px: 2,
+            py: 1,
+            fontWeight: 800,
+            textTransform: 'none',
+            borderColor: '#bfdbfe',
+            color: '#1d4ed8',
+            bgcolor: '#fff',
+            '&:hover': {
+              borderColor: '#2563eb',
+              bgcolor:
+                'rgba(239, 246, 255, 0.9)',
+              transform: 'translateY(-1px)',
+            },
+          }}
+        >
+          {exportLoading
+            ? 'Exporting...'
+            : receiptUtrSearch
+            ? 'Export Filtered'
+            : 'Export All'}
+        </Button>
+      </Box>
     </Box>
 
+    {/* UTR Search */}
+    <Box
+      sx={{
+        p: { xs: 2, md: 2.5 },
+        bgcolor: '#f8fafc',
+        borderBottom:
+          '1px solid rgba(226, 232, 240, 0.95)',
+      }}
+    >
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: {
+            xs: 'stretch',
+            sm: 'center',
+          },
+          flexDirection: {
+            xs: 'column',
+            sm: 'row',
+          },
+          gap: 1.5,
+        }}
+      >
+        <TextField
+          value={receiptUtrInput}
+          onChange={(event) =>
+            setReceiptUtrInput(
+              event.target.value
+            )
+          }
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') {
+              handleReceiptSearch();
+            }
+          }}
+          label="Search by UTR Number"
+          placeholder="Enter complete or partial UTR number"
+          size="small"
+          sx={{
+            width: {
+              xs: '100%',
+              sm: 420,
+            },
+            bgcolor: '#fff',
+            '& .MuiOutlinedInput-root': {
+              borderRadius: 3,
+            },
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search
+                  sx={{
+                    color: '#64748b',
+                  }}
+                />
+              </InputAdornment>
+            ),
+            endAdornment: receiptUtrInput ? (
+              <InputAdornment position="end">
+                <IconButton
+                  size="small"
+                  onClick={
+                    handleClearReceiptSearch
+                  }
+                  aria-label="Clear UTR search"
+                >
+                  <Clear fontSize="small" />
+                </IconButton>
+              </InputAdornment>
+            ) : null,
+          }}
+        />
+
+        <Button
+          variant="contained"
+          startIcon={<Search />}
+          onClick={handleReceiptSearch}
+          disabled={receiptsLoading}
+          sx={{
+            minWidth: 120,
+            borderRadius: 3,
+            px: 2.5,
+            py: 1,
+            fontWeight: 900,
+            textTransform: 'none',
+            background:
+              'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+          }}
+        >
+          Search
+        </Button>
+
+        {receiptUtrSearch && (
+          <Chip
+            label={`UTR: ${receiptUtrSearch}`}
+            onDelete={
+              handleClearReceiptSearch
+            }
+            deleteIcon={<Clear />}
+            sx={{
+              maxWidth: {
+                xs: '100%',
+                sm: 320,
+              },
+              bgcolor:
+                'rgba(37, 99, 235, 0.10)',
+              color: '#1d4ed8',
+              border:
+                '1px solid rgba(37, 99, 235, 0.18)',
+              fontWeight: 800,
+            }}
+          />
+        )}
+      </Box>
+
+      <Typography
+        variant="caption"
+        sx={{
+          display: 'block',
+          mt: 1,
+          color: '#64748b',
+          fontWeight: 600,
+        }}
+      >
+        You can search using a complete or partial
+        UTR number.
+      </Typography>
+    </Box>
+
+    {/* Loading */}
     {receiptsLoading ? (
       <Box
         sx={{
@@ -7077,12 +7383,23 @@ const hasSelectedDistrict = finalDistrictIds.includes(String(district.id));
           bgcolor: '#fff',
         }}
       >
-        <CircularProgress size={24} sx={{ color: '#2563eb' }} />
-        <Typography variant="body2" sx={{ color: '#64748b', fontWeight: 700 }}>
+        <CircularProgress
+          size={24}
+          sx={{ color: '#2563eb' }}
+        />
+
+        <Typography
+          variant="body2"
+          sx={{
+            color: '#64748b',
+            fontWeight: 700,
+          }}
+        >
           Receipts लोड हो रहे हैं...
         </Typography>
       </Box>
     ) : receipts.length === 0 ? (
+      /* Empty state */
       <Box
         sx={{
           p: 6,
@@ -7090,131 +7407,549 @@ const hasSelectedDistrict = finalDistrictIds.includes(String(district.id));
           bgcolor: '#fff',
         }}
       >
-        <Payment sx={{ fontSize: 52, color: '#cbd5e1', mb: 1 }} />
-
-        <Typography variant="h6" sx={{ color: '#475569', fontWeight: 900 }}>
-          कोई receipt उपलब्ध नहीं है
-        </Typography>
-
-        <Typography variant="body2" sx={{ color: '#94a3b8', mt: 0.75, fontWeight: 600 }}>
-          जैसे ही users payment proof submit करेंगे, यहाँ list दिखाई देगी।
-        </Typography>
-      </Box>
-    ) : (
-      <TableContainer
-        sx={{
-          maxWidth: '100%',
-          overflowX: 'auto',
-          bgcolor: '#fff',
-        }}
-      >
-        <Table
+        <Payment
           sx={{
-            minWidth: 1050,
-            '& .MuiTableCell-root': {
-              whiteSpace: 'nowrap',
-            },
+            fontSize: 52,
+            color: '#cbd5e1',
+            mb: 1,
+          }}
+        />
+
+        <Typography
+          variant="h6"
+          sx={{
+            color: '#475569',
+            fontWeight: 900,
           }}
         >
-          <TableHead>
-            <TableRow>
-              <TableCell sx={tableHeaderCellSx}>Reg No</TableCell>
-              <TableCell sx={tableHeaderCellSx}>Name</TableCell>
-              <TableCell sx={tableHeaderCellSx}>Sambhag</TableCell>
-              <TableCell sx={tableHeaderCellSx}>District</TableCell>
-              <TableCell sx={tableHeaderCellSx}>Block</TableCell>
-              <TableCell sx={tableHeaderCellSx}>Department</TableCell>
-              <TableCell sx={tableHeaderCellSx}>Payment Date</TableCell>
-              <TableCell sx={tableHeaderCellSx}>Amount</TableCell>
-            </TableRow>
-          </TableHead>
+          {receiptUtrSearch
+            ? 'इस UTR के लिए कोई receipt नहीं मिली'
+            : 'कोई receipt उपलब्ध नहीं है'}
+        </Typography>
 
-          <TableBody>
-            {receipts.map((receipt, index) => (
-              <TableRow
-                key={`${receipt.regNo || 'receipt'}-${index}`}
-                hover
-                sx={{
-                  transition: 'all 0.18s ease',
-                  '&:hover': {
-                    bgcolor: 'rgba(239, 246, 255, 0.72)',
-                  },
-                }}
-              >
-                <TableCell sx={tableBodyCellSx}>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontWeight: 900,
-                      color: '#0f172a',
-                      fontSize: '0.82rem',
-                    }}
-                  >
-                    {receipt.regNo ?? '-'}
-                  </Typography>
+        <Typography
+          variant="body2"
+          sx={{
+            color: '#94a3b8',
+            mt: 0.75,
+            fontWeight: 600,
+          }}
+        >
+          {receiptUtrSearch
+            ? `No receipt found for UTR "${receiptUtrSearch}".`
+            : 'जैसे ही users payment proof submit करेंगे, यहाँ list दिखाई देगी।'}
+        </Typography>
+
+        {receiptUtrSearch && (
+          <Button
+            variant="outlined"
+            startIcon={<Clear />}
+            onClick={
+              handleClearReceiptSearch
+            }
+            sx={{
+              mt: 2,
+              borderRadius: 3,
+              textTransform: 'none',
+              fontWeight: 800,
+            }}
+          >
+            Clear Search
+          </Button>
+        )}
+      </Box>
+    ) : (
+      <>
+        {/* Receipt table */}
+        <TableContainer
+          sx={{
+            maxWidth: '100%',
+            overflowX: 'auto',
+            bgcolor: '#fff',
+          }}
+        >
+          <Table
+            sx={{
+              minWidth: 1950,
+              '& .MuiTableCell-root': {
+                whiteSpace: 'nowrap',
+              },
+            }}
+          >
+            <TableHead>
+              <TableRow>
+                <TableCell
+                  sx={tableHeaderCellSx}
+                >
+                  UTR Number
                 </TableCell>
 
-                <TableCell sx={tableBodyCellSx}>
-                  <Typography variant="body2" sx={{ fontWeight: 900, color: '#0f172a' }}>
-                    {receipt.name ?? '-'}
-                  </Typography>
+                <TableCell
+                  sx={tableHeaderCellSx}
+                >
+                  Reg No
                 </TableCell>
 
-                <TableCell sx={tableBodyCellSx}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                    <LocationOn sx={{ fontSize: 16, color: '#2563eb' }} />
-                    <Typography variant="body2" sx={{ color: '#334155', fontWeight: 700 }}>
-                      {receipt.sambhag ?? '-'}
-                    </Typography>
-                  </Box>
+                <TableCell
+                  sx={tableHeaderCellSx}
+                >
+                  Employee ID
                 </TableCell>
 
-                <TableCell sx={tableBodyCellSx}>
-                  <Typography variant="body2" sx={{ color: '#334155', fontWeight: 700 }}>
-                    {receipt.district ?? '-'}
-                  </Typography>
+                <TableCell
+                  sx={tableHeaderCellSx}
+                >
+                  Uploaded By
                 </TableCell>
 
-                <TableCell sx={tableBodyCellSx}>
-                  <Typography variant="body2" sx={{ color: '#334155', fontWeight: 700 }}>
-                    {receipt.block ?? '-'}
-                  </Typography>
+                <TableCell
+                  sx={tableHeaderCellSx}
+                >
+                  Mobile Number
                 </TableCell>
 
-                <TableCell sx={tableBodyCellSx}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                    <BusinessCenter sx={{ fontSize: 16, color: '#64748b' }} />
-                    <Typography variant="body2" sx={{ color: '#334155', fontWeight: 700 }}>
-                      {receipt.department ?? '-'}
-                    </Typography>
-                  </Box>
+                <TableCell
+                  sx={tableHeaderCellSx}
+                >
+                  Beneficiary
                 </TableCell>
 
-                <TableCell sx={tableBodyCellSx}>
-                  <Typography variant="body2" sx={{ color: '#475569', fontWeight: 800 }}>
-                    {formatDate(receipt.paymentDate)}
-                  </Typography>
+                <TableCell
+                  sx={tableHeaderCellSx}
+                >
+                  Sambhag
                 </TableCell>
 
-                <TableCell sx={tableBodyCellSx}>
-                  <Chip
-                    label={`₹${receipt.amount ?? '-'}`}
-                    size="small"
-                    variant="outlined"
-                    sx={{
-                      bgcolor: 'rgba(22, 163, 74, 0.12)',
-                      color: '#15803d',
-                      border: '1px solid rgba(22, 163, 74, 0.20)',
-                      fontWeight: 900,
-                      borderRadius: '10px',
-                    }}
-                  />
+                <TableCell
+                  sx={tableHeaderCellSx}
+                >
+                  District
+                </TableCell>
+
+                <TableCell
+                  sx={tableHeaderCellSx}
+                >
+                  Block
+                </TableCell>
+
+                <TableCell
+                  sx={tableHeaderCellSx}
+                >
+                  Department
+                </TableCell>
+
+                <TableCell
+                  sx={tableHeaderCellSx}
+                >
+                  Reference Name
+                </TableCell>
+
+                <TableCell
+                  sx={tableHeaderCellSx}
+                >
+                  Payment Date
+                </TableCell>
+
+                <TableCell
+                  sx={tableHeaderCellSx}
+                >
+                  Uploaded At
+                </TableCell>
+
+                <TableCell
+                  sx={tableHeaderCellSx}
+                >
+                  Amount
+                </TableCell>
+
+                <TableCell
+                  sx={tableHeaderCellSx}
+                >
+                  Status
                 </TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+
+            <TableBody>
+              {receipts.map(
+                (receipt, index) => {
+                  const receiptStatus =
+                    String(
+                      receipt.status || ''
+                    ).toUpperCase();
+
+                  return (
+                    <TableRow
+                      key={
+                        receipt.receiptId ||
+                        `${receipt.regNo || 'receipt'}-${index}`
+                      }
+                      hover
+                      sx={{
+                        transition:
+                          'all 0.18s ease',
+                        '&:hover': {
+                          bgcolor:
+                            'rgba(239, 246, 255, 0.72)',
+                        },
+                      }}
+                    >
+                      {/* UTR */}
+                      <TableCell
+                        sx={tableBodyCellSx}
+                      >
+                        <Chip
+                          label={
+                            receipt.utrNumber ||
+                            'No UTR'
+                          }
+                          size="small"
+                          variant="outlined"
+                          sx={{
+                            bgcolor:
+                              'rgba(37, 99, 235, 0.10)',
+                            color: '#1d4ed8',
+                            border:
+                              '1px solid rgba(37, 99, 235, 0.20)',
+                            fontWeight: 900,
+                            borderRadius:
+                              '10px',
+                          }}
+                        />
+                      </TableCell>
+
+                      {/* Registration number */}
+                      <TableCell
+                        sx={tableBodyCellSx}
+                      >
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontWeight: 900,
+                            color: '#0f172a',
+                          }}
+                        >
+                          {receipt.regNo ||
+                            '-'}
+                        </Typography>
+                      </TableCell>
+
+                      {/* Department unique ID */}
+                      <TableCell
+                        sx={tableBodyCellSx}
+                      >
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: '#334155',
+                            fontWeight: 800,
+                          }}
+                        >
+                          {receipt.departmentUniqueId ||
+                            '-'}
+                        </Typography>
+                      </TableCell>
+
+                      {/* Uploaded by */}
+                      <TableCell
+                        sx={tableBodyCellSx}
+                      >
+                        <Box>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              fontWeight: 900,
+                              color: '#0f172a',
+                            }}
+                          >
+                            {receipt.name ||
+                              '-'}
+                          </Typography>
+
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: '#94a3b8',
+                              fontWeight: 700,
+                            }}
+                          >
+                            {receipt.regNo ||
+                              'Member account'}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+
+                      {/* Mobile */}
+                      <TableCell
+                        sx={tableBodyCellSx}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems:
+                              'center',
+                            gap: 0.75,
+                          }}
+                        >
+                          <Phone
+                            sx={{
+                              fontSize: 16,
+                              color: '#16a34a',
+                            }}
+                          />
+
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: '#334155',
+                              fontWeight: 800,
+                            }}
+                          >
+                            {receipt.mobileNumber ||
+                              '-'}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+
+                      {/* Beneficiary */}
+                      <TableCell
+                        sx={tableBodyCellSx}
+                      >
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: '#334155',
+                            fontWeight: 800,
+                          }}
+                        >
+                          {receipt.beneficiary ||
+                            '-'}
+                        </Typography>
+                      </TableCell>
+
+                      {/* Sambhag */}
+                      <TableCell
+                        sx={tableBodyCellSx}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems:
+                              'center',
+                            gap: 0.75,
+                          }}
+                        >
+                          <LocationOn
+                            sx={{
+                              fontSize: 16,
+                              color: '#2563eb',
+                            }}
+                          />
+
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: '#334155',
+                              fontWeight: 700,
+                            }}
+                          >
+                            {receipt.sambhag ||
+                              '-'}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+
+                      {/* District */}
+                      <TableCell
+                        sx={tableBodyCellSx}
+                      >
+                        {receipt.district || '-'}
+                      </TableCell>
+
+                      {/* Block */}
+                      <TableCell
+                        sx={tableBodyCellSx}
+                      >
+                        {receipt.block || '-'}
+                      </TableCell>
+
+                      {/* Department */}
+                      <TableCell
+                        sx={tableBodyCellSx}
+                      >
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems:
+                              'center',
+                            gap: 0.75,
+                          }}
+                        >
+                          <BusinessCenter
+                            sx={{
+                              fontSize: 16,
+                              color: '#64748b',
+                            }}
+                          />
+
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              color: '#334155',
+                              fontWeight: 700,
+                            }}
+                          >
+                            {receipt.department ||
+                              '-'}
+                          </Typography>
+                        </Box>
+                      </TableCell>
+
+                      {/* Reference name */}
+                      <TableCell
+                        sx={tableBodyCellSx}
+                      >
+                        {receipt.referenceName ||
+                          '-'}
+                      </TableCell>
+
+                      {/* Payment date */}
+                      <TableCell
+                        sx={tableBodyCellSx}
+                      >
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: '#475569',
+                            fontWeight: 800,
+                          }}
+                        >
+                          {formatDate(
+                            receipt.paymentDate
+                          )}
+                        </Typography>
+                      </TableCell>
+
+                      {/* Upload date/time */}
+                      <TableCell
+                        sx={tableBodyCellSx}
+                      >
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: '#475569',
+                            fontWeight: 800,
+                          }}
+                        >
+                          {formatDateTime(
+                            receipt.uploadedAt
+                          )}
+                        </Typography>
+                      </TableCell>
+
+                      {/* Amount */}
+                      <TableCell
+                        sx={tableBodyCellSx}
+                      >
+                        <Chip
+                          label={`₹${
+                            receipt.amount ?? 0
+                          }`}
+                          size="small"
+                          variant="outlined"
+                          sx={{
+                            bgcolor:
+                              'rgba(22, 163, 74, 0.12)',
+                            color: '#15803d',
+                            border:
+                              '1px solid rgba(22, 163, 74, 0.20)',
+                            fontWeight: 900,
+                            borderRadius:
+                              '10px',
+                          }}
+                        />
+                      </TableCell>
+
+                      {/* Status */}
+                      <TableCell
+                        sx={tableBodyCellSx}
+                      >
+                        <Chip
+                          label={
+                            receiptStatus ||
+                            'UNKNOWN'
+                          }
+                          size="small"
+                          color={
+                            receiptStatus ===
+                            'VERIFIED'
+                              ? 'success'
+                              : receiptStatus ===
+                                'REJECTED'
+                              ? 'error'
+                              : 'warning'
+                          }
+                          variant="outlined"
+                          sx={{
+                            fontWeight: 900,
+                            borderRadius:
+                              '10px',
+                          }}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  );
+                }
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        {/* Receipt pagination */}
+        <TablePagination
+          component="div"
+          count={totalReceipts}
+          page={receiptPage}
+          rowsPerPage={
+            receiptRowsPerPage
+          }
+          onPageChange={
+            handleReceiptPageChange
+          }
+          onRowsPerPageChange={
+            handleReceiptRowsPerPageChange
+          }
+          rowsPerPageOptions={[
+            10,
+            20,
+            50,
+            100,
+          ]}
+          labelRowsPerPage="Receipts per page:"
+          labelDisplayedRows={({
+            from,
+            to,
+            count,
+          }) =>
+            `${from}-${to} of ${
+              count !== -1
+                ? count
+                : `more than ${to}`
+            }`
+          }
+          sx={{
+            borderTop:
+              '1px solid rgba(226, 232, 240, 0.95)',
+            bgcolor: '#f8fafc',
+            color: '#475569',
+            '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows':
+              {
+                fontWeight: 800,
+                color: '#64748b',
+              },
+          }}
+        />
+      </>
     )}
   </Paper>
 );

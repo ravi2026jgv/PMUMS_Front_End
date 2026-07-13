@@ -549,16 +549,21 @@ checkSessionStatus: () => {
 
   //new endpoint to get all receipts with pagination and filters
   // Get all receipts with pagination
+// Get receipts with pagination and optional UTR search
 getReceipts: (params = {}) => {
-  return api.get('/admin/receipts/all', { params });
+  return api.get('/admin/receipts/all', {
+    params,
+  });
 },
 
-// Export all receipts to Excel
-exportReceipts: () => {
+// Export receipts with optional UTR search
+exportReceipts: (params = {}) => {
   return api.get('/admin/receipts/export', {
+    params,
     responseType: 'blob',
     headers: {
-      Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      Accept:
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     },
   });
 },
