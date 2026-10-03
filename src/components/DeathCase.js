@@ -25,6 +25,7 @@ import { useAuth } from '../context/AuthContext';
 import ReceiptUpload from './ReceiptUpload';
 import api, { publicApi } from '../services/api';
 import DeathCaseSupportView from "./DeathCaseSupportView";
+import { usePortal } from "../portal/PortalContext";
 
 const theme = {
   dark: '#221b43',
@@ -333,6 +334,7 @@ const BankDetailsCard = ({ title, account, fallbackName, onCopy }) => (
 const DeathCase = () => {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const { path } = usePortal();
 
   const [payDialogOpen, setPayDialogOpen] = useState(false);
   const [payDialogMessage, setPayDialogMessage] = useState('');
@@ -515,7 +517,7 @@ IFSC: ${account?.ifscCode || 'IFSC CODE'}`;
               subtitle="सहयोग देखने और भुगतान प्रमाण अपलोड करने के लिए कृपया लॉगिन करें।"
             />
 
-            <ActionButton onClick={() => navigate('/login')}>
+            <ActionButton onClick={() => navigate(path('/login'))}>
               लॉगिन करें
             </ActionButton>
           </InfoBox>
@@ -611,7 +613,7 @@ IFSC: ${account?.ifscCode || 'IFSC CODE'}`;
             सहयोग के लिए लॉगिन करें।
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => navigate('/login')}>
+            <Button onClick={() => navigate(path('/login'))}>
               लॉगिन करें
             </Button>
           </DialogActions>

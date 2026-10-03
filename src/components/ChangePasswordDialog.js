@@ -21,6 +21,7 @@ import {
 } from '@mui/icons-material';
 import { useForm } from 'react-hook-form';
 import api from '../services/api';
+import { getPortalLocalStorageItem } from '../portal/portalStorage';
 
 const ChangePasswordDialog = ({ open, onClose, onSuccess }) => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
@@ -51,7 +52,7 @@ const ChangePasswordDialog = ({ open, onClose, onSuccess }) => {
       setError('');
       
       // Get user ID from localStorage
-      const userId = JSON.parse(localStorage.getItem('user') || '{}')?.id;
+      const userId = JSON.parse(getPortalLocalStorageItem('user') || '{}')?.id;
       
       if (!userId) {
         setError('उपयोगकर्ता आईडी नहीं मिली। कृपया पुनः लॉगिन करें।');

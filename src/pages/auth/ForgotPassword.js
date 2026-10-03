@@ -19,9 +19,11 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { publicApi } from '../../services/api';
 import Layout from '../../components/Layout/Layout';
+import { usePortal } from '../../portal/PortalContext';
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
+  const { path } = usePortal();
 
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -124,7 +126,7 @@ const ForgotPassword = () => {
       setSuccess('Password reset successfully! You can now login with your new password.');
       setActiveStep(2);
 
-      setTimeout(() => navigate('/login'), 3000);
+      setTimeout(() => navigate(path('/login')), 3000);
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -505,7 +507,7 @@ border: '1px solid rgba(111, 92, 194, 0.14)',
 
                         <Button
                           component={RouterLink}
-                          to="/login"
+                          to={path("/login")}
                           variant="outlined"
                           sx={{
                             ...outlineButtonSx,
@@ -680,7 +682,7 @@ border: '1px solid rgba(111, 92, 194, 0.14)',
 
                       <Button
                         component={RouterLink}
-                        to="/login"
+                        to={path("/login")}
                         variant="contained"
                         sx={{
                           ...primaryButtonSx,

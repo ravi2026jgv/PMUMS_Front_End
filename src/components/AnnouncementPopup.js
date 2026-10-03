@@ -9,6 +9,10 @@ import {
   Button,
 } from '@mui/material';
 import { Close, Announcement } from '@mui/icons-material';
+import {
+  getPortalLocalStorageItem,
+  setPortalLocalStorageItem,
+} from '../portal/portalStorage';
 
 const POPUP_STORAGE_KEY = 'pmums_announcement_closed_v1';
 
@@ -17,7 +21,7 @@ const AnnouncementPopup = () => {
 
   useEffect(() => {
     // Check if user has already closed the popup
-    const hasClosedPopup = localStorage.getItem(POPUP_STORAGE_KEY);
+    const hasClosedPopup = getPortalLocalStorageItem(POPUP_STORAGE_KEY);
     if (!hasClosedPopup) {
       // Show popup after a small delay for better UX
       const timer = setTimeout(() => {
@@ -30,7 +34,7 @@ const AnnouncementPopup = () => {
   const handleClose = () => {
     setOpen(false);
     // Save to localStorage so it won't show again
-    localStorage.setItem(POPUP_STORAGE_KEY, 'true');
+    setPortalLocalStorageItem(POPUP_STORAGE_KEY, 'true');
   };
 
   const fontFamily = 'Noto Sans Devanagari, Poppins, Arial, sans-serif';

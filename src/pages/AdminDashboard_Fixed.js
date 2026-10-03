@@ -58,6 +58,7 @@ import {
 import Layout from '../components/Layout/Layout';
 import { useAuth } from '../context/AuthContext';
 import { adminAPI } from '../services/api';
+import { buildPortalPath } from '../portal/portalStorage';
 
 // Access control component
 const AccessControl = ({ user, children }) => {
@@ -75,7 +76,7 @@ const AccessControl = ({ user, children }) => {
   useEffect(() => {
     if (user && user.role && !hasAccess) {
       console.warn('Access denied: User does not have required permissions for dashboard');
-      window.location.href = '/';
+      window.location.href = buildPortalPath('/');
     }
   }, [user, hasAccess]);
 
@@ -117,7 +118,7 @@ const AccessControl = ({ user, children }) => {
               variant="contained"
               color="primary"
               sx={{ mt: 3 }}
-              onClick={() => window.location.href = '/'}
+              onClick={() => { window.location.href = buildPortalPath('/'); }}
             >
               होम पेज पर जाएं
             </Button>

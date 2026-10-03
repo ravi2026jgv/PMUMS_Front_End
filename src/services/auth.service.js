@@ -1,4 +1,8 @@
 import api, { publicApi } from './api';
+import {
+  clearPortalAuthData,
+  setPortalLocalStorageItem,
+} from '../portal/portalStorage';
 
 const formatDobAsPassword = (dobValue) => {
   if (!dobValue) return '';
@@ -10,23 +14,9 @@ const formatDobAsPassword = (dobValue) => {
 };
 
 export const authService = {
-  // Clear all cached authentication data
+  // Clear only the active portal authentication data.
   clearAllAuthData: () => {
-    console.log('🧹 Clearing all authentication data...');
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('user');
-    
-    // Clear any additional cache that might exist
-    Object.keys(localStorage).forEach(key => {
-      if (key.includes('auth') || key.includes('user') || key.includes('token')) {
-        console.log('🗑️ Removing cached item:', key);
-        localStorage.removeItem(key);
-      }
-    });
-    
-    // Clear sessionStorage as well
-    sessionStorage.clear();
-    console.log('✅ All authentication data cleared');
+    clearPortalAuthData();
   },
 
   // Login user (public endpoint)
@@ -54,6 +44,8 @@ export const authService = {
       maritalStatus: userData.maritalStatus || '',
       password: formatDobAsPassword(userData.dateOfBirth) || userData.password,
       homeAddress: userData.homeAddress || '',
+      tehsil: userData.tehsil || '',
+      employeeCategory: userData.employeeCategory || '',
       dateOfBirth: userData.dateOfBirth || null,
       joiningDate: userData.joiningDate || null, // Professional detail
       retirementDate: userData.retirementDate || null, // Professional detail
@@ -84,6 +76,8 @@ export const authService = {
       mobileNumber: userData.mobileNumber || '',
       pincode: userData.pincode ? parseInt(userData.pincode, 10) : null,
       countryCode: userData.countryCode || '+91',
+      tehsil: userData.tehsil || '',
+      employeeCategory: userData.employeeCategory || '',
       acceptedTerms: true
     };
     
@@ -158,7 +152,7 @@ export const authService = {
   //         console.log('🆔 Fresh user ID from API:', response.data.id);
           
   //         // Update localStorage with fresh data
-  //         localStorage.setItem('user', JSON.stringify(response.data));
+  //         setPortalLocalStorageItem('user', JSON.stringify(response.data));
   //         return response.data;
   //       } catch (error) {
   //         console.error('❌ Failed to fetch user by ID:', error);
@@ -175,7 +169,7 @@ export const authService = {
 getCurrentUser: async () => {
   const response = await api.get('/auth/me');
 
-  localStorage.setItem('user', JSON.stringify(response.data));
+  setPortalLocalStorageItem('user', JSON.stringify(response.data));
 
   return response.data;
 },

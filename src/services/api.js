@@ -1,4 +1,11 @@
 import axios from 'axios';
+import { getPortalBySlug } from '../portal/portalConfig';
+import {
+  buildPortalPath,
+  clearPortalAuthData,
+  getActivePortalSlug,
+  getPortalLocalStorageItem,
+} from '../portal/portalStorage';
 
 // API base URL - direct connection to backend
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080/api';
@@ -36,55 +43,53 @@ const publicApi = axios.create({
   ]
 });
 
-// Request interceptor to add auth token (only for main api instance)
+const getCurrentPortalCode = () => {
+  const portalSlug = getActivePortalSlug();
+  return getPortalBySlug(portalSlug)?.code || 'TAB1';
+};
+
+// Authenticated requests automatically include portal context and portal token.
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('authToken');
+    const token = getPortalLocalStorageItem('authToken');
+    config.headers = config.headers || {};
+    config.headers['X-Portal-Code'] = getCurrentPortalCode();
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Request interceptor for publicApi to ensure NO auth headers are ever sent
+// Public requests include portal context but never include authorization.
 publicApi.interceptors.request.use(
   (config) => {
-    // Completely rebuild headers to ensure no authorization
     const cleanHeaders = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'X-Portal-Code': getCurrentPortalCode(),
     };
-    
-    // Copy over any custom headers that are NOT authorization-related
+
     if (config.headers) {
-      Object.keys(config.headers).forEach(key => {
+      Object.keys(config.headers).forEach((key) => {
         const lowerKey = key.toLowerCase();
-        if (!lowerKey.includes('authorization') && 
-            !lowerKey.includes('bearer') &&
-            !lowerKey.includes('access-control') &&
-            lowerKey !== 'content-type') {
+        if (
+          !lowerKey.includes('authorization') &&
+          !lowerKey.includes('bearer') &&
+          !lowerKey.includes('access-control') &&
+          lowerKey !== 'content-type' &&
+          lowerKey !== 'x-portal-code'
+        ) {
           cleanHeaders[key] = config.headers[key];
         }
       });
     }
-    
-    // Replace headers completely
+
     config.headers = cleanHeaders;
-    
-    console.log('PublicAPI Request:', {
-      url: config.url,
-      method: config.method,
-      headers: config.headers,
-      hasAuthHeader: !!(config.headers.Authorization || config.headers.authorization)
-    });
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 // DO NOT add any request interceptors to publicApi to keep it completely clean
@@ -98,16 +103,14 @@ api.reAuthenticateManagerDashboard = (password) => {
 // Response interceptor for error handling (apply to both instances)
 const authErrorHandler = (error) => {
   if (error.response?.status === 401) {
-  localStorage.removeItem('authToken');
-  localStorage.removeItem('user');
-  sessionStorage.clear();
+    clearPortalAuthData();
+    const loginPath = buildPortalPath('/login');
 
-  if (window.location.pathname !== '/login') {
-    window.location.href = '/login';
+    if (window.location.pathname !== loginPath) {
+      window.location.href = loginPath;
+    }
   }
-}
-  // Removed 403 and other error toasts to prevent unwanted popups
-  
+
   return Promise.reject(error);
 };
 
@@ -236,7 +239,30 @@ exportSahyogByBeneficiary: (params = {}) => {
     responseType: 'blob'
   });
 },
+// Blog Management
+getBlogs: () => {
+  return api.get('/admin/blogs');
+},
 
+createBlog: (formData) => {
+  return api.post('/admin/blogs', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+},
+
+updateBlog: (blogId, formData) => {
+  return api.put(`/admin/blogs/${blogId}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+},
+
+deleteBlog: (blogId) => {
+  return api.delete(`/admin/blogs/${blogId}`);
+},
 exportAsahyogByBeneficiary: (params = {}) => {
   return api.get('/admin/export/asahyog/by-beneficiary', {
     params,
@@ -789,7 +815,14 @@ const publicAPI = {
   submitInsuranceInquiry: (payload) => {
     return publicApi.post('/public/insurance-inquiries', payload);
   },
-  
+
+  getBlogs: () => {
+    return publicApi.get('/public/blogs');
+  },
+
+  getBlogById: (blogId) => {
+    return publicApi.get(`/public/blogs/${blogId}`);
+  },
 };
 
 publicApi.getHomeDisplayContent = () => {

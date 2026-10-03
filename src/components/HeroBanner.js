@@ -13,11 +13,13 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { red } from '@mui/material/colors';
 import { publicApi } from '../services/api';
+import { usePortal } from '../portal/PortalContext';
 
 const HeroBanner = ({ children }) => {
     const [statisticsContentHtml, setStatisticsContentHtml] = useState('');
   
   const { isAuthenticated } = useAuth();
+  const { path } = usePortal();
 const channelLink = 'https://whatsapp.com/channel/0029Vaw20ci5K3zZkmv3jV1g';
 
 useEffect(() => {
@@ -219,7 +221,7 @@ textShadow: '0 2px 8px rgba(0, 0, 0, 0.30)',
           >
             <Button
               component={Link}
-              to="/login"
+              to={path("/login")}
               variant="contained"
               size="large"
               sx={{
@@ -248,7 +250,7 @@ textShadow: '0 2px 8px rgba(0, 0, 0, 0.30)',
 
             <Button
               component={Link}
-              to="/register"
+              to={path("/register")}
               variant="contained"
               size="large"
              sx={{

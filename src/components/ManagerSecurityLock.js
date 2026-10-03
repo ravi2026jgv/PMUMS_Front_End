@@ -15,6 +15,7 @@ import {
 } from '@mui/material';
 import { Lock, Visibility, VisibilityOff } from '@mui/icons-material';
 import api from '../services/api';
+import { setPortalSessionStorageItem } from '../portal/portalStorage';
 
 const ManagerSecurityLock = ({ open, onSuccess, onCancel }) => {
   const [password, setPassword] = useState('');
@@ -35,8 +36,8 @@ const ManagerSecurityLock = ({ open, onSuccess, onCancel }) => {
     await api.reAuthenticateManagerDashboard(password);
 
       const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
-      sessionStorage.setItem('managerDashboardReAuth', 'true');
-      sessionStorage.setItem('managerDashboardReAuthExpiresAt', String(expiresAt));
+      setPortalSessionStorageItem('managerDashboardReAuth', 'true');
+      setPortalSessionStorageItem('managerDashboardReAuthExpiresAt', String(expiresAt));
 
       setPassword('');
       onSuccess();

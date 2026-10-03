@@ -24,6 +24,7 @@ import { Link as RouterLink, useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { useAuth } from "../../context/AuthContext";
 import Layout from "../../components/Layout/Layout";
+import { usePortal } from "../../portal/PortalContext";
 
 const theme = {
   dark: "#221b43",
@@ -70,6 +71,7 @@ const Login = () => {
   const { login, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { path } = usePortal();
 
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
@@ -87,7 +89,7 @@ const Login = () => {
   const redirectTo =
     location.state?.from?.pathname ||
     location.state?.from ||
-    "/";
+    path("/");
 
   const onSubmit = async (data) => {
     try {
@@ -330,7 +332,7 @@ border: "1px solid rgba(15, 118, 110, 0.25)",
                 <Box sx={{ textAlign: "right", mb: 3 }}>
                   <Link
                     component={RouterLink}
-                    to="/forgot-password"
+                    to={path("/forgot-password")}
                     sx={{
                       color: theme.main,
                       textDecoration: "none",
@@ -389,7 +391,7 @@ border: "1px solid rgba(111, 92, 194, 0.14)",                  }}
                 >
                   <Link
                     component={RouterLink}
-                    to="/forgot-password"
+                    to={path("/forgot-password")}
                     sx={{
                       color: theme.main,
                       textDecoration: "none",
@@ -422,7 +424,7 @@ border: "1px solid rgba(111, 92, 194, 0.14)",                  }}
 
                   <Button
                     component={RouterLink}
-                    to="/register"
+                    to={path("/register")}
                     variant="outlined"
                     fullWidth
                     sx={{

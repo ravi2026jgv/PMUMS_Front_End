@@ -9,8 +9,12 @@ import {
 import {
   LocationOn,
 } from '@mui/icons-material';
+import { Link as RouterLink } from 'react-router-dom';
+import { usePortal } from '../../portal/PortalContext';
 
 const Footer = () => {
+  const { path } = usePortal();
+
   return (
     <Box 
       component="footer" 
@@ -165,16 +169,16 @@ p: 1
               gap: 1
             }}>
               {[
-                { text: '• हमारे बारे में', href: '/about' },
-                { text: '• शिक्षक सूची', href: '/teachers' },
-                { text: '• Sahyog करें', href: '/donate' },
-                { text: '• नियमावली', href: '/rules' },
-                { text: '• संपर्क करें', href: '/contact' }
+                { text: '• हमारे बारे में', href: path('/about') },
+                { text: '• शिक्षक सूची', href: path('/teachers-list') },
+                { text: '• Sahyog करें', href: path('/sahyog') },
+                { text: '• नियमावली', href: path('/niyamawali') },
+                { text: '• संपर्क करें', href: path('/contact-us') }
               ].map((link, index) => (
                 <Link 
                   key={index}
-                  href={link.href}
-                  
+                  component={RouterLink}
+                  to={link.href}
                   sx={{ 
                     color: '#e8e4ff',
                     textDecoration: 'none',

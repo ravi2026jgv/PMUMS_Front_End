@@ -37,11 +37,11 @@ import {
   VerifiedUserRounded,
   AssignmentIndRounded,
 } from "@mui/icons-material";
-import Layout from "../../components/Layout/Layout";
-import { useAuth } from "../../context/AuthContext";
-import MembershipCardPopup from "../../components/MembershipCardPopup";
-import { publicApi } from "../../services/api";
-import { usePortal } from "../../portal/PortalContext";
+import Layout from "../../../components/Layout/Layout";
+import { useAuth } from "../../../context/AuthContext";
+import MembershipCardPopup from "../../../components/MembershipCardPopup";
+import { publicApi } from "../../../services/api";
+import { usePortal } from "../../../portal/PortalContext";
 
 
 const theme = {
@@ -229,6 +229,79 @@ boxShadow: "0 16px 36px rgba(34, 27, 67, 0.22)",      display: "flex",
   </Box>
 );
 
+const EMPLOYEE_CATEGORIES = [
+  "नियमित कर्मचारी",
+  "संविदा कर्मचारी",
+  "आउटसोर्स कर्मचारी",
+  "कंप्यूटर ऑपरेटर/आई.टी. कर्मचारी",
+  "आंगनवाड़ी कार्यकर्ता",
+  "आंगनवाड़ी सहायिका",
+  "अन्य अस्थाई कर्मचारी",
+  "विभागीय/संस्थागत व्यवस्था के अंतर्गत कार्यरत कर्मचारी",
+];
+
+const DEPARTMENTS = [
+  "सामान्य प्रशासन विभाग",
+  "गृह विभाग",
+  "वित्त विभाग",
+  "वाणिज्यिक कर विभाग",
+  "राजस्व विभाग",
+  "स्कूल शिक्षा विभाग",
+  "उच्च शिक्षा विभाग",
+  "तकनीकी शिक्षा, कौशल विकास एवं रोजगार विभाग",
+  "जनजातीय कार्य विभाग",
+  "पिछड़ा वर्ग एवं अल्पसंख्यक कल्याण विभाग",
+  "सामाजिक न्याय एवं दिव्यांगजन सशक्तिकरण विभाग",
+  "महिला एवं बाल विकास विभाग",
+  "पंचायत एवं ग्रामीण विकास विभाग",
+  "नगरीय विकास एवं आवास विभाग",
+  "लोक निर्माण विभाग",
+  "लोक स्वास्थ्य यांत्रिकी विभाग",
+  "जल संसाधन विभाग",
+  "नर्मदा घाटी विकास विभाग",
+  "किसान कल्याण एवं कृषि विकास विभाग",
+  "उद्यानिकी एवं खाद्य प्रसंस्करण विभाग",
+  "पशुपालन एवं डेयरी विभाग",
+  "मछुआ कल्याण एवं मत्स्य विकास विभाग",
+  "वन विभाग",
+  "पर्यावरण विभाग",
+  "श्रम विभाग",
+  "स्वास्थ्य एवं परिवार कल्याण विभाग",
+  "खाद्य, नागरिक आपूर्ति एवं उपभोक्ता संरक्षण विभाग",
+  "सहकारिता विभाग",
+  "परिवहन विभाग",
+  "ऊर्जा विभाग",
+  "नवीन एवं नवकरणीय ऊर्जा विभाग",
+  "औद्योगिक नीति एवं निवेश प्रोत्साहन विभाग",
+  "सूक्ष्म, लघु एवं मध्यम उद्यम विभाग",
+  "कुटीर एवं ग्रामोद्योग विभाग",
+  "पर्यटन विभाग",
+  "संस्कृति विभाग",
+  "खेल एवं युवा कल्याण विभाग",
+  "जनसंपर्क विभाग",
+  "विज्ञान एवं प्रौद्योगिकी विभाग",
+  "सूचना प्रौद्योगिकी/ई-गवर्नेंस संबंधी विभाग",
+  "विधि एवं विधायी कार्य विभाग",
+  "लोक सेवा प्रबंधन विभाग",
+  "योजना, आर्थिक एवं सांख्यिकी विभाग",
+  "जनजातीय/अनुसूचित जाति संबंधी कल्याण विभाग",
+  "धार्मिक न्यास एवं धर्मस्व विभाग",
+  "विमुक्त, घुमक्कड़ एवं अर्द्धघुमक्कड़ जनजाति कल्याण संबंधी विभाग",
+  "जेल विभाग",
+  "निर्वाचन संबंधी कार्यालय",
+  "लोकायुक्त संगठन",
+  "मध्यप्रदेश लोक सेवा आयोग",
+  "मध्यप्रदेश विधानसभा सचिवालय",
+  "राज्य सूचना आयोग",
+  "मानव अधिकार आयोग",
+];
+
+const currentYear = new Date().getFullYear();
+const JOINING_YEARS = Array.from(
+  { length: currentYear - 1949 },
+  (_, index) => currentYear - index
+);
+
 const Register = () => {
   const { register: registerUser, loading } = useAuth();
   const navigate = useNavigate();
@@ -314,6 +387,8 @@ const handleGoToDashboard = () => {
   navigate(path("/login"), { replace: true });
 };
   const watchedDateOfBirth = watch("dateOfBirth");
+  const watchedEmployeeCategory = watch("employeeCategory");
+  const watchedDepartment = watch("department");
 
   const formatRetirementDateFromDob = (dobValue) => {
     if (!dobValue) return "";
@@ -597,11 +672,25 @@ const checkUnique = async (field, value) => {
 
       const { name, surname } = splitFullName(formData.fullName);
 
+      const finalEmployeeCategory =
+        formData.employeeCategory === "OTHER"
+          ? formData.otherEmployeeCategory?.trim()
+          : formData.employeeCategory;
+
+      const finalDepartment =
+        formData.department === "OTHER"
+          ? formData.otherDepartmentName?.trim()
+          : formData.department;
+
       const registrationData = {
-        name: name,
-        surname: surname,
+        name,
+        surname,
         fatherName: formData.fatherName,
+
+        // Country code is no longer shown on the Tab 2 form.
+        // Keep +91 internally so the existing backend contract remains unchanged.
         countryCode: "+91",
+
         mobileNumber: formData.mobileNumber,
         email: formData.email,
         pincode: formData.pinCode ? parseInt(formData.pinCode, 10) : null,
@@ -609,13 +698,24 @@ const checkUnique = async (field, value) => {
         maritalStatus: maritalStatusMap[formData.maritalStatus] || "UNMARRIED",
         password: formData.password,
         homeAddress: formData.homeAddress || "",
+        tehsil: formData.tehsil?.trim() || "",
         dateOfBirth: formData.dateOfBirth,
+
+        employeeCategory: finalEmployeeCategory || "",
+        department: finalDepartment || "",
         schoolOfficeName: formData.schoolOfficeName || "",
-        sankulName: formData.sankulName || "",
-        joiningDate: formData.joiningDate || null,
-        retirementDate: formData.retirementDate || null,
-        department: formData.department || "",
         departmentUniqueId: formData.departmentUniqueId || "",
+
+        // Client asks only for joining year in Tab 2.
+        // Existing backend stores LocalDate, so persist 01-Jan of selected year.
+        joiningDate: formData.joiningYear
+          ? `${formData.joiningYear}-01-01`
+          : null,
+        retirementDate: formData.retirementDate || null,
+
+        // Sankul belongs to Tab 1; Tab 2 does not collect it.
+        sankulName: "",
+
         departmentState: state?.name || "",
         departmentSambhag: sambhag?.name || "",
         departmentDistrict: district?.name || "",
@@ -647,7 +747,7 @@ const checkUnique = async (field, value) => {
         name: formData.fullName,
         registrationNumber,
         mobileNumber: formData.mobileNumber,
-        department: formData.department,
+        department: finalDepartment,
         registrationDate: new Date().toISOString(),
         ...registrationData,
       });
@@ -921,12 +1021,7 @@ background: theme.main,                  }}
                       />
                     </Grid>
 
-                    <Grid item xs={12} md={2}>
-                      <Typography sx={labelSx}>Country Code *</Typography>
-                      <TextField fullWidth value="+91" disabled sx={inputSx} />
-                    </Grid>
-
-                    <Grid item xs={12} md={5}>
+                    <Grid item xs={12} md={6}>
                       <Typography sx={labelSx}>मोबाइल नंबर *</Typography>
                       <TextField
                         fullWidth
@@ -956,7 +1051,7 @@ background: theme.main,                  }}
                       />
                     </Grid>
 
-                    <Grid item xs={12} md={5}>
+                    <Grid item xs={12} md={6}>
                       <Typography sx={labelSx}>मोबाइल नंबर की पुष्टि *</Typography>
                       <TextField
                         fullWidth
@@ -1045,7 +1140,7 @@ background: theme.main,                  }}
 
                 <Box sx={sectionCardSx}>
                   <Grid container spacing={2.5}>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={3}>
                       <Typography sx={labelSx}>राज्य *</Typography>
                       <FormControl
                         fullWidth
@@ -1073,7 +1168,7 @@ background: theme.main,                  }}
                       </FormControl>
                     </Grid>
 
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={3}>
                       <Typography sx={labelSx}>संभाग *</Typography>
                       <FormControl
                         fullWidth
@@ -1106,7 +1201,7 @@ background: theme.main,                  }}
                       </FormControl>
                     </Grid>
 
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={3}>
                       <Typography sx={labelSx}>जिला *</Typography>
                       <FormControl
                         fullWidth
@@ -1139,7 +1234,7 @@ background: theme.main,                  }}
                       </FormControl>
                     </Grid>
 
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={3}>
                       <Typography sx={labelSx}>ब्लॉक *</Typography>
                       <FormControl
                         fullWidth
@@ -1172,13 +1267,13 @@ background: theme.main,                  }}
                       </FormControl>
                     </Grid>
 
-                    <Grid item xs={12} md={8}>
-                      <Typography sx={labelSx}>पूरा पता *</Typography>
+                    <Grid item xs={12} md={6}>
+                      <Typography sx={labelSx}>घर या कार्यालय का पूरा पता *</Typography>
                       <TextField
                         fullWidth
                         placeholder="House No, Street, Landmark..."
                         {...register("homeAddress", {
-                          required: "Home address is required",
+                          required: "घर या कार्यालय का पूरा पता आवश्यक है",
                         })}
                         error={!!errors.homeAddress}
                         helperText={errors.homeAddress?.message}
@@ -1186,7 +1281,17 @@ background: theme.main,                  }}
                       />
                     </Grid>
 
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} md={3}>
+                      <Typography sx={labelSx}>तहसील</Typography>
+                      <TextField
+                        fullWidth
+                        placeholder="तहसील"
+                        {...register("tehsil")}
+                        sx={inputSx}
+                      />
+                    </Grid>
+
+                    <Grid item xs={12} md={3}>
                       <Typography sx={labelSx}>पिन कोड *</Typography>
                       <TextField
                         fullWidth
@@ -1216,42 +1321,116 @@ background: theme.main,                  }}
                 <SectionHeader
                   icon={<WorkRounded />}
                   title="3. व्यावसायिक विवरण (Professional Details)"
-                  subtitle="Department, school, joining and retirement details"
+                  subtitle="Employee category, department, office, joining and retirement details"
                 />
 
                 <Box sx={sectionCardSx}>
                   <Grid container spacing={2.5}>
-                    <Grid item xs={12} md={4}>
-                      <Typography sx={labelSx}>विभाग का नाम *</Typography>
-                     <Controller
-  name="department"
-  control={control}
-  defaultValue=""
-  rules={{ required: "कृपया विभाग चुनें" }}
-  render={({ field }) => (
-    <FormControl fullWidth error={!!errors.department} sx={selectSx}>
-      <Select {...field} displayEmpty MenuProps={menuProps}>
-        <MenuItem value="">विभाग चुनें</MenuItem>
-        <MenuItem value="शिक्षा विभाग">शिक्षा विभाग</MenuItem>
-        <MenuItem value="आदिम जाति कल्याण विभाग">
-          आदिम जाति कल्याण विभाग
-        </MenuItem>
-      </Select>
-      <FormHelperText>{errors.department?.message}</FormHelperText>
-    </FormControl>
-  )}
-/>
+                    <Grid item xs={12} md={6}>
+                      <Typography sx={labelSx}>कर्मचारी की श्रेणी *</Typography>
+                      <Controller
+                        name="employeeCategory"
+                        control={control}
+                        defaultValue=""
+                        rules={{ required: "कृपया कर्मचारी की श्रेणी चुनें" }}
+                        render={({ field }) => (
+                          <FormControl
+                            fullWidth
+                            error={!!errors.employeeCategory}
+                            sx={selectSx}
+                          >
+                            <Select {...field} displayEmpty MenuProps={menuProps}>
+                              <MenuItem value="">कर्मचारी की श्रेणी चुनें</MenuItem>
+                              {EMPLOYEE_CATEGORIES.map((category) => (
+                                <MenuItem key={category} value={category}>
+                                  {category}
+                                </MenuItem>
+                              ))}
+                              <MenuItem value="OTHER">अन्य</MenuItem>
+                            </Select>
+                            <FormHelperText>
+                              {errors.employeeCategory?.message}
+                            </FormHelperText>
+                          </FormControl>
+                        )}
+                      />
                     </Grid>
 
-                    <Grid item xs={12} md={8}>
-                      <Typography sx={labelSx}>
-                        पदस्थ स्कूल/कार्यालय का नाम *
-                      </Typography>
+                    {watchedEmployeeCategory === "OTHER" && (
+                      <Grid item xs={12} md={6}>
+                        <Typography sx={labelSx}>अन्य कर्मचारी श्रेणी *</Typography>
+                        <TextField
+                          fullWidth
+                          placeholder="कर्मचारी की श्रेणी दर्ज करें"
+                          {...register("otherEmployeeCategory", {
+                            validate: (value) =>
+                              watchedEmployeeCategory !== "OTHER" ||
+                              !!value?.trim() ||
+                              "कृपया कर्मचारी की श्रेणी दर्ज करें",
+                          })}
+                          error={!!errors.otherEmployeeCategory}
+                          helperText={errors.otherEmployeeCategory?.message}
+                          sx={inputSx}
+                        />
+                      </Grid>
+                    )}
+
+                    <Grid item xs={12} md={6}>
+                      <Typography sx={labelSx}>विभाग का नाम *</Typography>
+                      <Controller
+                        name="department"
+                        control={control}
+                        defaultValue=""
+                        rules={{ required: "कृपया विभाग चुनें" }}
+                        render={({ field }) => (
+                          <FormControl
+                            fullWidth
+                            error={!!errors.department}
+                            sx={selectSx}
+                          >
+                            <Select {...field} displayEmpty MenuProps={menuProps}>
+                              <MenuItem value="">विभाग चुनें</MenuItem>
+                              {DEPARTMENTS.map((department) => (
+                                <MenuItem key={department} value={department}>
+                                  {department}
+                                </MenuItem>
+                              ))}
+                              <MenuItem value="OTHER">
+                                विभाग सूची में उपलब्ध नहीं है
+                              </MenuItem>
+                            </Select>
+                            <FormHelperText>{errors.department?.message}</FormHelperText>
+                          </FormControl>
+                        )}
+                      />
+                    </Grid>
+
+                    {watchedDepartment === "OTHER" && (
+                      <Grid item xs={12} md={6}>
+                        <Typography sx={labelSx}>विभाग का नाम *</Typography>
+                        <TextField
+                          fullWidth
+                          placeholder="विभाग का नाम दर्ज करें"
+                          {...register("otherDepartmentName", {
+                            validate: (value) =>
+                              watchedDepartment !== "OTHER" ||
+                              !!value?.trim() ||
+                              "कृपया विभाग का नाम दर्ज करें",
+                          })}
+                          error={!!errors.otherDepartmentName}
+                          helperText={errors.otherDepartmentName?.message}
+                          sx={inputSx}
+                        />
+                      </Grid>
+                    )}
+
+                    <Grid item xs={12} md={6}>
+                      <Typography sx={labelSx}>पदस्थ कार्यालय का नाम *</Typography>
                       <TextField
                         fullWidth
-                        placeholder="Posted School/Office Name"
+                        placeholder="Posted Office Name"
                         {...register("schoolOfficeName", {
-                          required: "School/Office name is required",
+                          required: "पदस्थ कार्यालय का नाम आवश्यक है",
                         })}
                         error={!!errors.schoolOfficeName}
                         helperText={errors.schoolOfficeName?.message}
@@ -1267,13 +1446,13 @@ background: theme.main,                  }}
                         fullWidth
                         placeholder="Unique ID"
                         {...register("departmentUniqueId", {
-  required: "Department unique ID is required",
-  validate: async (value) => {
-    if (!value?.trim()) return true;
-    const available = await checkUnique("departmentId", value);
-    return available || "यह विभाग ID पहले से पंजीकृत है";
-  },
-})}
+                          required: "Department unique ID is required",
+                          validate: async (value) => {
+                            if (!value?.trim()) return true;
+                            const available = await checkUnique("departmentId", value);
+                            return available || "यह विभाग ID पहले से पंजीकृत है";
+                          },
+                        })}
                         error={!!errors.departmentUniqueId}
                         helperText={errors.departmentUniqueId?.message}
                         sx={inputSx}
@@ -1281,30 +1460,29 @@ background: theme.main,                  }}
                     </Grid>
 
                     <Grid item xs={12} md={6}>
-                      <Typography sx={labelSx}>संकुल का नाम *</Typography>
-                      <TextField
-                        fullWidth
-                        placeholder="Sankul Name"
-                        {...register("sankulName", {
-                          required: "Sankul name is required",
-                        })}
-                        error={!!errors.sankulName}
-                        helperText={errors.sankulName?.message}
-                        sx={inputSx}
-                      />
-                    </Grid>
-
-                    <Grid item xs={12} md={6}>
                       <Typography sx={labelSx}>नियुक्ति वर्ष *</Typography>
-                      <TextField
-                        fullWidth
-                        type="date"
-                        {...register("joiningDate", {
-                          required: "Joining date is required",
-                        })}
-                        error={!!errors.joiningDate}
-                        helperText={errors.joiningDate?.message}
-                        sx={inputSx}
+                      <Controller
+                        name="joiningYear"
+                        control={control}
+                        defaultValue=""
+                        rules={{ required: "कृपया नियुक्ति वर्ष चुनें" }}
+                        render={({ field }) => (
+                          <FormControl
+                            fullWidth
+                            error={!!errors.joiningYear}
+                            sx={selectSx}
+                          >
+                            <Select {...field} displayEmpty MenuProps={menuProps}>
+                              <MenuItem value="">नियुक्ति वर्ष चुनें</MenuItem>
+                              {JOINING_YEARS.map((year) => (
+                                <MenuItem key={year} value={String(year)}>
+                                  {year}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                            <FormHelperText>{errors.joiningYear?.message}</FormHelperText>
+                          </FormControl>
+                        )}
                       />
                     </Grid>
 
@@ -1316,12 +1494,19 @@ background: theme.main,                  }}
                         {...register("retirementDate", {
                           required: "जन्मतिथि + 62 वर्ष से स्वतः भरा जाएगा",
                         })}
+                        InputProps={{ readOnly: true }}
                         error={!!errors.retirementDate}
                         helperText={
                           errors.retirementDate?.message ||
                           "जन्मतिथि + 62 वर्ष से स्वतः भरा जाएगा"
                         }
-                        sx={inputSx}
+                        sx={{
+                          ...inputSx,
+                          "& .MuiOutlinedInput-root": {
+                            ...inputSx["& .MuiOutlinedInput-root"],
+                            background: "rgba(245,243,255,0.88)",
+                          },
+                        }}
                       />
                     </Grid>
                   </Grid>
@@ -1822,7 +2007,7 @@ background: theme.accent,
         fontFamily,
       }}
     >
-      प्रिय {registrationData?.name || "शिक्षक"} जी,
+      प्रिय {registrationData?.name || "सदस्य"} जी,
     </Typography>
 
     <Typography
@@ -1834,7 +2019,7 @@ background: theme.accent,
         fontFamily,
       }}
     >
-      आपका PMUMS शिक्षक संघ में पंजीकरण सफलतापूर्वक पूर्ण हो गया है।
+      आपका PMUMS में सदस्य पंजीकरण सफलतापूर्वक पूर्ण हो गया है।
       कृपया नीचे दी गई पंजीकरण संख्या भविष्य के लिए सुरक्षित रखें।
     </Typography>
 
@@ -1959,7 +2144,7 @@ boxShadow: "0 16px 40px rgba(34, 27, 67, 0.08)",
     >
       धन्यवाद
       <br />
-      PMUMS शिक्षक संघ
+      PMUMS
     </Typography>
   </DialogContent>
 

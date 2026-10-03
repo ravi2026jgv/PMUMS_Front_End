@@ -32,7 +32,7 @@ import {
 } from '@mui/icons-material';
 import Layout from '../components/Layout/Layout';
 import { publicApi } from '../services/api';
-
+import { usePortal } from '../portal/PortalContext';
 const theme = {
   dark: '#221b43',
   main: '#6f5cc2',
@@ -75,7 +75,9 @@ const AsahyogList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [beneficiaryOptions, setBeneficiaryOptions] = useState([]);
+const { portalSlug } = usePortal();
 
+const isTab2 = portalSlug === 'tab2';
 const [filters, setFilters] = useState({
   userId: '',
   fullName: '',
@@ -835,15 +837,47 @@ fontWeight: 700,
                           },
                         }}
                       >
-                        <TableCell>क्र.सं.</TableCell>
-                        <TableCell>रजिस्ट्रेशन नं.</TableCell>
-                        <TableCell>नाम (Name)</TableCell>
-                        <TableCell>विभाग</TableCell>
-                        <TableCell>राज्य</TableCell>
-                        <TableCell>संभाग</TableCell>
-                        <TableCell>जिला</TableCell>
-                        <TableCell>ब्लॉक</TableCell>
-                        <TableCell>स्कूल का नाम</TableCell>
+<TableCell>क्र.सं.</TableCell>
+
+<TableCell>
+  रजिस्ट्रेशन नं.
+</TableCell>
+
+<TableCell>
+  नाम (Name)
+</TableCell>
+
+{isTab2 && (
+  <TableCell>
+    कर्मचारी की श्रेणी
+  </TableCell>
+)}
+
+<TableCell>
+  विभाग
+</TableCell>
+
+<TableCell>
+  राज्य
+</TableCell>
+
+<TableCell>
+  संभाग
+</TableCell>
+
+<TableCell>
+  जिला
+</TableCell>
+
+<TableCell>
+  ब्लॉक
+</TableCell>
+
+<TableCell>
+  {isTab2
+    ? 'पदस्थ कार्यालय का नाम'
+    : 'स्कूल का नाम'}
+</TableCell>
                       </TableRow>
                     </TableHead>
 
@@ -880,7 +914,13 @@ fontWeight: 700,
                           <TableCell sx={{ fontWeight: '700 !important', color: `${theme.dark} !important` }}>
                             {getFullName(user)}
                           </TableCell>
-
+{isTab2 && (
+  <TableCell>
+    {getDisplayValue(
+      user.employeeCategory
+    )}
+  </TableCell>
+)}
                           <TableCell>{getDisplayValue(user.department)}</TableCell>
                           <TableCell>{getDisplayValue(user.state || user.departmentState)}</TableCell>
                           <TableCell>{getDisplayValue(user.sambhag || user.departmentSambhag)}</TableCell>

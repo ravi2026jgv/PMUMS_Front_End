@@ -25,10 +25,12 @@ import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout/Layout';
 import DeathCase from '../components/DeathCase';
 import CreateDeathCase from '../components/CreateDeathCase';
+import { usePortal } from '../portal/PortalContext';
 
 const Dashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { path } = usePortal();
   const [openDeathCase, setOpenDeathCase] = useState(false);
   const [openCreateDeathCase, setOpenCreateDeathCase] = useState(false);
 
@@ -43,10 +45,10 @@ const Dashboard = () => {
   'ROLE_BLOCK_MANAGER'
 ];
       if (adminManagerRoles.includes(user.role)) {
-        navigate('/admin/dashboard', { replace: true });
+        navigate(path('/admin/dashboard'), { replace: true });
       }
     }
-  }, [user, navigate]);
+  }, [user, navigate, path]);
 
   const handleOpenDeathCase = () => {
     setOpenDeathCase(true);

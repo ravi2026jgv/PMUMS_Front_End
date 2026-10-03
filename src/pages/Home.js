@@ -42,6 +42,7 @@ import SelfDonation from "../components/SelfDonation";
 import DeathCaseSupportView from "../components/DeathCaseSupportView";
 import SbiInsuranceSection from "../components/SbiInsuranceSection";
 import { publicApi, receiptAPI, FILE_BASE_URL } from "../services/api";
+import { usePortal } from "../portal/PortalContext";
 const theme = {
   dark: "#221b43",
   main: "#6f5cc2",
@@ -80,6 +81,7 @@ const inputSx = {
 };
 const Home = () => {
   const navigate = useNavigate();
+  const { path } = usePortal();
   const { isAuthenticated } = useAuth();
 
   const [homeDisplayContent, setHomeDisplayContent] = useState({
@@ -105,11 +107,11 @@ const [utrSuccess, setUtrSuccess] = useState("");
 const [utrError, setUtrError] = useState("");
   const handleSahyogClick = () => {
     if (!isAuthenticated) {
-      navigate("/login", { state: { from: { pathname: "/sahyog" } } });
+      navigate(path("/login"), { state: { from: { pathname: path("/sahyog") } } });
       return;
     }
 
-    navigate("/sahyog");
+    navigate(path("/sahyog"));
   };
   const maskUtrNumber = (utrNumber) => {
   if (!utrNumber) return null;

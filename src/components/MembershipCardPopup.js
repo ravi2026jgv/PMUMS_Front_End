@@ -1,4 +1,5 @@
 import React, { useRef } from 'react';
+import { usePortal } from '../portal/PortalContext';
 import {
   Dialog,
   DialogTitle,
@@ -95,11 +96,29 @@ height: 34,
 const MembershipCardPopup = ({ open, onClose, memberData }) => {
   const cardRef = useRef(null);
 
+  const { portalSlug } = usePortal();
+
+  const isTab2 = portalSlug === 'tab2';
+
+  // Keep Tab 1 exactly as before.
+  // Use general employee/member wording for Tab 2.
+  const organizationName = isTab2
+    ? 'PMUMS कर्मचारी संघ'
+    : 'PMUMS शिक्षक संघ';
+
+  const defaultMemberName = isTab2
+    ? 'सदस्य'
+    : 'शिक्षक';
+
+  const cardFooterText = isTab2
+    ? 'यह कार्ड PMUMS सदस्यता जानकारी हेतु है।'
+    : 'यह कार्ड PMUMS शिक्षक संघ की सदस्यता जानकारी हेतु है।';
+
   const fullName =
     memberData?.fullName ||
     memberData?.name ||
     [memberData?.firstName, memberData?.surname].filter(Boolean).join(' ') ||
-    'शिक्षक';
+    defaultMemberName;
 
   const registrationNumber =
     memberData?.registrationNumber ||
@@ -115,7 +134,9 @@ const MembershipCardPopup = ({ open, onClose, memberData }) => {
       memberData?.registrationDateOverride
   );
 
-  const firstLetter = String(fullName || 'शिक्षक').charAt(0).toUpperCase();
+const firstLetter = String(fullName || defaultMemberName)
+  .charAt(0)
+  .toUpperCase();
 
   const handleDownload = async () => {
     if (!cardRef.current) return;
@@ -253,7 +274,7 @@ pt: 2.5,
                 textShadow: '0 7px 20px rgba(0,0,0,0.28)'
               }}
             >
-              PMUMS शिक्षक संघ
+            {organizationName}
             </Typography>
 
             <Box
@@ -532,8 +553,7 @@ height: 118,
                   lineHeight: 1.4
                 }}
               >
-                यह कार्ड PMUMS शिक्षक संघ की सदस्यता जानकारी हेतु है।
-              </Typography>
+{cardFooterText}              </Typography>
             </Box>
           </Box>
         </Box>

@@ -3,6 +3,12 @@ import React, { createContext, useContext, useReducer, useEffect, useRef } from 
 import { authService } from '../services/auth.service';
 import toast from 'react-hot-toast';
 import api from '../services/api';
+import { usePortal } from '../portal/PortalContext';
+import {
+  getPortalLocalStorageItem,
+  removePortalLocalStorageItem,
+  setPortalLocalStorageItem,
+} from '../portal/portalStorage';
 
 const AuthContext = createContext();
 
@@ -65,6 +71,7 @@ const authReducer = (state, action) => {
 
 export const AuthProvider = ({ children }) => {
   const logoutTimerRef = useRef(null);
+  const { path, portalSlug } = usePortal();
 
   const [state, dispatch] = useReducer(authReducer, {
     user: null,
@@ -82,12 +89,12 @@ export const AuthProvider = ({ children }) => {
   const performAutoLogout = () => {
     clearLogoutTimer();
     authService.clearAllAuthData();
-    localStorage.removeItem('loginDate');
+    removePortalLocalStorageItem('loginDate', portalSlug);
     dispatch({ type: 'LOGOUT' });
     toast.error('आपका सत्र समाप्त हो गया है। कृपया दोबारा लॉगिन करें।');
 
     setTimeout(() => {
-      window.location.href = '/login';
+      window.location.href = path('/login');
     }, 500);
   };
 
@@ -119,12 +126,12 @@ const setupAutoLogout = (token) => {
   // Check for existing auth token on mount
   useEffect(() => {
     const checkAuthStatus = async () => {
-      const token = localStorage.getItem('authToken');
+      const token = getPortalLocalStorageItem('authToken', portalSlug);
 
 if (token) {
         const expiryTime = getTokenExpiryTime(token);
 
-        const loginDate = localStorage.getItem('loginDate');
+        const loginDate = getPortalLocalStorageItem('loginDate', portalSlug);
 const todayDate = new Date().toISOString().split('T')[0];
 
 if (!expiryTime || Date.now() >= expiryTime || loginDate !== todayDate) {
@@ -149,10 +156,10 @@ if (!expiryTime || Date.now() >= expiryTime || loginDate !== todayDate) {
     checkAuthStatus();
 
     return () => clearLogoutTimer();
-  }, []);
+  }, [portalSlug]);
   useEffect(() => {
   const interval = setInterval(async () => {
-    const token = localStorage.getItem('authToken');
+    const token = getPortalLocalStorageItem('authToken', portalSlug);
 
     if (!token) return;
 
@@ -164,15 +171,16 @@ if (!expiryTime || Date.now() >= expiryTime || loginDate !== todayDate) {
         authService.clearAllAuthData();
         dispatch({ type: 'LOGOUT' });
 
-        if (window.location.pathname !== '/login') {
-          window.location.href = '/login';
+        const loginPath = path('/login');
+        if (window.location.pathname !== loginPath) {
+          window.location.href = loginPath;
         }
       }
     }
   }, 30000);
 
   return () => clearInterval(interval);
-}, []);
+}, [path, portalSlug]);
 
   // Login function
   const login = async (credentials) => {
@@ -192,11 +200,15 @@ if (!expiryTime || Date.now() >= expiryTime || loginDate !== todayDate) {
         throw new Error('No user data received');
       }
 
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
+      removePortalLocalStorageItem('authToken', portalSlug);
+      removePortalLocalStorageItem('user', portalSlug);
 
-localStorage.setItem('authToken', token);
-localStorage.setItem('loginDate', new Date().toISOString().split('T')[0]);
+      setPortalLocalStorageItem('authToken', token, portalSlug);
+      setPortalLocalStorageItem(
+        'loginDate',
+        new Date().toISOString().split('T')[0],
+        portalSlug
+      );
 
 const verifiedUser = await authService.getCurrentUser();
 
@@ -234,18 +246,18 @@ dispatch({ type: 'LOGIN_SUCCESS', payload: verifiedUser });
     try {
       clearLogoutTimer();
       await authService.logout();
-      localStorage.removeItem('loginDate');
+      removePortalLocalStorageItem('loginDate', portalSlug);
       dispatch({ type: 'LOGOUT' });
       toast.success('आपका लॉगआउट सफल हुआ');
 
       setTimeout(() => {
-        window.location.href = '/login';
+        window.location.href = path('/login');
       }, 500);
     } catch (error) {
       console.error('Logout error:', error);
       authService.clearAllAuthData();
       dispatch({ type: 'LOGOUT' });
-      window.location.href = '/login';
+      window.location.href = path('/login');
     }
   };
 

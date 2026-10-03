@@ -1,5 +1,11 @@
 // Simple test utility to check API without any authentication
 import axios from 'axios';
+import { getPortalBySlug } from '../portal/portalConfig';
+import { getActivePortalSlug } from '../portal/portalStorage';
+
+const getPortalHeaders = () => ({
+  'X-Portal-Code': getPortalBySlug(getActivePortalSlug())?.code || 'TAB1',
+});
 
 export const testPublicEndpoint = async () => {
   try {
@@ -9,7 +15,8 @@ export const testPublicEndpoint = async () => {
     const testApi = axios.create({
       baseURL: 'https://backend.pmums.com/api',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        ...getPortalHeaders(),
       },
       // Ensure no auth headers
       validateStatus: function (status) {
@@ -35,7 +42,8 @@ export const testRegistration = async (userData) => {
     const testApi = axios.create({
       baseURL: 'https://backend.pmums.com/api',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        ...getPortalHeaders(),
       },
       validateStatus: function (status) {
         return status < 500;

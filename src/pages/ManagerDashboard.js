@@ -84,6 +84,7 @@ import {
 } from "../components/QueryDialogs";
 import TicketSystemTab from "../components/TicketSystemTab";
 import ManagerSecurityLock from "../components/ManagerSecurityLock";
+import { getPortalSessionStorageItem } from "../portal/portalStorage";
 
 const ManagerDashboard = () => {
   const { user } = useAuth();
@@ -198,9 +199,9 @@ const canManageUsers = isSuperAdmin || isAdmin || isSambhagManager || isDistrict
   };
   const isManagerReAuthValid = () => {
     const unlocked =
-      sessionStorage.getItem("managerDashboardReAuth") === "true";
+      getPortalSessionStorageItem("managerDashboardReAuth") === "true";
     const expiresAt = Number(
-      sessionStorage.getItem("managerDashboardReAuthExpiresAt") || 0,
+      getPortalSessionStorageItem("managerDashboardReAuthExpiresAt") || 0,
     );
 
     return unlocked && expiresAt > Date.now();
