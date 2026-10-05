@@ -48,6 +48,8 @@ import DeathCase from './components/DeathCase';
 import SelfDonation from './pages/SelfDonationPage';
 import ZeroUtrList from './pages/ZeroUtrList';
 import PendingProfilesList from './pages/PendingProfilesList';
+import BinUsersList from './pages/BinUsersList';
+import DeceasedMembersList from './pages/DeceasedMembersList';
 import Blog from './pages/Blog';
 
 const createPortalQueryClient = () =>
@@ -104,6 +106,8 @@ const PortalRoutes = () => {
         <Route path="zero-utr-list" element={page('zeroUtrList', ZeroUtrList)} />
         <Route path="self-donation" element={page('selfDonation', SelfDonation)} />
         <Route path="pending-profiles" element={page('pendingProfiles', PendingProfilesList)} />
+        <Route path="bin-users" element={page('binUsers', BinUsersList)} />
+        <Route path="deceased-members" element={page('deceasedMembers', DeceasedMembersList)} />
 
         {/* Protected routes */}
         <Route
@@ -240,6 +244,8 @@ function App() {
           <Route path="/zero-utr-list" element={<LegacyTab1Redirect />} />
           <Route path="/self-donation" element={<LegacyTab1Redirect />} />
           <Route path="/pending-profiles" element={<LegacyTab1Redirect />} />
+          <Route path="/bin-users" element={<LegacyTab1Redirect />} />
+          <Route path="/deceased-members" element={<LegacyTab1Redirect />} />
           <Route path="/sahyog" element={<LegacyTab1Redirect />} />
           <Route path="/dashboard" element={<LegacyTab1Redirect />} />
           <Route path="/admin/*" element={<LegacyTab1Redirect />} />

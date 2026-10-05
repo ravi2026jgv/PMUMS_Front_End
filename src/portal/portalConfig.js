@@ -90,10 +90,11 @@ export const PORTALS = [
     selectorDescription:
       'समस्त विभागों के संविदा, आउटसोर्स एवं संबंधित कर्मचारियों के लिए।',
 
-    enabled: true,
-    status: 'active',
+    // Current production release: keep the group visible, but do not allow entry yet.
+    enabled: false,
+    status: 'upcoming',
 
-    // Show this portal on the new "/" landing page
+    // Keep this group visible on the landing page with a Coming Soon state.
     showOnLanding: true,
 
     // =========================================================

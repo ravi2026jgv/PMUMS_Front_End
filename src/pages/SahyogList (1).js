@@ -102,7 +102,7 @@ const SahyogList = () => {
   const [beneficiaryOptions, setBeneficiaryOptions] = useState([]);
 const { user, loading: authLoading } = useAuth();
 const { portalSlug } = usePortal();
-const isTab2 = portalSlug === 'tab2';
+const isTab2 = portalSlug === "tab2";
 const isAdminUser = isAdminOrSuperAdmin(user);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);

@@ -272,6 +272,20 @@ const Header = () => {
       ),
     },
 
+    {
+      label: 'BIN USERS',
+      path: path(
+        '/bin-users'
+      ),
+    },
+
+    {
+      label: 'DECEASED MEMBERS',
+      path: path(
+        '/deceased-members'
+      ),
+    },
+
     /*
      * Existing production rule:
      * Pending Profiles only in TAB 1.

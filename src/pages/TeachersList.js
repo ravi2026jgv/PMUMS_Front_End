@@ -26,6 +26,9 @@ import {
   Paper,
   IconButton,
   Snackbar,
+  FormControl,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import {
   Search,
@@ -104,6 +107,11 @@ const TeachersList = () => {
     paymentDate: new Date().toISOString().split("T")[0],
     referenceName: "",
     utrNumber: "",
+  });
+  const [sahyogPaymentSettings, setSahyogPaymentSettings] = useState({
+    defaultAmount: "",
+    autoFillEnabled: false,
+    amountEditable: true,
   });
   const [utrSubmitting, setUtrSubmitting] = useState(false);
   const [utrSuccess, setUtrSuccess] = useState("");
@@ -350,6 +358,30 @@ const TeachersList = () => {
   };
 
   useEffect(() => {
+    const loadSahyogPaymentSettings = async () => {
+      try {
+        const response = await publicApi.getSahyogPaymentSettings();
+        const defaultAmount = Number(response?.data?.defaultAmount);
+
+        setSahyogPaymentSettings({
+          defaultAmount: defaultAmount > 0 ? String(defaultAmount) : "",
+          autoFillEnabled: response?.data?.autoFillEnabled === true,
+          amountEditable: response?.data?.amountEditable !== false,
+        });
+      } catch (error) {
+        console.error("Error loading Sahyog payment settings:", error);
+        setSahyogPaymentSettings({
+          defaultAmount: "",
+          autoFillEnabled: false,
+          amountEditable: true,
+        });
+      }
+    };
+
+    loadSahyogPaymentSettings();
+  }, []);
+
+  useEffect(() => {
     fetchLocationData();
     fetchActivePools();
 
@@ -448,7 +480,10 @@ const TeachersList = () => {
     }
     setSelectedTeacher(teacher);
     setUtrForm({
-      amount: "",
+      amount:
+        sahyogPaymentSettings.autoFillEnabled && sahyogPaymentSettings.defaultAmount
+          ? sahyogPaymentSettings.defaultAmount
+          : "",
       paymentDate: new Date().toISOString().split("T")[0],
       referenceName: "",
       utrNumber: "",
@@ -712,7 +747,7 @@ const TeachersList = () => {
                         "Noto Sans Devanagari, Poppins, Arial, sans-serif",
                     }}
                   >
-                    यूजर आईडी, नाम या मोबाइल नंबर से सदस्य खोजें।
+                    संभाग, जिला, ब्लॉक, यूजर आईडी, नाम या मोबाइल नंबर से सदस्य खोजें।
                   </Typography>
                 </Box>
 
@@ -739,6 +774,101 @@ const TeachersList = () => {
               </Box>
 
               <Grid container spacing={2.5} alignItems="end">
+                <Grid item xs={12} sm={4} md={4}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mb: 1,
+                      fontWeight: 900,
+                      color: theme.dark,
+                      fontFamily:
+                        "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+                    }}
+                  >
+                    संभाग (Sambhag)
+                  </Typography>
+                  <FormControl fullWidth size="small">
+                    <Select
+                      value={filters.sambhagId}
+                      onChange={(e) => handleSambhagChange(e.target.value)}
+                      displayEmpty
+                      sx={inputSx}
+                    >
+                      <MenuItem value="">सभी संभाग</MenuItem>
+                      {Array.isArray(sambhagOptions) &&
+                        sambhagOptions.map((item) => (
+                          <MenuItem key={item.id} value={item.id}>
+                            {item.name}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12} sm={4} md={4}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mb: 1,
+                      fontWeight: 900,
+                      color: theme.dark,
+                      fontFamily:
+                        "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+                    }}
+                  >
+                    जिला (District)
+                  </Typography>
+                  <FormControl fullWidth size="small">
+                    <Select
+                      value={filters.districtId}
+                      onChange={(e) => handleDistrictChange(e.target.value)}
+                      displayEmpty
+                      disabled={!filters.sambhagId}
+                      sx={inputSx}
+                    >
+                      <MenuItem value="">सभी जिले</MenuItem>
+                      {Array.isArray(districtOptions) &&
+                        districtOptions.map((item) => (
+                          <MenuItem key={item.id} value={item.id}>
+                            {item.name}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12} sm={4} md={4}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mb: 1,
+                      fontWeight: 900,
+                      color: theme.dark,
+                      fontFamily:
+                        "Noto Sans Devanagari, Poppins, Arial, sans-serif",
+                    }}
+                  >
+                    ब्लॉक (Block)
+                  </Typography>
+                  <FormControl fullWidth size="small">
+                    <Select
+                      value={filters.blockId}
+                      onChange={(e) => handleBlockChange(e.target.value)}
+                      displayEmpty
+                      disabled={!filters.districtId}
+                      sx={inputSx}
+                    >
+                      <MenuItem value="">सभी ब्लॉक</MenuItem>
+                      {Array.isArray(blockOptions) &&
+                        blockOptions.map((item) => (
+                          <MenuItem key={item.id} value={item.id}>
+                            {item.name}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  </FormControl>
+                </Grid>
+
                 <Grid item xs={12} sm={4} md={4}>
                   <Typography
                     variant="body2"
@@ -1542,8 +1672,16 @@ const TeachersList = () => {
                   setUtrForm((prev) => ({ ...prev, amount: e.target.value }))
                 }
                 disabled={utrSubmitting}
+                helperText={
+                  !sahyogPaymentSettings.amountEditable
+                    ? "राशि Admin द्वारा निर्धारित है और बदली नहीं जा सकती।"
+                    : sahyogPaymentSettings.autoFillEnabled
+                      ? "राशि पहले से भरी गई है; आवश्यकता होने पर बदल सकते हैं।"
+                      : ""
+                }
                 sx={inputSx}
                 InputProps={{
+                  readOnly: !sahyogPaymentSettings.amountEditable,
                   startAdornment: (
                     <InputAdornment position="start">
                       <CurrencyRupeeRounded sx={{ color: theme.main }} />

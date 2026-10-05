@@ -171,6 +171,7 @@ p: 1
               {[
                 { text: '• हमारे बारे में', href: path('/about') },
                 { text: '• शिक्षक सूची', href: path('/teachers-list') },
+                { text: '• दिवंगत सदस्य', href: path('/deceased-members') },
                 { text: '• Sahyog करें', href: path('/sahyog') },
                 { text: '• नियमावली', href: path('/niyamawali') },
                 { text: '• संपर्क करें', href: path('/contact-us') }

@@ -101,6 +101,14 @@ const Tab2Footer = () => {
 
     {
       text:
+        'दिवंगत सदस्य',
+
+      href:
+        path('/deceased-members'),
+    },
+
+    {
+      text:
         'Sahyog करें',
 
       href:

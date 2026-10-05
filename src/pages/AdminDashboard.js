@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Paper,
@@ -118,6 +118,7 @@ const AdminDashboard = () => {
   const [selectedManagerInfo, setSelectedManagerInfo] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedUserIds, setSelectedUserIds] = useState([]);
+  const [memberStatusUpdatingId, setMemberStatusUpdatingId] = useState(null);
   const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const [exportMobileNumberEnabled, setExportMobileNumberEnabled] =
     useState(false);
@@ -125,6 +126,11 @@ const AdminDashboard = () => {
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [settingsSaving, setSettingsSaving] = useState(false);
   const [selfDonationVisible, setSelfDonationVisible] = useState(false);
+  const [sahyogPaymentSettings, setSahyogPaymentSettings] = useState({
+    defaultAmount: "",
+    autoFillEnabled: false,
+    amountEditable: true,
+  });
   const [contentDialogOpen, setContentDialogOpen] = useState(false);
   const [contentLoading, setContentLoading] = useState(false);
   const [contentSaving, setContentSaving] = useState(false);
@@ -1566,26 +1572,6 @@ const AdminDashboard = () => {
       setDeathCaseFormLoading(false);
     }
   };
-  const handlePermanentDeleteFromTrash = async (userId) => {
-    const ok = window.confirm(
-      "Are you sure you want to permanently delete this user? This cannot be undone.",
-    );
-    if (!ok) return;
-
-    try {
-      await adminAPI.permanentlyDeleteUserFromTrash(userId);
-      showSnackbar("User permanently deleted successfully!", "success");
-      fetchUsers();
-      fetchTrashUsers();
-      fetchPendingDeleteRequests();
-    } catch (error) {
-      console.error("Error permanently deleting user:", error);
-      showSnackbar(
-        error?.response?.data?.message || "Error permanently deleting user!",
-        "error",
-      );
-    }
-  };
   const fetchReportRows = async () => {
     const config = reportTabConfig[activeTab];
     if (!config) return;
@@ -1682,26 +1668,6 @@ const AdminDashboard = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, logsPage, logsRowsPerPage]);
-  const handleClearTrash = async () => {
-    const ok = window.confirm(
-      "Are you sure you want to permanently delete all users from trash? This cannot be undone.",
-    );
-    if (!ok) return;
-
-    try {
-      await adminAPI.clearAllTrashUsers();
-      showSnackbar("Trash cleared successfully!", "success");
-      fetchUsers();
-      fetchTrashUsers();
-      fetchPendingDeleteRequests();
-    } catch (error) {
-      console.error("Error clearing trash:", error);
-      showSnackbar(
-        error?.response?.data?.message || "Error clearing trash!",
-        "error",
-      );
-    }
-  };
   const handleProfileFieldLockChange = (field, checked) => {
     setProfileFieldLocks((prev) => ({
       ...prev,
@@ -2005,12 +1971,14 @@ const AdminDashboard = () => {
         selfDonationQrResponse,
         profileFieldLocksResponse,
         homeStatsResponse,
+        sahyogPaymentResponse,
       ] = await Promise.all([
         adminAPI.getMobileOtpSetting(),
         adminAPI.getSelfDonationVisibleSetting(),
         adminAPI.getSelfDonationQr(),
         adminAPI.getProfileFieldLocks(),
         adminAPI.getHomeStatsSettings(),
+        adminAPI.getSahyogPaymentSettings(),
       ]);
 
       setMobileOtpEnabled(mobileOtpResponse.data?.mobileOtpEnabled === true);
@@ -2034,6 +2002,17 @@ const AdminDashboard = () => {
         registeredTeachersCount:
           homeStatsResponse?.data?.registeredTeachersCount || 0,
         emergencyHelpCount: homeStatsResponse?.data?.emergencyHelpCount || "",
+      });
+
+      setSahyogPaymentSettings({
+        defaultAmount:
+          Number(sahyogPaymentResponse?.data?.defaultAmount) > 0
+            ? String(sahyogPaymentResponse.data.defaultAmount)
+            : "",
+        autoFillEnabled:
+          sahyogPaymentResponse?.data?.autoFillEnabled === true,
+        amountEditable:
+          sahyogPaymentResponse?.data?.amountEditable !== false,
       });
 
       await Promise.all([
@@ -2177,6 +2156,20 @@ const AdminDashboard = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [deleteRequestsOpen]);
   const handleSaveSettings = async () => {
+    const configuredSahyogAmount = Number(sahyogPaymentSettings.defaultAmount);
+
+    if (
+      (sahyogPaymentSettings.autoFillEnabled ||
+        !sahyogPaymentSettings.amountEditable) &&
+      (!Number.isFinite(configuredSahyogAmount) || configuredSahyogAmount <= 0)
+    ) {
+      showSnackbar(
+        "Please enter a positive Default Rashi Amount for Sahyog.",
+        "error",
+      );
+      return;
+    }
+
     try {
       setSettingsSaving(true);
 
@@ -2186,6 +2179,14 @@ const AdminDashboard = () => {
         adminAPI.updateProfileFieldLocks(profileFieldLocks),
         adminAPI.updateHomeStatsSettings({
           emergencyHelpCount: homeStatsSettings.emergencyHelpCount,
+        }),
+        adminAPI.updateSahyogPaymentSettings({
+          defaultAmount:
+            Number.isFinite(configuredSahyogAmount) && configuredSahyogAmount > 0
+              ? configuredSahyogAmount
+              : 0,
+          autoFillEnabled: sahyogPaymentSettings.autoFillEnabled,
+          amountEditable: sahyogPaymentSettings.amountEditable,
         }),
       ]);
 
@@ -2309,14 +2310,14 @@ const AdminDashboard = () => {
 
   const handleApproveDeleteRequest = async (requestId) => {
     const ok = window.confirm(
-      "Are you sure you want to approve and permanently delete this user? This cannot be undone.",
+      "Approve this delete request and move the user to Bin? The user can be restored later.",
     );
     if (!ok) return;
 
     try {
       await adminAPI.approveDeleteRequest(requestId);
       showSnackbar(
-        "Delete request approved successfully. User is now available in trash for permanent delete or restore.",
+        "Delete request approved successfully. User has been moved to Bin and can be restored if needed.",
         "success",
       );
       fetchUsers();
@@ -2870,7 +2871,7 @@ const AdminDashboard = () => {
       });
 
       showSnackbar(
-        "User moved to trash and delete request created successfully!",
+        "Delete request submitted successfully. User will move to Bin after approval.",
         "success",
       );
       fetchUsers();
@@ -2929,7 +2930,7 @@ const AdminDashboard = () => {
         ),
       );
 
-      showSnackbar("Selected users moved to trash successfully!", "success");
+      showSnackbar("Delete requests submitted successfully for selected users!", "success");
       setSelectedUserIds([]);
       fetchUsers();
       fetchTrashUsers();
@@ -2937,6 +2938,38 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error("Error bulk deleting users:", error);
       showSnackbar("Error deleting selected users!", "error");
+    }
+  };
+
+  const handleMemberStatusChange = async (userId, memberStatus) => {
+    if (!userId || !memberStatus) return;
+
+    try {
+      setMemberStatusUpdatingId(userId);
+      await adminAPI.updateMemberStatus(userId, { memberStatus });
+
+      setUsers((prev) =>
+        prev.map((user) =>
+          user.id === userId ? { ...user, memberStatus } : user,
+        ),
+      );
+
+      setTrashUsers((prev) =>
+        (Array.isArray(prev) ? prev : []).map((user) =>
+          user.id === userId ? { ...user, memberStatus } : user,
+        ),
+      );
+
+      showSnackbar("Member status updated successfully!", "success");
+    } catch (error) {
+      console.error("Error updating member status:", error);
+      showSnackbar(
+        error?.response?.data?.message || "Failed to update member status!",
+        "error",
+      );
+      fetchUsers();
+    } finally {
+      setMemberStatusUpdatingId(null);
     }
   };
 
@@ -6713,7 +6746,7 @@ const AdminDashboard = () => {
       >
         <Table
           sx={{
-            minWidth: 1100,
+            minWidth: 1260,
             "& .MuiTableCell-root": {
               whiteSpace: "nowrap",
             },
@@ -6749,7 +6782,9 @@ const AdminDashboard = () => {
               <TableCell sx={tableHeaderCellSx}>Email / Phone</TableCell>
               <TableCell sx={tableHeaderCellSx}>Role</TableCell>
               <TableCell sx={tableHeaderCellSx}>Location</TableCell>
-              <TableCell sx={tableHeaderCellSx}>Status</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Account Status</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Member Status</TableCell>
+              <TableCell sx={tableHeaderCellSx}>Total Sahyog</TableCell>
               <TableCell sx={tableHeaderCellSx}>Last Login</TableCell>
               <TableCell sx={tableHeaderCellSx}>Actions</TableCell>
             </TableRow>
@@ -6758,7 +6793,7 @@ const AdminDashboard = () => {
             {usersLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={9}
+                  colSpan={11}
                   align="center"
                   sx={{ py: 6, borderBottom: "none" }}
                 >
@@ -6782,7 +6817,7 @@ const AdminDashboard = () => {
               </TableRow>
             ) : users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} align="center" sx={{ py: 4 }}>
+                <TableCell colSpan={11} align="center" sx={{ py: 4 }}>
                   <Box sx={{ textAlign: "center" }}>
                     <People sx={{ fontSize: 44, color: "#cbd5e1", mb: 1 }} />
                     <Typography
@@ -6936,6 +6971,56 @@ const AdminDashboard = () => {
                         borderRadius: "10px",
                       }}
                     />
+                  </TableCell>
+                  <TableCell sx={tableBodyCellSx}>
+                    <FormControl size="small" sx={{ minWidth: 128 }}>
+                      <Select
+                        value={String(user.memberStatus || "NORMAL").toUpperCase()}
+                        onChange={(event) =>
+                          handleMemberStatusChange(user.id, event.target.value)
+                        }
+                        disabled={
+                          memberStatusUpdatingId === user.id ||
+                          user.role === "ROLE_SUPERADMIN"
+                        }
+                        renderValue={(value) => (
+                          <Chip
+                            label={getMemberStatusLabel(value)}
+                            size="small"
+                            variant="outlined"
+                            sx={{
+                              ...getMemberStatusChipSx(value),
+                              fontWeight: 900,
+                              borderRadius: "10px",
+                            }}
+                          />
+                        )}
+                        sx={{
+                          height: 38,
+                          bgcolor: "#fff",
+                          "& .MuiSelect-select": {
+                            py: 0.5,
+                            display: "flex",
+                            alignItems: "center",
+                          },
+                        }}
+                      >
+                        <MenuItem value="NORMAL">Normal</MenuItem>
+                        <MenuItem value="RETIRED">Retired</MenuItem>
+                        <MenuItem value="DECEASED">Deceased</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </TableCell>
+                  <TableCell sx={tableBodyCellSx}>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontWeight: 900, color: "#15803d" }}
+                    >
+                      ₹{Number(user.totalSahyog || 0).toLocaleString("en-IN")}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: "#94a3b8" }}>
+                      verified
+                    </Typography>
                   </TableCell>
                   <TableCell sx={tableBodyCellSx}>
                     <Typography variant="caption">
@@ -7311,11 +7396,7 @@ const AdminDashboard = () => {
                         <IconButton
                           size="small"
                           onClick={() => handleDeleteUser(user)}
-                          title={
-                            (user.status || "").toLowerCase() === "deleted"
-                              ? "Permanent Delete"
-                              : "Soft Delete"
-                          }
+                          title="Request Delete"
                           sx={actionIconSx(
                             "#dc2626",
                             "rgba(220, 38, 38, 0.12)",
@@ -9004,6 +9085,42 @@ const AdminDashboard = () => {
       bgcolor: "rgba(100, 116, 139, 0.10)",
       color: "#475569",
       border: "1px solid rgba(100, 116, 139, 0.20)",
+    };
+  };
+
+  const getMemberStatusLabel = (memberStatus) => {
+    const normalized = String(memberStatus || "NORMAL").toUpperCase();
+    const labels = {
+      NORMAL: "Normal",
+      RETIRED: "Retired",
+      DECEASED: "Deceased",
+    };
+    return labels[normalized] || normalized;
+  };
+
+  const getMemberStatusChipSx = (memberStatus) => {
+    const normalized = String(memberStatus || "NORMAL").toUpperCase();
+
+    if (normalized === "RETIRED") {
+      return {
+        bgcolor: "rgba(37, 99, 235, 0.10)",
+        color: "#1d4ed8",
+        border: "1px solid rgba(37, 99, 235, 0.20)",
+      };
+    }
+
+    if (normalized === "DECEASED") {
+      return {
+        bgcolor: "rgba(71, 85, 105, 0.12)",
+        color: "#334155",
+        border: "1px solid rgba(71, 85, 105, 0.22)",
+      };
+    }
+
+    return {
+      bgcolor: "rgba(22, 163, 74, 0.10)",
+      color: "#15803d",
+      border: "1px solid rgba(22, 163, 74, 0.20)",
     };
   };
 
@@ -16079,6 +16196,145 @@ const AdminDashboard = () => {
                   </Grid>
                 </Paper>
 
+                <Paper elevation={0} sx={settingsCardSx}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: 1.5,
+                      mb: 2,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: "14px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        background:
+                          "linear-gradient(135deg, #6f5cc2 0%, #221b43 100%)",
+                        color: "#fff",
+                        boxShadow: "0 10px 20px rgba(111, 92, 194, 0.20)",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Payment fontSize="small" />
+                    </Box>
+
+                    <Box>
+                      <Typography
+                        variant="h6"
+                        sx={{ fontWeight: 900, color: "#0f172a" }}
+                      >
+                        Sahyog Rashi Settings
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{ color: "#64748b", fontWeight: 600 }}
+                      >
+                        Control the default amount shown in Sahyog upload dialogs
+                        and whether members can change it.
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  <Grid container spacing={1.5}>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        type="number"
+                        label="Default Rashi Amount (₹)"
+                        value={sahyogPaymentSettings.defaultAmount}
+                        onChange={(e) =>
+                          setSahyogPaymentSettings((prev) => ({
+                            ...prev,
+                            defaultAmount: e.target.value,
+                          }))
+                        }
+                        inputProps={{ min: 0, step: "0.01" }}
+                        helperText={
+                          sahyogPaymentSettings.autoFillEnabled
+                            ? "This amount will be filled automatically in Sahyog uploads."
+                            : "Saved for future use. It is not auto-filled while Auto Fill is OFF."
+                        }
+                      />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <Box sx={settingsSwitchRowSx}>
+                        <Box>
+                          <Typography
+                            variant="body2"
+                            sx={{ fontWeight: 900, color: "#0f172a" }}
+                          >
+                            Auto Fill Rashi Amount
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{ color: "#64748b", fontWeight: 600 }}
+                          >
+                            Automatically populate the configured amount when an
+                            upload dialog opens.
+                          </Typography>
+                        </Box>
+
+                        <Switch
+                          checked={sahyogPaymentSettings.autoFillEnabled}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setSahyogPaymentSettings((prev) => ({
+                              ...prev,
+                              autoFillEnabled: checked,
+                              amountEditable: checked
+                                ? prev.amountEditable
+                                : true,
+                            }));
+                          }}
+                          color="success"
+                        />
+                      </Box>
+                    </Grid>
+
+                    <Grid item xs={12}>
+                      <Box sx={settingsSwitchRowSx}>
+                        <Box>
+                          <Typography
+                            variant="body2"
+                            sx={{ fontWeight: 900, color: "#0f172a" }}
+                          >
+                            Allow Rashi Editing
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{ color: "#64748b", fontWeight: 600 }}
+                          >
+                            {sahyogPaymentSettings.amountEditable
+                              ? "Members can change the amount before submitting."
+                              : "Amount is read-only. Auto Fill is required and enforced by the API."}
+                          </Typography>
+                        </Box>
+
+                        <Switch
+                          checked={sahyogPaymentSettings.amountEditable}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setSahyogPaymentSettings((prev) => ({
+                              ...prev,
+                              amountEditable: checked,
+                              autoFillEnabled: checked
+                                ? prev.autoFillEnabled
+                                : true,
+                            }));
+                          }}
+                          color="success"
+                        />
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Paper>
+
                 {/* <Paper elevation={0} sx={settingsCardSx}>
           <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5, mb: 2 }}>
             <Box
@@ -17287,7 +17543,7 @@ const AdminDashboard = () => {
                   variant="caption"
                   sx={{ opacity: 0.9, fontWeight: 600 }}
                 >
-                  Deleted users can be restored or permanently removed
+                  Bin users are retained for history and can be restored
                 </Typography>
               </Box>
             </Box>
@@ -17382,36 +17638,7 @@ const AdminDashboard = () => {
                     Restore All
                   </Button>
 
-                  <Button
-                    variant="contained"
-                    size="small"
-                    startIcon={<DeleteSweep sx={{ fontSize: 18 }} />}
-                    onClick={handleClearTrash}
-                    disabled={
-                      !Array.isArray(trashUsers) || trashUsers.length === 0
-                    }
-                    sx={{
-                      borderRadius: 3,
-                      px: 2,
-                      py: 0.9,
-                      fontWeight: 800,
-                      textTransform: "none",
-                      background:
-                        "linear-gradient(135deg, #dc2626 0%, #991b1b 100%)",
-                      boxShadow: "0 10px 20px rgba(220, 38, 38, 0.20)",
-                      "&:hover": {
-                        background:
-                          "linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%)",
-                        transform: "translateY(-1px)",
-                      },
-                      "&.Mui-disabled": {
-                        color: "rgba(255,255,255,0.75)",
-                        opacity: 0.75,
-                      },
-                    }}
-                  >
-                    Clear Trash
-                  </Button>
+
                 </Box>
               </Box>
 
@@ -17462,7 +17689,7 @@ const AdminDashboard = () => {
                   <Table
                     size="small"
                     sx={{
-                      minWidth: 900,
+                      minWidth: 1180,
                       "& .MuiTableCell-root": {
                         whiteSpace: "nowrap",
                       },
@@ -17474,6 +17701,9 @@ const AdminDashboard = () => {
                         <TableCell sx={tableHeaderCellSx}>Email</TableCell>
                         <TableCell sx={tableHeaderCellSx}>Mobile</TableCell>
                         <TableCell sx={tableHeaderCellSx}>Role</TableCell>
+                        <TableCell sx={tableHeaderCellSx}>Member Status</TableCell>
+                        <TableCell sx={tableHeaderCellSx}>Sahyog</TableCell>
+                        <TableCell sx={tableHeaderCellSx}>Delete Details</TableCell>
                         <TableCell sx={tableHeaderCellSx}>Deleted At</TableCell>
                         <TableCell align="right" sx={tableHeaderCellSx}>
                           Actions
@@ -17544,6 +17774,56 @@ const AdminDashboard = () => {
                             </TableCell>
 
                             <TableCell sx={tableBodyCellSx}>
+                              <Chip
+                                label={getMemberStatusLabel(u.memberStatus)}
+                                size="small"
+                                variant="outlined"
+                                sx={{
+                                  ...getMemberStatusChipSx(u.memberStatus),
+                                  fontWeight: 900,
+                                  borderRadius: "10px",
+                                }}
+                              />
+                            </TableCell>
+
+                            <TableCell sx={tableBodyCellSx}>
+                              <Typography
+                                variant="body2"
+                                sx={{ color: "#15803d", fontWeight: 900 }}
+                              >
+                                ₹{Number(u.totalSahyog || 0).toLocaleString("en-IN")}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                sx={{ color: "#64748b", fontWeight: 700 }}
+                              >
+                                {Number(u.sahyogCount || 0).toLocaleString("en-IN")} verified entries
+                              </Typography>
+                            </TableCell>
+
+                            <TableCell sx={tableBodyCellSx}>
+                              <Typography
+                                variant="caption"
+                                sx={{ display: "block", color: "#334155", fontWeight: 800 }}
+                              >
+                                By: {u.deletedByName || u.deletedById || "N/A"}
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                title={u.deleteReason || ""}
+                                sx={{
+                                  display: "block",
+                                  color: "#64748b",
+                                  maxWidth: 220,
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                }}
+                              >
+                                {u.deleteReason || "No reason provided"}
+                              </Typography>
+                            </TableCell>
+
+                            <TableCell sx={tableBodyCellSx}>
                               <Typography
                                 variant="body2"
                                 sx={{ color: "#475569", fontWeight: 800 }}
@@ -17580,29 +17860,6 @@ const AdminDashboard = () => {
                                   Restore
                                 </Button>
 
-                                <Button
-                                  size="small"
-                                  variant="contained"
-                                  onClick={() =>
-                                    handlePermanentDeleteFromTrash(u.id)
-                                  }
-                                  startIcon={<DeleteForever />}
-                                  sx={{
-                                    borderRadius: 3,
-                                    fontWeight: 800,
-                                    textTransform: "none",
-                                    background:
-                                      "linear-gradient(135deg, #dc2626 0%, #991b1b 100%)",
-                                    boxShadow:
-                                      "0 8px 18px rgba(220, 38, 38, 0.18)",
-                                    "&:hover": {
-                                      background:
-                                        "linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%)",
-                                    },
-                                  }}
-                                >
-                                  Delete
-                                </Button>
                               </Box>
                             </TableCell>
                           </TableRow>

@@ -210,6 +210,9 @@ exportUsersByRetirementDate: (params = {}) => {
 updateUser: (id, payload) => {
   return api.put(`/admin/users/${id}`, payload);
 },
+updateMemberStatus: (id, payload) => {
+  return api.put(`/admin/users/${id}/member-status`, payload);
+},
 
 exportSahyog: (params = {}) => {
   return api.get('/admin/export/sahyog', {
@@ -342,6 +345,12 @@ getExportMobileNumberSetting: () => {
 },
 getSelfDonationVisibleSetting: () => {
   return api.get('/admin/settings/self-donation-visible');
+},
+getSahyogPaymentSettings: () => {
+  return api.get('/admin/settings/sahyog-payment');
+},
+updateSahyogPaymentSettings: (payload) => {
+  return api.put('/admin/settings/sahyog-payment', payload);
 },
 getDistrictManagerExportMobileSetting: () => {
   return api.get('/admin/settings/district-manager-export-mobile');
@@ -830,6 +839,9 @@ publicApi.getHomeDisplayContent = () => {
 };
 publicApi.getHomeStats = () => {
   return publicApi.get('/public/home-stats');
+};
+publicApi.getSahyogPaymentSettings = () => {
+  return publicApi.get('/public/sahyog-payment-settings');
 };
 const receiptAPI = {
   uploadReceipt: (payload) => {

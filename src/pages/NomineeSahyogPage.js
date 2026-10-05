@@ -92,6 +92,11 @@ const NomineeSahyogPage = () => {
     referenceName: "",
     utrNumber: ""
   });
+  const [sahyogPaymentSettings, setSahyogPaymentSettings] = useState({
+    defaultAmount: "",
+    autoFillEnabled: false,
+    amountEditable: true,
+  });
   const [utrSubmitting, setUtrSubmitting] = useState(false);
   const [utrSuccess, setUtrSuccess] = useState("");
   const [utrError, setUtrError] = useState("");
@@ -115,6 +120,30 @@ const maskUtrNumber = (utrNumber) => {
 
     return `${FILE_BASE_URL}${qrPath.startsWith("/") ? qrPath : `/${qrPath}`}`;
   };
+
+  useEffect(() => {
+    const loadSahyogPaymentSettings = async () => {
+      try {
+        const response = await publicApi.getSahyogPaymentSettings();
+        const defaultAmount = Number(response?.data?.defaultAmount);
+
+        setSahyogPaymentSettings({
+          defaultAmount: defaultAmount > 0 ? String(defaultAmount) : "",
+          autoFillEnabled: response?.data?.autoFillEnabled === true,
+          amountEditable: response?.data?.amountEditable !== false,
+        });
+      } catch (error) {
+        console.error("Error loading Sahyog payment settings:", error);
+        setSahyogPaymentSettings({
+          defaultAmount: "",
+          autoFillEnabled: false,
+          amountEditable: true,
+        });
+      }
+    };
+
+    loadSahyogPaymentSettings();
+  }, []);
 
   useEffect(() => {
     const loadActivePools = async () => {
@@ -209,7 +238,10 @@ const maskUtrNumber = (utrNumber) => {
     }
 
     setUtrForm({
-      amount: "",
+      amount:
+        sahyogPaymentSettings.autoFillEnabled && sahyogPaymentSettings.defaultAmount
+          ? sahyogPaymentSettings.defaultAmount
+          : "",
       referenceName: "",
       utrNumber: ""
     });
@@ -672,8 +704,16 @@ if (!utrForm.amount || !cleanUtrNumber) {
                   setUtrForm((prev) => ({ ...prev, amount: e.target.value }))
                 }
                 disabled={utrSubmitting}
+                helperText={
+                  !sahyogPaymentSettings.amountEditable
+                    ? "राशि Admin द्वारा निर्धारित है और बदली नहीं जा सकती।"
+                    : sahyogPaymentSettings.autoFillEnabled
+                      ? "राशि पहले से भरी गई है; आवश्यकता होने पर बदल सकते हैं।"
+                      : ""
+                }
                 sx={inputSx}
                 InputProps={{
+                  readOnly: !sahyogPaymentSettings.amountEditable,
                   startAdornment: (
                     <InputAdornment position="start">
                       <CurrencyRupeeRounded sx={{ color: theme.main }} />

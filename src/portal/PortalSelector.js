@@ -18,6 +18,10 @@ import {
   Card,
   Chip,
   Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   Stack,
   Typography,
@@ -258,20 +262,18 @@ const PortalSelector = () => {
   const navigate =
     useNavigate();
 
+  const [upcomingPortal, setUpcomingPortal] = React.useState(null);
+
   /*
-   * Current release:
-   * TAB 1 + TAB 2 only.
-   *
-   * TAB 3 stays in architecture
-   * but does not appear because
-   * showOnLanding/enabled is false.
+   * Keep upcoming groups visible on the landing page so users
+   * can understand the planned structure. Disabled groups cannot
+   * be entered; selecting them opens the Coming Soon dialog.
    */
   const visiblePortals =
     PORTALS.filter(
       (portal) =>
         portal.showOnLanding ===
-          true &&
-        portal.enabled === true
+          true
     );
 
   React.useEffect(() => {
@@ -310,6 +312,7 @@ const PortalSelector = () => {
     portal
   ) => {
     if (!portal?.enabled) {
+      setUpcomingPortal(portal);
       return;
     }
 
@@ -796,7 +799,7 @@ const PortalSelector = () => {
               icon={
                 <VerifiedRounded />
               }
-              label="05 सितंबर 2026 से नई शुरुआत"
+              label="कर्मचारी कल्याण की साझा पहल"
               sx={{
                 mb: 2.2,
 
@@ -1894,7 +1897,7 @@ const PortalSelector = () => {
                   900,
               }}
             >
-              शिक्षक दिवस से
+              सामूहिक सहयोग के साथ
             </Typography>
 
             <Typography
@@ -1920,7 +1923,7 @@ const PortalSelector = () => {
                   1.3,
               }}
             >
-              05 सितंबर 2026 से नई शुरुआत
+              कल्याण व्यवस्था का नया विस्तार
             </Typography>
 
             <Typography
@@ -2165,6 +2168,21 @@ const PortalSelector = () => {
                           }}
                         >
                           <Box>
+                            {!portal.enabled && (
+                              <Chip
+                                size="small"
+                                label="COMING SOON"
+                                sx={{
+                                  mb: 1,
+                                  color: portalTheme.darkColor || BRAND.text,
+                                  bgcolor: 'rgba(255,255,255,0.92)',
+                                  border: '1px solid rgba(255,255,255,0.70)',
+                                  fontFamily: DEVANAGARI_FONT,
+                                  fontWeight: 900,
+                                  letterSpacing: '0.04em',
+                                }}
+                              />
+                            )}
                             <Typography
                               sx={{
                                 fontFamily:
@@ -2571,8 +2589,9 @@ const PortalSelector = () => {
                                 },
                             }}
                           >
-                            {portal.landingButtonText ||
-                              'समूह में प्रवेश करें'}
+                            {portal.enabled
+                              ? portal.landingButtonText || 'समूह में प्रवेश करें'
+                              : 'जल्द उपलब्ध होगा'}
                           </Button>
                         </Box>
                       </Box>
@@ -2904,12 +2923,84 @@ const PortalSelector = () => {
               }}
             >
               इसी भावना के साथ आप सभी से आग्रह है कि
-              05 सितंबर 2026 से अपने संबंधित संवर्ग में
-              निःशुल्क पंजीयन कराएं और इस मानवीय पहल का
-              हिस्सा बनें।
+              अपने संबंधित संवर्ग में निःशुल्क पंजीयन कराएं
+              और इस मानवीय पहल का हिस्सा बनें।
             </Typography>
           </Container>
         </Box>
+
+        <Dialog
+          open={Boolean(upcomingPortal)}
+          onClose={() => setUpcomingPortal(null)}
+          fullWidth
+          maxWidth="xs"
+          PaperProps={{
+            sx: {
+              borderRadius: 4,
+              overflow: 'hidden',
+              fontFamily: DEVANAGARI_FONT,
+            },
+          }}
+        >
+          <DialogTitle
+            sx={{
+              px: 3,
+              pt: 3,
+              pb: 1,
+              color: BRAND.text,
+              fontFamily: DEVANAGARI_FONT,
+              fontWeight: 900,
+              textAlign: 'center',
+            }}
+          >
+            Coming Soon
+          </DialogTitle>
+
+          <DialogContent sx={{ px: 3, pb: 1, textAlign: 'center' }}>
+            <Typography
+              sx={{
+                color: BRAND.text,
+                fontFamily: DEVANAGARI_FONT,
+                fontSize: '1.08rem',
+                fontWeight: 900,
+                lineHeight: 1.6,
+              }}
+            >
+              {upcomingPortal?.landingTitle || 'यह समूह'}
+            </Typography>
+
+            <Typography
+              sx={{
+                mt: 1.2,
+                color: BRAND.textSecondary,
+                fontFamily: DEVANAGARI_FONT,
+                fontSize: '0.92rem',
+                lineHeight: 1.8,
+              }}
+            >
+              यह पोर्टल अभी जारी नहीं किया गया है। यह सुविधा जल्द उपलब्ध होगी।
+              फिलहाल कृपया उपलब्ध शिक्षा परिवार पोर्टल का उपयोग करें।
+            </Typography>
+          </DialogContent>
+
+          <DialogActions sx={{ px: 3, pb: 3, pt: 2, justifyContent: 'center' }}>
+            <Button
+              variant="contained"
+              onClick={() => setUpcomingPortal(null)}
+              sx={{
+                minWidth: 140,
+                borderRadius: 2.5,
+                textTransform: 'none',
+                fontFamily: DEVANAGARI_FONT,
+                fontWeight: 900,
+                bgcolor: BRAND.primary,
+                '&:hover': { bgcolor: BRAND.dark2 },
+              }}
+            >
+              ठीक है
+            </Button>
+          </DialogActions>
+        </Dialog>
 
         {/* =========================================== */}
         {/* FOOTER */}

@@ -25,7 +25,7 @@ import {
   ReceiptLongRounded,
   PersonRounded,
 } from "@mui/icons-material";
-import api from "../services/api";
+import api, { publicApi } from "../services/api";
 
 const theme = {
   dark: "#221b43",
@@ -84,6 +84,11 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
   const [uploadSuccess, setUploadSuccess] = useState(false);
   const [error, setError] = useState("");
   const [assignedPool, setAssignedPool] = useState(null);
+  const [sahyogPaymentSettings, setSahyogPaymentSettings] = useState({
+    defaultAmount: "",
+    autoFillEnabled: false,
+    amountEditable: true,
+  });
 
   const [formData, setFormData] = useState({
     amount: "",
@@ -91,6 +96,40 @@ const ReceiptUpload = ({ open, onClose, donationInfo }) => {
     referenceName: "",
     utrNumber: "",
   });
+
+  useEffect(() => {
+    const loadSahyogPaymentSettings = async () => {
+      if (!open) return;
+
+      try {
+        const response = await publicApi.getSahyogPaymentSettings();
+        const defaultAmount = Number(response?.data?.defaultAmount);
+        const settings = {
+          defaultAmount: defaultAmount > 0 ? String(defaultAmount) : "",
+          autoFillEnabled: response?.data?.autoFillEnabled === true,
+          amountEditable: response?.data?.amountEditable !== false,
+        };
+
+        setSahyogPaymentSettings(settings);
+        setFormData((prev) => ({
+          ...prev,
+          amount:
+            settings.autoFillEnabled && settings.defaultAmount
+              ? settings.defaultAmount
+              : "",
+        }));
+      } catch (settingsError) {
+        console.error("Error loading Sahyog payment settings:", settingsError);
+        setSahyogPaymentSettings({
+          defaultAmount: "",
+          autoFillEnabled: false,
+          amountEditable: true,
+        });
+      }
+    };
+
+    loadSahyogPaymentSettings();
+  }, [open]);
 
   useEffect(() => {
     const loadAssignedPool = async () => {
@@ -412,8 +451,16 @@ if (!formData.amount || !cleanUtrNumber) {
                 value={formData.amount}
                 onChange={(e) => handleInputChange("amount", e.target.value)}
                 disabled={uploading}
+                helperText={
+                  !sahyogPaymentSettings.amountEditable
+                    ? "राशि Admin द्वारा निर्धारित है और बदली नहीं जा सकती।"
+                    : sahyogPaymentSettings.autoFillEnabled
+                      ? "राशि Admin द्वारा पहले से भरी गई है; आवश्यकता होने पर बदल सकते हैं।"
+                      : ""
+                }
                 sx={inputSx}
                 InputProps={{
+                  readOnly: !sahyogPaymentSettings.amountEditable,
                   startAdornment: (
                     <InputAdornment position="start">
                       <CurrencyRupeeRounded sx={{ color: theme.main }} />
