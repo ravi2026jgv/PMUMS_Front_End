@@ -317,7 +317,7 @@ const DeceasedMembersList = () => {
                   </Card>
                 </Grid>
 
-                <Grid item xs={12} sm={6} md={8}>
+                {/* <Grid item xs={12} sm={6} md={8}>
                   <Alert
                     icon={<InfoRounded />}
                     severity="info"
@@ -330,7 +330,7 @@ const DeceasedMembersList = () => {
                   >
                     इस सूची में केवल Member Status = Deceased वाले सदस्य प्रदर्शित होते हैं।
                   </Alert>
-                </Grid>
+                </Grid> */}
               </Grid>
 
               <Paper
