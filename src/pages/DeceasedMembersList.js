@@ -286,8 +286,7 @@ const DeceasedMembersList = () => {
                   fontFamily: 'Noto Sans Devanagari, Poppins, Arial, sans-serif',
                 }}
               >
-                जिन सदस्यों की Member Status को प्रशासन द्वारा Deceased के रूप में दर्ज किया गया है,
-                उनकी सार्वजनिक सूची।
+                कर्मचारी कल्याण कोष से जुड़े उन सम्मानित सदस्यों की सूची, जो अब हमारे बीच नहीं हैं।
               </Typography>
             </Box>
 

@@ -322,7 +322,7 @@ const Header = () => {
     },
 
     {
-      label: 'RETIERED MEMBERS',
+       label: 'EXPIRED MEMBERS',
 
       path: path(
         '/deceased-members'
@@ -893,7 +893,7 @@ const Header = () => {
 
                 {/* Active portal / group identity */}
 
-                <Box
+                {/* <Box
                   sx={{
                     mt: 0.45,
 
@@ -1026,7 +1026,7 @@ const Header = () => {
                         : portalDisplayTitle}
                     </Typography>
                   </Box>
-                </Box>
+                </Box> */}
               </Box>
 
               {/* Mobile portal label */}
