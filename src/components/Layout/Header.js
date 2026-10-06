@@ -20,15 +20,31 @@ import {
   ExitToApp,
   Menu as MenuIcon,
   KeyboardArrowDown,
-  SwapHorizRounded,
+
+  // ============================================================
+  // TEMP PORTAL 1 ONLY
+  // Portal switching disabled.
+  // ============================================================
+  // SwapHorizRounded,
+
   SchoolRounded,
-  BadgeRounded,
-  BusinessCenterRounded,
+
+  // ============================================================
+  // TEMP PORTAL 1 ONLY
+  // Portal 2 / Portal 3 icons disabled temporarily.
+  // ============================================================
+  // BadgeRounded,
+  // BusinessCenterRounded,
 } from '@mui/icons-material';
 
 import {
   Link,
-  useNavigate,
+
+  // ============================================================
+  // TEMP PORTAL 1 ONLY
+  // Selector navigation disabled.
+  // ============================================================
+  // useNavigate,
 } from 'react-router-dom';
 
 import { useAuth } from '../../context/AuthContext';
@@ -56,8 +72,14 @@ const COLORS = {
 
 const portalIcons = {
   tab1: SchoolRounded,
-  tab2: BusinessCenterRounded,
-  tab3: BadgeRounded,
+
+  // ============================================================
+  // TEMP PORTAL 1 ONLY
+  // Keep these commented for future Portal 2 / Portal 3 restore.
+  // ============================================================
+
+  // tab2: BusinessCenterRounded,
+  // tab3: BadgeRounded,
 };
 
 const Header = () => {
@@ -67,7 +89,12 @@ const Header = () => {
     logout,
   } = useAuth();
 
-  const navigate = useNavigate();
+  // ============================================================
+  // TEMP PORTAL 1 ONLY
+  // We do not navigate back to the portal selector right now.
+  // ============================================================
+
+  // const navigate = useNavigate();
 
   const {
     path,
@@ -108,9 +135,15 @@ const Header = () => {
     portalTheme.textColor ||
     '#ffffff';
 
-  const portalDarkColor =
-    portalTheme.darkColor ||
-    '#6f5cc2';
+  // ============================================================
+  // TEMP PORTAL 1 ONLY
+  // This was used by the Switch Portal menu.
+  // Keep commented for future restore.
+  // ============================================================
+
+  // const portalDarkColor =
+  //   portalTheme.darkColor ||
+  //   '#6f5cc2';
 
   /*
    * We use landing labels when available so that
@@ -120,6 +153,7 @@ const Header = () => {
    * This changes DISPLAY ONLY.
    * Routes and functionality remain untouched.
    */
+
   const portalGroupLabel =
     portal?.landingGroupLabel ||
     portal?.selectorLabel ||
@@ -197,19 +231,24 @@ const Header = () => {
     handleMobileMenuClose();
   };
 
+  // ============================================================
+  // TEMP PORTAL 1 ONLY
+  // Portal selection/switching is disabled temporarily.
+  //
+  // When Portal 2 is enabled again:
+  // 1. Uncomment useNavigate above.
+  // 2. Uncomment this handler.
+  // 3. Uncomment switch buttons below.
+  // ============================================================
+
+  /*
   const handleSwitchPortal = () => {
     handleClose();
     handleMobileMenuClose();
     handleListMenuClose();
 
-    /*
-     * Go back to common landing page.
-     */
     navigate('/');
 
-    /*
-     * Ensure selector opens from top.
-     */
     requestAnimationFrame(() => {
       window.scrollTo({
         top: 0,
@@ -218,6 +257,7 @@ const Header = () => {
       });
     });
   };
+  */
 
   const mainNavigationItems = [
     {
@@ -267,6 +307,7 @@ const Header = () => {
   const listNavigationItems = [
     {
       label: 'OUR MEMBERS',
+
       path: path(
         '/teachers-list'
       ),
@@ -274,6 +315,7 @@ const Header = () => {
 
     {
       label: 'BIN USERS',
+
       path: path(
         '/bin-users'
       ),
@@ -281,6 +323,7 @@ const Header = () => {
 
     {
       label: 'RETIERED MEMBERS',
+
       path: path(
         '/deceased-members'
       ),
@@ -290,6 +333,7 @@ const Header = () => {
      * Existing production rule:
      * Pending Profiles only in TAB 1.
      */
+
     ...(
       portal?.slug === 'tab1'
         ? [
@@ -305,18 +349,25 @@ const Header = () => {
         : []
     ),
 
-   ...(portal?.slug === 'tab1'
-  ? [
-      {
-        label: 'LATE TEACHERS LIST',
-        path: 'https://pmums.in/death-case/',
-        external: true,
-      },
-    ]
-  : []),
+    ...(
+      portal?.slug === 'tab1'
+        ? [
+            {
+              label:
+                'LATE TEACHERS LIST',
+
+              path:
+                'https://pmums.in/death-case/',
+
+              external: true,
+            },
+          ]
+        : []
+    ),
 
     {
       label: 'SAHYOG LIST',
+
       path: path(
         '/sahyog-list'
       ),
@@ -324,6 +375,7 @@ const Header = () => {
 
     {
       label: 'ASAHYOG LIST',
+
       path: path(
         '/asahyog-list'
       ),
@@ -331,6 +383,7 @@ const Header = () => {
 
     {
       label: 'NO UTR LIST',
+
       path: path(
         '/zero-utr-list'
       ),
@@ -475,15 +528,49 @@ const Header = () => {
         '#f4f2fb',
     },
   };
-const isTab2 = portal?.slug === 'tab2';
 
-const headerBackground = isTab2
-  ? 'linear-gradient(100deg, #083344 0%, #0e7490 55%, #0891b2 100%)'
-  : 'linear-gradient(100deg, #21193f 0%, #28204d 55%, #30275b 100%)';
+  // ============================================================
+  // TEMP PORTAL 1 ONLY
+  //
+  // Original:
+  //
+  // const isTab2 = portal?.slug === 'tab2';
+  //
+  // For now force Portal 1 header.
+  // ============================================================
 
-const headerBorderColor = isTab2
-  ? '#22d3ee'
-  : '#6f5cc2';
+  const isTab2 = false;
+
+  // ============================================================
+  // ORIGINAL MULTI-PORTAL BACKGROUND
+  // ============================================================
+
+  /*
+  const headerBackground = isTab2
+    ? 'linear-gradient(100deg, #083344 0%, #0e7490 55%, #0891b2 100%)'
+    : 'linear-gradient(100deg, #21193f 0%, #28204d 55%, #30275b 100%)';
+  */
+
+  // TEMP PORTAL 1 ONLY
+
+  const headerBackground =
+    'linear-gradient(100deg, #21193f 0%, #28204d 55%, #30275b 100%)';
+
+  // ============================================================
+  // ORIGINAL MULTI-PORTAL BORDER
+  // ============================================================
+
+  /*
+  const headerBorderColor = isTab2
+    ? '#22d3ee'
+    : '#6f5cc2';
+  */
+
+  // TEMP PORTAL 1 ONLY
+
+  const headerBorderColor =
+    '#6f5cc2';
+
   const renderNavigationButton =
     (item) => {
       if (item.external) {
@@ -525,6 +612,7 @@ const headerBorderColor = isTab2
      *
      * remains together while scrolling.
      */
+
     <Box
       component="header"
       sx={{
@@ -565,7 +653,9 @@ const headerBorderColor = isTab2
         }}
       >
         <Container maxWidth="xl">
+
           {/* Desktop organization line */}
+
           <Typography
             sx={{
               display: {
@@ -592,20 +682,21 @@ const headerBorderColor = isTab2
             }}
           >
             {isTab2 ? (
-  <>
-    कर्मचारी कल्याण कोष | द्वितीय समूह | मध्य प्रदेश
-  </>
-) : (
-    <>
-      प्राथमिक माध्यमिक उच्च माध्यमिक शिक्षक संघ
-      म.प्र. | पंजीयन क्रमांक : 06/13/01/14017/23 |
-      पता : सुभाष पुरम रोड, हेलीपेड के पीछे,
-      टीकमगढ़ (म. प्र.)
-    </>
-  )}
+              <>
+                कर्मचारी कल्याण कोष | द्वितीय समूह | मध्य प्रदेश
+              </>
+            ) : (
+              <>
+                प्राथमिक माध्यमिक उच्च माध्यमिक शिक्षक संघ
+                म.प्र. | पंजीयन क्रमांक : 06/13/01/14017/23 |
+                पता : सुभाष पुरम रोड, हेलीपेड के पीछे,
+                टीकमगढ़ (म. प्र.)
+              </>
+            )}
           </Typography>
 
-          {/* Mobile shorter organization line */}
+          {/* Mobile organization line */}
+
           <Typography
             sx={{
               display: {
@@ -620,7 +711,8 @@ const headerBorderColor = isTab2
 
               fontWeight: 700,
 
-              fontSize: '0.68rem',
+              fontSize:
+                '0.68rem',
 
               lineHeight: 1.35,
 
@@ -628,9 +720,9 @@ const headerBorderColor = isTab2
                 FONT_FAMILY,
             }}
           >
-             {isTab2
-    ? 'कर्मचारी कल्याण कोष — द्वितीय समूह'
-    : 'प्राथमिक माध्यमिक उच्च माध्यमिक शिक्षक संघ, मध्य प्रदेश'}
+            {isTab2
+              ? 'कर्मचारी कल्याण कोष — द्वितीय समूह'
+              : 'प्राथमिक माध्यमिक उच्च माध्यमिक शिक्षक संघ, मध्य प्रदेश'}
           </Typography>
         </Container>
       </Box>
@@ -640,18 +732,19 @@ const headerBorderColor = isTab2
       {/* =============================================== */}
 
       <AppBar
-  position="static"
-  elevation={0}
-  sx={{
-    background: headerBackground,
+        position="static"
+        elevation={0}
+        sx={{
+          background:
+            headerBackground,
 
-    borderBottom:
-      `3px solid ${headerBorderColor}`,
+          borderBottom:
+            `3px solid ${headerBorderColor}`,
 
-    boxShadow:
-      '0 7px 22px rgba(18,13,40,0.22)',
-  }}
->
+          boxShadow:
+            '0 7px 22px rgba(18,13,40,0.22)',
+        }}
+      >
         <Container
           maxWidth={false}
           sx={{
@@ -691,7 +784,8 @@ const headerBorderColor = isTab2
               sx={{
                 display: 'flex',
 
-                alignItems: 'center',
+                alignItems:
+                  'center',
 
                 gap: {
                   xs: 0.8,
@@ -770,156 +864,169 @@ const headerBorderColor = isTab2
                 }}
               >
                 <Typography
-  sx={{
-    color:
-      COLORS.white,
+                  sx={{
+                    color:
+                      COLORS.white,
 
-    fontWeight: 900,
+                    fontWeight:
+                      900,
 
-    fontSize: {
-      sm: '0.82rem',
-      md: '0.9rem',
-    },
+                    fontSize: {
+                      sm: '0.82rem',
+                      md: '0.9rem',
+                    },
 
-    lineHeight: 1.2,
+                    lineHeight:
+                      1.2,
 
-    whiteSpace:
-      'nowrap',
+                    whiteSpace:
+                      'nowrap',
 
-    fontFamily:
-      FONT_FAMILY,
-  }}
->
-  {isTab2
-    ? 'कर्मचारी कल्याण कोष'
-    : 'पी.एम.यू.एम.एस. कर्मचारी कल्याण कोष'}
-</Typography>
+                    fontFamily:
+                      FONT_FAMILY,
+                  }}
+                >
+                  {isTab2
+                    ? 'कर्मचारी कल्याण कोष'
+                    : 'पी.एम.यू.एम.एस. कर्मचारी कल्याण कोष'}
+                </Typography>
 
-             {/* Active portal / group identity */}
+                {/* Active portal / group identity */}
 
-<Box
-  sx={{
-    mt: 0.45,
+                <Box
+                  sx={{
+                    mt: 0.45,
 
-    display: 'flex',
+                    display:
+                      'flex',
 
-    alignItems: 'center',
+                    alignItems:
+                      'center',
 
-    gap: 0.8,
-  }}
->
-  <Box
-    sx={{
-      width: 27,
+                    gap: 0.8,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      width: 27,
 
-      height: 27,
+                      height: 27,
 
-      flexShrink: 0,
+                      flexShrink:
+                        0,
 
-      display: 'flex',
+                      display:
+                        'flex',
 
-      alignItems: 'center',
+                      alignItems:
+                        'center',
 
-      justifyContent: 'center',
+                      justifyContent:
+                        'center',
 
-      color: isTab2
-        ? '#083344'
-        : portalTextColor,
+                      color:
+                        isTab2
+                          ? '#083344'
+                          : portalTextColor,
 
-      background: isTab2
-        ? '#a5f3fc'
-        : portalBackground,
+                      background:
+                        isTab2
+                          ? '#a5f3fc'
+                          : portalBackground,
 
-      borderRadius: '8px',
+                      borderRadius:
+                        '8px',
 
-      border:
-        '1px solid rgba(255,255,255,0.25)',
-    }}
-  >
-    <PortalIcon
-      sx={{
-        fontSize: 16,
-      }}
-    />
-  </Box>
+                      border:
+                        '1px solid rgba(255,255,255,0.25)',
+                    }}
+                  >
+                    <PortalIcon
+                      sx={{
+                        fontSize:
+                          16,
+                      }}
+                    />
+                  </Box>
 
-  <Box
-    sx={{
-      minWidth: 0,
-    }}
-  >
-    <Typography
-      sx={{
-        color: isTab2
-          ? '#a5f3fc'
-          : '#d8d0ff',
+                  <Box
+                    sx={{
+                      minWidth:
+                        0,
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        color:
+                          isTab2
+                            ? '#a5f3fc'
+                            : '#d8d0ff',
 
-        fontFamily:
-          FONT_FAMILY,
+                        fontFamily:
+                          FONT_FAMILY,
 
-        fontSize: {
-          sm: '0.66rem',
+                        fontSize: {
+                          sm: '0.66rem',
+                          md: '0.7rem',
+                        },
 
-          md: '0.7rem',
-        },
+                        fontWeight:
+                          900,
 
-        fontWeight: 900,
+                        lineHeight:
+                          1.15,
 
-        lineHeight: 1.15,
+                        whiteSpace:
+                          'nowrap',
+                      }}
+                    >
+                      {isTab2
+                        ? 'द्वितीय समूह'
+                        : portalGroupLabel}
+                    </Typography>
 
-        whiteSpace:
-          'nowrap',
-      }}
-    >
-      {isTab2
-        ? 'द्वितीय समूह'
-        : portalGroupLabel}
-    </Typography>
+                    <Typography
+                      sx={{
+                        mt: 0.15,
 
-    <Typography
-      sx={{
-        mt: 0.15,
+                        maxWidth: {
+                          sm: 240,
+                          md: 290,
+                        },
 
-        maxWidth: {
-          sm: 240,
+                        overflow:
+                          'hidden',
 
-          md: 290,
-        },
+                        color:
+                          '#ffffff',
 
-        overflow:
-          'hidden',
+                        fontFamily:
+                          FONT_FAMILY,
 
-        color:
-          '#ffffff',
+                        fontSize: {
+                          sm: '0.68rem',
+                          md: '0.74rem',
+                        },
 
-        fontFamily:
-          FONT_FAMILY,
+                        fontWeight:
+                          700,
 
-        fontSize: {
-          sm: '0.68rem',
+                        lineHeight:
+                          1.2,
 
-          md: '0.74rem',
-        },
+                        textOverflow:
+                          'ellipsis',
 
-        fontWeight: 700,
-
-        lineHeight: 1.2,
-
-        textOverflow:
-          'ellipsis',
-
-        whiteSpace:
-          'nowrap',
-      }}
-    >
-      {isTab2
-        ? 'अन्य विभाग एवं संस्थान'
-        : portalDisplayTitle}
-    </Typography>
-  </Box>
-</Box>
-
-               
+                        whiteSpace:
+                          'nowrap',
+                      }}
+                    >
+                      {isTab2
+                        ? 'अन्य विभाग एवं संस्थान'
+                        : portalDisplayTitle}
+                    </Typography>
+                  </Box>
+                </Box>
               </Box>
 
               {/* Mobile portal label */}
@@ -942,12 +1049,14 @@ const headerBorderColor = isTab2
                     fontFamily:
                       FONT_FAMILY,
 
-                    fontWeight: 900,
+                    fontWeight:
+                      900,
 
                     fontSize:
                       '0.78rem',
 
-                    lineHeight: 1.15,
+                    lineHeight:
+                      1.15,
                   }}
                 >
                   कल्याण कोष
@@ -957,7 +1066,8 @@ const headerBorderColor = isTab2
                   sx={{
                     mt: 0.15,
 
-                    maxWidth: 120,
+                    maxWidth:
+                      120,
 
                     overflow:
                       'hidden',
@@ -968,7 +1078,8 @@ const headerBorderColor = isTab2
                     fontFamily:
                       FONT_FAMILY,
 
-                    fontWeight: 700,
+                    fontWeight:
+                      700,
 
                     fontSize:
                       '0.61rem',
@@ -1035,11 +1146,12 @@ const headerBorderColor = isTab2
                       ? 'rgba(185,167,255,0.18)'
                       : 'transparent',
 
-                  color: Boolean(
-                    listMenuAnchor
-                  )
-                    ? '#dcd4ff'
-                    : '#ffffff',
+                  color:
+                    Boolean(
+                      listMenuAnchor
+                    )
+                      ? '#dcd4ff'
+                      : '#ffffff',
                 }}
               >
                 USER SERVICES
@@ -1063,7 +1175,8 @@ const headerBorderColor = isTab2
                     'left',
                 }}
                 transformOrigin={{
-                  vertical: 'top',
+                  vertical:
+                    'top',
 
                   horizontal:
                     'left',
@@ -1072,12 +1185,14 @@ const headerBorderColor = isTab2
                   sx: {
                     mt: 1,
 
-                    minWidth: 235,
+                    minWidth:
+                      235,
 
                     overflow:
                       'hidden',
 
-                    borderRadius: 2.5,
+                    borderRadius:
+                      2.5,
 
                     border:
                       '1px solid #ded8f5',
@@ -1107,9 +1222,7 @@ const headerBorderColor = isTab2
                           menuItemSx
                         }
                       >
-                        {
-                          item.label
-                        }
+                        {item.label}
                       </MenuItem>
                     ) : (
                       <MenuItem
@@ -1129,9 +1242,7 @@ const headerBorderColor = isTab2
                           menuItemSx
                         }
                       >
-                        {
-                          item.label
-                        }
+                        {item.label}
                       </MenuItem>
                     )
                 )}
@@ -1141,123 +1252,134 @@ const headerBorderColor = isTab2
               {/* SWITCH GROUP */}
               {/* ======================================= */}
 
+              {/*
+              ============================================================
+              TEMP PORTAL 1 ONLY
+
+              Desktop "Switch Portal" button disabled temporarily.
+
+              Uncomment this complete section when Portal 2 is enabled.
+              ============================================================
+
               <Button
-  onClick={
-    handleSwitchPortal
-  }
-  startIcon={
-    <SwapHorizRounded />
-  }
-  sx={{
-    minHeight: 44,
+                onClick={handleSwitchPortal}
+                startIcon={
+                  <SwapHorizRounded />
+                }
+                sx={{
+                  minHeight: 44,
 
-    ml: 0.8,
+                  ml: 0.8,
 
-    px: {
-      lg: 1.4,
-      xl: 1.7,
-    },
+                  px: {
+                    lg: 1.4,
+                    xl: 1.7,
+                  },
 
-    color:
-      '#ffffff',
+                  color:
+                    '#ffffff',
 
-    backgroundColor:
-      isTab2
-        ? 'rgba(255,255,255,0.12)'
-        : 'rgba(255,255,255,0.08)',
+                  backgroundColor:
+                    isTab2
+                      ? 'rgba(255,255,255,0.12)'
+                      : 'rgba(255,255,255,0.08)',
 
-    border:
-      isTab2
-        ? '1px solid rgba(165,243,252,0.45)'
-        : '1px solid rgba(255,255,255,0.20)',
+                  border:
+                    isTab2
+                      ? '1px solid rgba(165,243,252,0.45)'
+                      : '1px solid rgba(255,255,255,0.20)',
 
-    borderRadius:
-      '10px',
+                  borderRadius:
+                    '10px',
 
-    textTransform:
-      'none',
+                  textTransform:
+                    'none',
 
-    whiteSpace:
-      'nowrap',
+                  whiteSpace:
+                    'nowrap',
 
-    fontFamily:
-      FONT_FAMILY,
+                  fontFamily:
+                    FONT_FAMILY,
 
-    transition:
-      'all 0.2s ease',
+                  transition:
+                    'all 0.2s ease',
 
-    '&:hover': {
-      backgroundColor:
-        isTab2
-          ? 'rgba(255,255,255,0.20)'
-          : 'rgba(255,255,255,0.16)',
+                  '&:hover': {
+                    backgroundColor:
+                      isTab2
+                        ? 'rgba(255,255,255,0.20)'
+                        : 'rgba(255,255,255,0.16)',
 
-      borderColor:
-        isTab2
-          ? '#a5f3fc'
-          : 'rgba(255,255,255,0.32)',
+                    borderColor:
+                      isTab2
+                        ? '#a5f3fc'
+                        : 'rgba(255,255,255,0.32)',
 
-      transform:
-        'translateY(-1px)',
-    },
+                    transform:
+                      'translateY(-1px)',
+                  },
 
-    '& .MuiButton-startIcon':
-      {
-        mr: 0.8,
-      },
-  }}
->
-  <Box
-    sx={{
-      textAlign:
-        'left',
-    }}
-  >
-    <Typography
-      sx={{
-        color:
-          '#ffffff',
+                  '& .MuiButton-startIcon':
+                    {
+                      mr: 0.8,
+                    },
+                }}
+              >
+                <Box
+                  sx={{
+                    textAlign:
+                      'left',
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      color:
+                        '#ffffff',
 
-        fontSize:
-          '0.76rem',
+                      fontSize:
+                        '0.76rem',
 
-        fontWeight:
-          900,
+                      fontWeight:
+                        900,
 
-        lineHeight: 1.15,
+                      lineHeight:
+                        1.15,
 
-        fontFamily:
-          FONT_FAMILY,
-      }}
-    >
-      पोर्टल बदलें
-    </Typography>
+                      fontFamily:
+                        FONT_FAMILY,
+                    }}
+                  >
+                    पोर्टल बदलें
+                  </Typography>
 
-    <Typography
-      sx={{
-        mt: 0.18,
+                  <Typography
+                    sx={{
+                      mt: 0.18,
 
-        color:
-          isTab2
-            ? '#a5f3fc'
-            : '#dcd4ff',
+                      color:
+                        isTab2
+                          ? '#a5f3fc'
+                          : '#dcd4ff',
 
-        fontSize:
-          '0.62rem',
+                      fontSize:
+                        '0.62rem',
 
-        fontWeight:
-          700,
+                      fontWeight:
+                        700,
 
-        lineHeight: 1.15,
+                      lineHeight:
+                        1.15,
 
-        fontFamily:
-          FONT_FAMILY,
-      }}
-    >
-      पोर्टल चयन पृष्ठ
-    </Typography>
-  </Box>
-</Button>
+                      fontFamily:
+                        FONT_FAMILY,
+                    }}
+                  >
+                    पोर्टल चयन पृष्ठ
+                  </Typography>
+                </Box>
+              </Button>
+
+              */}
 
               {/* ======================================= */}
               {/* AUTH / ROLE ACTIONS */}
@@ -1456,7 +1578,19 @@ const headerBorderColor = isTab2
                 ml: 'auto',
               }}
             >
-              {/* Quick group switch */}
+
+              {/* ======================================= */}
+              {/* TEMP MOBILE PORTAL SWITCH */}
+              {/* ======================================= */}
+
+              {/*
+              ============================================================
+              TEMP PORTAL 1 ONLY
+
+              Mobile quick portal-switch icon disabled temporarily.
+
+              Uncomment this section when Portal 2 is enabled.
+              ============================================================
 
               <IconButton
                 aria-label="switch group"
@@ -1483,10 +1617,11 @@ const headerBorderColor = isTab2
                   border:
                     '1px solid rgba(255,255,255,0.26)',
 
-                  boxShadow: `0 4px 12px ${
-                    portalTheme.shadowColor ||
-                    'rgba(0,0,0,0.18)'
-                  }`,
+                  boxShadow:
+                    `0 4px 12px ${
+                      portalTheme.shadowColor ||
+                      'rgba(0,0,0,0.18)'
+                    }`,
 
                   '&:hover': {
                     filter:
@@ -1496,6 +1631,8 @@ const headerBorderColor = isTab2
               >
                 <SwapHorizRounded />
               </IconButton>
+
+              */}
 
               <IconButton
                 aria-label="mobile menu"
@@ -1515,7 +1652,8 @@ const headerBorderColor = isTab2
                     sm: 45,
                   },
 
-                  color: '#ffffff',
+                  color:
+                    '#ffffff',
 
                   borderRadius:
                     '11px',
@@ -1534,7 +1672,8 @@ const headerBorderColor = isTab2
               >
                 <MenuIcon
                   sx={{
-                    fontSize: 28,
+                    fontSize:
+                      28,
                   }}
                 />
               </IconButton>
@@ -1550,15 +1689,19 @@ const headerBorderColor = isTab2
                 mobileMenuAnchor
               }
               anchorOrigin={{
-                vertical: 'bottom',
+                vertical:
+                  'bottom',
 
-                horizontal: 'right',
+                horizontal:
+                  'right',
               }}
               keepMounted
               transformOrigin={{
-                vertical: 'top',
+                vertical:
+                  'top',
 
-                horizontal: 'right',
+                horizontal:
+                  'right',
               }}
               open={Boolean(
                 mobileMenuAnchor
@@ -1573,7 +1716,8 @@ const headerBorderColor = isTab2
                   width:
                     'calc(100vw - 24px)',
 
-                  maxWidth: 360,
+                  maxWidth:
+                    360,
 
                   maxHeight:
                     '80vh',
@@ -1581,7 +1725,8 @@ const headerBorderColor = isTab2
                   overflowY:
                     'auto',
 
-                  borderRadius: 3,
+                  borderRadius:
+                    3,
 
                   border:
                     '1px solid #ded8f5',
@@ -1605,12 +1750,14 @@ const headerBorderColor = isTab2
                   background:
                     portalBackground,
 
-                  borderRadius: 2.5,
+                  borderRadius:
+                    2.5,
                 }}
               >
                 <Box
                   sx={{
-                    display: 'flex',
+                    display:
+                      'flex',
 
                     alignItems:
                       'center',
@@ -1620,13 +1767,17 @@ const headerBorderColor = isTab2
                 >
                   <Box
                     sx={{
-                      width: 40,
+                      width:
+                        40,
 
-                      height: 40,
+                      height:
+                        40,
 
-                      flexShrink: 0,
+                      flexShrink:
+                        0,
 
-                      display: 'flex',
+                      display:
+                        'flex',
 
                       alignItems:
                         'center',
@@ -1646,14 +1797,16 @@ const headerBorderColor = isTab2
                   >
                     <PortalIcon
                       sx={{
-                        fontSize: 24,
+                        fontSize:
+                          24,
                       }}
                     />
                   </Box>
 
                   <Box
                     sx={{
-                      minWidth: 0,
+                      minWidth:
+                        0,
                     }}
                   >
                     <Typography
@@ -1679,7 +1832,8 @@ const headerBorderColor = isTab2
 
                     <Typography
                       sx={{
-                        mt: 0.2,
+                        mt:
+                          0.2,
 
                         color:
                           'inherit',
@@ -1690,7 +1844,8 @@ const headerBorderColor = isTab2
                         fontWeight:
                           700,
 
-                        opacity: 0.88,
+                        opacity:
+                          0.88,
 
                         lineHeight:
                           1.4,
@@ -1727,16 +1882,16 @@ const headerBorderColor = isTab2
                         menuItemSx
                       }
                     >
-                      {
-                        item.label
-                      }
+                      {item.label}
                     </MenuItem>
                   ) : (
                     <MenuItem
                       key={
                         item.path
                       }
-                      component={Link}
+                      component={
+                        Link
+                      }
                       to={
                         item.path
                       }
@@ -1747,9 +1902,7 @@ const headerBorderColor = isTab2
                         menuItemSx
                       }
                     >
-                      {
-                        item.label
-                      }
+                      {item.label}
                     </MenuItem>
                   )
               )}
@@ -1773,7 +1926,8 @@ const headerBorderColor = isTab2
                   fontSize:
                     '0.73rem',
 
-                  fontWeight: 900,
+                  fontWeight:
+                    900,
 
                   letterSpacing:
                     '0.45px',
@@ -1810,16 +1964,16 @@ const headerBorderColor = isTab2
                         pl: 3,
                       }}
                     >
-                      {
-                        item.label
-                      }
+                      {item.label}
                     </MenuItem>
                   ) : (
                     <MenuItem
                       key={
                         item.path
                       }
-                      component={Link}
+                      component={
+                        Link
+                      }
                       to={
                         item.path
                       }
@@ -1832,16 +1986,25 @@ const headerBorderColor = isTab2
                         pl: 3,
                       }}
                     >
-                      {
-                        item.label
-                      }
+                      {item.label}
                     </MenuItem>
                   )
               )}
 
               <Divider />
 
-              {/* Switch group */}
+              {/* ======================================= */}
+              {/* SWITCH GROUP - MOBILE */}
+              {/* ======================================= */}
+
+              {/*
+              ============================================================
+              TEMP PORTAL 1 ONLY
+
+              Mobile "Switch Portal" menu option disabled temporarily.
+
+              Uncomment this complete section when Portal 2 is enabled.
+              ============================================================
 
               <MenuItem
                 onClick={
@@ -1852,7 +2015,8 @@ const headerBorderColor = isTab2
 
                   my: 1,
 
-                  minHeight: 58,
+                  minHeight:
+                    58,
 
                   gap: 1,
 
@@ -1865,9 +2029,11 @@ const headerBorderColor = isTab2
                   border:
                     '1px solid #e5e0f2',
 
-                  borderRadius: 2.2,
+                  borderRadius:
+                    2.2,
 
-                  fontWeight: 800,
+                  fontWeight:
+                    800,
 
                   fontFamily:
                     FONT_FAMILY,
@@ -1880,13 +2046,17 @@ const headerBorderColor = isTab2
               >
                 <Box
                   sx={{
-                    width: 38,
+                    width:
+                      38,
 
-                    height: 38,
+                    height:
+                      38,
 
-                    flexShrink: 0,
+                    flexShrink:
+                      0,
 
-                    display: 'flex',
+                    display:
+                      'flex',
 
                     alignItems:
                       'center',
@@ -1906,64 +2076,70 @@ const headerBorderColor = isTab2
                 >
                   <PortalIcon
                     sx={{
-                      fontSize: 21,
+                      fontSize:
+                        21,
                     }}
                   />
                 </Box>
 
                 <Box
                   sx={{
-                    minWidth: 0,
+                    minWidth:
+                      0,
                   }}
                 >
-                 <Typography
-  sx={{
-    color:
-      COLORS.dark,
+                  <Typography
+                    sx={{
+                      color:
+                        COLORS.dark,
 
-    fontSize:
-      '0.8rem',
+                      fontSize:
+                        '0.8rem',
 
-    fontWeight:
-      900,
+                      fontWeight:
+                        900,
 
-    lineHeight:
-      1.2,
+                      lineHeight:
+                        1.2,
 
-    fontFamily:
-      FONT_FAMILY,
-  }}
->
-  पोर्टल बदलें
-</Typography>
+                      fontFamily:
+                        FONT_FAMILY,
+                    }}
+                  >
+                    पोर्टल बदलें
+                  </Typography>
 
                   <Typography
-  sx={{
-    mt: 0.2,
+                    sx={{
+                      mt:
+                        0.2,
 
-    color:
-      portalDarkColor,
+                      color:
+                        portalDarkColor,
 
-    fontSize:
-      '0.65rem',
+                      fontSize:
+                        '0.65rem',
 
-    fontWeight:
-      700,
+                      fontWeight:
+                        700,
 
-    fontFamily:
-      FONT_FAMILY,
-  }}
->
-  पोर्टल चयन पृष्ठ पर जाएँ
-</Typography>
+                      fontFamily:
+                        FONT_FAMILY,
+                    }}
+                  >
+                    पोर्टल चयन पृष्ठ पर जाएँ
+                  </Typography>
                 </Box>
 
                 <SwapHorizRounded
                   sx={{
-                    ml: 'auto',
+                    ml:
+                      'auto',
                   }}
                 />
               </MenuItem>
+
+              */}
 
               {/* Authenticated mobile actions */}
 
@@ -2058,7 +2234,9 @@ const headerBorderColor = isTab2
                   )}
 
                   <MenuItem
-                    component={Link}
+                    component={
+                      Link
+                    }
                     to={path(
                       '/profile'
                     )}
