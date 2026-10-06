@@ -1030,7 +1030,7 @@ const Header = () => {
               </Box>
 
               {/* Mobile portal label */}
-
+{/* 
               <Box
                 sx={{
                   display: {
@@ -1093,7 +1093,7 @@ const Header = () => {
                 >
                   {portalGroupLabel}
                 </Typography>
-              </Box>
+              </Box> */}
             </Box>
 
             {/* ========================================= */}
@@ -1738,7 +1738,7 @@ const Header = () => {
             >
               {/* Active group */}
 
-              <Box
+              {/* <Box
                 sx={{
                   m: 1,
 
@@ -1858,7 +1858,7 @@ const Header = () => {
                     </Typography>
                   </Box>
                 </Box>
-              </Box>
+              </Box> */}
 
               {/* Main links */}
 
