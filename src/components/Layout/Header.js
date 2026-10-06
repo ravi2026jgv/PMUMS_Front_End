@@ -280,7 +280,7 @@ const Header = () => {
     },
 
     {
-      label: 'DECEASED MEMBERS',
+      label: 'RETIERED MEMBERS',
       path: path(
         '/deceased-members'
       ),
