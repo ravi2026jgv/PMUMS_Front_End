@@ -229,7 +229,7 @@ const BinUsersList = () => {
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
                 <ArchiveRounded sx={{ fontSize: 34 }} />
                 <Typography variant="h4" sx={{ fontWeight: 800 }}>
-                  BIN USERS
+                  DELETED USERS
                 </Typography>
               </Box>
               <Typography sx={{ opacity: 0.92, maxWidth: 900 }}>

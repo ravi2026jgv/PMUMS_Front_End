@@ -314,7 +314,7 @@ const Header = () => {
     },
 
     {
-      label: 'BIN USERS',
+      label: 'DELETED USERS',
 
       path: path(
         '/bin-users'
