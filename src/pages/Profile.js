@@ -564,6 +564,7 @@ dateOfBirth: isDateOfBirthValueLocked
   schoolOfficeName: data.schoolOfficeName,
   sankulName: data.sankulName,
   department: data.department,
+  serviceType: data.serviceType || null,
  departmentUniqueId: isDepartmentUniqueIdLocked
   ? profileData?.departmentUniqueId
   : data.departmentUniqueId,
@@ -1312,6 +1313,24 @@ background: uiTheme.main,            },
                           {errors.department?.message}
                         </Typography>
                       )}
+                    </FormControl>
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <FieldLabel>सेवा का प्रकार (वैकल्पिक)</FieldLabel>
+                <Controller
+                  name="serviceType"
+                  control={control}
+                  defaultValue={profileData?.serviceType || ''}
+                  render={({ field }) => (
+                    <FormControl fullWidth disabled={!isEditing} sx={selectSx}>
+                      <Select {...field} value={field.value || ''} displayEmpty MenuProps={menuProps}>
+                        <MenuItem value="">अभी चयन नहीं किया</MenuItem>
+                        <MenuItem value="नियमित">नियमित</MenuItem>
+                        <MenuItem value="संविदा">संविदा</MenuItem>
+                      </Select>
                     </FormControl>
                   )}
                 />

@@ -615,6 +615,7 @@ const checkUnique = async (field, value) => {
         joiningDate: formData.joiningDate || null,
         retirementDate: formData.retirementDate || null,
         department: formData.department || "",
+        serviceType: formData.serviceType || null,
         departmentUniqueId: formData.departmentUniqueId || "",
         departmentState: state?.name || "",
         departmentSambhag: sambhag?.name || "",
@@ -1241,6 +1242,24 @@ background: theme.main,                  }}
     </FormControl>
   )}
 />
+                    </Grid>
+
+                    <Grid item xs={12} md={4}>
+                      <Typography sx={labelSx}>सेवा का प्रकार (वैकल्पिक)</Typography>
+                      <Controller
+                        name="serviceType"
+                        control={control}
+                        defaultValue=""
+                        render={({ field }) => (
+                          <FormControl fullWidth sx={selectSx}>
+                            <Select {...field} displayEmpty MenuProps={menuProps}>
+                              <MenuItem value="">बाद में चुनें</MenuItem>
+                              <MenuItem value="नियमित">नियमित</MenuItem>
+                              <MenuItem value="संविदा">संविदा</MenuItem>
+                            </Select>
+                          </FormControl>
+                        )}
+                      />
                     </Grid>
 
                     <Grid item xs={12} md={8}>
