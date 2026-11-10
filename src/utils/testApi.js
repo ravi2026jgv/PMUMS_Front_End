@@ -13,7 +13,7 @@ export const testPublicEndpoint = async () => {
     
     // Create a completely fresh axios instance with no defaults
     const testApi = axios.create({
-      baseURL: 'https://backend.pmums.com/api',
+      baseURL: 'https://backend.pmums.in/api',
       headers: {
         'Content-Type': 'application/json',
         ...getPortalHeaders(),
@@ -40,7 +40,7 @@ export const testRegistration = async (userData) => {
     console.log('Testing registration endpoint...');
     
     const testApi = axios.create({
-      baseURL: 'https://backend.pmums.com/api',
+      baseURL: 'https://backend.pmums.in/api',
       headers: {
         'Content-Type': 'application/json',
         ...getPortalHeaders(),

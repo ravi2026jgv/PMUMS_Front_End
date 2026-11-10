@@ -9,7 +9,7 @@ import {
 const Niyamawali = () => {
   // Redirect to external Niyamawali page
   useEffect(() => {
-    window.location.href = 'https://pmums.in/niyamawali/';
+    window.location.href = 'https://pmums.org/niyamawali/';
   }, []);
 
   // Show loading while redirecting

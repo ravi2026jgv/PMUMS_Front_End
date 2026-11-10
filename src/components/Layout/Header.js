@@ -300,7 +300,7 @@ const Header = () => {
 
     {
       label: 'WORK DESCRIPTION',
-      path: 'https://pmums.in/report/',
+      path: 'https://pmums.org/report/',
       external: true,
     },
 
@@ -363,7 +363,7 @@ const Header = () => {
                 'LATE TEACHERS LIST',
 
               path:
-                'https://pmums.in/death-case/',
+                'https://pmums.org/death-case/',
 
               external: true,
             },
